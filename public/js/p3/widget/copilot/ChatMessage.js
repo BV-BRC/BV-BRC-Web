@@ -13,9 +13,10 @@ define([
   './WorkspacePathUtils',
   './PlanCard', // Plan card widget for planning agent
   './ClarificationChips', // Clarification chips for planning agent questions
-  './ExecutionBlockedCard' // one-shot "Submit this job" card (plan mode refusals)
+  './ExecutionBlockedCard', // one-shot "Submit this job" card (plan mode refusals)
+  './CursorDownload' // pages data-API downloads past the 25,000-row cap
 ], function (
-  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, WorkspaceManager, WorkspacePathUtils, PlanCard, ClarificationChips, ExecutionBlockedCard
+  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, WorkspaceManager, WorkspacePathUtils, PlanCard, ClarificationChips, ExecutionBlockedCard, CursorDownload
 ) {
   /**
    * @class ChatMessage
@@ -163,6 +164,124 @@ define([
       }, chipNode);
 
       return chipNode;
+    },
+
+    /**
+     * Data-API download links in an answer (TSV / FASTA, http_download=true)
+     * stop at 25,000 rows on the server.  A plain left click pages through the
+     * whole result in the browser instead (CursorDownload); middle-click and
+     * copy-link still get the plain link.
+     * @private
+     */
+    _wireCursorDownloads: function (contentNode) {
+      on(contentNode, 'click', lang.hitch(this, function (evt) {
+        if (evt.defaultPrevented || evt.button !== 0 || evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.altKey) {
+          return;
+        }
+        var link = evt.target && evt.target.closest ? evt.target.closest('a[href]') : null;
+        if (!link || !contentNode.contains(link)) return;
+        var href = link.getAttribute('href');
+        if (!CursorDownload.canPage(CursorDownload.parseDownloadUrl(href))) return;
+        evt.preventDefault();
+        this._runCursorDownload(href);
+      }));
+    },
+
+    /** Runs one paged download with a progress dialog (Cancel), then saves the file. @private */
+    _runCursorDownload: function (href) {
+      var cancelled = false;
+      var box = domConstruct.create('div', { style: 'padding: 16px; min-width: 320px;' });
+      var status = domConstruct.create('div', { style: 'margin-bottom: 12px; font-size: 13px; color: #333;' }, box);
+      var barOuter = domConstruct.create('div', {
+        style: 'width: 100%; height: 20px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;'
+      }, box);
+      var bar = domConstruct.create('div', {
+        style: 'width: 0%; height: 100%; background: #2196F3; transition: width 0.3s ease;'
+      }, barOuter);
+      var count = domConstruct.create('div', { style: 'margin-bottom: 16px; font-size: 12px; color: #666; text-align: center;' }, box);
+      var buttons = domConstruct.create('div', { style: 'text-align: center;' }, box);
+      var cancelBtn = domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Cancel' }, buttons);
+      status.textContent = 'Preparing the download…';
+
+      var dlg = new Dialog({
+        title: 'Downloading data', content: box, closable: false, style: 'z-index: 10000;'
+      });
+      var close = function () {
+        dlg.hide();
+        setTimeout(function () { dlg.destroyRecursive(); }, 300);
+      };
+      var cancelHandle = on(cancelBtn, 'click', function () {
+        cancelled = true;
+        close();
+      });
+      dlg.show();
+
+      var fmt = function (n) { return Number(n).toLocaleString(); };
+      var finish = function (message) {
+        cancelHandle.remove();
+        status.textContent = message;
+        domConstruct.empty(buttons);
+        on(domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Close' }, buttons), 'click', close);
+      };
+
+      CursorDownload.run(href, {
+        fetch: window.fetch.bind(window),
+        token: (window.App && window.App.authorizationToken) || null,
+        isCancelled: function () { return cancelled; },
+        onProgress: function (rows, total) {
+          status.textContent = 'Downloading…';
+          if (total) {
+            var pct = Math.min(100, Math.round((rows / total) * 100));
+            bar.style.width = pct + '%';
+            count.textContent = fmt(rows) + ' of ' + fmt(total) + ' rows (' + pct + '%)';
+          } else {
+            count.textContent = fmt(rows) + ' rows…';
+          }
+        },
+        confirmLarge: function (total) {
+          return new Promise(function (resolve) {
+            status.textContent = 'This download has ' + fmt(total) + ' rows. Your browser holds it in memory '
+                + 'until it is saved, which may be slow or fail on a small machine. Download anyway?';
+            domConstruct.empty(buttons);
+            on(domConstruct.create('button', {
+              type: 'button',
+              class: 'chat-card-btn',
+              textContent: 'Download',
+              style: 'margin-right: 8px;'
+            }, buttons), 'click', function () {
+              domConstruct.empty(buttons);
+              buttons.appendChild(cancelBtn);
+              resolve(true);
+            });
+            on(domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Cancel' }, buttons),
+              'click',
+              function () {
+                cancelled = true;
+                close();
+                resolve(false);
+              });
+          });
+        }
+      }).then(function (result) {
+        if (cancelled || !result || result.cancelled) return;
+        if (!result.rows) {
+          finish('No rows matched this query, so there is nothing to download.');
+          return;
+        }
+        var blobUrl = URL.createObjectURL(new Blob(result.parts, { type: result.mime }));
+        var a = domConstruct.create('a', { href: blobUrl, download: result.fileName, style: 'display: none;' }, document.body);
+        a.click();
+        setTimeout(function () {
+          URL.revokeObjectURL(blobUrl);
+          domConstruct.destroy(a);
+        }, 1000);
+        bar.style.width = '100%';
+        finish('Saved ' + fmt(result.rows) + ' rows as ' + result.fileName + '.');
+      }, function (err) {
+        if (cancelled) return;
+        finish('The download failed: ' + (err && err.message ? err.message : err)
+            + '. The plain link (first 25,000 rows) still works with a middle-click.');
+      });
     },
 
     _decorateWorkspacePaths: function(contentNode) {
@@ -494,6 +613,7 @@ define([
           }, contentParent);
           // Process code blocks to make large ones collapsible
           this.makeLargeCodeBlocksCollapsible(contentContainer);
+          this._wireCursorDownloads(contentContainer);
         }
         this._decorateWorkspacePaths(contentContainer);
       }
