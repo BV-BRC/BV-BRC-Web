@@ -337,10 +337,12 @@
     transform: translateX(-50%);
     z-index: 20;
     align-items: center;
+    justify-content: center;   /* the arrow alone sat left of center */
     gap: 6px;
+    box-sizing: border-box;
     height: 32px;
-    min-width: 32px;
-    padding: 0 9px;
+    width: 32px;               /* a circle while it is only the arrow */
+    padding: 0;
     border: 1px solid #cbd5e1;
     border-radius: 16px;
     background: #ffffff;
@@ -361,7 +363,10 @@
     outline-offset: 2px;
 }
 .copilot-jump-bottom-arrow {
-    font-size: 16px;
+    display: block;            /* an SVG, centered by geometry, not a font glyph */
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
 }
 .copilot-jump-bottom-label {
     display: none;
@@ -371,6 +376,7 @@
     background: #0b5cab;
     border-color: #0b5cab;
     color: #ffffff;
+    width: auto;
     padding: 0 14px;
 }
 .copilot-jump-bottom.has-new:hover {

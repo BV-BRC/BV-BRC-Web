@@ -174,7 +174,9 @@ define([
           title: 'Jump to the latest message',
           'aria-label': 'Jump to the latest message',
           innerHTML: '<span class="copilot-jump-bottom-label">New response</span>' +
-            '<span class="copilot-jump-bottom-arrow" aria-hidden="true">&#8595;</span>'
+            '<svg class="copilot-jump-bottom-arrow" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' +
+            '<path d="M8 3v10M3.5 8.5 8 13l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+            'stroke-linecap="round" stroke-linejoin="round"/></svg>'
         }, this.panelContainer);
         on(this._jumpButton, 'click', lang.hitch(this, function() {
           this._jumpToBottom();
