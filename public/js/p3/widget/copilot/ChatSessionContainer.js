@@ -382,6 +382,17 @@ define([
                 // poll since it is no longer needed.
                 if (data && data.sessionId && data.sessionId === this.sessionId) {
                     this._stopFallbackPoll();
+                    // A completion that came in during the turn waited for it.
+                    if (this._watchRefreshPending) {
+                        this._watchRefreshPending = false;
+                        topic.publish('RefreshSession', this.sessionId, false);
+                    }
+                    // The turn may have submitted jobs; their watches are
+                    // registered as it is saved, so look again shortly.
+                    var turnSessionId = this.sessionId;
+                    setTimeout(lang.hitch(this, function() {
+                        this._syncWatchPoll(turnSessionId);
+                    }), 2000);
                 }
             })));
 
@@ -759,6 +770,10 @@ define([
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload
             // is unnecessary here.
+
+            // Jobs this chat submitted that are still running: watch them so
+            // their completion message appears without a reload.
+            this._syncWatchPoll(sessionId);
         },
 
         /**
@@ -1350,6 +1365,76 @@ define([
          */
         setActive: function(active) {
             this._active = !!active;
+            if (this._active) {
+                this._syncWatchPoll(this.sessionId);
+            } else {
+                this._stopWatchPoll();
+            }
+        },
+
+        /**
+         * Job-completed messages without a reload (testing session #9).
+         *
+         * The gateway's workflow monitor (every 60 s) marks a finished job's
+         * watch and writes the completion message to the chat in Mongo; its
+         * SSE push reaches a browser only while a chat turn is streaming
+         * (4 of 220 completion messages up to 2026-10-20).  So while the chat
+         * on screen has an active watch, this asks every 30 s; when one
+         * finishes it re-reads the chat's messages (a few seconds later, after
+         * the monitor has written the message; after the turn if one is
+         * streaming, so the live reply is not replaced).  It stops when no
+         * watch is active, when the chat changes, or when this container is
+         * inactive (the hidden floating window).
+         * @private
+         */
+        _watchPollMs: 30000,
+
+        _syncWatchPoll: function(sessionId) {
+            if (!this._active || !sessionId || sessionId !== this.sessionId
+                || !this.copilotApi || typeof this.copilotApi.getSessionWorkflowWatches !== 'function') {
+                this._stopWatchPoll();
+                return;
+            }
+            this.copilotApi.getSessionWorkflowWatches(sessionId).then(lang.hitch(this, function(res) {
+                if (!this._active || sessionId !== this.sessionId) { return; }
+                var active = {};
+                ((res && res.watches) || []).forEach(function(w) {
+                    if (w && w.status === 'active' && w.submission_id) { active[w.submission_id] = true; }
+                });
+                var previous = (this._watchPollSessionId === sessionId && this._watchActive) || {};
+                var finished = Object.keys(previous).some(function(id) { return !active[id]; });
+                this._watchPollSessionId = sessionId;
+                this._watchActive = active;
+                if (finished) {
+                    setTimeout(lang.hitch(this, function() {
+                        if (!this._active || sessionId !== this.sessionId) { return; }
+                        if (this.inputWidget && this.inputWidget.isSubmitting) {
+                            this._watchRefreshPending = true;
+                        } else {
+                            topic.publish('RefreshSession', sessionId, false);
+                        }
+                    }), 3000);
+                }
+                if (Object.keys(active).length === 0) {
+                    this._stopWatchPoll();
+                } else if (!this._watchPollInterval) {
+                    this._watchPollInterval = setInterval(lang.hitch(this, function() {
+                        this._syncWatchPoll(this._watchPollSessionId);
+                    }), this._watchPollMs);
+                }
+            }), function(err) {
+                // A failed check is retried by the next tick.
+                console.warn('[ChatSessionContainer] workflow watch check failed', err);
+            });
+        },
+
+        _stopWatchPoll: function() {
+            if (this._watchPollInterval) {
+                clearInterval(this._watchPollInterval);
+                this._watchPollInterval = null;
+            }
+            this._watchActive = null;
+            this._watchPollSessionId = null;
         },
 
         /**
@@ -1515,6 +1600,7 @@ define([
         destroy: function() {
             this._stopPathMonitoring();
             this._stopFallbackPoll();
+            this._stopWatchPoll();
             if (this._busyPollInterval) {
                 clearInterval(this._busyPollInterval);
                 this._busyPollInterval = null;
