@@ -57,6 +57,16 @@ define([
 
 
         })
+      } else {
+        // Logged out: the button is shown too; a click asks the visitor to
+        // log in (ChatButton.onClick) instead of opening the chat.
+        this.chatButton = new ChatButton({
+          region: 'center',
+          width: '60px',
+          height: '60px',
+          backgroundColor: '#007bff',
+          borderRadius: '50%'
+        }).placeAt(document.body);
       }
 
       on(document, 'keydown', function (evt) {
@@ -643,7 +653,6 @@ define([
           }, false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
-          window.App.chatButtonWidget('show');
           window.App.checkSU();
           window.App.alreadyLoggedIn = true;
         } else {
@@ -823,21 +832,6 @@ define([
         }
       } else {
         console.log('I should not see the upload and jobs widget');
-      }
-    },
-    chatButtonWidget: function (action) {
-      if (action === 'show') {
-        var chatButton = new ChatButton({
-          region: 'center',
-          width: '60px',
-          height: '60px',
-          backgroundColor: '#007bff',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-        });
-      } else {
-        console.log('I should not see the chat button');
       }
     },
     _showQueryLogIndicator: function () {

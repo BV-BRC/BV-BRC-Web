@@ -47,18 +47,18 @@ define([
         postCreate: function () {
             this.inherited(arguments);
 
-            // Check authentication first
-            if (!this._checkAuth()) {
-                return;
-            }
-
-            // Hide the floating chat button while this page is active.
-            // Set flag first so late-initializing widgets (ChatButton) can
-            // check it, then publish for any already-subscribed listeners.
+            // Hide the floating chat button while this page is active, also
+            // when logged out (one login prompt, not two).  Set the flag first
+            // so late-initializing widgets (ChatButton) can check it, then
+            // publish for any already-subscribed listeners.
             if (window.App) {
                 window.App.copilotViewerActive = true;
             }
             topic.publish('CopilotViewerActive');
+
+            if (!this._checkAuth()) {
+                return;
+            }
 
             // Build the UI
             this._initUI();
@@ -71,13 +71,20 @@ define([
          */
         _checkAuth: function () {
             if (!window.App.authorizationToken || !window.App.user || !window.App.user.id) {
+                var box = domConstruct.create('div', { style: 'text-align:center;padding:10px;' });
+                domConstruct.create('p', { textContent: 'You must be logged in to use the Copilot Chat.' }, box);
+                domConstruct.create('p', { textContent: 'Please sign in with your BV-BRC account to continue.' }, box);
+                var loginBtn = domConstruct.create('button', {
+                    type: 'button', class: 'chat-card-btn', textContent: 'Log in', style: 'margin-top: 6px;'
+                }, box);
                 var loginDialog = new Dialog({
                     title: 'Login Required',
-                    content: '<div style="text-align:center;padding:10px;">' +
-                             '<p>You must be logged in to use the Copilot Chat.</p>' +
-                             '<p>Please sign in with your BV-BRC account to continue.</p>' +
-                             '</div>',
+                    content: box,
                     style: 'width:400px'
+                });
+                on(loginBtn, 'click', function () {
+                    loginDialog.hide();
+                    topic.publish('/login');
                 });
                 loginDialog.startup();
                 loginDialog.show();

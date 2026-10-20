@@ -14,6 +14,7 @@ define([
     './CopilotApi',
     './ChatSessionOptionsBar',
     './CopilotFloatingWindow',
+    'dijit/Dialog',
     'require'
 ], function(
     declare,
@@ -31,6 +32,7 @@ define([
     CopilotAPI,
     ChatSessionOptionsBar,
     CopilotFloatingWindow,
+    Dialog,
     require
 ) {
     return declare([Button], {
@@ -311,11 +313,52 @@ define([
             }
         },
 
+        // True when the visitor is logged in (checked at each click, so a
+        // login in another tab counts without a reload).
+        _isLoggedIn: function() {
+            return !!(window.App && window.App.authorizationToken && window.App.user && window.App.user.l_id);
+        },
+
+        // Logged out: a small dialog instead of the chat window, with no
+        // Copilot API calls.  "Log in" opens the site's Sign In dialog.
+        _showLoginPrompt: function() {
+            if (!this._loginDialog) {
+                var box = domConstruct.create('div', { style: 'padding: 12px 16px; width: 320px; max-width: 80vw;' });
+                domConstruct.create('p', {
+                    textContent: 'Please log in to use Copilot.',
+                    style: 'margin: 0 0 6px; font-size: 14px;'
+                }, box);
+                domConstruct.create('p', {
+                    textContent: 'Copilot works with your BV-BRC account: your workspace, groups and jobs.',
+                    style: 'margin: 0 0 14px; font-size: 12px; color: #555; white-space: normal;'
+                }, box);
+                var buttons = domConstruct.create('div', { style: 'text-align: right;' }, box);
+                var cancelBtn = domConstruct.create('button', {
+                    type: 'button', class: 'chat-card-btn', textContent: 'Cancel', style: 'margin-right: 8px;'
+                }, buttons);
+                var loginBtn = domConstruct.create('button', {
+                    type: 'button', class: 'chat-card-btn', textContent: 'Log in'
+                }, buttons);
+                this._loginDialog = new Dialog({ title: 'BV-BRC Copilot', content: box });
+                on(cancelBtn, 'click', lang.hitch(this, function() { this._loginDialog.hide(); }));
+                on(loginBtn, 'click', lang.hitch(this, function() {
+                    this._loginDialog.hide();
+                    topic.publish('/login');
+                }));
+            }
+            this._loginDialog.show();
+        },
+
         // Override onClick to show the controller panel
         onClick: function(evt) {
             this.inherited(arguments);
             // Do nothing while the full-page Copilot viewer is active
             if (this._copilotViewerActive) {
+                evt.stopPropagation();
+                return;
+            }
+            if (!this._isLoggedIn()) {
+                this._showLoginPrompt();
                 evt.stopPropagation();
                 return;
             }
