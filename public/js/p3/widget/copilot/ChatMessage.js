@@ -1158,7 +1158,7 @@ define([
     },
 
     /**
-     * Render ClarificationChips widget for planning agent questions.
+     * Render ClarificationChips widget for an agent's clarification questions.
      * @param {HTMLElement} parentNode - The message content node to append to.
      */
     renderClarificationChips: function (parentNode) {
@@ -1179,6 +1179,8 @@ define([
 
         var chips = new ClarificationChips({
           questions: clarData.questions,
+          agent: clarData.agent || 'planning',
+          planStep: clarData.plan_step || null,
           sessionId: this.message.session_id || this.sessionId || null,
           originalQuery: this.message.originalQuery || ''
         });

@@ -429,15 +429,16 @@ define([
         }
         domConstruct.empty(this.resultContainer);
         this._loadingIndicator = null;
-        // Clarification cards: answered when a later "Answered Questions"
-        // message exists; otherwise they render as chips again (also after a
-        // reload) with the user message they were asked about.
+        // Clarification cards: answered once any later user message exists
+        // (an "Answered Questions" message, or a typed reply such as a plan
+        // step's answer); otherwise they render as chips again (also after
+        // a reload) with the user message they were asked about.
         messages = messages.map(function(message, i) {
           if (!message || !message.card || message.card.card_type !== 'clarification') return message;
           var later = messages.slice(i + 1);
           var before = messages.slice(0, i).reverse().filter(function(m) { return m && m.role === 'user'; })[0];
           return lang.mixin({}, message, {
-            clarificationAnswered: later.some(function(m) { return m && m.role === 'user_clarification'; }),
+            clarificationAnswered: later.some(function(m) { return m && (m.role === 'user_clarification' || m.role === 'user'); }),
             originalQuery: message.originalQuery || (before && before.content) || ''
           });
         });

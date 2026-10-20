@@ -701,6 +701,7 @@ define([
       /**
        * Submits a planning agent action via the standard SSE streaming path.
        * Reuses _submitCopilotQueryStreamWithRegistration with target_agent='planning'
+       * (or targetAgent: answers to another agent's questions go back to it)
        * so all SSE events (plan_created, plan_step_*, ask_questions) flow through
        * the normal onData/onEnd/onError/onStatusMessage callbacks.
        *
@@ -708,7 +709,7 @@ define([
        * @param {string} sessionId - Chat session ID
        * @param {Object} workflowContext - Planning workflow context (plan_action, plan, etc.)
        */
-      _submitPlanAction: function(queryText, sessionId, workflowContext) {
+      _submitPlanAction: function(queryText, sessionId, workflowContext, targetAgent) {
         var _self = this;
 
         // Prevent concurrent submissions
@@ -745,7 +746,9 @@ define([
           model: this.model,
           save_chat: true,
           execution_mode: this.executionMode,
-          target_agent: 'planning',
+          // Plan actions go to planning; answers to another agent's
+          // questions go back to that agent.
+          target_agent: targetAgent || 'planning',
           workflow_context: workflowContext
         };
 
@@ -1056,10 +1059,43 @@ define([
           }
         })));
 
-        // 1. CopilotPlanAnswerQuestions — user answered clarification questions
+        // 1. CopilotPlanAnswerQuestions — user answered clarification questions.
+        // The answers go back to the agent that asked (data.agent): planning
+        // takes them as structured clarification_answers; any other agent
+        // gets one turn pinned to it with the original request plus the
+        // answers; a paused plan step re-runs through the plan-step reply
+        // path (_handleSubmitStream's _pendingPlanStepInput intercept).
         this._topicHandles.push(topic.subscribe('CopilotPlanAnswerQuestions', lang.hitch(this, function(data) {
           if (!data || !data.answers) { return; }
           console.log('[CopilotInput] CopilotPlanAnswerQuestions received:', data);
+
+          var askingAgent = data.agent || 'planning';
+          if (askingAgent !== 'planning') {
+            var answerLines = data.answers.map(function(a) {
+              return '- ' + a.question + ' ' + a.answer;
+            }).join('\n');
+            if (data.planStep && this._pendingPlanStepInput) {
+              this._setInputTextValue('My answers to your questions:\n' + answerLines);
+              this._handleSubmitStream();
+              return;
+            }
+            var answeredMessage = this._buildClarificationResponseMessage(data.answers);
+            this.chatStore.addMessage(answeredMessage);
+            this.displayWidget.showMessages(this.chatStore.query());
+            var turnText = (data.originalQuery ? data.originalQuery + '\n\n' : '')
+              + 'My answers to your questions:\n' + answerLines;
+            this._submitPlanAction(
+              turnText,
+              data.sessionId,
+              {
+                plan_action: 'answer_questions',
+                clarification_answers: data.answers,
+                original_query: data.originalQuery || ''
+              },
+              askingAgent
+            );
+            return;
+          }
 
           var clarificationMessage = this._buildClarificationResponseMessage(data.answers);
           this.chatStore.addMessage(clarificationMessage);

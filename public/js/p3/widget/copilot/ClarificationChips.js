@@ -1,7 +1,9 @@
 /**
- * ClarificationChips — Renders clickable option chips for planning agent
- * clarification questions. Each question shows selectable options as
- * styled chips, plus a free-text input field.
+ * ClarificationChips — Renders clickable option chips for an agent's
+ * clarification questions (any agent that called ask_clarification; the
+ * planning agent's before a plan, the others' since 2026-10-20). Each
+ * question shows selectable options as styled chips, plus a free-text
+ * input field. The answers go back to the agent that asked.
  *
  * After the user submits answers, the chips are replaced with a text
  * summary ("Q: ... A: ...") that persists in the chat.
@@ -25,6 +27,8 @@ define([
     copilotApi: null,      // CopilotApi instance
     sessionId: null,
     originalQuery: null,   // The user's original query that triggered clarification
+    agent: null,           // The agent that asked ('planning' when unset)
+    planStep: null,        // {plan_id, step_id, step_index} when a paused plan step asked
     containerNode: null,
 
     // Internal state
@@ -38,6 +42,8 @@ define([
       this.copilotApi = params.copilotApi || null;
       this.sessionId = params.sessionId || null;
       this.originalQuery = params.originalQuery || '';
+      this.agent = params.agent || 'planning';
+      this.planStep = params.planStep || null;
       this._selectedAnswers = {};
       this._chipNodes = {};
       this._textInputs = {};
@@ -57,7 +63,9 @@ define([
       // Header
       domConstruct.create('div', {
         'class': 'clarification-header',
-        innerHTML: 'Before I create a plan, I have a few questions:'
+        textContent: this.agent === 'planning'
+          ? 'Before I create a plan, I have a few questions:'
+          : 'Before I go on, I have a few questions:'
       }, this.domNode);
 
       // Render each question
@@ -236,6 +244,8 @@ define([
       // Publish event for the API to handle
       topic.publish('CopilotPlanAnswerQuestions', {
         answers: answers,
+        agent: this.agent,
+        planStep: this.planStep,
         originalQuery: this.originalQuery,
         sessionId: this.sessionId
       });
