@@ -14,9 +14,10 @@
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
-  'dojo/topic'
+  'dojo/topic',
+  './ProgressView'
 ], function(
-  declare, lang, topic
+  declare, lang, topic, ProgressView
 ) {
 
   return declare(null, {
@@ -64,6 +65,14 @@ define([
       };
       this.currentStatusMessageId = null;
       this.currentStatusMessage = null;
+      // Structured steps this turn (ProgressView), merged by step_id.
+      this.steps = [];
+      this.startedAt = null;
+    },
+
+    /** The turn's steps so far (for the finished message's "What I did"). */
+    getSteps: function() {
+      return this.steps.slice();
     },
 
     /**
@@ -98,7 +107,9 @@ define([
         timestamp: new Date().toISOString(),
         event_type: eventType,
         is_temporary: true,
-        save_chat: false  // Don't persist to backend
+        save_chat: false,  // Don't persist to backend
+        steps: this.steps.slice(),
+        started_at: this.startedAt
       };
 
       return this.currentStatusMessage;
@@ -118,6 +129,8 @@ define([
       this.currentStatusMessage.content = content;
       this.currentStatusMessage.event_type = eventType;
       this.currentStatusMessage.timestamp = new Date().toISOString();
+      this.currentStatusMessage.steps = this.steps.slice();
+      this.currentStatusMessage.started_at = this.startedAt;
 
       return this.currentStatusMessage;
     },
@@ -151,22 +164,49 @@ define([
      */
     format_started: function(data) {
       this.agentState.status = 'processing';
-      var content = 'Processing started...';
+      if (!this.startedAt) {
+        this.startedAt = Date.now();
+      }
+      var content = 'Starting\u2026';
 
       return this.updateStatusMessage(content, 'started');
     },
 
     /**
-     * Formats 'progress' event
-     * Displays the agent's human-readable progress message.
+     * Formats 'progress' event: one structured step (step_id, phase,
+     * status, label, detail, result, took_ms; see ProgressView) merged into
+     * the turn's step list.  A legacy string-only event becomes a transient
+     * note so the live line still updates.
      */
     format_progress: function(data) {
       if (!this.config.showProgressUpdates) return null;
+      data = data || {};
+      if (!this.startedAt) {
+        this.startedAt = Date.now();
+      }
 
-      var content = data.message || 'Processing...';
+      var step;
+      if (typeof data.step_id === 'string' && typeof data.label === 'string') {
+        step = {};
+        ['step_id', 'phase', 'status', 'label', 'detail', 'result', 'agent_label',
+          'ts_ms', 'took_ms', 'transient', 'tool'].forEach(function(key) {
+          if (data[key] !== undefined && data[key] !== null) step[key] = data[key];
+        });
+      } else {
+        step = {
+          step_id: 'legacy_' + Date.now(),
+          phase: 'note',
+          status: 'done',
+          label: data.message || 'Processing\u2026',
+          transient: true
+        };
+      }
+      this.steps = ProgressView.mergeStep(this.steps, step);
 
-      if (data.agent) {
-        content = '**' + data.agent + '**: ' + content;
+      // Plain-text fallback for anything that reads content.
+      var content = step.label;
+      if (step.result) {
+        content += ' \u2014 ' + step.result;
       }
 
       return this.updateStatusMessage(content, 'progress');
@@ -180,18 +220,9 @@ define([
 
       this.agentState.currentTool = data.tool;
       this.agentState.currentToolReasoning = data.reasoning;
-
-      var content = '';
-      if (data.agent) {
-        content += '**' + data.agent + '**: ';
-      }
-      content += 'Using **' + data.tool + '**';
-
-      if (data.reasoning) {
-        content += '\n' + data.reasoning;
-      }
-
-      return this.updateStatusMessage(content, 'tool_selected');
+      // Shown through the structured progress steps instead (the routing
+      // and agent-start events carry no `tool` and rendered "undefined").
+      return null;
     },
 
     /**
@@ -207,25 +238,8 @@ define([
         tool: tool,
         status: data.status
       });
-
-      var content = '';
-      if (data.agent) {
-        content += '**' + data.agent + '**: ';
-      }
-
-      if (data.status === 'success') {
-        content += '**' + tool + '** completed';
-        if (data.result_summary) {
-          content += ' - ' + data.result_summary;
-        }
-      } else {
-        content += '**' + tool + '** failed';
-        if (data.error) {
-          content += ' - ' + data.error;
-        }
-      }
-
-      return this.updateStatusMessage(content, 'tool_executed');
+      // Shown through the structured progress steps instead.
+      return null;
     },
 
     /**

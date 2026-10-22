@@ -738,6 +738,7 @@ define([
         var assistantMessage = null;
         var statusMessageId = null;
         var assistantMessageCreated = false;
+        var lastSteps = null;
 
         var params = {
           inputText: queryText,
@@ -767,6 +768,7 @@ define([
               }
               assistantMessage = {
                 role: 'assistant',
+                agent_metadata: lastSteps && lastSteps.length ? { steps: lastSteps } : undefined,
                 content: '',
                 message_id: 'assistant_' + Date.now(),
                 timestamp: new Date().toISOString()
@@ -827,6 +829,9 @@ define([
               }
             } else {
               statusMessageId = statusMessage.message_id;
+              if (Array.isArray(statusMessage.steps)) {
+                lastSteps = statusMessage.steps;
+              }
               var existingMessage = _self.chatStore.getMessageById(statusMessage.message_id);
               if (existingMessage) {
                 _self.chatStore.updateMessage(statusMessage);
@@ -2255,6 +2260,7 @@ define([
 
       let assistantMessage = null;
       let statusMessageId = null;
+      let lastSteps = null;
       let assistantMessageCreated = false;
 
       const params = {
@@ -2307,6 +2313,11 @@ define([
                       message_id: 'assistant_' + Date.now(),
                       timestamp: new Date().toISOString()
                   };
+                  if (lastSteps && lastSteps.length) {
+                      // The steps shown while waiting stay under the answer
+                      // (the gateway saves them as agent_metadata.steps).
+                      assistantMessage.agent_metadata = { steps: lastSteps };
+                  }
                   if (toolMetadata) {
                       this._applyToolMetadataToAssistantMessage(assistantMessage, toolMetadata);
                   }
@@ -2388,6 +2399,9 @@ define([
               } else {
                   this.displayWidget.hideLoadingIndicator();
                   statusMessageId = statusMessage.message_id;
+                  if (Array.isArray(statusMessage.steps)) {
+                      lastSteps = statusMessage.steps;
+                  }
                   var existingMessage = this.chatStore.getMessageById(statusMessage.message_id);
                   if (existingMessage) {
                       this.chatStore.updateMessage(statusMessage);

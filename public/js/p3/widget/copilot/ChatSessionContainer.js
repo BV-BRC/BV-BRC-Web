@@ -315,6 +315,12 @@ define([
                 if (!this._active) { return; }
                 this._handleChatTextSizeChanged.apply(this, arguments);
             })));
+            // Progress view variant changed (options dialog or the card's
+            // toggle): redraw so every status card and summary follows.
+            this.own(topic.subscribe('copilotProgressStyleChanged', lang.hitch(this, function() {
+                if (!this._active || !this.displayWidget || !this.chatStore) { return; }
+                this.displayWidget.showMessages(this.chatStore.query());
+            })));
             this.own(topic.subscribe('setStatePrompt', lang.hitch(this, function() {
                 if (!this._active) { return; }
                 this._handleSetStatePrompt.apply(this, arguments);

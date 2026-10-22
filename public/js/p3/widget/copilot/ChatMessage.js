@@ -14,10 +14,16 @@ define([
   './PlanCard', // Plan card widget for planning agent
   './ClarificationChips', // Clarification chips for planning agent questions
   './ExecutionBlockedCard', // one-shot "Submit this job" card (plan mode refusals)
-  './CursorDownload' // pages data-API downloads past the 25,000-row cap
+  './CursorDownload', // pages data-API downloads past the 25,000-row cap
+  './ProgressView' // live progress steps and the "What I did" section
 ], function (
-  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, WorkspaceManager, WorkspacePathUtils, PlanCard, ClarificationChips, ExecutionBlockedCard, CursorDownload
+  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, WorkspaceManager, WorkspacePathUtils, PlanCard, ClarificationChips, ExecutionBlockedCard, CursorDownload, ProgressView
 ) {
+  // A view change (options dialog or the card's toggle) re-renders every
+  // open chat through the container.
+  ProgressView.onChange(function(variant) {
+    topic.publish('copilotProgressStyleChanged', variant);
+  });
   /**
    * @class ChatMessage
    * @description Widget that handles rendering individual chat messages with markdown support.
@@ -557,10 +563,30 @@ define([
      */
     renderStatusMessage: function(messageDiv) {
       var statusContentNode = domConstruct.create('div', {
-        innerHTML: this.message.content ? this.md.render(this.message.content) : '',
-        class: 'markdown-content status-content'
+        class: 'status-content'
       }, messageDiv);
-      this._decorateWorkspacePaths(statusContentNode);
+      ProgressView.render(statusContentNode, {
+        steps: Array.isArray(this.message.steps) ? this.message.steps : [],
+        messageId: this.message.message_id,
+        startedAt: this.message.started_at || null,
+        fallbackText: this.message.content || ''
+      });
+    },
+
+    /**
+     * "What I did": the turn's steps under a finished assistant message,
+     * closed by default (agent_metadata.steps, saved by the gateway).
+     */
+    renderProgressSummary: function(messageDiv) {
+      var meta = this.message.agent_metadata;
+      var steps = meta && Array.isArray(meta.steps) ? meta.steps : null;
+      if (!steps || !steps.length) return;
+      var node = domConstruct.create('div', { class: 'progress-summary' }, messageDiv);
+      ProgressView.renderSummary(node, {
+        steps: steps,
+        messageId: this.message.message_id,
+        elapsedMs: meta.elapsed_ms || null
+      });
     },
 
     /**
@@ -674,6 +700,8 @@ define([
 
       if (isUser) {
         this.renderAttachments(contentParent);
+      } else {
+        this.renderProgressSummary(messageDiv);
       }
 
       // --- Card dispatch ---
