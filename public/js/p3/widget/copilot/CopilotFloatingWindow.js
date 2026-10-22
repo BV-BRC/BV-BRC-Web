@@ -28,8 +28,7 @@ define([
     'dijit/popup',
     'dojo/request',
     '../../util/PathJoin',
-    'dojo/dom',
-    './ProgressView'
+    'dojo/dom'
 ], function(
     declare,
     _WidgetBase,
@@ -55,8 +54,7 @@ define([
     popup,
     xhr,
     PathJoin,
-    dom,
-    ProgressView
+    dom
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotFloatingWindow',
@@ -729,26 +727,6 @@ define([
                     topic.publish('chatTextSizeChanged', initialTextSize);
                 }, 100);
             }
-
-            // Progress view: how a running turn's steps are shown
-            var progressContainer = domConstruct.create('div', {
-                style: 'display: flex; align-items: center; gap: 10px; padding: 10px; border-top: 1px solid #e5e7eb;'
-            }, advancedOptionsDialog.containerNode);
-            domConstruct.create('span', {
-                innerHTML: 'Progress view:',
-                style: 'white-space: nowrap; font-size: 14px;'
-            }, progressContainer);
-            var progressSelect = domConstruct.create('select', {
-                style: 'font-size: 12px; padding: 2px;',
-                title: 'How the steps of a running request are shown'
-            }, progressContainer);
-            ProgressView.VARIANTS.forEach(function(v) {
-                var opt = domConstruct.create('option', { value: v.id, innerHTML: v.label, title: v.title }, progressSelect);
-                if (v.id === ProgressView.getVariant()) { opt.selected = true; }
-            });
-            on(progressSelect, 'change', function(evt) {
-                ProgressView.setVariant(evt.target.value);
-            });
 
             // Add Show Tabs on/off control
             var tabsVisibilityContainer = domConstruct.create('div', {

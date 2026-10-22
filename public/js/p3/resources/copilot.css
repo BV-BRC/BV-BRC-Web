@@ -4842,19 +4842,6 @@ a.workspace-path-chip:hover {
 }
 .pv-title { font-weight: 600; color: #334155; }
 .pv-clock { color: #64748b; font-variant-numeric: tabular-nums; }
-.pv-toggle { margin-left: auto; display: inline-flex; gap: 2px; }
-.pv-toggle-btn {
-  font-size: 0.7rem;
-  line-height: 1.2;
-  padding: 1px 6px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  background: #fff;
-  color: #64748b;
-  cursor: pointer;
-}
-.pv-toggle-btn:hover { background: #e2e8f0; }
-.pv-toggle-btn.pv-toggle-on { background: #475569; border-color: #475569; color: #fff; }
 .pv-agent-line, .pv-agent { color: #64748b; font-size: 0.78rem; }
 .pv-agent-line { margin-bottom: 2px; }
 .pv-rows { display: flex; flex-direction: column; gap: 2px; }

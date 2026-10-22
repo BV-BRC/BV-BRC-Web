@@ -14,9 +14,10 @@
  *   collapsed  one live line with a chevron that opens the rows
  *   timeline   list plus seconds per step, with model-call rows kept
  *
- * The choice is a per-browser preference (localStorage `copilot-progress-style`),
- * set from the options dialog or the small toggle on the status card.
- * Adding a variant = one entry in VARIANTS and one branch in renderBody.
+ * Everyone gets `collapsed` (Clark, 2026-10-22, after comparing the four).
+ * The other variants stay in code: a per-browser override in localStorage
+ * (`copilot-progress-style` = line | list | timeline) picks one, with no UI
+ * for it; adding the option back is a dropdown that calls setVariant.
  *
  * UMD so the pure functions (mergeStep, rowsFor, summarize) run under jest.
  */
@@ -30,7 +31,7 @@
   }
 }(typeof window !== 'undefined' ? window : this, function(root) {
   var STORAGE_KEY = 'copilot-progress-style';
-  var DEFAULT_VARIANT = 'list';
+  var DEFAULT_VARIANT = 'collapsed';
   var VARIANTS = [
     { id: 'line', label: 'Line', title: 'One line that changes as work proceeds' },
     { id: 'list', label: 'List', title: 'Finished steps stay visible; the current step is at the bottom' },
@@ -223,25 +224,6 @@
     return line;
   }
 
-  function renderToggle(container, current, onPick) {
-    var bar = el('div', 'pv-toggle');
-    bar.setAttribute('role', 'group');
-    bar.setAttribute('aria-label', 'Progress view');
-    VARIANTS.forEach(function(v) {
-      var b = el('button', 'pv-toggle-btn' + (v.id === current ? ' pv-toggle-on' : ''), escapeHtml(v.label));
-      b.type = 'button';
-      b.title = v.title;
-      b.setAttribute('data-variant', v.id);
-      b.onclick = function(evt) {
-        if (evt && evt.stopPropagation) evt.stopPropagation();
-        onPick(v.id);
-      };
-      bar.appendChild(b);
-    });
-    container.appendChild(bar);
-    return bar;
-  }
-
   function startClock(node, startedAt) {
     if (!startedAt || !root.setInterval) return;
     var id = 'pv' + (++timerSeq);
@@ -274,10 +256,6 @@
     var header = el('div', 'pv-header');
     header.appendChild(el('span', 'pv-title', 'Working on it'));
     header.appendChild(el('span', 'pv-clock', escapeHtml(formatDuration(summary.elapsed_ms))));
-    renderToggle(header, variant, function(v) {
-      setVariant(v);                 // listeners re-render every card
-      render(node, assign({}, opts, { variant: v }));
-    });
     card.appendChild(header);
 
     if (variant === 'line') {

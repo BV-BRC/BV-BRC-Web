@@ -61,13 +61,13 @@ describe('summarize and formatDuration', () => {
 });
 
 describe('preference', () => {
-  test('defaults to list without storage, accepts only known variants, notifies listeners', () => {
-    expect(PV.getVariant()).toBe('list');
+  test('defaults to collapsed without storage, accepts only known variants, notifies listeners', () => {
+    expect(PV.getVariant()).toBe('collapsed');
     expect(PV.VARIANTS.map(v => v.id)).toEqual(['line', 'list', 'collapsed', 'timeline']);
     const seen = [];
     const off = PV.onChange(v => seen.push(v));
     expect(PV.setVariant('timeline')).toBe('timeline');
-    expect(PV.setVariant('nope')).toBe('list');       // unchanged (no storage here)
+    expect(PV.setVariant('nope')).toBe('collapsed');  // unchanged (no storage here)
     off();
     PV.setVariant('line');
     expect(seen).toEqual(['timeline']);
