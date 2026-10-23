@@ -7,7 +7,7 @@ define([
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
-  'dojo/debounce', '../auth/authHeaders', '../util/joinTooBroad'
+  'dojo/debounce', '../auth/authHeaders', '../util/dateRangeWithinQuery', '../util/joinTooBroad'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -17,8 +17,7 @@ define([
   DropDownButton, DropDownMenu,
   Dialog, Button, CheckBox, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin, constructMetadataName,
-  debounce,
-  authHeader, joinTooBroad) {
+  debounce, authHeader, dateRangeWithinQuery, joinTooBroad) {
 
   function sortByLabel(firstEl, secondEl) {
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
@@ -1205,7 +1204,7 @@ define([
         return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
       }).join(',') + ',(mincount,1),(limit,100))';
 
-      const url = PathJoin(this.apiServer, this.dataModel, `?${queryStr}&limit(1)&${facets}`)
+      const url = PathJoin(this.apiServer, this.dataModel, `?${dateRangeWithinQuery(queryStr)}&limit(1)&${facets}`)
       const fr = xhr(url, {
         method: 'GET',
         handleAs: 'json',

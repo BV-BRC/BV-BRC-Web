@@ -1,6 +1,6 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct',
-  './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct', 'dojo/request',
+  './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI', '../../util/PathJoin', '../../util/dateRangeWithinQuery',
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
@@ -9,8 +9,8 @@ define([
   '../InteractionsContainer', '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
   '../../util/genomeKingdom'
 ], function (
-  declare, lang, Topic, domConstruct,
-  TabViewerBase, QueryToEnglish, DataAPI,
+  declare, lang, Topic, domConstruct, xhr,
+  TabViewerBase, QueryToEnglish, DataAPI, PathJoin, dateRangeWithinQuery,
   GenomeListOverview, GenomeGridContainer,
   AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
@@ -55,7 +55,7 @@ define([
       // Check if genome list contains bacteria, viruses, or both.
       const dataAPI = this.dataAPI;
       const authToken = this.authToken;
-      const query = this.state.search;
+      const query = dateRangeWithinQuery(this.state.search);
       var _self = this;
 
       // forToken: authToken is a prototype property captured at module-declare time

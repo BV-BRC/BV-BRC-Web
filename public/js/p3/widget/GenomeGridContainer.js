@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GenomeGrid', './AdvancedSearchFields', './GridContainer',
-  '../util/PathJoin'
+  '../util/PathJoin', '../util/dateRangeWithinQuery'
 
 ], function (
   declare, on, domConstruct,
   popup, TooltipDialog,
   GenomeGrid, AdvancedSearchFields, GridContainer,
-  PathJoin
+  PathJoin, dateRangeWithinQuery
 ) {
 
   const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -50,7 +50,7 @@ define([
           const totalRows = _self.grid.totalRows;
           const dataType = _self.dataModel
           const primaryKey = _self.primaryKey
-          const currentQuery = _self.grid.get('query')
+          const currentQuery = dateRangeWithinQuery(_self.grid.get('query'))
           const query = `${currentQuery}&sort(${primaryKey})&limit(${totalRows})`
 
           on(downloadTT.domNode, 'div:click', function (evt) {
