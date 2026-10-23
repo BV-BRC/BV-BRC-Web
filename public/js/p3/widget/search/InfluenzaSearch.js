@@ -444,15 +444,20 @@ define([
       // Protein accordion only for protein data type
       this.proteinAccordion.style.display = isProtein ? '' : 'none';
 
-      // Completeness/Segments accordion only for genome
+      // Genomes require all selected segments; sequence searches return any
+      // selected segment. Protein searches use their own gene/product fields.
       var isGenome = this.selectedDataType === 'genome';
-      this.completenessAccordion.style.display = isGenome ? '' : 'none';
+      this.completenessAccordion.style.display = isProtein ? 'none' : '';
+      this.segmentFilterLabel.textContent = isGenome ? 'Required Segments' : 'Segments';
+      this.segmentFilterHint.textContent = isGenome ? 'Genomes must contain all selected segments.' : 'Return sequences from any selected segment.';
 
       if (!isGenome) {
-        // Clear all completeness/segment state so it doesn't silently apply
+        // Complete-genome filtering applies only to genome searches.
         if (this.completeGenomeNode && this.completeGenomeNode.get('value')) {
           this.completeGenomeNode.set('value', false);
         }
+      }
+      if (isProtein) {
         var segmentNodes = [
           this.segPB2Node, this.segPB1Node, this.segPANode, this.segHANode,
           this.segNPNode, this.segNANode, this.segMNode, this.segNSNode,
@@ -911,6 +916,14 @@ define([
 
       // Sequence length — applies to the sequence itself (outside genome join)
       var seqFilters = [];
+      var segments = this._getSelectedSegments();
+      if (segments.length) {
+        var segmentFilter = segments.length === 1 ? 'eq(segment,' + segments[0] + ')' : 'in(segment,(' + segments.join(',') + '))';
+        // Narrow candidate genomes as well as their individual sequences:
+        // a genome carrying HA and PB2 must return only HA when HA is selected.
+        genomeFilters.push(segmentFilter);
+        seqFilters.push(segmentFilter);
+      }
       var lenQ = this._buildLengthQuery('length', this.seqLengthFromNode, this.seqLengthToNode);
       if (lenQ) seqFilters.push(lenQ);
 
