@@ -884,7 +884,15 @@ define([
         genomeFilters.push('eq(genome_status,Complete)');
       }
 
-      // Required segments — use in(...) for multi-select, eq(...) for single
+      // Each selected segment is required on the same genome record (AND).
+      this._getSelectedSegments().forEach(function (segment) {
+        genomeFilters.push('eq(segment,' + segment + ')');
+      });
+
+      return 'eq(genome_id,*)&genome(' + genomeFilters.join(',') + ')';
+    },
+
+    _getSelectedSegments: function () {
       var segmentNodes = {
         PB2: this.segPB2Node, PB1: this.segPB1Node, PA: this.segPANode, HA: this.segHANode,
         NP: this.segNPNode, NA: this.segNANode, M: this.segMNode, NS: this.segNSNode
@@ -895,13 +903,7 @@ define([
           segNums.push(SEGMENT_NUMBERS[seg]);
         }
       }
-      if (segNums.length === 1) {
-        genomeFilters.push('eq(segment,' + segNums[0] + ')');
-      } else if (segNums.length > 1) {
-        genomeFilters.push('in(segment,(' + segNums.join(',') + '))');
-      }
-
-      return 'eq(genome_id,*)&genome(' + genomeFilters.join(',') + ')';
+      return segNums;
     },
 
     _buildSegmentQuery: function () {
