@@ -678,6 +678,8 @@ define([
       query('.bvs-chip', this.presetChoiceGroup).forEach(function (b) {
         domClass.remove(b, 'is-active');
       });
+
+      this._updateCountryOptions();
     },
 
     // ===== Helpers =====
