@@ -166,6 +166,7 @@ define([
       var fluCondition = buildTaxonCondition(['A', 'B', 'C', 'D']);
       var fluACondition = buildTaxonCondition(['A']);
       var fluBCondition = buildTaxonCondition(['B']);
+      var proteinCondition = '(' + fluCondition + ') AND (feature_type:CDS OR feature_type:mat_peptide)';
 
       // ===== Static stores =====
       this.haSubtypeNode.store = new Memory({ data: HA_SUBTYPES });
@@ -204,8 +205,8 @@ define([
         ['genome', 'season', 'seasonNode', fluCondition],
         ['genome', 'isolation_source', 'isolationSourceNode', fluCondition],
         ['genome', 'passage', 'passageNode', fluCondition],
-        ['genome_feature', 'gene', 'geneNode', fluCondition],
-        ['genome_feature', 'product', 'productNode', fluCondition]
+        ['genome_feature', 'gene', 'geneNode', proteinCondition],
+        ['genome_feature', 'product', 'productNode', proteinCondition]
       ];
       facetBindings.forEach(lang.hitch(this, function (b) {
         var core = b[0], field = b[1], nodeName = b[2], condition = b[3];
@@ -939,7 +940,7 @@ define([
 
     _buildProteinQuery: function () {
       var featureFilters = [];
-      featureFilters.push('eq(feature_type,CDS)');
+      featureFilters.push('in(feature_type,(CDS,mat_peptide))');
 
       var genomeFilters = this._buildGenomeFilters();
       if (genomeFilters.length > 0) {
