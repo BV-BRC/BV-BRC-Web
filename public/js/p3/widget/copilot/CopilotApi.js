@@ -1129,47 +1129,6 @@ define([
         // Workflow monitoring is handled by the gateway workflow monitor service.
 
         /**
-         * Replays a previously executed MCP tool call through the orchestrator API.
-         * Used by tool cards loaded from session history where result payloads are not persisted.
-         * @param {Object} toolCall Canonical tool call envelope
-         * @param {string|null} sessionId Optional session id for execution context
-         * @returns {Promise<Object>} Replay response payload
-         */
-        replayToolCall: function(toolCall, sessionId) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            if (!toolCall || typeof toolCall !== 'object') {
-                return Promise.reject(new Error('toolCall is required'));
-            }
-            var toolId = toolCall.tool || toolCall.tool_id;
-            if (!toolId || typeof toolId !== 'string') {
-                return Promise.reject(new Error('toolCall.tool is required'));
-            }
-            var args = toolCall.arguments_executed;
-            if (!args || typeof args !== 'object' || Array.isArray(args)) {
-                args = {};
-            }
-
-            return request.post(this.apiUrlBase + '/mcp/replay-tool-call', {
-                data: JSON.stringify({
-                    tool_id: toolId,
-                    parameters: args,
-                    tool_call: toolCall,
-                    session_id: sessionId || null
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('[CopilotApi] Error replaying MCP tool call:', error);
-                throw error;
-            });
-        },
-
-        /**
          * Searches stored RAG chunk references for a message/session scope.
          * @param {Object} filters Query filters (message_id/session_id/user_id/rag_db/etc.)
          * @returns {Promise<Object>} Paginated chunk search response

@@ -98,47 +98,6 @@ define([
       return div.innerHTML;
     },
 
-    _flattenWorkspaceBrowseItems: function(items) {
-      if (!Array.isArray(items)) {
-        return [];
-      }
-
-      var flattened = [];
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        if (Array.isArray(item)) {
-          flattened.push(item);
-          continue;
-        }
-
-        if (item && typeof item === 'object') {
-          for (var key in item) {
-            if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
-              flattened = flattened.concat(item[key]);
-            }
-          }
-        }
-      }
-
-      return flattened;
-    },
-
-    _getWorkspaceBrowseCount: function(payload) {
-      if (!payload) {
-        return 0;
-      }
-
-      if (payload.result_type === 'search_result') {
-        return this._flattenWorkspaceBrowseItems(payload.items).length;
-      }
-
-      if (typeof payload.count === 'number') {
-        return payload.count;
-      }
-
-      return this._flattenWorkspaceBrowseItems(payload.items).length;
-    },
-
     _buildWorkspaceBrowserUrl: function(path) {
       return WorkspacePathUtils.toWorkspaceBrowserUrl(path);
     },
@@ -394,48 +353,6 @@ define([
       }));
     },
 
-    _resolveMessageToolCall: function() {
-      if (!this.message || typeof this.message !== 'object') {
-        return null;
-      }
-      var candidate = null;
-
-      if (this.message.tool_call !== undefined) {
-        candidate = this.message.tool_call;
-      } else if (this.message.ui_tool_call !== undefined) {
-        candidate = this.message.ui_tool_call;
-      } else if (this.message.toolCall !== undefined) {
-        candidate = this.message.toolCall;
-      } else if (
-        this.message.metadata &&
-        typeof this.message.metadata === 'object' &&
-        this.message.metadata.tool_call !== undefined
-      ) {
-        candidate = this.message.metadata.tool_call;
-      } else if (
-        this.message.metadata &&
-        typeof this.message.metadata === 'object' &&
-        this.message.metadata.ui_tool_call !== undefined
-      ) {
-        candidate = this.message.metadata.ui_tool_call;
-      }
-
-      if (!candidate) {
-        return null;
-      }
-      if (typeof candidate === 'string') {
-        try {
-          candidate = JSON.parse(candidate);
-        } catch (e) {
-          return null;
-        }
-      }
-      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-        return null;
-      }
-      return candidate;
-    },
-
     /**
      * Renders a chat message in the container
      * - Adds appropriate spacing based on if it's the first message
@@ -468,13 +385,6 @@ define([
         if (!hasText && !hasWidget) {
           return;
         }
-      }
-
-      // Resolve tool_call from message metadata for card renderers that
-      // still reference it (workflow review, data query replay).
-      var messageToolCall = this._resolveMessageToolCall();
-      if (messageToolCall && !this.message.tool_call) {
-        this.message.tool_call = messageToolCall;
       }
 
       // Add more top margin for first message, less for subsequent
