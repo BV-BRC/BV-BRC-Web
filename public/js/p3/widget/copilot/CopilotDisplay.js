@@ -31,9 +31,10 @@ define([
   './SessionFilesExplorerAdapter',
   './WorkflowsExplorerAdapter',
   './WorkflowEngine',
-  './PlanTracker'
+  './PlanTracker',
+  './TurnFollow' // keep the progress card in view while a turn runs
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine, PlanTracker
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine, PlanTracker, TurnFollow
 ) {
 
   /**
@@ -74,6 +75,13 @@ define([
 
     // User scroll state management
     _userIsScrolling: false,
+
+    // A turn is running in this chat and the view follows its progress card
+    // (TurnFollow.js): set on ChatSession:TurnStarted, cleared when the answer
+    // starts, the user scrolls up, the turn ends or the session changes.
+    _followTurn: false,
+    _followSessionId: null,
+    _scrollIntentAt: 0,
     _scrollTimeout: null,
 
     // Session files panel state
@@ -205,6 +213,10 @@ define([
         // Add scroll event listener to detect user scrolling
         on(this.resultContainer, 'scroll', lang.hitch(this, function() {
           this._userIsScrolling = true;
+          // Scrolled up on purpose during a turn: stop following it.
+          if (this._followTurn && Date.now() - this._scrollIntentAt < 1500 && !this._isAtBottom()) {
+            this._followTurn = false;
+          }
           this._updateJumpButton();
 
           // Clear existing timeout
@@ -216,6 +228,16 @@ define([
           this._scrollTimeout = setTimeout(lang.hitch(this, function() {
             this._userIsScrolling = false;
           }), 1000);
+        }));
+
+        // Input that means "let me look further up" (programmatic scrolls
+        // also fire 'scroll', so intent comes from the input itself).
+        ['wheel', 'keydown', 'touchstart', 'touchmove', 'mousedown'].forEach(lang.hitch(this, function(type) {
+          on(this.resultContainer, type, lang.hitch(this, function(evt) {
+            if (TurnFollow.isScrollUpIntent(evt)) {
+              this._scrollIntentAt = Date.now();
+            }
+          }));
         }));
 
         // Show initial empty state
@@ -248,8 +270,17 @@ define([
         } catch (e) { /* ignore */ }
         // A turn in this chat finished: if the user is not at the bottom,
         // the jump button announces the new response.
+        // A turn started in this chat: bring the progress into view and
+        // follow it until the answer starts.
+        topic.subscribe('ChatSession:TurnStarted', lang.hitch(this, function(data) {
+          if (!data || data.sessionId !== this.sessionId) return;
+          this._followTurn = true;
+          this._followSessionId = this.sessionId;
+          this.scrollToBottom();
+        }));
         topic.subscribe('ChatSession:TurnEnded', lang.hitch(this, function(data) {
           if (!data || data.sessionId !== this.sessionId) return;
+          this._followTurn = false;
           // Let the final render land first.
           setTimeout(lang.hitch(this, function() {
             if (!this._isAtBottom()) {
@@ -467,6 +498,15 @@ define([
 
         // Auto-scroll if explicitly requested OR if user was near bottom
         wasNearBottom = false;
+        // While a turn runs, keep its progress card in view; once the answer
+        // starts, stop following (the view is on the answer's first lines).
+        if (this._followTurn) {
+          if (this._followSessionId !== this.sessionId || TurnFollow.answerStarted(messages)) {
+            this._followTurn = false;
+          } else {
+            scrollToBottom = true;
+          }
+        }
         if (scrollToBottom || wasNearBottom) {
           this.scrollToBottom();
         } else if (grew) {
