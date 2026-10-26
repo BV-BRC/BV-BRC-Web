@@ -162,7 +162,8 @@ app.use(function (req, res, next) {
     localStorageCheckInterval: config.get('localStorageCheckInterval'),
     workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || [],
     cartoBasemapApiKey: config.get('cartoBasemapApiKey') || '',
-    queryLoggingEnabled: !!config.get('queryLogDir')
+    queryLoggingEnabled: !!config.get('queryLogDir'),
+    enableThrottleRetry: config.get('enableThrottleRetry') || false
   };
   // console.log("Application Options: ", req.applicationOptions);
   next();

@@ -8,7 +8,8 @@ define([
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
-  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders'
+  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders',
+  '../widget/ThrottleBanner'
 
 ], function (
   declare,
@@ -21,7 +22,7 @@ define([
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
   ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
-  authHeader) {
+  authHeader, ThrottleBanner) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -33,6 +34,13 @@ define([
     user: '',
     startup: function () {
       var _self = this;
+
+      // Listen for Data API throttling before anything can issue a query. A
+      // shed request otherwise renders as an empty grid, which the API's
+      // client contract calls the worst possible outcome -- the user reads
+      // zero rows as missing data rather than a busy server.
+      ThrottleBanner.start();
+
       this.checkLogin();
       if (window.App.alreadyLoggedIn) {
         this.refreshUser().then(function (u) {

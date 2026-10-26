@@ -4,7 +4,7 @@ define([
   'dojo/store/util/QueryResults',
   'dojo/when', 'dojo/_base/lang',
   'dojo/_base/xhr', 'dojo/json',
-  'dojo/Evented', '../auth/authHeaders'
+  'dojo/Evented', '../auth/authHeaders', '../util/retryRequest'
 
 ], function (
   declare,
@@ -13,7 +13,7 @@ define([
   when, lang,
   xhr, json,
   Evented,
-  authHeader) {
+  authHeader, retryRequest) {
   return declare([Store, Evented], {
     headers: null,
 
@@ -181,27 +181,55 @@ define([
 
       // POST the query
       query = (query && (typeof query == 'string') && (query.charAt(0) == '?')) ? query.substr(1) : query;
-      var results = dojo.rawXhrPost({
-        url: this.target,
-        postData: query || '',
-        handleAs: 'json',
-        headers: headers
-      }, true);
+      // console.log("DO POST: ", query)
+
+      // This store uses dojo/_base/xhr, not dojo/request, so it does NOT go
+      // through the p3/util/throttledRequest provider -- it needs its own 429
+      // handling. It is also the request that fetches the grid's actual rows,
+      // so a shed query here renders as an empty grid: the single worst
+      // outcome in the API's client contract, because the user reads zero rows
+      // as "my data is missing" rather than "the server is busy".
+      var target = this.target;
+
+      // Keep a handle on the winning attempt's xhr. results.total used to read
+      // it off `results.ioArgs`, which is a property of the specific Deferred
+      // rawXhrPost returns -- retryRequest hands back a different promise, so
+      // that back-channel no longer exists. Capture it explicitly instead.
+      var lastXhr = null;
+      var retried = retryRequest(function () {
+        var attempt = dojo.rawXhrPost({
+          url: target,
+          postData: query || '',
+          handleAs: 'json',
+          headers: headers
+        }, true);
+        lastXhr = attempt.ioArgs && attempt.ioArgs.xhr;
+        return attempt;
+      }, { label: target });
+
+      // dojo/Deferred freezes its promise (Deferred.js:305), so assigning
+      // .total directly to it is a silent no-op and every grid would lose its
+      // row count. Delegate first -- which is exactly what QueryResults does
+      // to a promise for the same reason -- keeping then()/cancel() working
+      // since both are closures, not prototype methods. Pagination.js:419
+      // feature-detects results.cancel, so it has to survive.
+      var results = lang.delegate(retried);
 
       // Extract total count from Content-Range header.
       // Also capture X-Cursor-Mark for cursor pagination.
       var cursorPageForCache = (this.useCursorPagination && options._cursorPage) ? options._cursorPage : null;
 
       results.total = results.then(function (res) {
-        var range = results.ioArgs.xhr.getResponseHeader('Content-Range');
+        if (!lastXhr) { return undefined; }
+        var range = lastXhr.getResponseHeader('Content-Range');
         if (!range) {
           // At least Chrome drops the Content-Range header from cached replies.
-          range = results.ioArgs.xhr.getResponseHeader('X-Content-Range');
+          range = lastXhr.getResponseHeader('X-Content-Range');
         }
 
         // Cache the next cursor mark if in cursor mode
         if (cursorPageForCache) {
-          var nextCursor = results.ioArgs.xhr.getResponseHeader('X-Cursor-Mark');
+          var nextCursor = lastXhr.getResponseHeader('X-Cursor-Mark');
           if (nextCursor) {
             // Store cursor for the NEXT page
             self._cursorCache[cursorPageForCache + 1] = nextCursor;
