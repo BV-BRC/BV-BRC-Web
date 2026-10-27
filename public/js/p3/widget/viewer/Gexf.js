@@ -1377,7 +1377,7 @@ var loadGexfDependencies = function(callback) {
                 });
             }
 
-            // Compute Locus Contig Spotlight (dynamic highlighting of selected contig(s) within the focused locus)
+            // Compute Locus Contig Spotlight (dynamic highlighting of selected contig(s) within and beyond the focused locus)
             var spotMap = GexfJS.params.locusSpotlightContigs || {};
             var spotContigIds = isSingleLocus ? Object.keys(spotMap) : [];
             if (isSingleLocus && spotContigIds.length > 0) {
@@ -1420,27 +1420,31 @@ var loadGexfDependencies = function(callback) {
                 };
 
                 var anyFound = false;
-                allLocNodeIds.forEach(function(nid) {
-                    var nObj = sLoc.nodeById[nid];
+                GexfJS.graph.nodeList.forEach(function(nObj) {
                     if (!nObj) return;
+                    var inLocus = Boolean(locNodeSet[nObj.id]);
                     var hasEv = false, hasRf = false;
                     var tags = [];
                     spotContigIds.forEach(function(cid) {
                         var role = spotMap[cid];
-                        var fInfo = extractFeatInfo(nObj, cid);
-                        var onNode = Boolean(fInfo || (nObj.sequences && nObj.sequences[cid]));
+                        var hasSeq = Boolean(nObj.sequences && nObj.sequences[cid]);
+                        var fInfo = (inLocus || hasSeq) ? extractFeatInfo(nObj, cid) : null;
+                        var onNode = Boolean(hasSeq || fInfo);
                         if (onNode) {
                             if (role === 'event') hasEv = true;
                             else hasRf = true;
-                            if (fInfo && fInfo.tag && tags.indexOf(fInfo.tag) === -1) tags.push(fInfo.tag);
+                            if (inLocus && fInfo && fInfo.tag && tags.indexOf(fInfo.tag) === -1) {
+                                tags.push(fInfo.tag);
+                            }
                         }
                     });
                     if (hasEv || hasRf) {
                         anyFound = true;
-                        GexfJS.params.locusNodeSpotlight[nid] = {
+                        GexfJS.params.locusNodeSpotlight[nObj.id] = {
                             hasEvent: hasEv,
                             hasRef: hasRf,
-                            featTag: tags.slice(0, 2).join(' | ')
+                            inLocus: inLocus,
+                            featTag: inLocus ? tags.slice(0, 2).join(' | ') : ''
                         };
                     }
                 });
@@ -1449,17 +1453,17 @@ var loadGexfDependencies = function(callback) {
                     var uNode = GexfJS.graph.nodeList[e.source];
                     var vNode = GexfJS.graph.nodeList[e.target];
                     if (!uNode || !vNode) return;
-                    if (!locNodeSet[uNode.id] || !locNodeSet[vNode.id]) return;
+                    var inLocus = Boolean(locNodeSet[uNode.id] && locNodeSet[vNode.id]);
 
                     var hasEv = false, hasRf = false;
                     var evDir = 0, rfDir = 0;
                     spotContigIds.forEach(function(cid) {
                         var role = spotMap[cid];
                         var onEdge = Boolean(e.sequences && e.sequences[cid]);
-                        var uInfo = extractFeatInfo(uNode, cid);
-                        var vInfo = extractFeatInfo(vNode, cid);
+                        var uInfo = (inLocus || onEdge) ? extractFeatInfo(uNode, cid) : null;
+                        var vInfo = (inLocus || onEdge) ? extractFeatInfo(vNode, cid) : null;
                         // Also highlight edge if both endpoint locus nodes contain this contig and the edge is an active/reference locus edge
-                        if (!onEdge && uInfo && vInfo && (GexfJS.params.activeEdges[e.id] || GexfJS.params.referenceEdges[e.id])) {
+                        if (!onEdge && inLocus && uInfo && vInfo && (GexfJS.params.activeEdges[e.id] || GexfJS.params.referenceEdges[e.id])) {
                             if (uInfo.pos !== null && vInfo.pos !== null && Math.abs(vInfo.pos - uInfo.pos) <= 15) {
                                 onEdge = true;
                             }
@@ -1482,6 +1486,7 @@ var loadGexfDependencies = function(callback) {
                         GexfJS.params.locusEdgeSpotlight[e.id] = {
                             hasEvent: hasEv,
                             hasRef: hasRf,
+                            inLocus: inLocus,
                             eventDir: evDir,
                             refDir: rfDir
                         };
@@ -1845,21 +1850,45 @@ var loadGexfDependencies = function(callback) {
                             cids.forEach(function(cid) {
                                 var gid = curLoc.contigToGenome[cid] || 'unknown';
                                 if (!byGenome[gid]) byGenome[gid] = [];
-                                byGenome[gid].push(cid);
+                                if (byGenome[gid].indexOf(cid) === -1) byGenome[gid].push(cid);
                             });
                             gids.forEach(function(gid) {
-                                if (!byGenome[gid]) byGenome[gid] = [];
+                                if (!byGenome[gid]) {
+                                    byGenome[gid] = [];
+                                    Object.keys(curLoc.allLocusContigs || {}).forEach(function(cid) {
+                                        if (curLoc.contigToGenome[cid] === gid && byGenome[gid].indexOf(cid) === -1) {
+                                            byGenome[gid].push(cid);
+                                        }
+                                    });
+                                }
                             });
                             var gKeys = Object.keys(byGenome);
                             gKeys.slice(0, maxItems).forEach(function(gid) {
                                 var gName = (self.genomeNameMap && self.genomeNameMap[gid]) ? self.genomeNameMap[gid] : gid;
                                 var shortG = gName.length > 26 ? gName.substr(0, 24) + '...' : gName;
+                                var safeShortG = shortG.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                                 var copies = curLoc.genomeCopies[gid] || 0;
                                 var copyBadge = (copies > 1 && (activePhenom === 'tandem_repeats' || activePhenom === 'fragmented_paralogs'))
                                     ? ' <span style="color:#6a1b9a; font-weight:bold;">[' + copies + 'x]</span>'
                                     : '';
-                                var roleKey = isEvent ? 'event' : 'ref';
-                                var contigLinks = byGenome[gid].slice(0, 3).map(function(cid) {
+                                var roleKey = isEvent ? 'event' : 'reference';
+                                var gContigs = byGenome[gid] || [];
+                                var allGSelected = gContigs.length > 0 && gContigs.every(function(c) { return Boolean(spotContigs[c]); });
+                                var anyGSelected = gContigs.some(function(c) { return Boolean(spotContigs[c]); });
+                                var safeContigCsv = gContigs.join(',').replace(/'/g, "&apos;");
+                                var gLinkStyle = allGSelected
+                                    ? (isEvent
+                                        ? 'font-weight:bold; color:#6a1b9a; background:#f3e5f5; padding:0px 4px; border-radius:4px; text-decoration:underline; cursor:pointer;'
+                                        : 'font-weight:bold; color:#01579b; background:#b3e5fc; padding:0px 4px; border-radius:4px; text-decoration:underline; cursor:pointer;')
+                                    : (anyGSelected
+                                        ? (isEvent ? 'font-weight:bold; color:#6a1b9a; text-decoration:underline dotted; cursor:pointer;' : 'font-weight:bold; color:#01579b; text-decoration:underline dotted; cursor:pointer;')
+                                        : 'color:#222; text-decoration:underline dotted #888; cursor:pointer;');
+                                var gTitle = (gName + (gContigs.length > 0 ? ' — Click to spotlight all ' + gContigs.length + ' implicated contig(s) (Shift+Click to compare)' : '')).replace(/"/g, '&quot;');
+                                var gNameHtml = (gContigs.length > 0)
+                                    ? '<a href="javascript:void(0)" onclick="window.toggleLocusGenomeSpotlight(\'' + safeContigCsv + '\', \'' + roleKey + '\', event); return false;" style="' + gLinkStyle + '" title="' + gTitle + '">' + safeShortG + '</a>'
+                                    : '<span title="' + gTitle + '">' + safeShortG + '</span>';
+
+                                var contigLinks = gContigs.slice(0, 3).map(function(cid) {
                                     var safeCid = cid.replace(/'/g, "&apos;");
                                     var isSelected = Boolean(spotContigs[cid]);
                                     var pillStyle;
@@ -1874,8 +1903,8 @@ var loadGexfDependencies = function(callback) {
                                     }
                                     return '<a href="javascript:void(0)" onclick="window.toggleLocusContigSpotlight(\'' + safeCid + '\', \'' + roleKey + '\', event); return false;" style="' + pillStyle + '" title="Click to highlight ' + safeCid + ' path &amp; direction in this locus (Shift+Click to compare multiple)">' + cid + (isSelected ? ' &#10003;' : '') + '</a>';
                                 }).join(' ');
-                                if (byGenome[gid].length > 3) contigLinks += ' +' + (byGenome[gid].length - 3);
-                                items.push('<div style="margin-bottom:3px;">&bull; <span title="' + gName.replace(/"/g, '&quot;') + '">' + shortG + '</span>' + copyBadge + (contigLinks ? ' ' + contigLinks : '') + '</div>');
+                                if (gContigs.length > 3) contigLinks += ' +' + (gContigs.length - 3);
+                                items.push('<div style="margin-bottom:3px;">&bull; ' + gNameHtml + copyBadge + (contigLinks ? ' ' + contigLinks : '') + '</div>');
                             });
                             if (gKeys.length > maxItems) {
                                 items.push('<div style="color:#777; font-style:italic;">+ ' + (gKeys.length - maxItems) + ' more genomes</div>');
@@ -1890,7 +1919,7 @@ var loadGexfDependencies = function(callback) {
                             html += '<a href="javascript:void(0)" onclick="window.clearLocusContigSpotlight(event); return false;" style="font-size:0.88em; color:#a94442; font-weight:bold; text-decoration:underline;" title="Reset contig spotlight and restore full locus colors">Reset Spotlight</a>';
                         }
                         html += '</summary>';
-                        html += '<div style="font-size:0.84em; color:#666; margin:2px 0 4px 0;">Click any contig ID to spotlight its path &amp; direction in the locus (Shift+Click to compare):</div>';
+                        html += '<div style="font-size:0.84em; color:#666; margin:2px 0 4px 0;">Click any <b>genome name</b> or <b>contig ID</b> to spotlight its path &amp; direction (vivid in locus, softer tint outside; Shift+Click to compare):</div>';
                         html += '<div style="margin-top:4px;">';
                         html += '<div style="margin-bottom:4px; padding:4px; background:#fdf4ff; border-left:3px solid #d500f9;"><b style="color:#6a1b9a;">' + curLoc.eventRoleTitle + ' (' + curLoc.eventGenomes.length + ' gen, ' + curLoc.eventContigs.length + ' seq):</b>' + formatGenomeList(curLoc.eventGenomes, curLoc.eventContigs, true) + '</div>';
                         if (curLoc.refGenomes.length > 0 || curLoc.refContigs.length > 0) {
@@ -2327,7 +2356,7 @@ var loadGexfDependencies = function(callback) {
                 if (!GexfJS.params.locusSpotlightContigs) GexfJS.params.locusSpotlightContigs = {};
                 var current = GexfJS.params.locusSpotlightContigs;
                 var isMulti = evt && (evt.shiftKey || evt.metaKey || evt.ctrlKey);
-                var targetRole = (role === 'reference') ? 'reference' : 'event';
+                var targetRole = (role === 'reference' || role === 'ref') ? 'reference' : 'event';
 
                 if (isMulti) {
                     if (current[contigId]) {
@@ -2342,6 +2371,37 @@ var loadGexfDependencies = function(callback) {
                     } else {
                         var nextMap = {};
                         nextMap[contigId] = targetRole;
+                        GexfJS.params.locusSpotlightContigs = nextMap;
+                    }
+                }
+                this.applyPhenomenonLocusState(false);
+                this.showDefaultSummary();
+            });
+
+            window.toggleLocusGenomeSpotlight = lang.hitch(this, function(contigCsv, role, evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (!window.GexfJS || !GexfJS.params || !contigCsv) return;
+                var cids = String(contigCsv).split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+                if (cids.length === 0) return;
+                if (!GexfJS.params.locusSpotlightContigs) GexfJS.params.locusSpotlightContigs = {};
+                var current = GexfJS.params.locusSpotlightContigs;
+                var isMulti = evt && (evt.shiftKey || evt.metaKey || evt.ctrlKey);
+                var targetRole = (role === 'reference' || role === 'ref') ? 'reference' : 'event';
+                var allAlreadyActive = cids.every(function(c) { return current[c] === targetRole; });
+
+                if (isMulti) {
+                    if (allAlreadyActive) {
+                        cids.forEach(function(c) { delete current[c]; });
+                    } else {
+                        cids.forEach(function(c) { current[c] = targetRole; });
+                    }
+                } else {
+                    var keys = Object.keys(current);
+                    if (keys.length === cids.length && allAlreadyActive) {
+                        GexfJS.params.locusSpotlightContigs = {};
+                    } else {
+                        var nextMap = {};
+                        cids.forEach(function(c) { nextMap[c] = targetRole; });
                         GexfJS.params.locusSpotlightContigs = nextMap;
                     }
                 }
