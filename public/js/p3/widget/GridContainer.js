@@ -10,7 +10,8 @@ define([
   '../auth/authHeaders',
   '../util/QueryDescriptor',
   './download/UnifiedDownloadWizard',
-  './download/SaveSearchDialog'
+  './download/SaveSearchDialog',
+  '../util/joinTooBroad', './JoinTooBroadMessage'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -21,7 +22,8 @@ define([
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
   ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
   authHeader,
-  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog
+  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog,
+  joinTooBroad, JoinTooBroadMessage
 ) {
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
@@ -2053,7 +2055,54 @@ define([
       // console.log('getAll Query: ', query);
     },
 
+    /**
+     * Render a join_too_broad rejection over the grid body, replacing the misleading
+     * "0 results". Returns silently for every other error so existing behaviour is
+     * unchanged -- in particular a 500-at-120s cold join must NOT say "narrow your
+     * filter", because narrowing is not what is wrong with it.
+     */
+    _onGridQueryError: function (err) {
+      if (!joinTooBroad.isJoinTooBroad(err)) { return; }
+      if (!this.grid || !this.grid.contentNode) { return; }
+
+      // Suppress the pager's "1 - 1 of 0 results", which is the misleading part.
+      if (this.grid.paginationStatusNode) {
+        this.grid.paginationStatusNode.innerHTML = '';
+      }
+
+      if (!this._joinTooBroadMessage) {
+        this._joinTooBroadMessage = new JoinTooBroadMessage();
+      }
+
+      // Reuse dgrid's own no-data slot so the message sits where the user is already
+      // looking, and so dgrid clears it on the next successful render.
+      if (this.grid.noDataNode) {
+        domConstruct.destroy(this.grid.noDataNode);
+        delete this.grid.noDataNode;
+      }
+      this.grid.noDataNode = domConstruct.create('div', {
+        className: 'dgrid-no-data'
+      }, this.grid.contentNode);
+
+      var viewTab = (this.state && this.state.hashParams && this.state.hashParams.view_tab) || null;
+      this._joinTooBroadMessage.render(this.grid.noDataNode, err, {
+        apiServer: this.apiServer || (window.App && window.App.dataAPI),
+        viewTab: viewTab
+      });
+    },
+
     listen: function () {
+
+      // A query the API refuses as too broad otherwise renders as "1 - 1 of 0 results",
+      // which is indistinguishable from a legitimate empty result -- so the user concludes
+      // their data is missing rather than that their filter is too wide. dgrid emits
+      // dgrid-error for a rejected store query; turn the join_too_broad 400 into an
+      // explanation plus drill-down. See util/joinTooBroad.js and the API contract in
+      // p3_api/Docs/CLIENT-join-too-broad.md.
+      this.grid.on('dgrid-error', lang.hitch(this, function (evt) {
+        this._onGridQueryError(evt && evt.error);
+      }));
+
       this.grid.on('select', lang.hitch(this, function (evt) {
 
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
