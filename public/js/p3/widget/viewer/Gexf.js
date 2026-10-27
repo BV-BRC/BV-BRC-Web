@@ -212,6 +212,38 @@ var loadGexfDependencies = function(callback) {
                 true
             ],
             [
+                "BoxSelect",
+                "fa icon-object-ungroup fa-2x",
+                {
+                    label: "SELECT",
+                    persistent: true,
+                    validTypes: ["*"],
+                    validContainerTypes: ["*"],
+                    tooltip: "Toggle Box Selection Tool (Drag box to select nodes; Shift/Cmd+Drag or Shift/Cmd+Click to add/toggle nodes)",
+                    ignoreDataType: true
+                },
+                function(selection, container, button) {
+                    if (window.GexfJS && GexfJS.params) {
+                        GexfJS.params.boxSelectMode = !GexfJS.params.boxSelectMode;
+                        var isActive = Boolean(GexfJS.params.boxSelectMode);
+                        var carte = document.getElementById("carte");
+                        if (carte) {
+                            carte.style.cursor = isActive ? "crosshair" : "default";
+                        }
+                        document.body.style.cursor = isActive ? "crosshair" : "default";
+                        var btnNode = button || (this.selectionActionBar._actions.BoxSelect && this.selectionActionBar._actions.BoxSelect.button);
+                        if (btnNode) {
+                            domStyle.set(btnNode, {
+                                background: isActive ? "rgba(142, 36, 170, 0.28)" : "",
+                                borderRadius: isActive ? "4px" : "",
+                                boxShadow: isActive ? "inset 0 0 0 1px #8e24aa" : ""
+                            });
+                        }
+                    }
+                },
+                true
+            ],
+            [
                 "ColorSelection",
                 "fa icon-paint-brush fa-2x",
                 {
@@ -219,7 +251,7 @@ var loadGexfDependencies = function(callback) {
                     persistent: true,
                     validTypes: ["*"],
                     validContainerTypes:["*"],
-                    tooltip: "Color Current Graph Selection",
+                    tooltip: "Pin & Color Current Graph Selection",
                     ignoreDataType: true
                 },
                 function (selection) {
@@ -229,6 +261,12 @@ var loadGexfDependencies = function(callback) {
                         around: this.selectionActionBar._actions.ColorSelection.button,
                         orient: ["above", "below"] // Action bar is on bottom right, "above" works well
                     });
+                    if (window.GexfJS && GexfJS.params) {
+                        var nameInput = document.getElementById("gexfPinNameInput");
+                        if (nameInput) {
+                            nameInput.value = GexfJS.params.currentHighlightName || "Custom Selection";
+                        }
+                    }
                 },
                 true
             ],
@@ -327,19 +365,14 @@ var loadGexfDependencies = function(callback) {
                     validTypes: ["*"],
                     requireAuth: true,
                     max: 10000,
-                    tooltip: "Add selection to a new or existing group",
+                    tooltip: "Add selection to a new or existing Feature or Genome group",
                     validContainerTypes: ["feature_data", "genome_data"]
                 },
                 function(selection, containerWidget){
-                    // This requires the SelectionToGroup widget (you may need to add it to imports if you use this)
-                    // For now, this is a placeholder matching MSATree structure
-                    console.log("Add Group clicked", selection);
-                    // console.log("Add Items to Group", selection);
                     var dlg = new Dialog({ title: 'Add selected items to group' });
                     var type;
 
                     if (!containerWidget) {
-                        // console.log("Container Widget not setup for addGroup");
                         return;
                     }
 
@@ -353,12 +386,13 @@ var loadGexfDependencies = function(callback) {
                         console.error('Missing type for AddGroup');
                         return;
                     }
+                    var defaultFolder = WorkspaceManager.getDefaultFolder(type);
                     var stg = new SelectionToGroup({
                         selection: selection,
                         selectType: true,
                         type: type,
                         inputType: containerWidget.containerType,
-                        path: containerWidget.get('path')
+                        path: defaultFolder
                     });
                     on(dlg.domNode, 'dialogAction', function (evt) {
                         dlg.hide();
@@ -425,11 +459,17 @@ var loadGexfDependencies = function(callback) {
 
             // --- 1. Pinned Color Menu ---
             var colorMenuDiv = domConstruct.create("div", {
-                innerHTML: '<div style="padding: 8px; display: flex; align-items: center; white-space: nowrap;">' +
+                innerHTML: '<div style="padding: 8px; display: flex; flex-direction: column; gap: 6px; white-space: nowrap;">' +
+                           '<div style="display: flex; align-items: center;">' +
+                           '<span style="margin-right: 8px; font-weight: bold;">Pin Label:</span>' +
+                           '<input type="text" id="gexfPinNameInput" placeholder="Pin name..." style="width: 170px; padding: 3px 6px; border: 1px solid #ccc; border-radius: 3px;">' +
+                           '</div>' +
+                           '<div style="display: flex; align-items: center;">' +
                            '<span style="margin-right: 10px; font-weight: bold;">Node/Edge Color:</span>' + 
                            '<input type="color" id="gexfColorPicker" value="#ff0000" style="cursor: pointer; margin-right: 15px; width: 30px; height: 30px; padding: 0; border: 1px solid #ccc;">' +
                            '<button id="gexfColorApply" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Apply</button>' +
                            '<button id="gexfColorCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
+                           '</div>' +
                            '</div>'
             });
 
@@ -437,7 +477,9 @@ var loadGexfDependencies = function(callback) {
 
             on(colorMenuDiv, "#gexfColorApply:click", lang.hitch(this, function() {
                 var color = document.getElementById('gexfColorPicker').value;
-                this.applyColorToGraph(color);
+                var nameInput = document.getElementById('gexfPinNameInput');
+                var customName = (nameInput && nameInput.value) ? nameInput.value.trim() : null;
+                this.applyColorToGraph(color, customName);
                 popup.close(this.colorMenu);
             }));
 
@@ -655,6 +697,10 @@ var loadGexfDependencies = function(callback) {
             window.inspectNodeFromLocus = undefined;
             window.restorePhenomenonContext = undefined;
             window.setLocusFilterMode = undefined;
+            window.toggleLocusGenomeSpotlight = undefined;
+            window.onBoxSelectNodes = undefined;
+            window.onAdditiveNodeClick = undefined;
+            window.removeNodeFromSelection = undefined;
 
             // 5. Reset the module loader flag!
             // This guarantees that if the user clicks back to the graph later, 
@@ -2446,12 +2492,18 @@ var loadGexfDependencies = function(callback) {
             });
 
             var originalDisplayNode = window.displayNode;
+            this.multiSelectedNodeIndices = [];
             
             window.displayNode = lang.hitch(this, function(nodeIndex) {
                 if (originalDisplayNode) originalDisplayNode(nodeIndex);
 
                 // --- START FIX 1: Check for Deselect & Clean Up ---
                 if (nodeIndex === -1 || typeof nodeIndex === 'undefined') {
+                    this.multiSelectedNodeIndices = [];
+                    this.selection = [];
+                    if (this.selectionActionBar) {
+                        this.selectionActionBar.set("selection", []);
+                    }
                     this.savedPhenomenonContext = null;
                     if (window.GexfJS && GexfJS.params) {
                         // Ensure all temporary highlight arrays are wiped
@@ -2480,6 +2532,8 @@ var loadGexfDependencies = function(callback) {
 
                 var node = GexfJS.graph.nodeList[nodeIndex];
                 if (!node) return;
+
+                this.multiSelectedNodeIndices = [nodeIndex];
                 
                 // Save active phenomenon & locus context so the user can return to their exact locus after inspecting a gene
                 if (GexfJS.params.activePhenomenon) {
@@ -2500,11 +2554,6 @@ var loadGexfDependencies = function(callback) {
                 GexfJS.params.locusNodeSpotlight = {};
                 GexfJS.params.locusEdgeSpotlight = {};
                 GexfJS.params.currentHighlightName = "Node: " + (node.label || node.id);
-
-                var featureAttrIndex = null;
-                if (GexfJS._node_attr_value && GexfJS._node_attr_value["features"]) {
-                    featureAttrIndex = GexfJS._node_attr_value["features"];
-                }
 
                 // 1. Extract the raw Feature Mapping (JSON) to preserve hierarchy
                 var featureAttrIndex = GexfJS._node_attr_value ? GexfJS._node_attr_value["features"] : null;
@@ -2538,6 +2587,71 @@ var loadGexfDependencies = function(callback) {
                     this.onGraphSelection(targetIds, featureMap, node);
                 } else if (node.label) {
                     this.onGraphSelection([node.label], null, node);
+                }
+            });
+
+            window.onBoxSelectNodes = lang.hitch(this, function(boxedIndices, isAdditive) {
+                if (!window.GexfJS || !GexfJS.graph) return;
+                var incoming = Array.isArray(boxedIndices) ? boxedIndices : [];
+                var current = Array.isArray(this.multiSelectedNodeIndices) ? this.multiSelectedNodeIndices.slice() : [];
+
+                if (!isAdditive) {
+                    current = incoming.slice();
+                } else {
+                    if (current.length === 0 && typeof GexfJS.params.currentNode === 'number' && GexfJS.params.currentNode >= 0) {
+                        current.push(GexfJS.params.currentNode);
+                    }
+                    incoming.forEach(function(idx) {
+                        if (current.indexOf(idx) === -1) {
+                            current.push(idx);
+                        }
+                    });
+                }
+
+                this.multiSelectedNodeIndices = current;
+                if (current.length === 0) {
+                    if (!isAdditive) {
+                        window.displayNode(-1);
+                    }
+                } else {
+                    this.applyMultiNodeSelection();
+                }
+            });
+
+            window.onAdditiveNodeClick = lang.hitch(this, function(nodeIndex) {
+                if (!window.GexfJS || !GexfJS.graph || typeof nodeIndex !== 'number' || nodeIndex < 0) return;
+                var current = Array.isArray(this.multiSelectedNodeIndices) ? this.multiSelectedNodeIndices.slice() : [];
+                if (current.length === 0 && typeof GexfJS.params.currentNode === 'number' && GexfJS.params.currentNode >= 0) {
+                    current.push(GexfJS.params.currentNode);
+                }
+                var existingPos = current.indexOf(nodeIndex);
+                if (existingPos !== -1) {
+                    current.splice(existingPos, 1);
+                } else {
+                    current.push(nodeIndex);
+                }
+                this.multiSelectedNodeIndices = current;
+                if (current.length === 0) {
+                    window.displayNode(-1);
+                } else if (current.length === 1) {
+                    window.displayNode(current[0]);
+                } else {
+                    this.applyMultiNodeSelection();
+                }
+            });
+
+            window.removeNodeFromSelection = lang.hitch(this, function(nodeIndex) {
+                if (!Array.isArray(this.multiSelectedNodeIndices)) return;
+                var pos = this.multiSelectedNodeIndices.indexOf(nodeIndex);
+                if (pos !== -1) {
+                    this.multiSelectedNodeIndices.splice(pos, 1);
+                }
+                if (this.multiSelectedNodeIndices.length === 0) {
+                    window.displayNode(-1);
+                } else if (this.multiSelectedNodeIndices.length === 1) {
+                    window.displayNode(this.multiSelectedNodeIndices[0]);
+                } else {
+                    this.applyMultiNodeSelection();
                 }
             });
 
@@ -2576,6 +2690,7 @@ var loadGexfDependencies = function(callback) {
             GexfJS.params.locusEdgeSpotlight = {};
             if (!GexfJS.params.locusFilterMode) GexfJS.params.locusFilterMode = 'locus';
             GexfJS.params.focusLocusActive = false;
+            GexfJS.params.boxSelectMode = false;
             this.savedPhenomenonContext = null;
             if (typeof GexfJS.params.muteDefaultColors === 'undefined') GexfJS.params.muteDefaultColors = false; 
             GexfJS.params.activeGenomeFilter = {};
@@ -2711,22 +2826,22 @@ var loadGexfDependencies = function(callback) {
 
         },
 
-        applyColorToGraph: function(color) {
+        applyColorToGraph: function(color, customName) {
             if (!window.GexfJS || !GexfJS.params) return;
             if (!GexfJS.params.userPins) GexfJS.params.userPins = {};
             
-            var name = GexfJS.params.currentHighlightName || "Custom Selection";
+            var name = customName || GexfJS.params.currentHighlightName || "Custom Selection";
             var elementsToPin = {};
             var applied = false;
 
-            // 1. Check for Active Edges (from displayPath links)
+            // 1. Check for Active Edges (from displayPath links or induced multi-node selection)
             if (GexfJS.params.path_active && GexfJS.params.activeEdges) {
                 Object.keys(GexfJS.params.activeEdges).forEach(function(edgeId) {
                     elementsToPin['e_' + edgeId] = true;
                     applied = true;
                 });
             } 
-            // 2. Check for Active Nodes (from Special Highlights like CNV)
+            // 2. Check for Active Nodes (from Box/Multi-Node Selection or Special Highlights)
             if (GexfJS.params.activeNodes && Object.keys(GexfJS.params.activeNodes).length > 0) {
                 Object.keys(GexfJS.params.activeNodes).forEach(function(nodeId) {
                      elementsToPin['n_' + nodeId] = true;
@@ -2751,7 +2866,316 @@ var loadGexfDependencies = function(callback) {
                 // Refresh the summary panel to instantly show the new pin!
                 if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Graph Summary") !== -1) {
                     this.showDefaultSummary();
+                } else if (Array.isArray(this.multiSelectedNodeIndices) && this.multiSelectedNodeIndices.length > 0 && GexfJS.params.currentNode === -1) {
+                    this.updateMultiNodeSelection(this.selection, this.multiSelectedNodeIndices, false, false, name, color);
                 }
+            }
+        },
+
+        applyMultiNodeSelection: function() {
+            if (!window.GexfJS || !GexfJS.graph) return;
+            var indices = Array.isArray(this.multiSelectedNodeIndices) ? this.multiSelectedNodeIndices : [];
+            if (indices.length === 0) {
+                window.displayNode(-1);
+                return;
+            }
+
+            // Clear phenomenon states and single-node neighbor lens
+            GexfJS.params.currentNode = -1;
+            GexfJS.params.activePhenomenon = null;
+            GexfJS.params.focusLocusActive = false;
+            GexfJS.params.referenceEdges = {};
+            GexfJS.params.locusContigFilter = {};
+            GexfJS.params.locusSpotlightContigs = {};
+            GexfJS.params.locusSpotlightActive = false;
+            GexfJS.params.locusNodeSpotlight = {};
+            GexfJS.params.locusEdgeSpotlight = {};
+            GexfJS.params.anchorNodes = {};
+            GexfJS.params.dashedEdges = {};
+
+            var activeNodes = {};
+            var selectedIdxSet = {};
+            var selectedNodes = [];
+            indices.forEach(function(idx) {
+                var n = GexfJS.graph.nodeList[idx];
+                if (n) {
+                    activeNodes[n.id] = true;
+                    selectedIdxSet[idx] = true;
+                    selectedNodes.push({ index: idx, node: n });
+                }
+            });
+
+            // Highlight induced edges connecting selected nodes
+            var activeEdges = {};
+            if (GexfJS.graph.edgeList) {
+                GexfJS.graph.edgeList.forEach(function(e) {
+                    if (e && selectedIdxSet[e.source] && selectedIdxSet[e.target]) {
+                        activeEdges[e.id] = true;
+                    }
+                });
+            }
+
+            GexfJS.params.activeNodes = activeNodes;
+            GexfJS.params.activeEdges = activeEdges;
+            GexfJS.params.path_active = Object.keys(activeEdges).length > 0;
+            GexfJS.params.currentHighlightName = selectedNodes.length === 1
+                ? ("Node: " + (selectedNodes[0].node.label || selectedNodes[0].node.id))
+                : ("Selected Nodes (" + selectedNodes.length + ")");
+            delete GexfJS.oldParams.zoomLevel;
+
+            var featureAttrIndex = GexfJS._node_attr_value ? GexfJS._node_attr_value["features"] : null;
+            var fallbackRecords = [];
+            var seenFeatureIds = {};
+            var targetIds = [];
+            var pureGenomeIds = [];
+            var seenGenomeIds = {};
+
+            selectedNodes.forEach(lang.hitch(this, function(entry) {
+                var node = entry.node;
+                var hasFeatures = false;
+                if (featureAttrIndex !== null && typeof featureAttrIndex !== 'undefined' && node.attributes && node.attributes[featureAttrIndex]) {
+                    try {
+                        var rawJson = node.attributes[featureAttrIndex].replace(/""/g, '"');
+                        var featureMap = JSON.parse(rawJson);
+                        Object.keys(featureMap).forEach(lang.hitch(this, function(genomeId) {
+                            if (genomeId === "info") return;
+                            seenGenomeIds[genomeId] = true;
+                            var gName = (this.genomeNameMap && this.genomeNameMap[genomeId]) ? this.genomeNameMap[genomeId] : genomeId;
+                            var contigs = featureMap[genomeId] || {};
+                            Object.keys(contigs).forEach(function(contigId) {
+                                var feats = contigs[contigId] || [];
+                                feats.forEach(function(fid) {
+                                    var cleanFid = String(fid).replace(/"/g, '');
+                                    hasFeatures = true;
+                                    if (!seenFeatureIds[cleanFid]) {
+                                        seenFeatureIds[cleanFid] = true;
+                                        targetIds.push(cleanFid);
+                                        fallbackRecords.push({
+                                            feature_id: cleanFid,
+                                            patric_id: cleanFid,
+                                            genome_id: genomeId,
+                                            genome_name: gName,
+                                            contig_id: contigId,
+                                            node_id: node.id,
+                                            node_label: node.label || node.id
+                                        });
+                                    }
+                                });
+                            });
+                        }));
+                    } catch (e) {
+                        console.error("Error parsing features JSON in multi-node selection:", e);
+                    }
+                }
+                if (!hasFeatures && node.label) {
+                    var cleanLbl = String(node.label).replace(/"/g, '');
+                    if (!seenGenomeIds[cleanLbl]) {
+                        seenGenomeIds[cleanLbl] = true;
+                        pureGenomeIds.push(cleanLbl);
+                    }
+                }
+            }));
+
+            var MAX_QUERY_FEATURES = 2500;
+            var isTruncated = targetIds.length > MAX_QUERY_FEATURES;
+            var queryIds = isTruncated ? targetIds.slice(0, MAX_QUERY_FEATURES) : targetIds;
+
+            if (targetIds.length > 0) {
+                this.containerType = "feature_data";
+                this.updateMultiNodeSelection(fallbackRecords, indices, true, isTruncated);
+
+                var url = PathJoin(window.App.dataAPI, "genome_feature");
+                var queryStr = "in(patric_id,(" + queryIds.map(encodeURIComponent).join(",") + "))&select(feature_id,patric_id,genome_id,genome_name,product,gene,refseq_locus_tag)&limit(25000)";
+                xhr.post(url, {
+                    headers: {
+                        accept: "application/json",
+                        "X-Requested-With": null,
+                        Authorization: (window.App.authorizationToken || "")
+                    },
+                    handleAs: "json",
+                    data: queryStr
+                }).then(lang.hitch(this, function(records) {
+                    var byPatricId = {};
+                    (records || []).forEach(function(rec) {
+                        if (rec && rec.patric_id) {
+                            byPatricId[rec.patric_id] = rec;
+                        }
+                    });
+                    var merged = fallbackRecords.map(function(fb) {
+                        var apiRec = byPatricId[fb.patric_id];
+                        if (apiRec) {
+                            return lang.mixin({}, fb, apiRec, {
+                                feature_id: apiRec.feature_id || fb.feature_id,
+                                patric_id: apiRec.patric_id || fb.patric_id,
+                                genome_id: apiRec.genome_id || fb.genome_id,
+                                genome_name: apiRec.genome_name || fb.genome_name
+                            });
+                        }
+                        return fb;
+                    });
+                    this.updateMultiNodeSelection(merged, indices, false, isTruncated);
+                }), lang.hitch(this, function() {
+                    this.updateMultiNodeSelection(fallbackRecords, indices, false, isTruncated);
+                }));
+            } else if (pureGenomeIds.length > 0) {
+                this.containerType = "genome_data";
+                var genomeFallback = pureGenomeIds.map(lang.hitch(this, function(gid) {
+                    return {
+                        genome_id: gid,
+                        genome_name: (this.genomeNameMap && this.genomeNameMap[gid]) ? this.genomeNameMap[gid] : gid
+                    };
+                }));
+                this.updateMultiNodeSelection(genomeFallback, indices, false, false);
+            } else {
+                this.updateMultiNodeSelection([], indices, false, false);
+            }
+        },
+
+        updateMultiNodeSelection: function(records, nodeIndices, isLoading, isTruncated, pinnedName, pinnedColor) {
+            this.selection = records || [];
+            this.selectionActionBar.set("currentContainerType", this.containerType);
+            this.selectionActionBar.set("selection", this.selection);
+
+            var indices = Array.isArray(nodeIndices) ? nodeIndices : (this.multiSelectedNodeIndices || []);
+            var featureAttrIndex = (window.GexfJS && GexfJS._node_attr_value) ? GexfJS._node_attr_value["features"] : null;
+            var genomeAttrId = (window.GexfJS && GexfJS._edge_attr_value && GexfJS._edge_attr_value['genomes']) ? GexfJS._edge_attr_value['genomes'] : 'genomes';
+            var sequenceAttrId = (window.GexfJS && GexfJS._edge_attr_value && GexfJS._edge_attr_value['sequences']) ? GexfJS._edge_attr_value['sequences'] : 'sequences';
+
+            var recordMap = {};
+            this.selection.forEach(function(rec) {
+                var key = rec.patric_id || rec.feature_id || rec.genome_id;
+                if (key) recordMap[key] = rec;
+            });
+
+            var uniqueGenomes = {};
+            var uniqueContigs = {};
+            var genomeToContigs = {};
+            var totalFeatureCount = 0;
+            var nodeRowsHtml = '';
+
+            indices.forEach(lang.hitch(this, function(idx) {
+                var node = (window.GexfJS && GexfJS.graph && GexfJS.graph.nodeList) ? GexfJS.graph.nodeList[idx] : null;
+                if (!node) return;
+                var nodeGenomes = {};
+                var nodeFeatCount = 0;
+
+                if (featureAttrIndex !== null && typeof featureAttrIndex !== 'undefined' && node.attributes && node.attributes[featureAttrIndex]) {
+                    try {
+                        var rawJson = node.attributes[featureAttrIndex].replace(/""/g, '"');
+                        var fMap = JSON.parse(rawJson);
+                        Object.keys(fMap).forEach(function(gid) {
+                            if (gid === "info") return;
+                            uniqueGenomes[gid] = true;
+                            nodeGenomes[gid] = true;
+                            if (!genomeToContigs[gid]) genomeToContigs[gid] = {};
+                            var contigs = fMap[gid] || {};
+                            Object.keys(contigs).forEach(function(cid) {
+                                uniqueContigs[cid] = true;
+                                if (!genomeToContigs[gid][cid]) genomeToContigs[gid][cid] = [];
+                                var feats = contigs[cid] || [];
+                                nodeFeatCount += feats.length;
+                                totalFeatureCount += feats.length;
+                                feats.forEach(function(fid) {
+                                    var cleanFid = String(fid).replace(/"/g, '');
+                                    if (genomeToContigs[gid][cid].indexOf(cleanFid) === -1) {
+                                        genomeToContigs[gid][cid].push(cleanFid);
+                                    }
+                                });
+                            });
+                        });
+                    } catch (e) {}
+                }
+
+                var nodeGCount = Object.keys(nodeGenomes).length;
+                nodeRowsHtml += '<div style="display:flex; align-items:center; justify-content:space-between; padding:4px 6px; border-bottom:1px solid #eee; font-size:0.84em; gap:6px;">';
+                nodeRowsHtml += '<div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">';
+                nodeRowsHtml += '<a href="javascript:void(0)" onclick="window.inspectNodeFromLocus(' + idx + '); return false;" style="color:#4a148c; font-weight:bold; text-decoration:none;" title="Inspect single node details">' + (node.label || node.id) + '</a>';
+                nodeRowsHtml += ' <span style="color:#777; font-size:0.9em;">(' + nodeGCount + ' gen, ' + nodeFeatCount + ' feat)</span>';
+                nodeRowsHtml += '</div>';
+                nodeRowsHtml += '<a href="javascript:void(0)" onclick="window.removeNodeFromSelection(' + idx + '); return false;" style="color:#c62828; font-weight:bold; text-decoration:none; padding:0 4px;" title="Remove node from selection">&times;</a>';
+                nodeRowsHtml += '</div>';
+            }));
+
+            var allGenomeIds = Object.keys(uniqueGenomes);
+            var allContigIds = Object.keys(uniqueContigs);
+            var inducedEdgeCount = (window.GexfJS && GexfJS.params && GexfJS.params.activeEdges) ? Object.keys(GexfJS.params.activeEdges).length : 0;
+            var titleSpinner = isLoading ? ' <i class="fa fa-spinner fa-spin" style="font-size:0.75em; color:#8e24aa;" title="Loading feature annotations..."></i>' : '';
+
+            var html = '<div style="padding:10px; font-family:inherit;">';
+            html += '<div style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">';
+            html += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="display:inline-block; padding:2px 8px; background:#eef4f9; border:1px solid #bce8f1; border-radius:4px; color:#31708f; font-weight:bold; font-size:0.82em; text-decoration:none;" title="Clear selection and return to Graph Summary">&#9664; Clear &amp; Back to Summary</a>';
+            html += '</div>';
+
+            html += '<div style="background:#f3e5f5; border:1px solid #ce93d8; border-left:4px solid #8e24aa; border-radius:4px; padding:8px 10px; margin-bottom:10px;">';
+            html += '<div style="font-weight:bold; color:#4a148c; font-size:1.0em; margin-bottom:4px;">Selected Nodes (' + indices.length + ')' + titleSpinner + '</div>';
+            html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.83em; color:#333; margin-bottom:6px;">';
+            html += '<div><b>Nodes:</b> ' + indices.length + (inducedEdgeCount > 0 ? ' <span style="color:#666;">(' + inducedEdgeCount + ' edges)</span>' : '') + '</div>';
+            html += '<div><b>Features:</b> ' + totalFeatureCount + '</div>';
+            html += '<div><b>Genomes:</b> ' + allGenomeIds.length + '</div>';
+            html += '<div><b>Contigs:</b> ' + allContigIds.length + '</div>';
+            html += '</div>';
+            html += '<div style="font-size:0.78em; color:#555; background:rgba(255,255,255,0.7); padding:5px 7px; border-radius:3px; line-height:1.35;">';
+            html += '<div>&bull; <b>Add / Toggle Nodes:</b> <code>Shift+Click</code> or <code>Cmd/Ctrl+Click</code> a node, or <code>Shift+Drag</code> a box.</div>';
+            html += '<div>&bull; <b>Create Group:</b> Click <b>GROUP</b> on the Action Bar to create a <b>Feature Group</b> (' + totalFeatureCount + ') or <b>Genome Group</b> (' + allGenomeIds.length + ').</div>';
+            html += '<div>&bull; <b>Pin Selection:</b> Click <b>PIN</b> on the Action Bar to color and save this selection.</div>';
+            html += '</div>';
+            if (pinnedName) {
+                html += '<div style="margin-top:6px; padding:4px 7px; background:#e8f5e9; border:1px solid #a5d6a7; border-radius:3px; font-size:0.8em; color:#1b5e20;">';
+                html += '<span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:' + (pinnedColor || '#8e24aa') + '; margin-right:5px; vertical-align:middle;"></span>';
+                html += 'Pinned as <b>' + pinnedName + '</b>';
+                html += '</div>';
+            }
+            html += '</div>';
+
+            if (isTruncated) {
+                html += '<div style="color:#856404; font-size:0.8em; margin-bottom:8px; padding:5px 7px; background:#fff3cd; border:1px solid #ffeeba; border-radius:3px;">';
+                html += 'Extended annotations fetched for first 2,500 features; all ' + totalFeatureCount + ' features and ' + allGenomeIds.length + ' genomes are included in group actions.';
+                html += '</div>';
+            }
+
+            // Collapsible list of Selected Nodes
+            html += '<details open style="margin-bottom:10px; border:1px solid #ddd; border-radius:4px; background:#fff;">';
+            html += '<summary style="padding:6px 8px; font-weight:bold; font-size:0.88em; cursor:pointer; background:#fafafa; color:#333;">Selected Nodes [' + indices.length + ']</summary>';
+            html += '<div style="max-height:180px; overflow-y:auto;">' + nodeRowsHtml + '</div>';
+            html += '</details>';
+
+            // Collapsible list of Implicated Genomes & Contigs
+            if (allGenomeIds.length > 0) {
+                html += '<details open style="margin-bottom:10px; border:1px solid #ddd; border-radius:4px; background:#fff;">';
+                html += '<summary style="padding:6px 8px; font-weight:bold; font-size:0.88em; cursor:pointer; background:#fafafa; color:#333;">Implicated Genomes [' + allGenomeIds.length + '] &amp; Contigs [' + allContigIds.length + ']</summary>';
+                html += '<div style="padding:6px 8px; max-height:260px; overflow-y:auto; font-size:0.84em;">';
+                html += '<div style="margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #eee; display:flex; gap:10px;">';
+                html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allGenomeIds.join(',') + '\', \'' + genomeAttrId + '\', \'Selected Genomes (' + allGenomeIds.length + ')\'); return false;" style="color:#1565c0; font-weight:bold; text-decoration:none;" title="Highlight full paths of all genomes in selection">Highlight All Genomes</a>';
+                html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allContigIds.join(',') + '\', \'' + sequenceAttrId + '\', \'Selected Contigs (' + allContigIds.length + ')\'); return false;" style="color:#1565c0; font-weight:bold; text-decoration:none;" title="Highlight full paths of all contigs in selection">Highlight All Contigs</a>';
+                html += '</div>';
+
+                allGenomeIds.forEach(lang.hitch(this, function(gid) {
+                    var gName = (this.genomeNameMap && this.genomeNameMap[gid]) ? this.genomeNameMap[gid] : gid;
+                    var contigsObj = genomeToContigs[gid] || {};
+                    var cIds = Object.keys(contigsObj);
+                    html += '<div style="margin-bottom:5px;">';
+                    html += '<a href="javascript:void(0)" style="font-weight:bold; color:#222;" onclick="window.doHighlightPath(undefined, \'' + gid + '\', \'' + genomeAttrId + '\', \'Genome: ' + gName.replace(/'/g, "&apos;") + '\'); return false;" title="Highlight Genome Edges">' + gName + '</a>';
+                    html += ' <span style="color:#777; font-size:0.9em;">(' + cIds.length + ' contig' + (cIds.length === 1 ? '' : 's') + ')</span>';
+                    html += '<div style="padding-left:12px; color:#555;">';
+                    cIds.forEach(function(cid) {
+                        var feats = contigsObj[cid] || [];
+                        html += '<div style="margin-top:2px;">';
+                        html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + cid + '\', \'' + sequenceAttrId + '\', \'Contig: ' + cid.replace(/'/g, "&apos;") + '\'); return false;" title="Highlight Contig Edges">' + cid + '</a>';
+                        html += ' <span style="color:#888; font-size:0.88em;">[' + feats.length + ' feat]</span>';
+                        html += '</div>';
+                    });
+                    html += '</div></div>';
+                }));
+                html += '</div></details>';
+            }
+
+            html += '</div>';
+
+            if (this.itemDetailPanel.customDisplayNode) {
+                this.itemDetailPanel.set('selection', []);
+                this.itemDetailPanel.customDisplayNode.innerHTML = html;
+            } else {
+                this.itemDetailPanel.set('content', html);
             }
         },
 
@@ -2765,16 +3189,55 @@ var loadGexfDependencies = function(callback) {
             
             var query = "";
             var url = "";
+            var fallbackRecords = [];
 
             if (isFeature) {
                 this.containerType = "feature_data";
                 url = PathJoin(window.App.dataAPI, "genome_feature");
-                // Get enough fields to display useful info
-                query = "in(patric_id,(" + cleanIds.map(encodeURIComponent).join(",") + "))&select(patric_id,genome_name,product)&limit(25000)"; 
+                // Include feature_id and genome_id so both Feature Group and Genome Group creation work cleanly
+                query = "in(patric_id,(" + cleanIds.map(encodeURIComponent).join(",") + "))&select(feature_id,patric_id,genome_id,genome_name,product,gene,refseq_locus_tag)&limit(25000)";
+                if (featureMap) {
+                    Object.keys(featureMap).forEach(lang.hitch(this, function(genomeId) {
+                        if (genomeId === "info") return;
+                        var gName = (this.genomeNameMap && this.genomeNameMap[genomeId]) ? this.genomeNameMap[genomeId] : genomeId;
+                        var contigs = featureMap[genomeId] || {};
+                        Object.keys(contigs).forEach(function(contigId) {
+                            var feats = contigs[contigId] || [];
+                            feats.forEach(function(fid) {
+                                var cleanFid = String(fid).replace(/"/g, '');
+                                fallbackRecords.push({
+                                    feature_id: cleanFid,
+                                    patric_id: cleanFid,
+                                    genome_id: genomeId,
+                                    genome_name: gName
+                                });
+                            });
+                        });
+                    }));
+                } else {
+                    fallbackRecords = cleanIds.map(function(fid) {
+                        var m = fid.match(/^fig\|(\d+\.\d+)/);
+                        return {
+                            feature_id: fid,
+                            patric_id: fid,
+                            genome_id: m ? m[1] : undefined
+                        };
+                    });
+                }
             } else {
                 this.containerType = "genome_data";
                 url = PathJoin(window.App.dataAPI, "genome");
                 query = "in(genome_id,(" + cleanIds.map(encodeURIComponent).join(",") + "))&select(genome_id,genome_name)&limit(25000)";
+                fallbackRecords = cleanIds.map(lang.hitch(this, function(gid) {
+                    return {
+                        genome_id: gid,
+                        genome_name: (this.genomeNameMap && this.genomeNameMap[gid]) ? this.genomeNameMap[gid] : gid
+                    };
+                }));
+            }
+
+            if (fallbackRecords.length > 0) {
+                this.updateSelection(fallbackRecords, featureMap, node, true, false);
             }
 
             // Execute the query
@@ -2788,7 +3251,25 @@ var loadGexfDependencies = function(callback) {
                 data: query
             }).then(lang.hitch(this, function(records) {
                 if (records && records.length > 0) {
-                    this.updateSelection(records, featureMap, node);
+                    if (isFeature && fallbackRecords.length > 0) {
+                        var byPatric = {};
+                        records.forEach(function(r) {
+                            if (r && r.patric_id) byPatric[r.patric_id] = r;
+                        });
+                        var merged = fallbackRecords.map(function(fb) {
+                            var apiRec = byPatric[fb.patric_id];
+                            return apiRec ? lang.mixin({}, fb, apiRec) : fb;
+                        });
+                        this.updateSelection(merged, featureMap, node, false, false);
+                    } else {
+                        this.updateSelection(records, featureMap, node, false, false);
+                    }
+                } else if (fallbackRecords.length > 0) {
+                    this.updateSelection(fallbackRecords, featureMap, node, false, false);
+                }
+            }), lang.hitch(this, function() {
+                if (fallbackRecords.length > 0) {
+                    this.updateSelection(fallbackRecords, featureMap, node, false, false);
                 }
             }));
         },
