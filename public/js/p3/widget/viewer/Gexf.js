@@ -650,6 +650,11 @@ var loadGexfDependencies = function(callback) {
             window.resetManifestFilter = undefined;
             window.onGenomeDetailsToggle = undefined;
             window.onGuideDetailsToggle = undefined;
+            window.selectPhenomenonLocus = undefined;
+            window.stepPhenomenonLocus = undefined;
+            window.inspectNodeFromLocus = undefined;
+            window.restorePhenomenonContext = undefined;
+            window.setLocusFilterMode = undefined;
 
             // 5. Reset the module loader flag!
             // This guarantees that if the user clicks back to the graph later, 
@@ -705,6 +710,826 @@ var loadGexfDependencies = function(callback) {
                 });
             }
             if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel; 
+        },
+
+        buildPhenomenonLoci: function(type, rawEdges, explicitNodes) {
+            if (!window.GexfJS || !GexfJS.graph) return [];
+            var nodeList = GexfJS.graph.nodeList || [];
+            var edgeList = GexfJS.graph.edgeList || [];
+            var nodeById = {};
+            var nodeIdxById = {};
+            nodeList.forEach(function(n, idx) {
+                nodeById[n.id] = n;
+                nodeIdxById[n.id] = idx;
+            });
+
+            // Collect all nodes directly touched by either explicitNodes or rawEdges
+            var involvedNodes = {};
+            Object.keys(explicitNodes).forEach(function(nid) { involvedNodes[nid] = true; });
+            Object.keys(rawEdges).forEach(function(eid) {
+                var e = GexfJS.graph.edgeLookup[eid];
+                if (e) {
+                    var sn = nodeList[e.source];
+                    var tn = nodeList[e.target];
+                    if (sn) involvedNodes[sn.id] = true;
+                    if (tn) involvedNodes[tn.id] = true;
+                }
+            });
+
+            var involvedIds = Object.keys(involvedNodes);
+            if (involvedIds.length === 0) return [];
+
+            // Adjacency map across the full graph for 1-hop anchor discovery and degree analysis
+            var adjEdgesByNodeId = {};
+            edgeList.forEach(function(e) {
+                var sn = nodeList[e.source];
+                var tn = nodeList[e.target];
+                if (!sn || !tn) return;
+                if (!adjEdgesByNodeId[sn.id]) adjEdgesByNodeId[sn.id] = [];
+                if (!adjEdgesByNodeId[tn.id]) adjEdgesByNodeId[tn.id] = [];
+                adjEdgesByNodeId[sn.id].push({ edge: e, neighborId: tn.id });
+                adjEdgesByNodeId[tn.id].push({ edge: e, neighborId: sn.id });
+            });
+
+            // Union-Find over involvedIds
+            var parent = {};
+            involvedIds.forEach(function(nid) { parent[nid] = nid; });
+            var find = function(x) {
+                while (parent[x] !== x) {
+                    parent[x] = parent[parent[x]];
+                    x = parent[x];
+                }
+                return x;
+            };
+            var union = function(a, b) {
+                if (!(a in parent) || !(b in parent)) return;
+                var ra = find(a), rb = find(b);
+                if (ra !== rb) parent[ra] = rb;
+            };
+
+            // 1. Union endpoints of rawEdges
+            Object.keys(rawEdges).forEach(function(eid) {
+                var e = GexfJS.graph.edgeLookup[eid];
+                if (e) {
+                    var sn = nodeList[e.source];
+                    var tn = nodeList[e.target];
+                    if (sn && tn) union(sn.id, tn.id);
+                }
+            });
+
+            // 2. Union adjacent involved nodes
+            edgeList.forEach(function(e) {
+                var sn = nodeList[e.source];
+                var tn = nodeList[e.target];
+                if (sn && tn && involvedNodes[sn.id] && involvedNodes[tn.id]) {
+                    union(sn.id, tn.id);
+                }
+            });
+
+            // 3. Union by shared superbubble_id or cnv_cluster_id when applicable
+            var sbAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['superbubble_id'] : undefined;
+            var cnvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['cnv_cluster_id'] : undefined;
+            var breakAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['assembly_repeat_break'] : undefined;
+            if (type === 'superbubbles' && typeof sbAttrId !== 'undefined') {
+                var bySb = {};
+                involvedIds.forEach(function(nid) {
+                    var n = nodeById[nid];
+                    var val = (n && n.attributes && n.attributes[sbAttrId]) ? String(n.attributes[sbAttrId]).trim() : '';
+                    if (val && val !== 'None' && val !== '0') {
+                        val.split(',').forEach(function(tok) {
+                            var t = tok.trim();
+                            if (!t) return;
+                            if (bySb[t]) union(bySb[t], nid);
+                            else bySb[t] = nid;
+                        });
+                    }
+                });
+            } else if ((type === 'tandem_repeats' || type === 'fragmented_paralogs') && typeof cnvAttrId !== 'undefined') {
+                var byCnv = {};
+                involvedIds.forEach(function(nid) {
+                    var n = nodeById[nid];
+                    var val = (n && n.attributes && n.attributes[cnvAttrId]) ? String(n.attributes[cnvAttrId]).trim() : '';
+                    if (val && val !== 'None' && val !== '0') {
+                        if (byCnv[val]) union(byCnv[val], nid);
+                        else byCnv[val] = nid;
+                    }
+                });
+            }
+
+            // Group nodes and edges into connected components
+            var compMap = {};
+            involvedIds.forEach(function(nid) {
+                var r = find(nid);
+                if (!compMap[r]) compMap[r] = { nodeIds: [], edgeIds: {} };
+                compMap[r].nodeIds.push(nid);
+            });
+
+            Object.keys(rawEdges).forEach(function(eid) {
+                var e = GexfJS.graph.edgeLookup[eid];
+                if (e && nodeList[e.source]) {
+                    var r = find(nodeList[e.source].id);
+                    if (compMap[r]) compMap[r].edgeIds[eid] = true;
+                }
+            });
+
+            var loci = [];
+            Object.keys(compMap).forEach(function(rootId) {
+                var c = compMap[rootId];
+
+                // Distinguish Focal Variant Nodes from Boundary Conserved Anchor Nodes
+                var focalIds = [];
+                var boundaryAnchorSet = {};
+
+                if (type === 'superbubbles') {
+                    // In a superbubble, interior nodes only touch superbubble edges; boundary anchors touch exterior backbone edges
+                    var interior = [];
+                    var boundary = [];
+                    c.nodeIds.forEach(function(nid) {
+                        var inc = adjEdgesByNodeId[nid] || [];
+                        var touchesExterior = inc.some(function(item) { return !rawEdges[item.edge.id]; });
+                        if (touchesExterior) boundary.push(nid);
+                        else interior.push(nid);
+                    });
+                    if (interior.length > 0) {
+                        focalIds = interior;
+                        boundary.forEach(function(bid) { boundaryAnchorSet[bid] = true; });
+                    } else {
+                        focalIds = c.nodeIds.slice();
+                    }
+                } else {
+                    var hasExplicitInComp = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
+                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'fragmented_paralogs' || type === 'tandem_repeats')) {
+                        c.nodeIds.forEach(function(nid) {
+                            if (explicitNodes[nid]) focalIds.push(nid);
+                            else boundaryAnchorSet[nid] = true;
+                        });
+                    } else {
+                        focalIds = c.nodeIds.slice();
+                    }
+                }
+
+                var focalSet = {};
+                focalIds.forEach(function(nid) { focalSet[nid] = true; });
+
+                // Discover 1-hop flanking conserved anchor nodes connected to focal nodes
+                focalIds.forEach(function(nid) {
+                    var inc = adjEdgesByNodeId[nid] || [];
+                    inc.forEach(function(item) {
+                        if (!focalSet[item.neighborId]) {
+                            boundaryAnchorSet[item.neighborId] = true;
+                        }
+                        if (focalSet[item.neighborId] || Object.keys(c.edgeIds).length === 0) {
+                            c.edgeIds[item.edge.id] = true;
+                        }
+                    });
+                });
+
+                var anchorIds = Object.keys(boundaryAnchorSet);
+                var activeEdgeIds = Object.keys(c.edgeIds);
+
+                // Discover Reference / Conserved Backbone Edges connecting the flanking anchors (or anchors to focal nodes along non-active edges)
+                var referenceEdgeSet = {};
+                anchorIds.forEach(function(aid) {
+                    var inc = adjEdgesByNodeId[aid] || [];
+                    inc.forEach(function(item) {
+                        var eid = item.edge.id;
+                        if (c.edgeIds[eid]) return;
+                        if (boundaryAnchorSet[item.neighborId] || focalSet[item.neighborId]) {
+                            referenceEdgeSet[eid] = true;
+                        }
+                    });
+                });
+
+                // Compute per-genome & per-contig copy counts (max per family/CNV cluster) and classify Event Carriers vs. Reference/Backbone
+                var genomeCopies = {};
+                var clusterCopiesByGenome = {};
+                var genomeFocalContigs = {};
+                var contigToGenome = {};
+                focalIds.forEach(function(nid) {
+                    var n = nodeById[nid];
+                    if (n && n.featureMap) {
+                        var cnvClusterKey = (typeof cnvAttrId !== 'undefined' && n.attributes && n.attributes[cnvAttrId] != null && String(n.attributes[cnvAttrId]) !== '' && String(n.attributes[cnvAttrId]) !== '0')
+                            ? ('cnv_' + String(n.attributes[cnvAttrId]))
+                            : ('node_' + nid);
+                        for (var gid in n.featureMap) {
+                            if (gid === 'info') continue;
+                            var cMap = n.featureMap[gid];
+                            if (cMap && typeof cMap === 'object') {
+                                if (!genomeFocalContigs[gid]) genomeFocalContigs[gid] = {};
+                                if (!clusterCopiesByGenome[gid]) clusterCopiesByGenome[gid] = {};
+                                var nodeCopySum = 0;
+                                for (var sid in cMap) {
+                                    genomeFocalContigs[gid][sid] = true;
+                                    contigToGenome[sid] = gid;
+                                    var fArr = cMap[sid];
+                                    var cnt = Array.isArray(fArr) ? fArr.length : 1;
+                                    nodeCopySum += cnt;
+                                }
+                                clusterCopiesByGenome[gid][cnvClusterKey] = (clusterCopiesByGenome[gid][cnvClusterKey] || 0) + nodeCopySum;
+                                if (clusterCopiesByGenome[gid][cnvClusterKey] > (genomeCopies[gid] || 0)) {
+                                    genomeCopies[gid] = clusterCopiesByGenome[gid][cnvClusterKey];
+                                }
+                            }
+                        }
+                    }
+                });
+                anchorIds.forEach(function(aid) {
+                    var n = nodeById[aid];
+                    if (n && n.featureMap) {
+                        for (var gid in n.featureMap) {
+                            if (gid === 'info') continue;
+                            var cMap = n.featureMap[gid];
+                            if (cMap && typeof cMap === 'object') {
+                                for (var sid in cMap) {
+                                    contigToGenome[sid] = gid;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                var eventGenomesSet = {};
+                var eventContigsSet = {};
+                var refGenomesSet = {};
+                var refContigsSet = {};
+                var eventRoleTitle = 'Variant / Event Carriers';
+                var refRoleTitle = 'Flanking / Backbone Reference';
+
+                // Collect all anchor genomes/contigs first
+                var allAnchorGenomes = {};
+                var allAnchorContigs = {};
+                anchorIds.forEach(function(aid) {
+                    var n = nodeById[aid];
+                    if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { allAnchorGenomes[g] = true; });
+                    if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { allAnchorContigs[s] = true; });
+                });
+
+                if (type === 'tandem_repeats' || type === 'fragmented_paralogs') {
+                    eventRoleTitle = (type === 'fragmented_paralogs') ? 'Dispersed / Multi-Contig Carriers' : 'Multi-Copy CNV Carriers';
+                    refRoleTitle = 'Single-Copy / Collinear Reference';
+                    var detourGenomes = {};
+                    var detourContigs = {};
+                    Object.keys(rawEdges).forEach(function(eid) {
+                        if (!c.edgeIds[eid]) return;
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { detourGenomes[g] = true; });
+                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { detourContigs[s] = true; });
+                    });
+                    Object.keys(genomeCopies).forEach(function(gid) {
+                        var cSet = genomeFocalContigs[gid] || {};
+                        var numContigs = Object.keys(cSet).length;
+                        var isEvent = (type === 'fragmented_paralogs')
+                            ? (numContigs > 1 || genomeCopies[gid] > 1 || Boolean(detourGenomes[gid]))
+                            : (genomeCopies[gid] > 1 || Boolean(detourGenomes[gid]));
+                        if (isEvent) {
+                            eventGenomesSet[gid] = true;
+                            Object.keys(cSet).forEach(function(s) { eventContigsSet[s] = true; });
+                        } else {
+                            refGenomesSet[gid] = true;
+                            Object.keys(cSet).forEach(function(s) { refContigsSet[s] = true; });
+                        }
+                    });
+                    Object.keys(detourContigs).forEach(function(s) { eventContigsSet[s] = true; });
+                    // If all genomes had 1 copy per node (e.g., 2 separate paralog nodes), fallback to showing all focal as event
+                    if (Object.keys(eventGenomesSet).length === 0) {
+                        Object.keys(genomeCopies).forEach(function(gid) {
+                            eventGenomesSet[gid] = true;
+                            Object.keys(genomeFocalContigs[gid] || {}).forEach(function(s) { eventContigsSet[s] = true; });
+                        });
+                        refGenomesSet = {};
+                        refContigsSet = {};
+                    }
+                } else if (type === 'breaks') {
+                    eventRoleTitle = 'Fragmented / Repeat-Broken Contigs';
+                    refRoleTitle = 'Bridging Scaffold Reference';
+                    var bridgeContigs = {};
+                    var bridgeGenomes = {};
+                    Object.keys(rawEdges).forEach(function(eid) {
+                        if (!c.edgeIds[eid]) return;
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { bridgeGenomes[g] = true; });
+                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { bridgeContigs[s] = true; });
+                    });
+                    focalIds.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        if (!n) return;
+                        var isBreakNode = (typeof breakAttrId !== 'undefined' && n.attributes && String(n.attributes[breakAttrId]).toLowerCase() === 'true');
+                        if (n.sequences) {
+                            Object.keys(n.sequences).forEach(function(s) {
+                                if (bridgeContigs[s] && !isBreakNode) {
+                                    refContigsSet[s] = true;
+                                    if (contigToGenome[s]) refGenomesSet[contigToGenome[s]] = true;
+                                } else if (!bridgeContigs[s]) {
+                                    eventContigsSet[s] = true;
+                                    if (contigToGenome[s]) eventGenomesSet[contigToGenome[s]] = true;
+                                }
+                            });
+                        }
+                    });
+                    Object.keys(bridgeContigs).forEach(function(s) {
+                        refContigsSet[s] = true;
+                        if (contigToGenome[s]) refGenomesSet[contigToGenome[s]] = true;
+                    });
+                    Object.keys(bridgeGenomes).forEach(function(g) { refGenomesSet[g] = true; });
+                    if (Object.keys(eventContigsSet).length === 0) {
+                        focalIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                            if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                        });
+                    }
+                } else if (type === 'inversions') {
+                    // Recover relative orientation split across undirected inverted_block edges using sequential feature positions
+                    eventRoleTitle = 'Inverted / Minority Orientation (-)';
+                    refRoleTitle = 'Majority / Consensus Orientation (+)';
+
+                    var getFeatPos = function(nodeObj, gid, sid) {
+                        if (!nodeObj || !nodeObj.featureMap) return null;
+                        if (nodeObj.featureMap.info && nodeObj.featureMap.info[gid] && nodeObj.featureMap.info[gid][sid] &&
+                            nodeObj.featureMap.info[gid][sid][0] && typeof nodeObj.featureMap.info[gid][sid][0].start !== 'undefined') {
+                            var st = parseInt(nodeObj.featureMap.info[gid][sid][0].start, 10);
+                            if (!isNaN(st)) return st;
+                        }
+                        if (nodeObj.featureMap[gid] && nodeObj.featureMap[gid][sid] && nodeObj.featureMap[gid][sid][0]) {
+                            var fid = String(nodeObj.featureMap[gid][sid][0]);
+                            var m = fid.match(/(\d+)$/);
+                            if (m) return parseInt(m[1], 10);
+                        }
+                        return null;
+                    };
+
+                    var pairSigns = {};
+                    var allInvGenomes = Object.keys(genomeFocalContigs);
+                    allInvGenomes.forEach(function(g) { pairSigns[g] = {}; });
+
+                    // 1. Compare coordinate step direction (pv - pu) across every internal edge of the inverted block
+                    activeEdgeIds.forEach(function(eid) {
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (!e) return;
+                        var uNode = GexfJS.graph.nodeList[e.source];
+                        var vNode = GexfJS.graph.nodeList[e.target];
+                        if (!uNode || !vNode || !uNode.featureMap || !vNode.featureMap) return;
+
+                        var edgeDirs = {};
+                        allInvGenomes.forEach(function(g) {
+                            var uContigs = uNode.featureMap[g];
+                            var vContigs = vNode.featureMap[g];
+                            if (!uContigs || !vContigs) return;
+                            for (var sid in uContigs) {
+                                if (vContigs[sid]) {
+                                    var pu = getFeatPos(uNode, g, sid);
+                                    var pv = getFeatPos(vNode, g, sid);
+                                    if (pu !== null && pv !== null && pv !== pu) {
+                                        edgeDirs[g] = (pv > pu) ? 1 : -1;
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+
+                        var dirGens = Object.keys(edgeDirs);
+                        for (var i = 0; i < dirGens.length; i++) {
+                            for (var j = i + 1; j < dirGens.length; j++) {
+                                var g1 = dirGens[i], g2 = dirGens[j];
+                                var prod = edgeDirs[g1] * edgeDirs[g2];
+                                pairSigns[g1][g2] = (pairSigns[g1][g2] || 0) + prod;
+                                pairSigns[g2][g1] = (pairSigns[g2][g1] || 0) + prod;
+                            }
+                        }
+                    });
+
+                    // 2. Reinforce with boundary edges connecting flanking anchors to opposite ends of the inverted block
+                    anchorIds.forEach(function(aid) {
+                        var inc = adjEdgesByNodeId[aid] || [];
+                        var boundaryEdges = [];
+                        inc.forEach(function(item) {
+                            if (focalSet[item.neighborId] && item.edge && item.edge.genomes) {
+                                boundaryEdges.push(Object.keys(item.edge.genomes));
+                            }
+                        });
+                        if (boundaryEdges.length > 1) {
+                            for (var b1 = 0; b1 < boundaryEdges.length; b1++) {
+                                var gens1 = boundaryEdges[b1];
+                                for (var p = 0; p < gens1.length; p++) {
+                                    for (var q = p + 1; q < gens1.length; q++) {
+                                        if (pairSigns[gens1[p]] && pairSigns[gens1[q]]) {
+                                            pairSigns[gens1[p]][gens1[q]] = (pairSigns[gens1[p]][gens1[q]] || 0) + 2;
+                                            pairSigns[gens1[q]][gens1[p]] = (pairSigns[gens1[q]][gens1[p]] || 0) + 2;
+                                        }
+                                    }
+                                }
+                                for (var b2 = b1 + 1; b2 < boundaryEdges.length; b2++) {
+                                    var gens2 = boundaryEdges[b2];
+                                    gens1.forEach(function(ga) {
+                                        gens2.forEach(function(gb) {
+                                            if (ga !== gb && pairSigns[ga] && pairSigns[gb]) {
+                                                pairSigns[ga][gb] = (pairSigns[ga][gb] || 0) - 2;
+                                                pairSigns[gb][ga] = (pairSigns[gb][ga] || 0) - 2;
+                                            }
+                                        });
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    // 3. Partition genomes into two orientation groups (grpA vs grpB)
+                    if (allInvGenomes.length > 0) {
+                        var seedG = allInvGenomes[0];
+                        var bestScore = -1;
+                        allInvGenomes.forEach(function(g) {
+                            var sScore = 0;
+                            for (var other in pairSigns[g]) {
+                                sScore += Math.abs(pairSigns[g][other]);
+                            }
+                            if (sScore > bestScore) {
+                                bestScore = sScore;
+                                seedG = g;
+                            }
+                        });
+
+                        var grpA = [seedG];
+                        var grpB = [];
+                        allInvGenomes.forEach(function(g) {
+                            if (g === seedG) return;
+                            var rel = (pairSigns[seedG] && typeof pairSigns[seedG][g] === 'number') ? pairSigns[seedG][g] : 0;
+                            if (rel < 0) {
+                                grpB.push(g);
+                            } else {
+                                grpA.push(g);
+                            }
+                        });
+
+                        if (grpB.length > 0) {
+                            var invGrp = grpB;
+                            var refGrp = grpA;
+                            if (grpA.length < grpB.length) {
+                                invGrp = grpA;
+                                refGrp = grpB;
+                            } else if (grpA.length === grpB.length) {
+                                eventRoleTitle = 'Orientation B (Inverted vs. A)';
+                                refRoleTitle = 'Orientation A (Reference)';
+                            }
+                            invGrp.forEach(function(g) {
+                                eventGenomesSet[g] = true;
+                                Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) { eventContigsSet[s] = true; });
+                            });
+                            refGrp.forEach(function(g) {
+                                refGenomesSet[g] = true;
+                                Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) { refContigsSet[s] = true; });
+                            });
+
+                            // Highlight boundary crossover edges carried strictly by the inverted orientation as dashed active edges
+                            Object.keys(referenceEdgeSet).forEach(function(reid) {
+                                var reObj = GexfJS.graph.edgeLookup[reid];
+                                if (!reObj || !reObj.genomes) return;
+                                var reGens = Object.keys(reObj.genomes);
+                                var hasInv = false, hasRef = false;
+                                reGens.forEach(function(rg) {
+                                    if (eventGenomesSet[rg]) hasInv = true;
+                                    if (refGenomesSet[rg]) hasRef = true;
+                                });
+                                if (hasInv && !hasRef) {
+                                    delete referenceEdgeSet[reid];
+                                    if (activeEdgeIds.indexOf(reid) === -1) activeEdgeIds.push(reid);
+                                    if (GexfJS.params.allPhenomDashedEdges) GexfJS.params.allPhenomDashedEdges[reid] = true;
+                                }
+                            });
+                        } else {
+                            // Fallback if only one orientation is present on the internal edge (e.g., single-strain edge): contrast against flanking anchors
+                            allInvGenomes.forEach(function(g) {
+                                eventGenomesSet[g] = true;
+                                Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) { eventContigsSet[s] = true; });
+                            });
+                        }
+                    }
+                } else {
+                    // Superbubbles, Alt Paths, Rearrangements
+                    if (type === 'superbubbles') {
+                        eventRoleTitle = 'Interior Allele / Cassette Carriers';
+                        refRoleTitle = 'Conserved Boundary / Alternate Carriers';
+                    } else if (type === 'alt_paths') {
+                        eventRoleTitle = 'Accessory Island / Indel Carriers';
+                        refRoleTitle = 'Backbone Reference (Without Detour)';
+                    } else if (type === 'rearrangements') {
+                        eventRoleTitle = 'Rearranged / Breakpoint Carriers';
+                        refRoleTitle = 'Collinear Reference Flanking Blocks';
+                    }
+
+                    focalIds.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                        if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                    });
+                    activeEdgeIds.forEach(function(eid) {
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                    });
+                }
+
+                // Any genome/contig on the flanking anchors not already in eventContigsSet is part of the flanking reference context
+                Object.keys(allAnchorGenomes).forEach(function(g) {
+                    if (!eventGenomesSet[g]) refGenomesSet[g] = true;
+                });
+                Object.keys(allAnchorContigs).forEach(function(s) {
+                    if (!eventContigsSet[s]) refContigsSet[s] = true;
+                });
+
+                // Union of all genomes and contigs involved in this locus (Event + Flanking Anchor Reference)
+                var allLocusGenomes = {};
+                var allLocusContigs = {};
+                Object.keys(eventGenomesSet).forEach(function(g) { allLocusGenomes[g] = true; });
+                Object.keys(refGenomesSet).forEach(function(g) { allLocusGenomes[g] = true; });
+                Object.keys(eventContigsSet).forEach(function(s) { allLocusContigs[s] = true; });
+                Object.keys(refContigsSet).forEach(function(s) { allLocusContigs[s] = true; });
+
+                // Build a concise human-readable locus summary label
+                var pickLabels = function(ids) {
+                    var named = [];
+                    var fallback = [];
+                    ids.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        if (!n) return;
+                        var lbl = String(n.label || n.id).trim();
+                        if (lbl.toLowerCase().indexOf('hypothetical') === -1 && lbl.toLowerCase().indexOf('fig|') === -1) {
+                            if (named.indexOf(lbl) === -1) named.push(lbl);
+                        } else if (fallback.indexOf(lbl) === -1) {
+                            fallback.push(lbl);
+                        }
+                    });
+                    return named.length > 0 ? named : fallback;
+                };
+
+                var repLabels = pickLabels(focalIds);
+                if (repLabels.length === 0 || (repLabels.length === 1 && repLabels[0].toLowerCase().indexOf('hypothetical') !== -1 && anchorIds.length > 0)) {
+                    var anchorLabels = pickLabels(anchorIds);
+                    if (anchorLabels.length > 0) repLabels = anchorLabels;
+                }
+                var shortTitle = repLabels.slice(0, 2).map(function(l) {
+                    return l.length > 26 ? l.substr(0, 24) + '...' : l;
+                }).join(' / ');
+                if (!shortTitle) shortTitle = 'Node ' + focalIds[0];
+
+                var evGenCount = Object.keys(eventGenomesSet).length;
+                var totGenCount = Object.keys(allLocusGenomes).length;
+
+                loci.push({
+                    focalNodeIds: focalIds,
+                    anchorNodeIds: anchorIds,
+                    activeEdgeIds: activeEdgeIds,
+                    referenceEdgeIds: Object.keys(referenceEdgeSet),
+                    eventGenomes: Object.keys(eventGenomesSet),
+                    eventContigs: Object.keys(eventContigsSet),
+                    refGenomes: Object.keys(refGenomesSet),
+                    refContigs: Object.keys(refContigsSet),
+                    allLocusContigs: allLocusContigs,
+                    eventOnlyContigs: eventContigsSet,
+                    genomeCopies: genomeCopies,
+                    genomeFocalContigs: genomeFocalContigs,
+                    contigToGenome: contigToGenome,
+                    eventRoleTitle: eventRoleTitle,
+                    refRoleTitle: refRoleTitle,
+                    genomeCount: evGenCount || totGenCount,
+                    totalLocusGenomes: totGenCount,
+                    contigCount: Object.keys(eventContigsSet).length || Object.keys(allLocusContigs).length,
+                    totalLocusContigs: Object.keys(allLocusContigs).length,
+                    shortTitle: shortTitle,
+                    nodeIdxById: nodeIdxById,
+                    nodeById: nodeById
+                });
+            });
+
+            // Sort loci: largest / most connected first, then by genome count
+            loci.sort(function(a, b) {
+                var scoreA = a.focalNodeIds.length * 2 + a.activeEdgeIds.length;
+                var scoreB = b.focalNodeIds.length * 2 + b.activeEdgeIds.length;
+                if (scoreB !== scoreA) return scoreB - scoreA;
+                return b.genomeCount - a.genomeCount;
+            });
+
+            loci.forEach(function(loc, idx) {
+                loc.index = idx;
+                loc.dropdownLabel = '#' + (idx + 1) + ': ' + loc.shortTitle + ' (' + loc.focalNodeIds.length + (loc.focalNodeIds.length === 1 ? ' gene, ' : ' genes, ') + loc.genomeCount + ' gen)';
+            });
+
+            return loci;
+        },
+
+        applyPhenomenonLocusState: function(autoPan) {
+            if (!window.GexfJS || !GexfJS.params || !GexfJS.graph) return;
+            var loci = GexfJS.params.phenomenonLoci || [];
+            var idx = (typeof GexfJS.params.activeLocusIndex === 'number') ? GexfJS.params.activeLocusIndex : -1;
+            var hlColor = GexfJS.params.highlightColorOverride || '#d500f9';
+            var filterMode = GexfJS.params.locusFilterMode || 'locus'; // 'locus' (Event + Ref), 'event' (Event only), 'subgraph', or 'off'
+
+            GexfJS.params.activeEdges = {};
+            GexfJS.params.activeNodes = {};
+            GexfJS.params.anchorNodes = {};
+            GexfJS.params.dashedEdges = {};
+            GexfJS.params.referenceEdges = {};
+            GexfJS.params.locusContigFilter = {};
+            GexfJS.params.locusSpotlightActive = false;
+            GexfJS.params.locusNodeSpotlight = {};
+            GexfJS.params.locusEdgeSpotlight = {};
+            GexfJS.params.activeNode = -1;
+            GexfJS.params.currentNode = -1;
+            this.rebuildPinnedElements();
+
+            var isSingleLocus = (idx >= 0 && idx < loci.length);
+            GexfJS.params.focusLocusActive = isSingleLocus;
+            var targetLoci = isSingleLocus ? [loci[idx]] : loci;
+
+            targetLoci.forEach(function(loc) {
+                loc.focalNodeIds.forEach(function(nid) {
+                    GexfJS.params.activeNodes[nid] = true;
+                    GexfJS.params.pinnedElements['n_' + nid] = hlColor;
+                });
+                loc.anchorNodeIds.forEach(function(aid) {
+                    if (!GexfJS.params.activeNodes[aid]) {
+                        GexfJS.params.anchorNodes[aid] = true;
+                    }
+                });
+                loc.activeEdgeIds.forEach(function(eid) {
+                    GexfJS.params.activeEdges[eid] = true;
+                    GexfJS.params.pinnedElements['e_' + eid] = hlColor;
+                    if (GexfJS.params.allPhenomDashedEdges && GexfJS.params.allPhenomDashedEdges[eid]) {
+                        GexfJS.params.dashedEdges[eid] = true;
+                    }
+                });
+                if (isSingleLocus && loc.referenceEdgeIds) {
+                    loc.referenceEdgeIds.forEach(function(reid) {
+                        if (!GexfJS.params.activeEdges[reid]) {
+                            GexfJS.params.referenceEdges[reid] = true;
+                        }
+                    });
+                }
+            });
+
+            // Apply dynamic contig filtering when focused on a single locus
+            if (isSingleLocus && filterMode !== 'off' && filterMode !== 'subgraph') {
+                var activeLoc = loci[idx];
+                var sourceContigSet = (filterMode === 'event' && Object.keys(activeLoc.eventOnlyContigs).length > 0)
+                    ? activeLoc.eventOnlyContigs
+                    : activeLoc.allLocusContigs;
+                Object.keys(sourceContigSet).forEach(function(cid) {
+                    GexfJS.params.locusContigFilter[cid] = true;
+                });
+            }
+
+            // Compute Locus Contig Spotlight (dynamic highlighting of selected contig(s) within the focused locus)
+            var spotMap = GexfJS.params.locusSpotlightContigs || {};
+            var spotContigIds = isSingleLocus ? Object.keys(spotMap) : [];
+            if (isSingleLocus && spotContigIds.length > 0) {
+                var sLoc = loci[idx];
+                var allLocNodeIds = sLoc.focalNodeIds.concat(sLoc.anchorNodeIds);
+                var locNodeSet = {};
+                allLocNodeIds.forEach(function(nid) { locNodeSet[nid] = true; });
+
+                var extractFeatInfo = function(nodeObj, cid) {
+                    if (!nodeObj || !nodeObj.featureMap) return null;
+                    var gid = sLoc.contigToGenome[cid];
+                    var fList = null;
+                    if (gid && nodeObj.featureMap[gid] && nodeObj.featureMap[gid][cid]) {
+                        fList = nodeObj.featureMap[gid][cid];
+                    } else {
+                        for (var gKey in nodeObj.featureMap) {
+                            if (gKey === 'info') continue;
+                            if (nodeObj.featureMap[gKey] && nodeObj.featureMap[gKey][cid]) {
+                                gid = gKey;
+                                fList = nodeObj.featureMap[gKey][cid];
+                                break;
+                            }
+                        }
+                    }
+                    if (!fList || !fList.length) return null;
+                    var pos = null;
+                    if (gid && nodeObj.featureMap.info && nodeObj.featureMap.info[gid] && nodeObj.featureMap.info[gid][cid] &&
+                        nodeObj.featureMap.info[gid][cid][0] && typeof nodeObj.featureMap.info[gid][cid][0].start !== 'undefined') {
+                        var st = parseInt(nodeObj.featureMap.info[gid][cid][0].start, 10);
+                        if (!isNaN(st)) pos = st;
+                    }
+                    var pegNums = [];
+                    fList.forEach(function(fid) {
+                        var m = String(fid).match(/(\d+)$/);
+                        if (m) pegNums.push(parseInt(m[1], 10));
+                    });
+                    if (pos === null && pegNums.length > 0) pos = pegNums[0];
+                    var tag = pegNums.length > 0 ? ('peg.' + pegNums.join(',')) : cid;
+                    return { pos: pos, tag: tag };
+                };
+
+                var anyFound = false;
+                allLocNodeIds.forEach(function(nid) {
+                    var nObj = sLoc.nodeById[nid];
+                    if (!nObj) return;
+                    var hasEv = false, hasRf = false;
+                    var tags = [];
+                    spotContigIds.forEach(function(cid) {
+                        var role = spotMap[cid];
+                        var fInfo = extractFeatInfo(nObj, cid);
+                        var onNode = Boolean(fInfo || (nObj.sequences && nObj.sequences[cid]));
+                        if (onNode) {
+                            if (role === 'event') hasEv = true;
+                            else hasRf = true;
+                            if (fInfo && fInfo.tag && tags.indexOf(fInfo.tag) === -1) tags.push(fInfo.tag);
+                        }
+                    });
+                    if (hasEv || hasRf) {
+                        anyFound = true;
+                        GexfJS.params.locusNodeSpotlight[nid] = {
+                            hasEvent: hasEv,
+                            hasRef: hasRf,
+                            featTag: tags.slice(0, 2).join(' | ')
+                        };
+                    }
+                });
+
+                GexfJS.graph.edgeList.forEach(function(e) {
+                    var uNode = GexfJS.graph.nodeList[e.source];
+                    var vNode = GexfJS.graph.nodeList[e.target];
+                    if (!uNode || !vNode) return;
+                    if (!locNodeSet[uNode.id] || !locNodeSet[vNode.id]) return;
+
+                    var hasEv = false, hasRf = false;
+                    var evDir = 0, rfDir = 0;
+                    spotContigIds.forEach(function(cid) {
+                        var role = spotMap[cid];
+                        var onEdge = Boolean(e.sequences && e.sequences[cid]);
+                        var uInfo = extractFeatInfo(uNode, cid);
+                        var vInfo = extractFeatInfo(vNode, cid);
+                        // Also highlight edge if both endpoint locus nodes contain this contig and the edge is an active/reference locus edge
+                        if (!onEdge && uInfo && vInfo && (GexfJS.params.activeEdges[e.id] || GexfJS.params.referenceEdges[e.id])) {
+                            if (uInfo.pos !== null && vInfo.pos !== null && Math.abs(vInfo.pos - uInfo.pos) <= 15) {
+                                onEdge = true;
+                            }
+                        }
+                        if (onEdge) {
+                            var dir = 0;
+                            if (uInfo && vInfo && uInfo.pos !== null && vInfo.pos !== null && uInfo.pos !== vInfo.pos) {
+                                dir = (vInfo.pos > uInfo.pos) ? 1 : -1;
+                            }
+                            if (role === 'event') {
+                                hasEv = true;
+                                if (dir !== 0) evDir = dir;
+                            } else {
+                                hasRf = true;
+                                if (dir !== 0) rfDir = dir;
+                            }
+                        }
+                    });
+                    if (hasEv || hasRf) {
+                        GexfJS.params.locusEdgeSpotlight[e.id] = {
+                            hasEvent: hasEv,
+                            hasRef: hasRf,
+                            eventDir: evDir,
+                            refDir: rfDir
+                        };
+                    }
+                });
+
+                GexfJS.params.locusSpotlightActive = anyFound;
+            }
+
+            GexfJS.params.path_active = !jQuery.isEmptyObject(GexfJS.params.activeEdges);
+
+            // Auto-pan & high-magnification auto-zoom to frame the active locus and its flanking anchors
+            if (autoPan && isSingleLocus) {
+                var loc = loci[idx];
+                var frameNodeIds = loc.focalNodeIds.concat(loc.anchorNodeIds);
+                var xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9, count = 0;
+                frameNodeIds.forEach(function(nid) {
+                    var nIdx = loc.nodeIdxById[nid];
+                    var n = (typeof nIdx !== 'undefined') ? GexfJS.graph.nodeList[nIdx] : null;
+                    if (n && n.coords && n.coords.base) {
+                        var bx = n.coords.base.x;
+                        var by = n.coords.base.y;
+                        var br = n.coords.base.r || 2;
+                        xmin = Math.min(xmin, bx - br);
+                        xmax = Math.max(xmax, bx + br);
+                        ymin = Math.min(ymin, by - br);
+                        ymax = Math.max(ymax, by + br);
+                        count++;
+                    }
+                });
+                if (count > 0) {
+                    GexfJS.params.centreX = (xmin + xmax) / 2;
+                    GexfJS.params.centreY = (ymin + ymax) / 2;
+                    var rawW = Math.max(1.5, xmax - xmin);
+                    var rawH = Math.max(1.5, ymax - ymin);
+                    var padX = Math.max(2.5, rawW * 0.25);
+                    var padY = Math.max(2.5, rawH * 0.25);
+                    var spanX = rawW + padX * 2;
+                    var spanY = rawH + padY * 2;
+                    var gw = (GexfJS.graphZone && GexfJS.graphZone.width > 100) ? GexfJS.graphZone.width : 800;
+                    var gh = (GexfJS.graphZone && GexfJS.graphZone.height > 100) ? GexfJS.graphZone.height : 600;
+                    var targetScale = Math.min((gw * 0.72) / spanX, (gh * 0.72) / spanY);
+                    var idealZoom = Math.round(Math.log(targetScale) / Math.log(Math.SQRT2));
+                    GexfJS.params.zoomLevel = Math.max(8, Math.min(15, idealZoom));
+                }
+            }
+
+            delete GexfJS.oldParams.zoomLevel;
         },
 
         fetchManifestNames: function(contigMap) {
@@ -897,31 +1722,187 @@ var loadGexfDependencies = function(callback) {
                     var item = phenomenaMeta[key];
                     var isActive = (activePhenom === key);
                     var rowStyle = isActive
-                        ? 'display:flex; align-items:center; justify-content:space-between; padding:5px 6px; margin-bottom:4px; background:#fdf0ff; border:1px solid #d580ff; border-radius:5px;'
-                        : 'display:flex; align-items:center; justify-content:space-between; padding:4px 6px; margin-bottom:3px; border-bottom:1px solid #f0f0f0;';
+                        ? 'padding:5px 6px; margin-bottom:4px; background:#fdf0ff; border:1px solid #d580ff; border-radius:5px;'
+                        : 'padding:3px 6px; margin-bottom:2px; border-bottom:1px solid #f0f0f0;';
                     var pillStyle = isActive
                         ? 'display:inline-block; min-width:28px; text-align:center; padding:2px 10px; background-color:#9c27b0; border:1px solid #7b1fa2; border-radius:12px; color:#fff; font-weight:bold; text-decoration:none; cursor:pointer; flex-shrink:0; margin-left:8px;'
                         : 'display:inline-block; min-width:28px; text-align:center; padding:2px 10px; background-color:#eef5fa; border:1px solid #bce8f1; border-radius:12px; color:#31708f; font-weight:bold; text-decoration:none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer; flex-shrink:0; margin-left:8px;';
 
                     html += '<div style="' + rowStyle + '">';
-                    html += '<div style="padding-right:4px;">';
-                    html += '<div style="font-size:0.92em;"><b>' + item.label + '</b> <span style="font-size:0.85em; color:#666;">(' + item.graphTerm + ')</span></div>';
-                    html += '<div style="font-size:0.78em; color:#666; line-height:1.25;">' + item.subtitle + '</div>';
-                    html += '</div>';
+                    html += '<div style="display:flex; align-items:center; justify-content:space-between;">';
+                    html += '<div style="font-size:0.92em; padding-right:4px;"><b>' + item.label + '</b></div>';
                     html += '<a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'' + key + '\'); return false;" title="' + (isActive ? 'Click to clear highlight' : 'Highlight ' + item.label + ' in graph') + '">' + item.count + '</a>';
+                    html += '</div>';
+                    if (isActive) {
+                        html += '<div style="font-size:0.82em; color:#555; margin-top:2px;">(' + item.graphTerm + ')</div>';
+                        html += '<div style="font-size:0.78em; color:#666; line-height:1.25; margin-top:1px;">' + item.subtitle + '</div>';
+                    }
                     html += '</div>';
                 });
             });
             html += '</div>';
 
-            // Active Phenomenon "What You're Seeing" Callout Banner
+            // Active Phenomenon "What You're Seeing" Callout Banner + Locus Stepper
             if (activePhenom && phenomenaMeta[activePhenom]) {
                 var activeMeta = phenomenaMeta[activePhenom];
+                var loci = (window.GexfJS && GexfJS.params && GexfJS.params.phenomenonLoci) ? GexfJS.params.phenomenonLoci : [];
+                var activeLocusIdx = (window.GexfJS && GexfJS.params && typeof GexfJS.params.activeLocusIndex === 'number') ? GexfJS.params.activeLocusIndex : -1;
+                var filterMode = (window.GexfJS && GexfJS.params && GexfJS.params.locusFilterMode) ? GexfJS.params.locusFilterMode : 'locus';
+                var hasDashed = (activePhenom === 'breaks' || activePhenom === 'rearrangements' || activePhenom === 'inversions');
+                var self = this;
+
                 html += '<div style="margin-bottom:14px; padding:8px; background:#fcf4ff; border:1px solid #d580ff; border-radius:5px; font-size:0.83em; line-height:1.35; color:#333;">';
-                html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">';
+                html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">';
                 html += '<b style="color:#6a1b9a;"><i class="fa icon-eye"></i> Viewing: ' + activeMeta.label + '</b>';
                 html += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="color:#a94442; font-weight:bold; text-decoration:none; font-size:0.9em;" title="Clear active phenomenon highlight">Clear &#10006;</a>';
                 html += '</div>';
+
+                // Visual Role Legend (3 Distinct Roles: Focal Event [Magenta], Reference Path [Ocean Blue], Flanking Anchor [Emerald Ring])
+                html += '<div style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:4px 6px; margin-bottom:6px; background:#fff; border:1px solid #ead1f5; border-radius:4px; font-size:0.9em;">';
+                html += '<span style="display:inline-flex; align-items:center;" title="' + activeMeta.nodesDesc + '"><span style="display:inline-block; width:10px; height:10px; background:#d500f9; border:2px solid #6a1b9a; border-radius:50%; margin-right:4px;"></span><b>Event / Variant</b></span>';
+                html += '<span style="display:inline-flex; align-items:center;" title="1-hop conserved core anchor boundary genes (Emerald outer ring)"><span style="display:inline-block; width:10px; height:10px; background:#ff7f00; border:2px solid #2e7d32; border-radius:50%; margin-right:4px;"></span><b>Flanking Anchor</b></span>';
+                html += '<span style="display:inline-flex; align-items:center;" title="Reference / Consensus orientation or backbone path"><span style="display:inline-block; width:14px; border-top:3px solid #0288d1; margin-right:4px;"></span><b>Ref / Consensus</b></span>';
+                if (hasDashed) {
+                    html += '<span style="display:inline-flex; align-items:center;" title="Dashed edges indicate scaffold bridges or inter-block breakpoint junctions"><span style="display:inline-block; width:14px; border-top:2px dashed #d500f9; margin-right:4px;"></span><b>Junction</b></span>';
+                }
+                html += '</div>';
+
+                // Locus Stepper Bar
+                if (loci.length > 0) {
+                    var btnStyle = 'padding:3px 7px; background:#fff; border:1px solid #b388ff; border-radius:4px; color:#4a148c; font-weight:bold; cursor:pointer; font-size:0.92em; flex-shrink:0;';
+                    html += '<div style="margin-bottom:6px; padding:5px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px;">';
+                    html += '<div style="font-size:0.9em; font-weight:bold; color:#4a148c; margin-bottom:3px; display:flex; justify-content:space-between;">';
+                    html += '<span>Locus Explorer (' + loci.length + (loci.length === 1 ? ' discrete locus' : ' discrete loci') + ')</span>';
+                    if (activeLocusIdx >= 0) {
+                        html += '<a href="javascript:void(0)" onclick="window.selectPhenomenonLocus(-1); return false;" style="font-weight:normal; color:#6a1b9a; text-decoration:underline;" title="Zoom out to show all loci at once">Show All</a>';
+                    }
+                    html += '</div>';
+                    html += '<div style="display:flex; align-items:center; gap:4px;">';
+                    html += '<button type="button" style="' + btnStyle + '" onclick="window.stepPhenomenonLocus(-1);" title="Step to previous locus and auto-center">&#9664; Prev</button>';
+                    html += '<select onchange="window.selectPhenomenonLocus(this.value);" style="flex-grow:1; min-width:0; padding:3px 4px; border:1px solid #b388ff; border-radius:4px; font-size:0.92em; background:#fff; color:#333;">';
+                    html += '<option value="-1"' + (activeLocusIdx === -1 ? ' selected' : '') + '>All ' + loci.length + ' Loci (Global View)</option>';
+                    loci.forEach(function(loc) {
+                        var sel = (loc.index === activeLocusIdx) ? ' selected' : '';
+                        var safeOpt = loc.dropdownLabel.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        html += '<option value="' + loc.index + '"' + sel + '>' + safeOpt + '</option>';
+                    });
+                    html += '</select>';
+                    html += '<button type="button" style="' + btnStyle + '" onclick="window.stepPhenomenonLocus(1);" title="Step to next locus and auto-center">Next &#9654;</button>';
+                    html += '</div>';
+
+                    // Focused Single-Locus Anatomy Card + Dynamic Contig Filter + Relative Genomes/Contigs
+                    if (activeLocusIdx >= 0 && loci[activeLocusIdx]) {
+                        var curLoc = loci[activeLocusIdx];
+                        var spotContigs = (window.GexfJS && GexfJS.params && GexfJS.params.locusSpotlightContigs) ? GexfJS.params.locusSpotlightContigs : {};
+                        var hasSpot = Object.keys(spotContigs).length > 0;
+                        html += '<div style="margin-top:6px; padding:6px; background:#fff; border:1px solid #e1bee7; border-radius:4px;">';
+
+                        // Dynamic Graph Canvas Filter Selector
+                        html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #f0e6f5;">';
+                        html += '<span style="font-weight:bold; color:#4a148c;" title="Controls which nodes and contigs remain visible on the main graph canvas while inspecting this locus"><i class="fa icon-filter"></i> Canvas Filter:</span>';
+                        html += '<select onchange="window.setLocusFilterMode(this.value);" style="padding:2px 4px; border:1px solid #ce93d8; border-radius:4px; font-size:0.9em; background:#fcf4ff; color:#333;">';
+                        html += '<option value="locus"' + (filterMode === 'locus' ? ' selected' : '') + '>Locus Contigs (Event + Ref) [' + curLoc.totalLocusContigs + ']</option>';
+                        html += '<option value="event"' + (filterMode === 'event' ? ' selected' : '') + '>Event Contigs Only [' + curLoc.eventContigs.length + ']</option>';
+                        html += '<option value="subgraph"' + (filterMode === 'subgraph' ? ' selected' : '') + '>Locus Nodes Only (Focal + Anchors)</option>';
+                        html += '<option value="off"' + (filterMode === 'off' ? ' selected' : '') + '>Full Graph (No Filter)</option>';
+                        html += '</select>';
+                        html += '</div>';
+
+                        var renderNodeChips = function(nodeIds, isAnchor) {
+                            var maxChips = 10;
+                            var shown = nodeIds.slice(0, maxChips);
+                            var chipHtml = '';
+                            shown.forEach(function(nid) {
+                                var nObj = curLoc.nodeById[nid];
+                                var nIdx = curLoc.nodeIdxById[nid];
+                                if (!nObj || typeof nIdx === 'undefined') return;
+                                var rawLbl = String(nObj.label || nid);
+                                var shortLbl = rawLbl.length > 28 ? rawLbl.substr(0, 26) + '...' : rawLbl;
+                                var safeLbl = shortLbl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                var fullTitle = (rawLbl + ' (Click to inspect features)').replace(/"/g, '&quot;');
+                                var cStyle = isAnchor
+                                    ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e8f5e9; border:1px solid #2e7d32; border-radius:10px; color:#1b5e20; font-weight:bold; text-decoration:none; font-size:0.9em;'
+                                    : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#f3e5f5; border:1px solid #ab47bc; border-radius:10px; color:#4a148c; font-weight:bold; text-decoration:none; font-size:0.9em;';
+                                chipHtml += '<a href="javascript:void(0)" style="' + cStyle + '" onclick="window.inspectNodeFromLocus(' + nIdx + '); return false;" title="' + fullTitle + '">' + safeLbl + '</a>';
+                            });
+                            if (nodeIds.length > maxChips) {
+                                chipHtml += '<span style="font-size:0.85em; color:#777;"> +' + (nodeIds.length - maxChips) + ' more</span>';
+                            }
+                            return chipHtml;
+                        };
+
+                        html += '<div style="margin-bottom:4px;"><b>Focal Genes (' + curLoc.focalNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.focalNodeIds, false) + '</div>';
+                        if (curLoc.anchorNodeIds.length > 0) {
+                            html += '<div style="margin-bottom:5px;"><b style="color:#1b5e20;">Flanking Anchors (' + curLoc.anchorNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.anchorNodeIds, true) + '</div>';
+                        }
+
+                        // Relative Genome & Contig Comparison (Event Carriers vs. Flanking / Backbone Reference)
+                        var formatGenomeList = function(gids, cids, isEvent) {
+                            if (gids.length === 0 && cids.length === 0) return '<span style="color:#888; font-style:italic;">None</span>';
+                            var maxItems = 6;
+                            var items = [];
+                            var byGenome = {};
+                            cids.forEach(function(cid) {
+                                var gid = curLoc.contigToGenome[cid] || 'unknown';
+                                if (!byGenome[gid]) byGenome[gid] = [];
+                                byGenome[gid].push(cid);
+                            });
+                            gids.forEach(function(gid) {
+                                if (!byGenome[gid]) byGenome[gid] = [];
+                            });
+                            var gKeys = Object.keys(byGenome);
+                            gKeys.slice(0, maxItems).forEach(function(gid) {
+                                var gName = (self.genomeNameMap && self.genomeNameMap[gid]) ? self.genomeNameMap[gid] : gid;
+                                var shortG = gName.length > 26 ? gName.substr(0, 24) + '...' : gName;
+                                var copies = curLoc.genomeCopies[gid] || 0;
+                                var copyBadge = (copies > 1 && (activePhenom === 'tandem_repeats' || activePhenom === 'fragmented_paralogs'))
+                                    ? ' <span style="color:#6a1b9a; font-weight:bold;">[' + copies + 'x]</span>'
+                                    : '';
+                                var roleKey = isEvent ? 'event' : 'ref';
+                                var contigLinks = byGenome[gid].slice(0, 3).map(function(cid) {
+                                    var safeCid = cid.replace(/'/g, "&apos;");
+                                    var isSelected = Boolean(spotContigs[cid]);
+                                    var pillStyle;
+                                    if (isSelected) {
+                                        pillStyle = isEvent
+                                            ? 'display:inline-block; padding:0px 5px; background:#d500f9; color:#fff; border:1px solid #6a1b9a; border-radius:8px; font-weight:bold; text-decoration:none;'
+                                            : 'display:inline-block; padding:0px 5px; background:#0288d1; color:#fff; border:1px solid #01579b; border-radius:8px; font-weight:bold; text-decoration:none;';
+                                    } else {
+                                        pillStyle = isEvent
+                                            ? 'display:inline-block; padding:0px 5px; background:#fff; color:#6a1b9a; border:1px solid #ce93d8; border-radius:8px; text-decoration:none;'
+                                            : 'display:inline-block; padding:0px 5px; background:#fff; color:#01579b; border:1px solid #81d4fa; border-radius:8px; text-decoration:none;';
+                                    }
+                                    return '<a href="javascript:void(0)" onclick="window.toggleLocusContigSpotlight(\'' + safeCid + '\', \'' + roleKey + '\', event); return false;" style="' + pillStyle + '" title="Click to highlight ' + safeCid + ' path &amp; direction in this locus (Shift+Click to compare multiple)">' + cid + (isSelected ? ' &#10003;' : '') + '</a>';
+                                }).join(' ');
+                                if (byGenome[gid].length > 3) contigLinks += ' +' + (byGenome[gid].length - 3);
+                                items.push('<div style="margin-bottom:3px;">&bull; <span title="' + gName.replace(/"/g, '&quot;') + '">' + shortG + '</span>' + copyBadge + (contigLinks ? ' ' + contigLinks : '') + '</div>');
+                            });
+                            if (gKeys.length > maxItems) {
+                                items.push('<div style="color:#777; font-style:italic;">+ ' + (gKeys.length - maxItems) + ' more genomes</div>');
+                            }
+                            return items.join('');
+                        };
+
+                        html += '<details open style="margin-top:4px; padding-top:4px; border-top:1px solid #f0e6f5; font-size:0.92em;">';
+                        html += '<summary style="cursor:pointer; font-weight:bold; color:#333; outline:none; display:flex; justify-content:space-between; align-items:center;">';
+                        html += '<span>Relative Genomes &amp; Contigs at Locus</span>';
+                        if (hasSpot) {
+                            html += '<a href="javascript:void(0)" onclick="window.clearLocusContigSpotlight(event); return false;" style="font-size:0.88em; color:#a94442; font-weight:bold; text-decoration:underline;" title="Reset contig spotlight and restore full locus colors">Reset Spotlight</a>';
+                        }
+                        html += '</summary>';
+                        html += '<div style="font-size:0.84em; color:#666; margin:2px 0 4px 0;">Click any contig ID to spotlight its path &amp; direction in the locus (Shift+Click to compare):</div>';
+                        html += '<div style="margin-top:4px;">';
+                        html += '<div style="margin-bottom:4px; padding:4px; background:#fdf4ff; border-left:3px solid #d500f9;"><b style="color:#6a1b9a;">' + curLoc.eventRoleTitle + ' (' + curLoc.eventGenomes.length + ' gen, ' + curLoc.eventContigs.length + ' seq):</b>' + formatGenomeList(curLoc.eventGenomes, curLoc.eventContigs, true) + '</div>';
+                        if (curLoc.refGenomes.length > 0 || curLoc.refContigs.length > 0) {
+                            html += '<div style="padding:4px; background:#e1f5fe; border-left:3px solid #0288d1;"><b style="color:#01579b;">' + curLoc.refRoleTitle + ' (' + curLoc.refGenomes.length + ' gen, ' + curLoc.refContigs.length + ' seq):</b>' + formatGenomeList(curLoc.refGenomes, curLoc.refContigs, false) + '</div>';
+                        }
+                        html += '</div></details>';
+
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                }
+
                 html += '<div style="margin-bottom:3px;"><b>Highlighted Nodes:</b> ' + activeMeta.nodesDesc + '</div>';
                 html += '<div style="margin-bottom:3px;"><b>Highlighted Edges:</b> ' + activeMeta.edgesDesc + '</div>';
                 html += '<div style="color:#555;"><b>Workspace Report:</b> <code>' + activeMeta.tsvReport + '</code></div>';
@@ -1130,33 +2111,44 @@ var loadGexfDependencies = function(callback) {
                 if (targetValue) hlName = "Block: " + targetValue;
                 GexfJS.params.currentHighlightName = hlName;
                 GexfJS.params.activePhenomenon = targetValue ? null : type;
+                GexfJS.params.activeLocusIndex = -1;
+                GexfJS.params.phenomenonLoci = [];
+                GexfJS.params.allPhenomDashedEdges = {};
+                this.savedPhenomenonContext = null;
                 
                 // Deep clear of ALL highlight states
                 GexfJS.params.activeEdges = {};
+                GexfJS.params.referenceEdges = {};
+                GexfJS.params.locusContigFilter = {};
+                GexfJS.params.locusSpotlightContigs = {};
+                GexfJS.params.locusSpotlightActive = false;
+                GexfJS.params.locusNodeSpotlight = {};
+                GexfJS.params.locusEdgeSpotlight = {};
                 GexfJS.params.path_active = false;
                 GexfJS.params.pinnedElements = {};
                 GexfJS.params.activeNode = -1; 
                 GexfJS.params.currentNode = -1;
-                GexfJS.params.activeNodes = {}; // Clean slate!
+                GexfJS.params.activeNodes = {};
+                GexfJS.params.anchorNodes = {};
+                GexfJS.params.dashedEdges = {};
+                GexfJS.params.focusLocusActive = false;
                 
-                var hlColor = GexfJS.params.highlightColorOverride || '#ff00ff';
+                var hlColor = GexfJS.params.highlightColorOverride || '#d500f9';
                 this.rebuildPinnedElements();
 
-                // --- HELPER: Safely lookup and activate edges by Attribute Name & Value ---
-                var addEdgesByAttr = function(attrName, attrValue) {
+                var rawEdges = {};
+                var explicitNodes = {};
+                var dashedEdges = {};
+
+                // --- HELPER: Safely lookup and collect edges by Attribute Name & Value ---
+                var addEdgesByAttr = function(attrName, attrValue, isDashed) {
                     var attrId = GexfJS._edge_attr_value[attrName];
                     if (typeof attrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[attrId]) {
                         var edges = GexfJS.path_highlights[attrId][attrValue]; 
                         if (edges) {
                             for (var edgeId in edges) {
-                                GexfJS.params.activeEdges[edgeId] = true;
-                                var edgeObj = GexfJS.graph.edgeLookup[edgeId];
-                                if (edgeObj) {
-                                    var sourceNode = GexfJS.graph.nodeList[edgeObj.source];
-                                    var targetNode = GexfJS.graph.nodeList[edgeObj.target];
-                                    if (sourceNode) GexfJS.params.activeNodes[sourceNode.id] = true;
-                                    if (targetNode) GexfJS.params.activeNodes[targetNode.id] = true;
-                                }
+                                rawEdges[edgeId] = true;
+                                if (isDashed) dashedEdges[edgeId] = true;
                             }
                         }
                     }
@@ -1173,18 +2165,17 @@ var loadGexfDependencies = function(callback) {
 
                 // --- 1. SUPERBUBBLES ---
                 if (type === 'superbubbles') {
-                    addEdgesByAttr('is_superbubble', 'true');
+                    addEdgesByAttr('is_superbubble', 'true', false);
                     GexfJS.graph.nodeList.forEach(function(node) {
                         if (checkNodeBool(node, 'is_superbubble')) {
-                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                            GexfJS.params.activeNodes[node.id] = true;
+                            explicitNodes[node.id] = true;
                         }
                     });
 
                 // --- 2. TANDEM REPEATS & SHIFTS ---
                 } else if (type === 'tandem_repeats') {
-                    addEdgesByAttr('repeat_ambiguity_detour', 'true'); // New Boolean
-                    addEdgesByAttr('sv_class', 'repeat_ambiguity_detour'); // Old fallback
+                    addEdgesByAttr('repeat_ambiguity_detour', 'true', false);
+                    addEdgesByAttr('sv_class', 'repeat_ambiguity_detour', false);
                     
                     var cnvId = GexfJS._node_attr_value['cnv_cluster_id'];
                     var conflictId = GexfJS._node_attr_value['conflict'];
@@ -1192,80 +2183,62 @@ var loadGexfDependencies = function(callback) {
                     GexfJS.graph.nodeList.forEach(function(node) {
                         var isSpecial = false;
                         if (checkNodeBool(node, 'repeat_ambiguity')) isSpecial = true;
-                        
-                        // Fallback for old graphs using cnv_cluster_id
                         if (node.attributes && typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
                             if (typeof conflictId === 'undefined' || String(node.attributes[conflictId]) !== "3") isSpecial = true;
                         }
-                        
-                        if (isSpecial) {
-                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                            GexfJS.params.activeNodes[node.id] = true; 
-                        }
+                        if (isSpecial) explicitNodes[node.id] = true;
                     });
 
                 // --- 3. FRAGMENTED SYNTENY (PARALOGS) ---
                 } else if (type === 'fragmented_paralogs') {
-                    addEdgesByAttr('repeat_fragmentation_junction', 'true');
+                    addEdgesByAttr('repeat_fragmentation_junction', 'true', false);
                     
                     var conflictId = GexfJS._node_attr_value['conflict'];
                     GexfJS.graph.nodeList.forEach(function(node) {
                         var isSpecial = false;
                         if (checkNodeBool(node, 'repeat_ambiguity_fragmentation')) isSpecial = true;
                         if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "3") isSpecial = true;
-                        
-                        if (isSpecial) {
-                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                            GexfJS.params.activeNodes[node.id] = true; 
-                        }
+                        if (isSpecial) explicitNodes[node.id] = true;
                     });
 
                 // --- 4. ALTERNATIVE PATHS ---
                 } else if (type === 'alt_paths') {
-                    addEdgesByAttr('alt_path_junction', 'true');
-                    addEdgesByAttr('alternative_path', 'true'); // Edge check based on XML
+                    addEdgesByAttr('alt_path_junction', 'true', false);
+                    addEdgesByAttr('alternative_path', 'true', false);
                     
                     var conflictId = GexfJS._node_attr_value['conflict'];
                     GexfJS.graph.nodeList.forEach(function(node) {
                         var isSpecial = false;
                         if (checkNodeBool(node, 'alternative_path')) isSpecial = true;
                         if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
-                        
-                        if (isSpecial) {
-                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                            GexfJS.params.activeNodes[node.id] = true; 
-                        }
+                        if (isSpecial) explicitNodes[node.id] = true;
                     });
 
                 // --- 5. STRUCTURAL REARRANGEMENTS ---
                 } else if (type === 'rearrangements') {
-                    addEdgesByAttr('breakpoint_junction', 'true');
-                    addEdgesByAttr('genomic_rearrangement', 'true');
-                    addEdgesByAttr('intra_contig_rearrangement', 'true');
+                    addEdgesByAttr('breakpoint_junction', 'true', true);
+                    addEdgesByAttr('genomic_rearrangement', 'true', true);
+                    addEdgesByAttr('intra_contig_rearrangement', 'true', true);
                     
                     var conflictId = GexfJS._node_attr_value['conflict'];
                     GexfJS.graph.nodeList.forEach(function(node) {
                         var isSpecial = false;
                         if (checkNodeBool(node, 'synteny_breakpoint')) isSpecial = true;
                         if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "1") isSpecial = true;
-                        
-                        if (isSpecial) {
-                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                            GexfJS.params.activeNodes[node.id] = true; 
-                        }
+                        if (isSpecial) explicitNodes[node.id] = true;
                     });
 
                 // --- 6. INVERTED BLOCKS ---
                 } else if (type === 'inversions') {
-                    addEdgesByAttr('inverted_block', 'true'); 
+                    addEdgesByAttr('inverted_block', 'true', false); 
 
                 // --- 7. ASSEMBLY BREAKS & SCAFFOLDS ---
                 } else if (type === 'breaks') {
-                    addEdgesByAttr('is_scaffold_path', 'true'); // New
-                    addEdgesByAttr('sv_class', 'potential_scaffold'); // Old
+                    addEdgesByAttr('is_scaffold_path', 'true', true);
+                    addEdgesByAttr('sv_class', 'potential_scaffold', true);
                     
                     var conflictId = GexfJS._node_attr_value['conflict'];
-                    var bridgeId = GexfJS._node_attr_value['is_scaffold_bridge']; // Old
+                    var bridgeId = GexfJS._node_attr_value['is_scaffold_bridge'];
                     
                     GexfJS.graph.nodeList.forEach(function(node) {
                         var isSpecial = false;
@@ -1273,11 +2246,7 @@ var loadGexfDependencies = function(callback) {
                         if (checkNodeBool(node, 'is_scaffold_path')) isSpecial = true;
                         if (node.attributes && typeof bridgeId !== 'undefined' && String(node.attributes[bridgeId]).toLowerCase() === 'true') isSpecial = true;
                         if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "2") isSpecial = true;
-                        
-                        if (isSpecial) {
-                            GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
-                            GexfJS.params.activeNodes[node.id] = true; 
-                        }
+                        if (isSpecial) explicitNodes[node.id] = true;
                     });
 
                 // --- BLOCK MANIFEST SUPPORT ---
@@ -1291,11 +2260,129 @@ var loadGexfDependencies = function(callback) {
                             }
                         });
                     }
+                    GexfJS.params.path_active = !jQuery.isEmptyObject(GexfJS.params.activeEdges);
+                    delete GexfJS.oldParams.zoomLevel;
+                    this.showDefaultSummary();
+                    return;
                 }
                 
-                GexfJS.params.path_active = !jQuery.isEmptyObject(GexfJS.params.activeEdges);
-                delete GexfJS.oldParams.zoomLevel;
+                GexfJS.params.allPhenomDashedEdges = dashedEdges;
+                GexfJS.params.phenomenonLoci = this.buildPhenomenonLoci(type, rawEdges, explicitNodes);
+                GexfJS.params.activeLocusIndex = -1;
+                this.applyPhenomenonLocusState(false);
                 this.showDefaultSummary();
+            });
+
+            // --- LOCUS STEPPER & NAVIGATION FUNCTIONS ---
+            window.selectPhenomenonLocus = lang.hitch(this, function(locusIdx) {
+                if (!window.GexfJS || !GexfJS.params || !GexfJS.params.activePhenomenon) return;
+                var idx = parseInt(locusIdx, 10);
+                if (isNaN(idx)) idx = -1;
+                if (GexfJS.params.activeLocusIndex !== idx) {
+                    GexfJS.params.locusSpotlightContigs = {};
+                }
+                GexfJS.params.activeLocusIndex = idx;
+
+                var baseType = GexfJS.params.activePhenomenon;
+                var labelMap = {
+                    'superbubbles': 'Bounded Variable Loci',
+                    'alt_paths': 'Accessory Islands & Indels',
+                    'tandem_repeats': 'Local / Tandem CNVs',
+                    'fragmented_paralogs': 'Dispersed Repeats / MGEs',
+                    'rearrangements': 'Synteny Breakpoints',
+                    'inversions': 'Inverted Syntenic Blocks',
+                    'breaks': 'Repeat Breaks & Scaffolds'
+                };
+                var baseTitle = labelMap[baseType] || baseType;
+                GexfJS.params.currentHighlightName = (idx >= 0) ? (baseTitle + ' (Locus #' + (idx + 1) + ')') : baseTitle;
+
+                this.applyPhenomenonLocusState(idx >= 0);
+                this.showDefaultSummary();
+            });
+
+            window.stepPhenomenonLocus = lang.hitch(this, function(delta) {
+                if (!window.GexfJS || !GexfJS.params || !GexfJS.params.phenomenonLoci) return;
+                var loci = GexfJS.params.phenomenonLoci;
+                if (loci.length === 0) return;
+                var cur = (typeof GexfJS.params.activeLocusIndex === 'number') ? GexfJS.params.activeLocusIndex : -1;
+                var nextIdx;
+                if (cur === -1) {
+                    nextIdx = (delta >= 0) ? 0 : (loci.length - 1);
+                } else {
+                    nextIdx = (cur + delta + loci.length) % loci.length;
+                }
+                window.selectPhenomenonLocus(nextIdx);
+            });
+
+            window.setLocusFilterMode = lang.hitch(this, function(mode) {
+                if (!window.GexfJS || !GexfJS.params) return;
+                GexfJS.params.locusFilterMode = mode || 'locus';
+                this.applyPhenomenonLocusState(false);
+                this.showDefaultSummary();
+            });
+
+            window.toggleLocusContigSpotlight = lang.hitch(this, function(contigId, role, evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (!window.GexfJS || !GexfJS.params || !contigId) return;
+                if (!GexfJS.params.locusSpotlightContigs) GexfJS.params.locusSpotlightContigs = {};
+                var current = GexfJS.params.locusSpotlightContigs;
+                var isMulti = evt && (evt.shiftKey || evt.metaKey || evt.ctrlKey);
+                var targetRole = (role === 'reference') ? 'reference' : 'event';
+
+                if (isMulti) {
+                    if (current[contigId]) {
+                        delete current[contigId];
+                    } else {
+                        current[contigId] = targetRole;
+                    }
+                } else {
+                    var keys = Object.keys(current);
+                    if (keys.length === 1 && current[contigId] === targetRole) {
+                        GexfJS.params.locusSpotlightContigs = {};
+                    } else {
+                        var nextMap = {};
+                        nextMap[contigId] = targetRole;
+                        GexfJS.params.locusSpotlightContigs = nextMap;
+                    }
+                }
+                this.applyPhenomenonLocusState(false);
+                this.showDefaultSummary();
+            });
+
+            window.clearLocusContigSpotlight = lang.hitch(this, function(evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (!window.GexfJS || !GexfJS.params) return;
+                GexfJS.params.locusSpotlightContigs = {};
+                this.applyPhenomenonLocusState(false);
+                this.showDefaultSummary();
+            });
+
+            window.inspectNodeFromLocus = lang.hitch(this, function(nodeIndex) {
+                if (!window.GexfJS || !GexfJS.params || !GexfJS.graph) return;
+                var n = GexfJS.graph.nodeList[nodeIndex];
+                if (n && n.coords && n.coords.base) {
+                    GexfJS.params.centreX = n.coords.base.x;
+                    GexfJS.params.centreY = n.coords.base.y;
+                }
+                window.displayNode(nodeIndex);
+            });
+
+            window.restorePhenomenonContext = lang.hitch(this, function() {
+                if (!this.savedPhenomenonContext || !window.GexfJS || !GexfJS.params) {
+                    window.displayNode(-1);
+                    return;
+                }
+                var ctx = this.savedPhenomenonContext;
+                this.savedPhenomenonContext = null;
+                GexfJS.params.activePhenomenon = null; // Ensure highlightSpecial doesn't toggle off
+                window.highlightSpecial(ctx.type);
+                if (typeof ctx.locusIndex === 'number' && ctx.locusIndex >= 0) {
+                    if (ctx.spotlightContigs) {
+                        GexfJS.params.activeLocusIndex = ctx.locusIndex;
+                        GexfJS.params.locusSpotlightContigs = jQuery.extend({}, ctx.spotlightContigs);
+                    }
+                    window.selectPhenomenonLocus(ctx.locusIndex);
+                }
             });
 
             var originalDisplayNode = window.displayNode;
@@ -1305,12 +2392,24 @@ var loadGexfDependencies = function(callback) {
 
                 // --- START FIX 1: Check for Deselect & Clean Up ---
                 if (nodeIndex === -1 || typeof nodeIndex === 'undefined') {
+                    this.savedPhenomenonContext = null;
                     if (window.GexfJS && GexfJS.params) {
                         // Ensure all temporary highlight arrays are wiped
                         GexfJS.params.activeEdges = {};
+                        GexfJS.params.referenceEdges = {};
+                        GexfJS.params.locusContigFilter = {};
+                        GexfJS.params.locusSpotlightContigs = {};
+                        GexfJS.params.locusSpotlightActive = false;
+                        GexfJS.params.locusNodeSpotlight = {};
+                        GexfJS.params.locusEdgeSpotlight = {};
                         GexfJS.params.activeNodes = {};
+                        GexfJS.params.anchorNodes = {};
+                        GexfJS.params.dashedEdges = {};
+                        GexfJS.params.focusLocusActive = false;
                         GexfJS.params.path_active = false;
                         GexfJS.params.activePhenomenon = null;
+                        GexfJS.params.activeLocusIndex = -1;
+                        GexfJS.params.phenomenonLoci = [];
                         
                         // CRITICAL: Wipe temporary pins and restore only persistent user pins
                         this.rebuildPinnedElements(); 
@@ -1322,7 +2421,24 @@ var loadGexfDependencies = function(callback) {
                 var node = GexfJS.graph.nodeList[nodeIndex];
                 if (!node) return;
                 
+                // Save active phenomenon & locus context so the user can return to their exact locus after inspecting a gene
+                if (GexfJS.params.activePhenomenon) {
+                    this.savedPhenomenonContext = {
+                        type: GexfJS.params.activePhenomenon,
+                        locusIndex: (typeof GexfJS.params.activeLocusIndex === 'number') ? GexfJS.params.activeLocusIndex : -1,
+                        highlightName: GexfJS.params.currentHighlightName,
+                        spotlightContigs: jQuery.extend({}, GexfJS.params.locusSpotlightContigs || {})
+                    };
+                }
+
                 GexfJS.params.activePhenomenon = null;
+                GexfJS.params.focusLocusActive = false;
+                GexfJS.params.referenceEdges = {};
+                GexfJS.params.locusContigFilter = {};
+                GexfJS.params.locusSpotlightContigs = {};
+                GexfJS.params.locusSpotlightActive = false;
+                GexfJS.params.locusNodeSpotlight = {};
+                GexfJS.params.locusEdgeSpotlight = {};
                 GexfJS.params.currentHighlightName = "Node: " + (node.label || node.id);
 
                 var featureAttrIndex = null;
@@ -1331,10 +2447,11 @@ var loadGexfDependencies = function(callback) {
                 }
 
                 // 1. Extract the raw Feature Mapping (JSON) to preserve hierarchy
+                var featureAttrIndex = GexfJS._node_attr_value ? GexfJS._node_attr_value["features"] : null;
                 var featureMap = null;
                 var targetIds = [];
 
-                if (featureAttrIndex !== null && node.attributes[featureAttrIndex]) {
+                if (featureAttrIndex !== null && typeof featureAttrIndex !== 'undefined' && node.attributes[featureAttrIndex]) {
                     try {
                         var rawJson = node.attributes[featureAttrIndex].replace(/""/g, '"');
                         featureMap = JSON.parse(rawJson);
@@ -1387,6 +2504,19 @@ var loadGexfDependencies = function(callback) {
             if (typeof GexfJS.params.pinsMuted === 'undefined') GexfJS.params.pinsMuted = false;
             GexfJS.params.currentHighlightName = "Selection";
             GexfJS.params.activePhenomenon = null;
+            GexfJS.params.activeLocusIndex = -1;
+            GexfJS.params.phenomenonLoci = [];
+            GexfJS.params.anchorNodes = {};
+            GexfJS.params.dashedEdges = {};
+            GexfJS.params.referenceEdges = {};
+            GexfJS.params.locusContigFilter = {};
+            GexfJS.params.locusSpotlightContigs = {};
+            GexfJS.params.locusSpotlightActive = false;
+            GexfJS.params.locusNodeSpotlight = {};
+            GexfJS.params.locusEdgeSpotlight = {};
+            if (!GexfJS.params.locusFilterMode) GexfJS.params.locusFilterMode = 'locus';
+            GexfJS.params.focusLocusActive = false;
+            this.savedPhenomenonContext = null;
             if (typeof GexfJS.params.muteDefaultColors === 'undefined') GexfJS.params.muteDefaultColors = false; 
             GexfJS.params.activeGenomeFilter = {};
             GexfJS.params.activeContigFilter = {};
@@ -1741,20 +2871,30 @@ var loadGexfDependencies = function(callback) {
                 summaryHtml += '</div>';
                 linksHtml = summaryHtml + hierarchyHtml;
             } else {
-                html += '<ul style="margin-top:10px; padding-left:20px; list-style-type: square;">';
+                linksHtml += '<ul style="margin-top:10px; padding-left:20px; list-style-type: square;">';
                 (records || []).forEach(function(rec) {
                     var id = rec.genome_id || rec.patric_id;
                     var name = rec.genome_name || id;
                     // For pure genome nodes, pointing to the genome page
-                    html += '<li><a href="/view/Genome/' + encodeURIComponent(id) + '" target="_blank" title="Open Genome Page in New Tab">' + name + '</a></li>';
+                    linksHtml += '<li><a href="/view/Genome/' + encodeURIComponent(id) + '" target="_blank" title="Open Genome Page in New Tab">' + name + '</a></li>';
                 });
-                html += '</ul>';
+                linksHtml += '</ul>';
             }
 
             var titleSpinner = isLoading ? ' <i class="fa fa-spinner fa-spin" style="font-size:0.6em; color:#999;" title="Fetching extended annotations..."></i>' : '';
 
             var content = '<div style="padding:10px;">';
-            // Inline color boxes removed from the title header as well
+            if (this.savedPhenomenonContext && this.savedPhenomenonContext.type) {
+                var backLabel = this.savedPhenomenonContext.highlightName || 'Phenomenon';
+                content += '<div style="margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:4px;">';
+                content += '<a href="javascript:void(0)" onclick="window.restorePhenomenonContext(); return false;" style="display:inline-block; padding:3px 8px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px; color:#4a148c; font-weight:bold; font-size:0.82em; text-decoration:none;" title="Return to the active phenomenon &amp; locus stepper">&#9664; Back to ' + backLabel + '</a>';
+                content += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="font-size:0.8em; color:#666; text-decoration:none;" title="Return to full Graph Summary">Summary</a>';
+                content += '</div>';
+            } else {
+                content += '<div style="margin-bottom:8px;">';
+                content += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="display:inline-block; padding:2px 8px; background:#eef4f9; border:1px solid #bce8f1; border-radius:4px; color:#31708f; font-weight:bold; font-size:0.82em; text-decoration:none;" title="Clear selection and return to Graph Summary">&#9664; Back to Summary</a>';
+                content += '</div>';
+            }
             content += '<div style="margin-bottom:5px;"><h3 style="margin:0; display:inline; word-wrap:break-word;">' + node.label + titleSpinner + '</h3></div>';
             content += attrHtml;
             content += linksHtml;
