@@ -154,7 +154,7 @@ define([
         if (!currentValue) {
           return;
         }
-        var nextValue = currentValue.slice(0, match.start) + currentValue.slice(match.end);
+        var nextValue = currentValue.slice(0, match.outerStart) + currentValue.slice(match.outerEnd);
         nextValue = nextValue.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n');
         this._setInputTextValue(nextValue);
       },
@@ -509,7 +509,9 @@ define([
               if (!selectedPath || typeof selectedPath !== 'string') {
                 return;
               }
-              var pathOnly = selectedPath.trim();
+              // Always quoted, so a path with spaces stays one path (one
+              // rule users can copy when typing paths by hand).
+              var pathOnly = '"' + selectedPath.trim() + '"';
               var current = _self._getInputValue();
               var separator = '';
               if (current.length > 0 && !/\s$/.test(current)) {

@@ -325,7 +325,19 @@ define([
           return;
         }
         var parentTag = parentElement.tagName ? parentElement.tagName.toLowerCase() : '';
-        if (parentTag === 'code' || parentTag === 'pre' || parentTag === 'a' || parentTag === 'script' || parentTag === 'style') {
+        if (parentTag === 'code') {
+          // Inline code whose whole text is one workspace path becomes a
+          // chip (agents write paths in backticks); code blocks, links and
+          // code with anything else in it stay as they are.
+          var grandTag = parentElement.parentElement && parentElement.parentElement.tagName
+            ? parentElement.parentElement.tagName.toLowerCase() : '';
+          var codePath = WorkspacePathUtils.wholePath(parentElement.textContent);
+          if (codePath && grandTag !== 'pre' && grandTag !== 'a' && parentElement.parentNode) {
+            parentElement.parentNode.replaceChild(this._createWorkspacePathChipNode(codePath), parentElement);
+          }
+          return;
+        }
+        if (parentTag === 'pre' || parentTag === 'a' || parentTag === 'script' || parentTag === 'style') {
           return;
         }
 
@@ -338,11 +350,12 @@ define([
         var fragment = document.createDocumentFragment();
         var cursor = 0;
         matches.forEach(lang.hitch(this, function(match) {
-          if (match.start > cursor) {
-            fragment.appendChild(document.createTextNode(textValue.slice(cursor, match.start)));
+          // The chip replaces the path and its quotes, if any.
+          if (match.outerStart > cursor) {
+            fragment.appendChild(document.createTextNode(textValue.slice(cursor, match.outerStart)));
           }
           fragment.appendChild(this._createWorkspacePathChipNode(match.path));
-          cursor = match.end;
+          cursor = match.outerEnd;
         }));
         if (cursor < textValue.length) {
           fragment.appendChild(document.createTextNode(textValue.slice(cursor)));
