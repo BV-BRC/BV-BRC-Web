@@ -269,30 +269,6 @@ define([
     },
 
     /**
-     * Enables title editing functionality
-     * - Sets editing flag
-     * - Updates cursor style to indicate clickable
-     */
-    enableEditing: function() {
-      this.editingEnabled = true;
-      this.titleDisplay.style.cursor = 'pointer';
-    },
-
-    /**
-     * Disables title editing functionality
-     * - Clears editing flag
-     * - Updates cursor style
-     * - Cancels any active editing
-     */
-    disableEditing: function() {
-      this.editingEnabled = false;
-      this.titleDisplay.style.cursor = 'default';
-      if (this.isEditing) {
-        this.cancelEditing();
-      }
-    },
-
-    /**
      * Sets the maximum length for titles
      * - Updates maxLength property
      * - Updates TextBox constraints

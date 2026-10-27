@@ -121,14 +121,6 @@ define([
         },
 
         /**
-         * Returns promise that resolves when initialization is complete
-         * Used by child widgets to ensure container is ready
-         */
-        whenInitialized: function() {
-            return this._initialized.promise;
-        },
-
-        /**
          * Main setup method called after widget creation
          * - Initializes new chat session
          * - Creates UI components (title, display, input)

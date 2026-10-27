@@ -30,11 +30,10 @@ define([
   './data/SuggestedQuestions', // Suggested questions data module
   './SessionFilesExplorerAdapter',
   './WorkflowsExplorerAdapter',
-  './WorkflowEngine',
   './PlanTracker',
   './TurnFollow' // keep the progress card in view while a turn runs
 ], function (
-  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, WorkflowEngine, PlanTracker, TurnFollow
+  declare, ContentPane, domConstruct, on, topic, lang, domClass, domStyle, request, markdownit, linkAttributes, ChatMessage, SuggestedQuestions, SessionFilesExplorerAdapter, WorkflowsExplorerAdapter, PlanTracker, TurnFollow
 ) {
 
   /**
@@ -293,20 +292,6 @@ define([
             error.message = 'No job data found.\n\n' + error.message;
             this.onQueryError(error);
         }));
-    },
-
-    _unwrapReplayResultPayload: function(replayResponse) {
-      if (!replayResponse || typeof replayResponse !== 'object') {
-        return null;
-      }
-      var topResult = replayResponse.result;
-      if (!topResult || typeof topResult !== 'object') {
-        return null;
-      }
-      if (topResult.result && typeof topResult.result === 'object' && !Array.isArray(topResult.result)) {
-        return topResult.result;
-      }
-      return topResult;
     },
 
     setActivePanel: function(panel) {
@@ -593,23 +578,6 @@ define([
       this.sessionFilesError = error || null;
       this.sessionFilesLoading = false;
       this._renderFilesPanel();
-    },
-
-    _formatTimestamp: function(value) {
-      if (!value) return 'Unknown';
-      var date = new Date(value);
-      if (isNaN(date.getTime())) return value;
-      return date.toLocaleString();
-    },
-
-    _formatSize: function(file) {
-      if (file && file.size_formatted) {
-        return file.size_formatted;
-      }
-      if (file && typeof file.size_bytes === 'number') {
-        return file.size_bytes.toLocaleString() + ' bytes';
-      }
-      return 'Unknown';
     },
 
     _renderFilesPanel: function() {

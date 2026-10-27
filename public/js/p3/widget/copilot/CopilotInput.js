@@ -111,15 +111,6 @@ define([
         });
       },
 
-      _escapeHtml: function(text) {
-        if (typeof text !== 'string') {
-          return text;
-        }
-        var div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-      },
-
       _getInputValue: function() {
         if (!this.textArea) {
           return '';
@@ -491,10 +482,6 @@ define([
         }));
       },
 
-      _renderWorkspacePathTokenEditor: function() {
-        this._renderAttachmentChips();
-      },
-
       _openWorkspaceChooser: function() {
         var _self = this;
         var userPath = (window.App && window.App.user && window.App.user.id)
@@ -583,11 +570,6 @@ define([
         // Pass through original query for clarification flows
         if (toolMetadata.originalQuery) {
           assistantMessage.originalQuery = toolMetadata.originalQuery;
-        }
-
-        // Source tool for reference
-        if (toolMetadata.source_tool) {
-          assistantMessage.source_tool = toolMetadata.source_tool;
         }
       },
 
@@ -1621,13 +1603,6 @@ define([
       },
 
       /**
-       * Returns the current execution mode ('plan' | 'execute').
-       */
-      getExecutionMode: function() {
-        return this.executionMode === 'execute' ? 'execute' : 'plan';
-      },
-
-      /**
        * Switches the Plan/Execute mode.
        *
        * @param {'plan'|'execute'} mode
@@ -2063,24 +2038,6 @@ define([
             };
           })
         };
-      },
-
-      /**
-       * Updates model selection UI text
-       */
-      setModelText: function(model) {
-        if (!this.modelText) {
-          return;
-        }
-        if (model) {
-          model = model.split('/').reverse()[0];
-          if (model.length > 30) {
-            model = model.substring(0, 30) + '...';
-          }
-          this.modelText.innerHTML = 'Model: ' + model;
-        } else {
-          this.modelText.innerHTML = 'Model: None';
-        }
       },
 
       setStatePrompt: function(statePrompt) {

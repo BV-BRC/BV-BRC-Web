@@ -433,7 +433,6 @@ define([
                                     // Extract gateway-classified card from the SSE event data.
                                     if (parsed && parsed.card && parsed.card.card_type) {
                                         toolMetadata = {
-                                            source_tool: parsed.tool || parsed.source_tool || null,
                                             card: parsed.card
                                         };
                                     }
@@ -666,23 +665,6 @@ define([
 
                 if (onError) onError(errorToShow);
             });
-        },
-
-        isQueryAbortableTool: function(toolId) {
-            if (!toolId || typeof toolId !== 'string') return false;
-            var normalized = toolId.split('.').pop();
-            return normalized === 'bvbrc_query_collection' ||
-                normalized === 'query_collection' ||
-                normalized === 'bvbrc_global_data_search' ||
-                normalized === 'bvbrc_search_data';
-        },
-
-        getCurrentStreamState: function() {
-            return {
-                job_id: this.currentJobId || null,
-                tool_id: this.currentActiveToolId || null,
-                has_active_stream: !!this.currentAbortController
-            };
         },
 
         /**
@@ -973,67 +955,6 @@ define([
         },
 
         /**
-         * Retrieves saved prompts for user
-         * Implementation:
-         * - Gets prompts from user prompts endpoint
-         * - Returns first prompt in array
-         */
-        getUserPrompts: function() {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.get(this.apiUrlBase + '/get-user-prompts?user_id=' + _self.user_id, {
-                headers: {
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response.prompts[0];
-            }).catch(function(error) {
-                console.error('Error getting user prompts:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Saves a new prompt
-         * Implementation:
-         * - Posts prompt name and text
-         * - Shows dialog for length errors
-         * - Publishes general errors to topic
-         */
-        savePrompt: function(promptName, promptText) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var _self = this;
-            return request.post(this.apiUrlBase + '/save-prompt', {
-                data: JSON.stringify({
-                    name: promptName,
-                    text: promptText,
-                    user_id: _self.user_id
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                console.log('Prompt saved:', response);
-                return true;
-            }).catch(function(error) {
-                if (error.response && error.response.status === 413) {
-                    new Dialog({
-                        title: "Error",
-                        content: "Prompt too long, please shorten it.",
-                        style: "width: 300px"
-                    }).show();
-                } else {
-                    topic.publish('CopilotApiError', {
-                        error: error
-                    });
-                }
-            });
-        },
-
-        /**
          * Deletes a chat session
          * Implementation:
          * - Posts session ID to delete endpoint
@@ -1120,51 +1041,6 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('Error setting conversation rating:', error);
-                throw error;
-            });
-        },
-
-        // submitWorkflowForExecution, getWorkflowById, getWorkflowStatus,
-        // getBatchWorkflowStatus removed — workflow cards have been deleted.
-        // Workflow monitoring is handled by the gateway workflow monitor service.
-
-        /**
-         * Searches stored RAG chunk references for a message/session scope.
-         * @param {Object} filters Query filters (message_id/session_id/user_id/rag_db/etc.)
-         * @returns {Promise<Object>} Paginated chunk search response
-         */
-        searchRagChunkReferences: function(filters) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var safeFilters = (filters && typeof filters === 'object') ? filters : {};
-            var queryParts = [];
-
-            var appendQuery = function(key, value) {
-                if (value === undefined || value === null) return;
-                if (typeof value === 'string' && value.trim() === '') return;
-                queryParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(String(value)));
-            };
-
-            appendQuery('chunk_id', safeFilters.chunk_id);
-            appendQuery('rag_db', safeFilters.rag_db);
-            appendQuery('rag_api_name', safeFilters.rag_api_name);
-            appendQuery('doc_id', safeFilters.doc_id);
-            appendQuery('source_id', safeFilters.source_id);
-            appendQuery('session_id', safeFilters.session_id);
-            appendQuery('user_id', safeFilters.user_id);
-            appendQuery('message_id', safeFilters.message_id);
-            appendQuery('limit', safeFilters.limit);
-            appendQuery('offset', safeFilters.offset);
-            appendQuery('include_content', typeof safeFilters.include_content === 'boolean' ? String(safeFilters.include_content) : 'true');
-
-            return request.get(this.apiUrlBase + '/rag-chunk-search?' + queryParts.join('&'), {
-                headers: {
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('[CopilotApi] Error searching RAG chunk references:', error);
                 throw error;
             });
         },
@@ -1256,81 +1132,6 @@ define([
         },
 
         // ==================== Planning Agent API Methods ====================
-
-        /**
-         * Submit answers to planning agent clarification questions.
-         */
-        answerPlanQuestions: function(answers, originalQuery, sessionId) {
-            return request.post(this.apiUrlBase + '/answer-questions', {
-                data: JSON.stringify({
-                    answers: answers,
-                    original_query: originalQuery,
-                    session_id: sessionId
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            });
-        },
-
-        /**
-         * Approve a plan and start executing the first step.
-         * Returns an SSE stream — use with fetch(), not xhr.
-         */
-        approvePlan: function(planId, plan, sessionId) {
-            return fetch(this.apiUrlBase + '/plan/' + encodeURIComponent(planId) + '/approve', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                body: JSON.stringify({
-                    plan: plan,
-                    session_id: sessionId
-                })
-            });
-        },
-
-        /**
-         * Execute the next step in a plan.
-         * Returns an SSE stream — use with fetch(), not xhr.
-         */
-        executeNextStep: function(planId, plan, currentStepIndex, completedResults, sessionId) {
-            return fetch(this.apiUrlBase + '/plan/' + encodeURIComponent(planId) + '/execute-next', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                body: JSON.stringify({
-                    plan: plan,
-                    current_step_index: currentStepIndex,
-                    completed_step_results: completedResults || {},
-                    session_id: sessionId
-                })
-            });
-        },
-
-        /**
-         * Skip a step during plan execution.
-         */
-        skipPlanStep: function(planId, stepId, plan, currentStepIndex, completedResults, sessionId) {
-            return fetch(this.apiUrlBase + '/plan/' + encodeURIComponent(planId) + '/skip-step/' + encodeURIComponent(stepId), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                body: JSON.stringify({
-                    plan: plan,
-                    current_step_index: currentStepIndex,
-                    completed_step_results: completedResults || {},
-                    session_id: sessionId
-                })
-            });
-        },
 
         /**
          * Edit remaining steps of a plan.

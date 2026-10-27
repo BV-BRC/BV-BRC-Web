@@ -70,11 +70,6 @@ define([
       this.startedAt = null;
     },
 
-    /** The turn's steps so far (for the finished message's "What I did"). */
-    getSteps: function() {
-      return this.steps.slice();
-    },
-
     /**
      * Main entry point - handles any SSE event
      * @param {string} eventName - The event type
@@ -132,14 +127,6 @@ define([
       this.currentStatusMessage.steps = this.steps.slice();
       this.currentStatusMessage.started_at = this.startedAt;
 
-      return this.currentStatusMessage;
-    },
-
-    /**
-     * Gets the current status message for removal
-     * @returns {Object|null} Current status message
-     */
-    getStatusMessageForRemoval: function() {
       return this.currentStatusMessage;
     },
 

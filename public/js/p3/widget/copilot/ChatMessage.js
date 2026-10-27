@@ -98,10 +98,6 @@ define([
       return div.innerHTML;
     },
 
-    _buildWorkspaceBrowserUrl: function(path) {
-      return WorkspacePathUtils.toWorkspaceBrowserUrl(path);
-    },
-
     _createWorkspacePathChipNode: function(path) {
       var openLink = WorkspacePathUtils.toWorkspaceBrowserUrl(path);
       var chipTag = openLink ? 'a' : 'span';
