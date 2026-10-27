@@ -472,11 +472,11 @@ define([
         'DownloadSelection',
         'fa icon-download fa-2x',
         {
-          label: 'DWNLD',
+          label: 'Selected',
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
-          tooltip: 'Download Selection',
+          tooltip: 'Download selected rows',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
