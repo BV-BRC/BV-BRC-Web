@@ -551,8 +551,6 @@ var loadGexfDependencies = function(callback) {
             }));
             
 
-            this.viewerPane = new ContentPane({ region: "center", content: this.graphTemplateString, style: "padding:0; overflow:hidden;" });
-
             // 1. Create the Center Pane (The Graph)
             this.viewerPane = new ContentPane({
                 region: "center",
@@ -617,7 +615,7 @@ var loadGexfDependencies = function(callback) {
             this.onSetState("state", null, this.state);
         },
         
-destroy: function(){
+        destroy: function(){
             // Clear resize listeners and rendering timers
             if (this._resizeHandle){ this._resizeHandle.remove(); }
             if (window.GexfJS && GexfJS.timeRefresh) { clearInterval(GexfJS.timeRefresh); }
@@ -645,6 +643,13 @@ destroy: function(){
             window.highlightSpecial = undefined;
             window.removePin = undefined;
             window.doHighlightPath = undefined;
+            window.toggleMutePins = undefined;
+            window.toggleMuteDefaultColors = undefined;
+            window.toggleGenomeFilter = undefined;
+            window.toggleContigFilter = undefined;
+            window.resetManifestFilter = undefined;
+            window.onGenomeDetailsToggle = undefined;
+            window.onGuideDetailsToggle = undefined;
 
             // 5. Reset the module loader flag!
             // This guarantees that if the user clicks back to the graph later, 
@@ -700,39 +705,6 @@ destroy: function(){
                 });
             }
             if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel; 
-        },
-
-        applyColorToGraph: function(color) {
-            if (!window.GexfJS || !GexfJS.params) return;
-            if (!GexfJS.params.userPins) GexfJS.params.userPins = {};
-            
-            var name = GexfJS.params.currentHighlightName || "Custom Selection";
-            var elementsToPin = {};
-            var applied = false;
-
-            if (GexfJS.params.path_active && GexfJS.params.activeEdges) {
-                Object.keys(GexfJS.params.activeEdges).forEach(function(edgeId) {
-                    elementsToPin['e_' + edgeId] = true;
-                    applied = true;
-                });
-            } 
-            if (GexfJS.params.activeNodes && Object.keys(GexfJS.params.activeNodes).length > 0) {
-                Object.keys(GexfJS.params.activeNodes).forEach(function(nodeId) {
-                     elementsToPin['n_' + nodeId] = true;
-                     applied = true;
-                });
-            }
-
-            if (applied) {
-                // Save to persistent user pins, overwriting if the name already exists
-                GexfJS.params.userPins[name] = { color: color, elements: elementsToPin };
-                this.rebuildPinnedElements();
-                
-                // Refresh the summary panel to instantly show the new pin!
-                if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Graph Summary") !== -1) {
-                    this.showDefaultSummary();
-                }
-            }
         },
 
         fetchManifestNames: function(contigMap) {
@@ -815,69 +787,171 @@ destroy: function(){
             var html = '<div style="padding:10px;">';
             html += '<h3 style="margin-top:0;">Graph Summary</h3>';
             
-            // Basic Statistics
-            html += '<table style="width:100%; font-size:0.95em; margin-bottom:15px; border-collapse: collapse;">';
+            // Basic Statistics ("Total" counts)
+            html += '<table style="width:100%; font-size:0.95em; margin-bottom:12px; border-collapse: collapse;">';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Genomes:</b></td><td style="text-align:right;">' + (s.total_genomes || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Contigs:</b></td><td style="text-align:right;">' + (s.total_contigs || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Features:</b></td><td style="text-align:right;">' + (s.total_features || 0) + '</td></tr>';
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Nodes:</b></td><td style="text-align:right;">' + (s.total_nodes || 0) + '</td></tr>';
             html += '</table>';
 
-            
-            
+            // Collapsible Biological Phenomena Guide (placed directly between Total counts and Phenomena menu)
+            var guideOpenAttr = this.guideExpanded ? ' open' : '';
+            html += '<details' + guideOpenAttr + ' ontoggle="window.onGuideDetailsToggle(this.open)" style="margin-bottom:12px; font-size:0.84em; background:#f4f8fb; border:1px solid #d9e8f5; border-radius:4px; padding:6px 8px;">';
+            html += '<summary style="cursor:pointer; font-weight:bold; color:#2b5c8f; outline:none;"><i class="fa icon-info-circle"></i> Guide to Biological Phenomena</summary>';
+            html += '<div style="margin-top:6px; line-height:1.38; color:#444;">';
+            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, or small indels flanked by the same conserved core anchor genes.<br>&bull; <i>Accessory Islands &amp; Indels (Alt Paths):</i> Asymmetric minority detours, genomic islands, prophages, or HGT insertions branching off the conserved chromosomal backbone.</div>';
+            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Dispersed Repeats / MGEs (Fragmented CNV):</i> Mobile genetic elements (IS elements, transposases) or multi-locus paralogs split across separate genomic regions or contigs.</div>';
+            html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Rearrangements):</i> Large-scale chromosomal translocations, NAHR-mediated fusions, or chimeric misassemblies joining distinct syntenic blocks.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the consensus pan-genome coordinate frame.</div>';
+            html += '<div><b>4. Assembly &amp; Scaffolding:</b><br>&bull; <i>Repeat Breaks &amp; Scaffolds:</i> Contig ends shattered inside shared repetitive elements paired with candidate reference-guided scaffold bridges.</div>';
+            html += '</div></details>';
+
             // Map the old/new summary counts safely
             var countSuperbubbles = s.superbubbles || s.is_superbubble || 0;
-            
-            // Map the overarching CNV count to Tandem Repeats for now
             var countTandem = s.copy_number_variants || s.tandem_repeats || s.cnv_clusters || 0; 
-            
-            // (Note: Fragmented is 0 because the backend combined them in the summary JSON. 
-            // The button will still work to highlight them in the graph!)
             var countFragmented = s.fragmented_cnv || s.repeat_fragmentation || 0; 
-            
             var countAltPaths = s.alternative_paths || s.alt_paths || 0;
-            
-            // Map the exact structural_rearrangements key
             var countRearrangements = s.structural_rearrangements || s.rearrangements || 0;
-            
             var countInversions = s.inverted_blocks || s.inversions || 0;
             var countBreaks = s.assembly_breaks || s.scaffolds || 0;
 
-            var pillStyle = 'display:inline-block; padding:2px 10px; background-color:#eef5fa; border:1px solid #bce8f1; border-radius:12px; color:#31708f; font-weight:bold; text-decoration:none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer;';
+            var activePhenom = (window.GexfJS && GexfJS.params) ? GexfJS.params.activePhenomenon : null;
 
-            html += '<table style="width:100%; font-size:0.95em; margin-bottom:15px; border-collapse: separate; border-spacing: 0 6px;">';
+            var phenomenaMeta = {
+                'superbubbles': {
+                    label: 'Bounded Variable Loci',
+                    graphTerm: 'Superbubbles',
+                    subtitle: 'Allelic swaps, cassettes & small indels between conserved anchors',
+                    count: countSuperbubbles,
+                    nodesDesc: 'Conserved core boundary anchors and interior allelic/cassette gene families',
+                    edgesDesc: 'Alternative allelic paths traversing the bounded variable locus',
+                    tsvReport: '*_superbubbles.tsv'
+                },
+                'alt_paths': {
+                    label: 'Accessory Islands & Indels',
+                    graphTerm: 'Alt Paths',
+                    subtitle: 'Strain-specific genomic islands, prophages & HGT detours off backbone',
+                    count: countAltPaths,
+                    nodesDesc: 'Accessory genes and backbone branch points',
+                    edgesDesc: 'Minority structural detours and horizontal insertion junctions',
+                    tsvReport: '*_structural_variants.tsv'
+                },
+                'tandem_repeats': {
+                    label: 'Local / Tandem CNVs',
+                    graphTerm: 'Repeat Loops',
+                    subtitle: 'Tandem gene duplications & local paralogous copy-number expansions',
+                    count: countTandem,
+                    nodesDesc: 'Multi-copy paralogous gene nodes within local CNV clusters',
+                    edgesDesc: 'Local repeat routing detours and tandem copy transitions',
+                    tsvReport: '*_cnv_metrics.tsv'
+                },
+                'fragmented_paralogs': {
+                    label: 'Dispersed Repeats / MGEs',
+                    graphTerm: 'Fragmented CNV',
+                    subtitle: 'IS elements, transposases & paralogs split across loci or contigs',
+                    count: countFragmented,
+                    nodesDesc: 'Dispersed multi-locus paralogous families (conflict class 3)',
+                    edgesDesc: 'Repeat fragmentation junctions connecting dispersed copies',
+                    tsvReport: '*_cnv_metrics.tsv'
+                },
+                'rearrangements': {
+                    label: 'Synteny Breakpoints',
+                    graphTerm: 'Rearrangements',
+                    subtitle: 'Translocations, NAHR fusions, or chimeric joins between blocks',
+                    count: countRearrangements,
+                    nodesDesc: 'Flanking anchor genes at inter-block synteny breakpoints',
+                    edgesDesc: 'Inter-contig and intra-contig rearrangement junctions',
+                    tsvReport: '*_structural_variants.tsv'
+                },
+                'inversions': {
+                    label: 'Inverted Syntenic Blocks',
+                    graphTerm: 'Inversions',
+                    subtitle: 'Contiguous gene blocks reversed in orientation relative to consensus',
+                    count: countInversions,
+                    nodesDesc: 'Gene families belonging to reverse-complement syntenic segments',
+                    edgesDesc: 'Edges traversed in inverted orientation by subset of genomes',
+                    tsvReport: '*_inverted_blocks.tsv'
+                },
+                'breaks': {
+                    label: 'Repeat Breaks & Scaffolds',
+                    graphTerm: 'Bridges',
+                    subtitle: 'Contig ends shattered at repeats with reference-guided scaffold paths',
+                    count: countBreaks,
+                    nodesDesc: 'Contig terminal repeat nodes and candidate scaffold bridge nodes',
+                    edgesDesc: 'Inferred syntenic scaffold paths bridging fragmented contigs',
+                    tsvReport: '*_scaffold_recommendations.tsv'
+                }
+            };
 
-            html += '<tr><td><span title="Bounded structural variations. Hypervariable regions flanked by conserved core genes."><b>Superbubbles:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'superbubbles\'); return false;">' + countSuperbubbles + '</a></td></tr>';
+            var categories = [
+                { title: '1. Accessory & Allelic Variation', keys: ['superbubbles', 'alt_paths'] },
+                { title: '2. Repeats & Paralog Expansion', keys: ['tandem_repeats', 'fragmented_paralogs'] },
+                { title: '3. Chromosomal Architecture', keys: ['rearrangements', 'inversions'] },
+                { title: '4. Assembly & Scaffolding', keys: ['breaks'] }
+            ];
 
-            html += '<tr><td><span title="Local alignment ambiguities, tandem expansions, and arbitrary routing shifts."><b>Copy Number Variants:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'tandem_repeats\'); return false;">' + countTandem + '</a></td></tr>';
+            html += '<div style="margin-bottom:12px;">';
+            categories.forEach(function(cat) {
+                html += '<div style="font-size:0.76em; font-weight:bold; text-transform:uppercase; letter-spacing:0.4px; color:#5a738e; background:#eef4f9; padding:3px 6px; border-left:3px solid #31708f; margin:8px 0 4px 0;">' + cat.title + '</div>';
+                cat.keys.forEach(function(key) {
+                    var item = phenomenaMeta[key];
+                    var isActive = (activePhenom === key);
+                    var rowStyle = isActive
+                        ? 'display:flex; align-items:center; justify-content:space-between; padding:5px 6px; margin-bottom:4px; background:#fdf0ff; border:1px solid #d580ff; border-radius:5px;'
+                        : 'display:flex; align-items:center; justify-content:space-between; padding:4px 6px; margin-bottom:3px; border-bottom:1px solid #f0f0f0;';
+                    var pillStyle = isActive
+                        ? 'display:inline-block; min-width:28px; text-align:center; padding:2px 10px; background-color:#9c27b0; border:1px solid #7b1fa2; border-radius:12px; color:#fff; font-weight:bold; text-decoration:none; cursor:pointer; flex-shrink:0; margin-left:8px;'
+                        : 'display:inline-block; min-width:28px; text-align:center; padding:2px 10px; background-color:#eef5fa; border:1px solid #bce8f1; border-radius:12px; color:#31708f; font-weight:bold; text-decoration:none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer; flex-shrink:0; margin-left:8px;';
 
-            html += '<tr><td><span title="Paralogous gene families that are syntenic (contiguous) in some genomes, but fragmented across separate contigs or replicons in others."><b>Fragmented CNV:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'fragmented_paralogs\'); return false;">' + countFragmented + '</a></td></tr>';
+                    html += '<div style="' + rowStyle + '">';
+                    html += '<div style="padding-right:4px;">';
+                    html += '<div style="font-size:0.92em;"><b>' + item.label + '</b> <span style="font-size:0.85em; color:#666;">(' + item.graphTerm + ')</span></div>';
+                    html += '<div style="font-size:0.78em; color:#666; line-height:1.25;">' + item.subtitle + '</div>';
+                    html += '</div>';
+                    html += '<a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'' + key + '\'); return false;" title="' + (isActive ? 'Click to clear highlight' : 'Highlight ' + item.label + ' in graph') + '">' + item.count + '</a>';
+                    html += '</div>';
+                });
+            });
+            html += '</div>';
 
-            html += '<tr><td><span title="Minority structural bubbles and accessory insertions bridging a conserved backbone."><b>Alternative Paths:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'alt_paths\'); return false;">' + countAltPaths + '</a></td></tr>';
-
-            html += '<tr><td><span title="True biological rearrangements (NAHR, fusions) or chimeric misassemblies."><b>Structural Rearrangements:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'rearrangements\'); return false;">' + countRearrangements + '</a></td></tr>';
-
-            html += '<tr><td><span title="Continuous blocks of sequence traversed in reverse-complement."><b>Inverted Blocks:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'inversions\'); return false;">' + countInversions + '</a></td></tr>';
-
-            html += '<tr><td><span title="Tails terminating at the exact same repeat, indicating a shattered assembly. Includes suggested scaffold paths."><b>Assembly Breaks & Scaffolds:</b></span></td><td style="text-align:right;"><a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.highlightSpecial(\'breaks\'); return false;">' + countBreaks + '</a></td></tr>';
-
-            html += '</table>';
+            // Active Phenomenon "What You're Seeing" Callout Banner
+            if (activePhenom && phenomenaMeta[activePhenom]) {
+                var activeMeta = phenomenaMeta[activePhenom];
+                html += '<div style="margin-bottom:14px; padding:8px; background:#fcf4ff; border:1px solid #d580ff; border-radius:5px; font-size:0.83em; line-height:1.35; color:#333;">';
+                html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">';
+                html += '<b style="color:#6a1b9a;"><i class="fa icon-eye"></i> Viewing: ' + activeMeta.label + '</b>';
+                html += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="color:#a94442; font-weight:bold; text-decoration:none; font-size:0.9em;" title="Clear active phenomenon highlight">Clear &#10006;</a>';
+                html += '</div>';
+                html += '<div style="margin-bottom:3px;"><b>Highlighted Nodes:</b> ' + activeMeta.nodesDesc + '</div>';
+                html += '<div style="margin-bottom:3px;"><b>Highlighted Edges:</b> ' + activeMeta.edgesDesc + '</div>';
+                html += '<div style="color:#555;"><b>Workspace Report:</b> <code>' + activeMeta.tsvReport + '</code></div>';
+                html += '</div>';
+            }
 
             // Parameters
             if (s.parameters) {
                 var paramsText = JSON.stringify(s.parameters).replace(/[{""}]/g, '').replace(/:/g, ': ');
-                html += '<div style="font-size:0.9em; margin-bottom:15px; color:#666;"><b>Params:</b> ' + paramsText + '</div>';
+                html += '<div style="font-size:0.9em; margin-bottom:14px; color:#666;"><b>Params:</b> ' + paramsText + '</div>';
             }
             
             var isDefMuted = (window.GexfJS && GexfJS.params) ? GexfJS.params.muteDefaultColors : false;
             var defEyeIcon = isDefMuted ? 'fa icon-eye-slash' : 'fa icon-eye';
             var defEyeColor = isDefMuted ? '#999' : '#333';
-            var defEyeTitle = isDefMuted ? 'Show Default Graph Colors' : 'Mute Default Graph Colors';
+            var defEyeTitle = isDefMuted ? 'Show Core Conservation Heatmap Colors' : 'Mute Core Conservation Heatmap Colors';
 
-            html += '<h4 style="margin-bottom:15px; display:flex; align-items:center;">';
-            html += 'Default Colors ';
-            html += '<i class="fa ' + defEyeIcon + '" style="cursor:pointer; margin-left:10px; color:' + defEyeColor + ';" onclick="window.toggleMuteDefaultColors();" title="' + defEyeTitle + '"></i>';
+            html += '<div style="margin-bottom:14px;">';
+            html += '<h4 style="margin:0 0 3px 0; display:flex; align-items:center;">';
+            html += 'Core Conservation Heatmap <span style="font-weight:normal; font-size:0.85em; color:#666; margin-left:4px;">(Default Colors)</span>';
+            html += '<i class="fa ' + defEyeIcon + '" style="cursor:pointer; margin-left:8px; color:' + defEyeColor + ';" onclick="window.toggleMuteDefaultColors();" title="' + defEyeTitle + '"></i>';
             html += '</h4>';
+            html += '<div style="font-size:0.78em; color:#555; display:flex; align-items:center; flex-wrap:wrap; gap:4px;">';
+            html += '<span style="display:inline-block; width:10px; height:10px; background:#999; border-radius:2px; border:1px solid #777;"></span>Grey &rarr; ';
+            html += '<span style="display:inline-block; width:10px; height:10px; background:#e5e300; border-radius:2px; border:1px solid #b5b300;"></span>Yellow &rarr; ';
+            html += '<span style="display:inline-block; width:10px; height:10px; background:#ff7f00; border-radius:2px; border:1px solid #cc6600;"></span>Orange &rarr; ';
+            html += '<span style="display:inline-block; width:10px; height:10px; background:#ff0028; border-radius:2px; border:1px solid #b3001c;"></span>Red ';
+            html += '<span style="color:#666;">(increasingly conserved)</span>';
+            html += '</div>';
+            html += '</div>';
 
             var pins = (window.GexfJS && GexfJS.params) ? GexfJS.params.userPins : {};
             var isMuted = (window.GexfJS && GexfJS.params) ? GexfJS.params.pinsMuted : false;
@@ -919,7 +993,8 @@ destroy: function(){
             html += '</div>';
 
             if (s['block_manifest'] && s['block_manifest'].length > 0) {
-                html += '<h4 style="margin-bottom:5px;">Syntenic Block Manifest</h4>';
+                html += '<h4 style="margin-bottom:2px;">Collinear Syntenic Blocks</h4>';
+                html += '<div style="font-size:0.78em; color:#666; margin-bottom:5px;">Auto-pinned by block color; click a block to highlight its conserved gene chain</div>';
                 html += '<div style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
                 html += '<ul style="margin:0; padding-left:20px; list-style-type: square;">';
                 
@@ -931,38 +1006,73 @@ destroy: function(){
                 html += '</div>';
             }
             
-            // Genome Manifest (Collapsible)
+            // Genome Manifest (Collapsible with Eyeball Solo/Isolate Graph Filter)
             if (s.contig_map) {
-                // --- NEW: Loading Spinner logic ---
-                var loaderHtml = this.namesLoading ? ' <span style="font-size:0.8em; color:#666; font-weight:normal; margin-left:10px;"><i class="fa fa-spinner fa-spin"></i> getting names...</span>' : '';
-                
-                html += '<h4 style="margin-bottom:5px;">Genome Manifest' + loaderHtml + '</h4>';
+                var loaderHtml = this.namesLoading ? ' <span style="font-size:0.8em; color:#666; font-weight:normal; margin-left:6px;"><i class="fa fa-spinner fa-spin"></i> getting names...</span>' : '';
+                var activeGenomes = (window.GexfJS && GexfJS.params && GexfJS.params.activeGenomeFilter) ? GexfJS.params.activeGenomeFilter : {};
+                var activeContigs = (window.GexfJS && GexfJS.params && GexfJS.params.activeContigFilter) ? GexfJS.params.activeContigFilter : {};
+                var filterCount = Object.keys(activeGenomes).length + Object.keys(activeContigs).length;
+                var filterActive = filterCount > 0;
+                this.expandedGenomes = this.expandedGenomes || {};
+
+                html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">';
+                html += '<h4 style="margin:0;">Genome Manifest' + loaderHtml + '</h4>';
+                if (filterActive) {
+                    html += '<a href="javascript:void(0)" onclick="window.resetManifestFilter(); return false;" style="font-size:0.8em; padding:2px 8px; background:#d9534f; color:#fff; border-radius:10px; text-decoration:none; font-weight:bold;" title="Clear all active genome/contig filters and restore the full graph">Reset Filter (' + filterCount + ')</a>';
+                } else {
+                    html += '<span style="font-size:0.78em; color:#777;" title="Click an eye icon next to any genome or contig to isolate it in the graph"><i class="fa icon-eye"></i> click eye to filter</span>';
+                }
+                html += '</div>';
                 html += '<div style="max-height: 350px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
                 
                 Object.keys(s.contig_map).forEach(lang.hitch(this, function(genomeId) {
                     var contigs = s.contig_map[genomeId];
-                    
-                    // --- NEW: Dictionary Lookup (Fallback to raw ID) ---
                     var displayGenomeName = (this.genomeNameMap && this.genomeNameMap[genomeId]) ? this.genomeNameMap[genomeId] : genomeId;
-                    
-                    // Escape single quotes for the onclick string
                     var safeGenomeName = displayGenomeName.replace(/'/g, "&apos;");
+
+                    var isGenomeActive = Boolean(activeGenomes[genomeId]);
+                    var hasActiveChildContig = contigs.some(function(cid) { return Boolean(activeContigs[cid]); });
+                    var gEyeClass = (filterActive && !isGenomeActive) ? 'fa icon-eye-slash' : 'fa icon-eye';
+                    var gEyeStyle = isGenomeActive
+                        ? 'cursor:pointer; margin-right:6px; color:#1f77b4; background:#dbeeff; padding:2px 4px; border-radius:4px; border:1px solid #90caf9;'
+                        : (filterActive
+                            ? 'cursor:pointer; margin-right:6px; color:#bbb; padding:2px 4px;'
+                            : 'cursor:pointer; margin-right:6px; color:#888; padding:2px 4px;');
+                    var gEyeTitle = isGenomeActive
+                        ? 'Genome is visible in graph filter (click to remove from filter)'
+                        : (filterActive
+                            ? 'Genome is hidden (click to add this genome to the visible graph)'
+                            : 'Isolate this genome in the graph (hide unselected genomes)');
+                    var rowOpacity = (filterActive && !isGenomeActive && !hasActiveChildContig) ? '0.6' : '1.0';
+                    var openAttr = this.expandedGenomes[genomeId] ? ' open' : '';
                     
-                    html += '<details style="margin-bottom: 4px;">';
+                    html += '<details' + openAttr + ' ontoggle="window.onGenomeDetailsToggle(\'' + genomeId + '\', this.open)" style="margin-bottom: 4px; opacity:' + rowOpacity + ';">';
                     html += '<summary style="cursor:pointer; outline:none; font-weight:bold;">';
-                    html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + genomeId + '\', \'' + genomeAttrId + '\', \'Genome: ' + safeGenomeName + '\'); return false;" title="Highlight Genome">' + displayGenomeName + '</a>';
+                    html += '<i class="' + gEyeClass + '" style="' + gEyeStyle + '" onclick="window.toggleGenomeFilter(\'' + genomeId + '\', event); return false;" title="' + gEyeTitle + '"></i>';
+                    html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + genomeId + '\', \'' + genomeAttrId + '\', \'Genome: ' + safeGenomeName + '\'); return false;" title="Highlight Genome Path">' + displayGenomeName + '</a>';
                     html += ' <span style="font-weight:normal; color:#666;">(' + contigs.length + ' contigs)</span>';
                     html += '</summary>';
                     
-                    html += '<ul style="margin-top:2px; padding-left:25px; list-style-type: square;">';
+                    html += '<ul style="margin-top:2px; padding-left:22px; list-style-type: none;">';
                     contigs.forEach(lang.hitch(this, function(contigId) {
+                        var seqDesc = (this.sequenceNameMap && this.sequenceNameMap[contigId]) ? this.sequenceNameMap[contigId] : '';
+                        var safeContigName = contigId.replace(/'/g, "&apos;");
+                        var isContigActive = Boolean(activeContigs[contigId]);
+                        var cEyeClass = (filterActive && !isContigActive && !isGenomeActive) ? 'fa icon-eye-slash' : 'fa icon-eye';
+                        var cEyeStyle = isContigActive
+                            ? 'cursor:pointer; margin-right:5px; color:#1f77b4; background:#dbeeff; padding:1px 3px; border-radius:3px; border:1px solid #90caf9;'
+                            : (filterActive && !isGenomeActive
+                                ? 'cursor:pointer; margin-right:5px; color:#ccc;'
+                                : 'cursor:pointer; margin-right:5px; color:#888;');
+                        var cEyeTitle = isContigActive
+                            ? 'Contig is visible in graph filter (click to remove)'
+                            : 'Isolate/Add this contig in the graph filter';
+                        var descSpan = seqDesc ? ' <span style="color:#666; font-size:0.88em;" title="' + seqDesc.replace(/"/g, '&quot;') + '">&mdash; ' + seqDesc + '</span>' : '';
                         
-                        // --- NEW: Sequence Dictionary Lookup ---
-                        //var displayContigName = (this.sequenceNameMap && this.sequenceNameMap[contigId]) ? this.sequenceNameMap[contigId] : contigId;
-                        var displayContigName = contigId; 
-                        var safeContigName = displayContigName.replace(/'/g, "&apos;");
-                        
-                        html += '<li><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + contigId + '\', \'' + sequenceAttrId + '\', \'Contig: ' + safeContigName + '\'); return false;" title="Highlight Contig">' + displayContigName + '</a></li>';
+                        html += '<li style="margin-bottom:2px;">';
+                        html += '<i class="' + cEyeClass + '" style="' + cEyeStyle + '" onclick="window.toggleContigFilter(\'' + contigId + '\', event); return false;" title="' + cEyeTitle + '"></i>';
+                        html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + contigId + '\', \'' + sequenceAttrId + '\', \'Contig: ' + safeContigName + '\'); return false;" title="Highlight Contig Path' + (seqDesc ? ': ' + seqDesc.replace(/"/g, '&quot;') : '') + '">' + contigId + '</a>' + descSpan;
+                        html += '</li>';
                     }));
                     html += '</ul>';
                     html += '</details>';
@@ -1001,9 +1111,25 @@ destroy: function(){
             window.highlightSpecial = lang.hitch(this, function(type, targetValue) {
                 if (!window.GexfJS || !GexfJS.params) return;
                 
-                var hlName = type.charAt(0).toUpperCase() + type.slice(1);
-                if (targetValue) hlName += ": " + targetValue;
+                // Toggle off if the user clicks the already-active phenomenon pill
+                if (!targetValue && GexfJS.params.activePhenomenon === type) {
+                    window.displayNode(-1);
+                    return;
+                }
+
+                var labelMap = {
+                    'superbubbles': 'Bounded Variable Loci (Superbubbles)',
+                    'alt_paths': 'Accessory Islands & Indels (Alt Paths)',
+                    'tandem_repeats': 'Local / Tandem CNVs',
+                    'fragmented_paralogs': 'Dispersed Repeats / MGEs (Fragmented CNV)',
+                    'rearrangements': 'Synteny Breakpoints (Rearrangements)',
+                    'inversions': 'Inverted Syntenic Blocks',
+                    'breaks': 'Repeat Breaks & Scaffolds'
+                };
+                var hlName = labelMap[type] || (type.charAt(0).toUpperCase() + type.slice(1));
+                if (targetValue) hlName = "Block: " + targetValue;
                 GexfJS.params.currentHighlightName = hlName;
+                GexfJS.params.activePhenomenon = targetValue ? null : type;
                 
                 // Deep clear of ALL highlight states
                 GexfJS.params.activeEdges = {};
@@ -1036,7 +1162,7 @@ destroy: function(){
                     }
                 };
 
-// --- HELPER: Safely lookup boolean node attributes ---
+                // --- HELPER: Safely lookup boolean node attributes ---
                 var checkNodeBool = function(nodeObj, attrName) {
                     var aId = GexfJS._node_attr_value[attrName];
                     if (typeof aId !== 'undefined' && nodeObj.attributes) {
@@ -1159,7 +1285,7 @@ destroy: function(){
                     var attrId = GexfJS._node_attr_value['block_name'] || GexfJS._node_attr_value['block_id'] || GexfJS._node_attr_value['block']; 
                     if (typeof attrId !== 'undefined' && targetValue) {
                         GexfJS.graph.nodeList.forEach(function(node) {
-                            if (node.attributes && node.attributes[attrId] === targetValue) {
+                            if (node.attributes && node.attributes[attrId] && String(node.attributes[attrId]).split(',').indexOf(targetValue) !== -1) {
                                 GexfJS.params.pinnedElements['n_' + node.id] = hlColor;
                                 GexfJS.params.activeNodes[node.id] = true; 
                             }
@@ -1168,7 +1294,8 @@ destroy: function(){
                 }
                 
                 GexfJS.params.path_active = !jQuery.isEmptyObject(GexfJS.params.activeEdges);
-                delete GexfJS.oldParams.zoomLevel; 
+                delete GexfJS.oldParams.zoomLevel;
+                this.showDefaultSummary();
             });
 
             var originalDisplayNode = window.displayNode;
@@ -1183,6 +1310,7 @@ destroy: function(){
                         GexfJS.params.activeEdges = {};
                         GexfJS.params.activeNodes = {};
                         GexfJS.params.path_active = false;
+                        GexfJS.params.activePhenomenon = null;
                         
                         // CRITICAL: Wipe temporary pins and restore only persistent user pins
                         this.rebuildPinnedElements(); 
@@ -1194,6 +1322,7 @@ destroy: function(){
                 var node = GexfJS.graph.nodeList[nodeIndex];
                 if (!node) return;
                 
+                GexfJS.params.activePhenomenon = null;
                 GexfJS.params.currentHighlightName = "Node: " + (node.label || node.id);
 
                 var featureAttrIndex = null;
@@ -1235,71 +1364,6 @@ destroy: function(){
                 }
             });
 
-            // --- NEW: Global Pin Color Function ---
-            window.pinColor = lang.hitch(this, function(ids, type, colorValue) {
-                if (!window.GexfJS || !GexfJS.params.pinnedElements) return;
-
-                // ids can be a single string or a comma-separated string
-                var idList = ids.split(',');
-
-                // 1. Convert HEX color to RGBA string (gexfjs usually prefers rgba)
-                // Note: Input type="color" returns Hex (e.g. #ff0000). 
-                // We can use it directly if gexfjs accepts hex, which canvas usually does.
-                // If opacity issues arise, we might need to convert. 
-                // For now, let's use the Hex string directly.
-                var finalColor = colorValue;
-
-                idList.forEach(function(targetId) {
-                    if (type === 'node') {
-                        // Easy: TargetId is the Node ID (e.g. "4748")
-                        // Wait, our inputs usually use Labels or Feature IDs. 
-                        // We need to look up the internal Node ID.
-                        
-                        // If targetId is the internal int index:
-                        if (GexfJS.graph.nodeList[targetId]) {
-                            GexfJS.params.pinnedElements['n_' + targetId] = finalColor;
-                        } 
-                        // If targetId is a label/feature ID:
-                        else if (GexfJS.graph.nodeIndexByLabel && GexfJS.graph.nodeIndexByLabel[targetId] !== undefined) {
-                             var idx = GexfJS.graph.nodeIndexByLabel[targetId];
-                             GexfJS.params.pinnedElements[idx] = finalColor;
-                        }
-                    } 
-                    else if (type === 'path') {
-                        // Harder: TargetId is a Genome/Sequence ID (e.g. "NC_007624")
-                        // We need to find all edges associated with this path.
-                        
-                        // We reuse the logic from displayPath to find the edges
-                        var attr_id = GexfJS._edge_attr_value['sequences']; // or 'genomes'
-                        if (GexfJS.path_highlights && GexfJS.path_highlights[attr_id]) {
-                            
-                            // Look up the edges for this path ID
-                            // (Remember our quote cleaning logic!)
-                            var cleanId = targetId.replace(/"/g, '');
-                            var edges = GexfJS.path_highlights[attr_id][cleanId];
-                            
-                            // If direct lookup fails, try searching cleaned keys (from our previous fix)
-                            if (!edges) {
-                                for (var key in GexfJS.path_highlights[attr_id]) {
-                                    if (key.replace(/"/g, '') === cleanId) {
-                                        edges = GexfJS.path_highlights[attr_id][key];
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (edges) {
-                                Object.keys(edges).forEach(function(edgeId) {
-                                    GexfJS.params.pinnedElements['e_' + edgeId] = finalColor;
-                                });
-                            }
-                        }
-                    }
-                });
-            });
-            // --------------------------------------
-
-            // (configuration logic...)
             var graph_params = {
                 showEdges : true,
                 zoomLevel : 0,
@@ -1308,28 +1372,73 @@ destroy: function(){
                 colorNodeAttr : "diversity",
                 nodeSizeFactor : 2,
                 patric_on: true,
-                genome_url: 'https://www.bv-brc.org/api/genome?in(genome_id,(GIDSTRING))&select(genome_id,genome_name)&limit(500)&http_accept=application/solr+json',
-                location_url: 'https://www.bv-brc.org/api/genome_sequence?in(sequence_id,(SIDSTRING))&select(sequence_id,description)&facet((pivot,(genome_id,genome_name,sequence_id)))&http_accept=application/solr+json',
-                replicon_url: 'https://www.bv-brc.org/api/genome_sequence?in(genome_id,(GIDSTRING))&select(sequence_id,description)&facet((pivot,(genome_id,genome_name,sequence_id)))&http_accept=application/solr+json',
                 language: false,
-                textDisplayThreshold: 12, // Leave this at its normal default
-                showNodeLabels: true,    // NEW: Our dedicated toggle
-                labelSizeFactor: 0.6    // NEW: Our size multiplier
+                textDisplayThreshold: 12,
+                showNodeLabels: true,
+                labelSizeFactor: 0.6
             };
             setParams(graph_params);
 
             var originalSetInterval = window.setInterval;
             window.setInterval = function() { return 999; }; 
 
-            var gexf_dom = (new window.DOMParser()).parseFromString(gexfXMLData, "text/xml");
-            
-            // Initialize persistent pin storage
+            // Initialize persistent pin and filter storage
             if (!GexfJS.params.userPins) GexfJS.params.userPins = {};
-            if (typeof GexfJS.params.pinsMuted === 'undefined') GexfJS.params.pinsMuted = false; // NEW: Mute State
+            if (typeof GexfJS.params.pinsMuted === 'undefined') GexfJS.params.pinsMuted = false;
             GexfJS.params.currentHighlightName = "Selection";
+            GexfJS.params.activePhenomenon = null;
             if (typeof GexfJS.params.muteDefaultColors === 'undefined') GexfJS.params.muteDefaultColors = false; 
+            GexfJS.params.activeGenomeFilter = {};
+            GexfJS.params.activeContigFilter = {};
+            this.expandedGenomes = {};
+            this.guideExpanded = false;
 
-            
+            // Preserve <details> open state for Guide and Genome Manifest across re-renders
+            window.onGuideDetailsToggle = lang.hitch(this, function(isOpen) {
+                this.guideExpanded = Boolean(isOpen);
+            });
+            window.onGenomeDetailsToggle = lang.hitch(this, function(genomeId, isOpen) {
+                this.expandedGenomes = this.expandedGenomes || {};
+                this.expandedGenomes[genomeId] = Boolean(isOpen);
+            });
+
+            // Global Eyeball Filter Toggles for Genome Manifest
+            window.toggleGenomeFilter = lang.hitch(this, function(genomeId, evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (evt && evt.preventDefault) evt.preventDefault();
+                if (!window.GexfJS || !GexfJS.params) return;
+                if (!GexfJS.params.activeGenomeFilter) GexfJS.params.activeGenomeFilter = {};
+                if (GexfJS.params.activeGenomeFilter[genomeId]) {
+                    delete GexfJS.params.activeGenomeFilter[genomeId];
+                } else {
+                    GexfJS.params.activeGenomeFilter[genomeId] = true;
+                }
+                delete GexfJS.oldParams.zoomLevel;
+                this.showDefaultSummary();
+            });
+
+            window.toggleContigFilter = lang.hitch(this, function(contigId, evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (evt && evt.preventDefault) evt.preventDefault();
+                if (!window.GexfJS || !GexfJS.params) return;
+                if (!GexfJS.params.activeContigFilter) GexfJS.params.activeContigFilter = {};
+                if (GexfJS.params.activeContigFilter[contigId]) {
+                    delete GexfJS.params.activeContigFilter[contigId];
+                } else {
+                    GexfJS.params.activeContigFilter[contigId] = true;
+                }
+                delete GexfJS.oldParams.zoomLevel;
+                this.showDefaultSummary();
+            });
+
+            window.resetManifestFilter = lang.hitch(this, function() {
+                if (!window.GexfJS || !GexfJS.params) return;
+                GexfJS.params.activeGenomeFilter = {};
+                GexfJS.params.activeContigFilter = {};
+                delete GexfJS.oldParams.zoomLevel;
+                this.showDefaultSummary();
+            });
+
             //Global Toggle Mute Function (The Eye Icon)
             window.toggleMutePins = lang.hitch(this, function() {
                 if (window.GexfJS) {
@@ -1358,8 +1467,14 @@ destroy: function(){
 
             // Global wrapper for displayPath that captures the Name
             window.doHighlightPath = lang.hitch(this, function(eid, pstr, pattr, name) {
-                if (window.GexfJS) GexfJS.params.currentHighlightName = name || pstr;
+                if (window.GexfJS) {
+                    GexfJS.params.currentHighlightName = name || pstr;
+                    GexfJS.params.activePhenomenon = null;
+                }
                 if (window.displayPath) window.displayPath(eid, pstr, pattr);
+                if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Graph Summary") !== -1) {
+                    this.showDefaultSummary();
+                }
             });
             startGraphViewer(gexf_dom);
 
@@ -1377,9 +1492,9 @@ destroy: function(){
                         var elementsToPin = {};
                         var applied = false;
 
-                        // Find all nodes belonging to this block
+                        // Find all nodes belonging to this block (including multi-block paralog hubs)
                         GexfJS.graph.nodeList.forEach(function(node) {
-                            if (node.attributes && node.attributes[blockAttrId] === blockName) {
+                            if (node.attributes && node.attributes[blockAttrId] && String(node.attributes[blockAttrId]).split(',').indexOf(blockName) !== -1) {
                                 elementsToPin['n_' + node.id] = true;
                                 applied = true;
                             }
@@ -1494,8 +1609,6 @@ destroy: function(){
             this.selectionActionBar.set("currentContainerType", this.containerType);
             this.selectionActionBar.set("selection", this.selection);
 
-            // (colorInput helper has been completely removed)
-
             var nodeAttrIdToName = {};
             if (window.GexfJS && GexfJS._node_attr_value) {
                 Object.keys(GexfJS._node_attr_value).forEach(function(name){
@@ -1506,16 +1619,49 @@ destroy: function(){
             var genomeAttrId = (window.GexfJS && GexfJS._edge_attr_value && GexfJS._edge_attr_value['genomes']) ? GexfJS._edge_attr_value['genomes'] : 'genomes';
             var sequenceAttrId = (window.GexfJS && GexfJS._edge_attr_value && GexfJS._edge_attr_value['sequences']) ? GexfJS._edge_attr_value['sequences'] : 'sequences';
 
-            var attrHtml = '<div style="margin-bottom:10px; font-size:0.9em; color:#555;">';
-            attrHtml += '<div><b>Node ID:</b> ' + node.id + '</div>';
+            var namedAttrs = {};
             if (node.attributes) {
                 Object.keys(node.attributes).forEach(function(attrId){
                     var name = nodeAttrIdToName[attrId];
                     if (name && name !== 'features') {
-                        attrHtml += '<div><b>' + name + ':</b> ' + node.attributes[attrId] + '</div>';
+                        namedAttrs[name] = node.attributes[attrId];
                     }
                 });
             }
+
+            // Build discrete biological phenomenon badges for this locus
+            var badges = [];
+            var badgeStyle = 'display:inline-block; margin:2px 4px 2px 0; padding:2px 7px; border-radius:10px; font-size:0.8em; font-weight:bold;';
+            if (String(namedAttrs['is_superbubble']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#e3f2fd; color:#1565c0; border:1px solid #90caf9;" title="Bounded allelic or accessory variation flanked by conserved core anchors">Superbubble' + (namedAttrs['superbubble_id'] ? ' (' + namedAttrs['superbubble_id'] + ')' : '') + '</span>');
+            }
+            if (String(namedAttrs['repeat_ambiguity']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#fff3e0; color:#e65100; border:1px solid #ffcc80;" title="Multi-copy gene family participating in a local tandem repeat or copy number variant">Copy Number Variant' + (namedAttrs['cnv_cluster_id'] ? ' (' + namedAttrs['cnv_cluster_id'] + ')' : '') + '</span>');
+            }
+            if (String(namedAttrs['repeat_ambiguity_fragmentation']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#fce4ec; color:#ad1457; border:1px solid #f48fb1;" title="Dispersed paralogous family split across separate loci or contigs">Fragmented CNV' + (namedAttrs['cnv_cluster_id'] ? ' (' + namedAttrs['cnv_cluster_id'] + ')' : '') + '</span>');
+            }
+            if (String(namedAttrs['alternative_path']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#f3e5f5; color:#6a1b9a; border:1px solid #ce93d8;" title="Minority accessory path or horizontal gene transfer (HGT) insertion">Alternative Path</span>');
+            }
+            if (String(namedAttrs['synteny_breakpoint']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#ffebee; color:#c62828; border:1px solid #ef9a9a;" title="Boundary of a large-scale chromosomal rearrangement or translocation">Synteny Breakpoint</span>');
+            }
+            if (String(namedAttrs['assembly_repeat_break']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#fff8e1; color:#f57f17; border:1px solid #ffe082;" title="Contig terminus inside a repetitive gene family">Assembly Repeat Break</span>');
+            }
+            if (String(namedAttrs['is_scaffold_path']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;" title="Candidate syntenic scaffold bridge connecting fragmented contigs">Scaffold Bridge</span>');
+            }
+
+            var attrHtml = '<div style="margin-bottom:10px; font-size:0.9em; color:#555;">';
+            if (badges.length > 0) {
+                attrHtml += '<div style="margin-bottom:6px;">' + badges.join('') + '</div>';
+            }
+            attrHtml += '<div><b>Node ID:</b> ' + node.id + '</div>';
+            Object.keys(namedAttrs).forEach(function(name){
+                attrHtml += '<div><b>' + name + ':</b> ' + namedAttrs[name] + '</div>';
+            });
             attrHtml += '</div>';
 
             var linksHtml = '';
