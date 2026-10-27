@@ -254,16 +254,6 @@ define([
                 stream: true  // Enable SSE streaming mode
             };
 
-            if (Array.isArray(params.selected_workspace_items) && params.selected_workspace_items.length > 0) {
-                data.workspace_items = params.selected_workspace_items;
-            }
-            if (Array.isArray(params.selected_jobs) && params.selected_jobs.length > 0) {
-                data.selected_jobs = params.selected_jobs;
-            }
-            if (Array.isArray(params.selected_workflows) && params.selected_workflows.length > 0) {
-                data.selected_workflows = params.selected_workflows;
-            }
-
             if (Array.isArray(params.images) && params.images.length > 0) {
                 data.images = params.images;
                 if (Array.isArray(params.image_attachments) && params.image_attachments.length > 0) {
@@ -522,12 +512,6 @@ define([
                                     }
                                     break;
 
-                                case 'session_file_created':
-                                    // File creation metadata is handled as a dedicated SSE event.
-                                    // Consumers can update the session Files panel immediately.
-                                    topic.publish('CopilotSessionFileCreated', parsed);
-                                    break;
-
                                 case 'ask_questions':
                                     // Planning agent clarification questions.
                                     if (parsed.questions && parsed.card && onData) {
@@ -749,25 +733,9 @@ define([
          * - Returns full message history
          * - Includes detailed error logging
          */
-        getSessionMessages: function(sessionId, options) {
+        getSessionMessages: function(sessionId) {
             if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var opts = options || {};
-            var queryParams = [
-                `session_id=${encodeURIComponent(sessionId)}`
-            ];
-
-            if (opts.includeFiles) {
-                queryParams.push('include_files=true');
-                queryParams.push(`user_id=${encodeURIComponent(this.user_id)}`);
-                if (typeof opts.limit === 'number') {
-                    queryParams.push(`limit=${opts.limit}`);
-                }
-                if (typeof opts.offset === 'number') {
-                    queryParams.push(`offset=${opts.offset}`);
-                }
-            }
-
-            return request.get(this.apiUrlBase + `/get-session-messages?${queryParams.join('&')}`, {
+            return request.get(this.apiUrlBase + `/get-session-messages?session_id=${encodeURIComponent(sessionId)}`, {
                 headers: {
                     Authorization: authHeader()
                 },
@@ -775,7 +743,6 @@ define([
             }).then(function(response) {
                 console.log('Session messages retrieved:', response);
                 console.log('[DEBUG] getSessionMessages - Full response structure:', JSON.stringify(response, null, 2));
-                console.log('[DEBUG] getSessionMessages - response.workflow_ids:', response.workflow_ids);
 
                 // Direct logging of messages
                 console.log('[DIRECT LOG] Retrieved messages array:');
@@ -792,31 +759,6 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('Error getting session messages:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Retrieves session file metadata for a session.
-         * Supports pagination and always includes user_id for authorization.
-         */
-        getSessionFiles: function(sessionId, limit = 20, offset = 0) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            var queryParams = [
-                `session_id=${encodeURIComponent(sessionId)}`,
-                `user_id=${encodeURIComponent(this.user_id)}`,
-                `limit=${limit}`,
-                `offset=${offset}`
-            ];
-            return request.get(this.apiUrlBase + `/get-session-files?${queryParams.join('&')}`, {
-                headers: {
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error getting session files:', error);
                 throw error;
             });
         },
@@ -1041,36 +983,6 @@ define([
                 return response;
             }).catch(function(error) {
                 console.error('Error setting conversation rating:', error);
-                throw error;
-            });
-        },
-
-        /**
-         * Associates a submitted workflow ID with a chat session so it appears in workflow context.
-         * @param {string} sessionId The chat session ID
-         * @param {string} workflowId The submitted workflow ID
-         * @returns {Promise} A promise that resolves when workflow is associated
-         */
-        addWorkflowToSession: function(sessionId, workflowId) {
-            if (!this._checkLoggedIn()) return Promise.reject('Not logged in');
-            if (!sessionId || !workflowId) return Promise.reject('sessionId and workflowId are required');
-
-            var _self = this;
-            return request.post(this.apiUrlBase + '/add-workflow-to-session', {
-                data: JSON.stringify({
-                    session_id: sessionId,
-                    workflow_id: workflowId,
-                    user_id: _self.user_id
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: authHeader()
-                },
-                handleAs: 'json'
-            }).then(function(response) {
-                return response;
-            }).catch(function(error) {
-                console.error('Error adding workflow to session:', error);
                 throw error;
             });
         },

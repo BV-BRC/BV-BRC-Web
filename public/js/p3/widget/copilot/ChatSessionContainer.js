@@ -29,12 +29,7 @@ define([
     'dojo/Deferred',
     'dojo/dom-class',
     'dojo/dom-style',
-    './CopilotStateManager',
-    './SessionFilesStore',
-    './SessionFilesSelectionStore',
-    './SessionWorkflowsSelectionStore',
-    './SessionWorkspaceSelectionStore',
-    './SessionJobsSelectionStore'
+    './CopilotStateManager'
 ], function (
     declare,
     BorderContainer,
@@ -50,12 +45,7 @@ define([
     Deferred,
     domClass,
     domStyle,
-    CopilotStateManager,
-    SessionFilesStore,
-    SessionFilesSelectionStore,
-    SessionWorkflowsSelectionStore,
-    SessionWorkspaceSelectionStore,
-    SessionJobsSelectionStore
+    CopilotStateManager
 ) {
     /**
      * @class ChatSessionContainer
@@ -104,20 +94,6 @@ define([
             // topic handling (e.g. double session creation, wrong title
             // generation) from two live ChatSessionContainer instances.
             this._active = true;
-
-            this.sessionFilesPageSize = 20;
-            this._sessionFilesRequestToken = 0;
-            this._sessionFilesState = SessionFilesStore.createInitialState(this.sessionId, this.sessionFilesPageSize);
-            this._sessionFilesSelectionState = SessionFilesSelectionStore.createInitialState(this.sessionId);
-            this._sessionWorkflowsSelectionState = SessionWorkflowsSelectionStore.createInitialState(this.sessionId);
-            this._sessionImageContextState = {
-                sessionId: this.sessionId || null,
-                entries: [],
-                items: []
-            };
-            this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(this.sessionId);
-            this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(this.sessionId);
-            this._activeGridPanel = 'files';
         },
 
         /**
@@ -229,7 +205,6 @@ define([
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
                 this.inputWidget.new_chat = false;
-                this._applySessionWorkflowContext(data);
 
                 // If the session has an in-flight turn, start polling
                 // until it finishes, then refresh messages from Mongo.
@@ -317,19 +292,9 @@ define([
                 if (!this._active) { return; }
                 this._handleSetStatePrompt.apply(this, arguments);
             })));
-            this.own(topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, function() {
-                if (!this._active) { return; }
-                this._handleSessionFileCreated.apply(this, arguments);
-            })));
-            this.own(topic.subscribe('CopilotSessionWorkflowCreated', lang.hitch(this, function() {
-                if (!this._active) { return; }
-                this._handleSessionWorkflowCreated.apply(this, arguments);
-            })));
-            // CopilotWorkflowCardStatusUpdated subscription removed — workflow cards have been deleted
-            // Subscribe to message submission to switch back to Messages tab and close file previews
+            // Close file previews when a message is submitted
             this.own(topic.subscribe('ChatMessageSubmitted', lang.hitch(this, function() {
                 if (!this._active) { return; }
-                this._setActiveTab('messages');
                 // Close any expanded file previews so they don't appear during agent SSE updates
                 var expanded = document.querySelectorAll('.file-preview-expanded');
                 for (var i = 0; i < expanded.length; i++) {
@@ -565,12 +530,8 @@ define([
          * Displays and manages chat session title
          */
         _createTitleWidget: function() {
-            // Create a wrapper ContentPane to hold both title and tabs on the same line
+            // Wrapper ContentPane for the title bar
             var ContentPane = require('dijit/layout/ContentPane');
-            var domConstruct = require('dojo/dom-construct');
-            var on = require('dojo/on');
-            var lang = require('dojo/_base/lang');
-            var topic = require('dojo/topic');
 
             this.titleBarWrapper = new ContentPane({
                 region: 'top',
@@ -589,57 +550,6 @@ define([
         },
 
         /**
-         * Sets the active tab and updates the display
-         * @param {string} panel - The panel to activate
-         * @param {string} gridPanel - Optional grid panel key when activating grids tab
-         */
-        _setActiveTab: function(panel, gridPanel) {
-            var domClass = require('dojo/dom-class');
-            var legacyGridPanels = {
-                files: true,
-                workflows: true
-            };
-
-            if (legacyGridPanels[panel]) {
-                gridPanel = panel;
-                panel = 'grids';
-            }
-            if (gridPanel && legacyGridPanels[gridPanel]) {
-                this._activeGridPanel = gridPanel;
-            }
-            if (panel !== 'messages' && panel !== 'images' && panel !== 'grids') {
-                panel = 'messages';
-            }
-
-            // If images tab is hidden and was selected, fall back to messages
-            if (panel === 'images' && this.imagesTabButton && this.imagesTabButton.style.display === 'none') {
-                panel = 'messages';
-            }
-
-            // Update tab button styles (if tab buttons exist)
-            if (this.messagesTabButton) {
-                domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', panel === 'messages');
-            }
-            if (this.imagesTabButton) {
-                domClass.toggle(this.imagesTabButton, 'copilot-panel-tab-active', panel === 'images');
-            }
-            if (this.gridsTabButton) {
-                domClass.toggle(this.gridsTabButton, 'copilot-panel-tab-active', panel === 'grids');
-            }
-
-            // Update display widget
-            if (this.displayWidget && this.displayWidget.setActivePanel) {
-                if (panel === 'messages') {
-                    this.displayWidget.setActivePanel('messages');
-                } else if (panel === 'images') {
-                    this.displayWidget.setActivePanel('images');
-                } else {
-                    this.displayWidget.setActivePanel(this._activeGridPanel || 'files');
-                }
-            }
-        },
-
-        /**
          * Creates input widget component
          * Handles user message input and submission
          */
@@ -652,11 +562,7 @@ define([
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
-                model: this.selectedModel,
-                selectedWorkspaceItems: SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState),
-                selectedJobs: SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState),
-                selectedWorkflows: SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState),
-                onImageAttachmentsChanged: lang.hitch(this, this._handleImageAttachmentsChanged)
+                model: this.selectedModel
             });
             this.addChild(this.inputWidget);
         },
@@ -672,20 +578,8 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
-                onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
-                onFilesSelectionChanged: lang.hitch(this, this._handleFilesSelectionChanged),
-                onWorkflowsSelectionChanged: lang.hitch(this, this._handleWorkflowsSelectionChanged),
-                onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
-                onJobsSelectionChanged: lang.hitch(this, this._handleJobsSelectionChanged),
-                onImageContextChanged: lang.hitch(this, this._handleImageContextSelectionChanged),
-                onContextClearAll: lang.hitch(this, this._handleContextClearAll),
                 context: 'main-chat'  // Mark this as main chat context
             });
-            this.displayWidget.setSessionImageContextData(this._sessionImageContextState.items);
-            this.displayWidget.setSessionFilesSelectionData(SessionFilesSelectionStore.getSelectedItems(this._sessionFilesSelectionState));
-            this.displayWidget.setSessionWorkflowsSelectionData(SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState));
-            this.displayWidget.setSessionWorkspaceSelectionData(SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState));
-            this.displayWidget.setSessionJobsSelectionData(SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState));
             this.addChild(this.displayWidget);
         },
 
@@ -720,7 +614,6 @@ define([
                 }
                 this.chatStore.setData(messages);
                 this.displayWidget.showMessages(messages, scrollToBottom, announce);
-                this._applySessionWorkflowContext(res);
             }));
         },
 
@@ -757,23 +650,10 @@ define([
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
-            this._resetSessionFilesState(sessionId);
-            this._fetchSessionFiles(false);
-            this._resetSessionFilesSelectionState(sessionId);
-            this._resetSessionWorkflowsSelectionState(sessionId);
-            this._resetSessionImageContextState(sessionId);
-            this._resetSessionWorkspaceSelectionState(sessionId);
-            this._resetSessionJobsSelectionState(sessionId);
+            // Attached images belong to the chat they were added in.
             if (this.inputWidget && typeof this.inputWidget.setAttachedImages === 'function') {
-                this.inputWidget.setAttachedImages((this._sessionImageContextState && this._sessionImageContextState.entries) || []);
+                this.inputWidget.setAttachedImages([]);
             }
-            this._syncFilesSelectionsToWidgets();
-            this._syncWorkflowsSelectionsToWidgets();
-            this._syncImageContextToWidgets();
-            this._syncWorkspaceSelectionsToWidgets();
-            this._syncJobsSelectionsToWidgets();
-            // Reset workflows when changing session
-            this.displayWidget.resetSessionWorkflows();
 
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload
@@ -790,14 +670,6 @@ define([
          */
         getSessionId: function() {
             return this.sessionId;
-        },
-
-        _debugContextEvent: function(label, payload) {
-            try {
-                console.log('[ContextDebug][Container] ' + label, payload || {});
-            } catch (e) {
-                // Debug logging should never affect control flow.
-            }
         },
 
         /**
@@ -935,373 +807,6 @@ define([
             if (this.statePrompt) {
                 this.inputWidget.setStatePrompt(this.statePrompt);
             }
-        },
-
-        _resetSessionFilesState: function(sessionId) {
-            if (!this._sessionFilesState) {
-                this._sessionFilesState = SessionFilesStore.createInitialState(sessionId, this.sessionFilesPageSize);
-            } else {
-                SessionFilesStore.resetForSession(this._sessionFilesState, sessionId);
-            }
-            this._sessionFilesRequestToken += 1;
-            if (this.displayWidget && this.displayWidget.resetSessionFiles) {
-                this.displayWidget.resetSessionFiles();
-            }
-        },
-
-        _resetSessionWorkspaceSelectionState: function(sessionId) {
-            this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(sessionId);
-        },
-
-        _resetSessionFilesSelectionState: function(sessionId) {
-            this._sessionFilesSelectionState = SessionFilesSelectionStore.createInitialState(sessionId);
-        },
-
-        _syncFilesSelectionsToWidgets: function() {
-            var selectedItems = this._sessionFilesSelectionState ? SessionFilesSelectionStore.getSelectedItems(this._sessionFilesSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionFilesSelectionData) {
-                this.displayWidget.setSessionFilesSelectionData(selectedItems);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'files', items: selectedItems });
-        },
-
-        _resetSessionWorkflowsSelectionState: function(sessionId) {
-            this._sessionWorkflowsSelectionState = SessionWorkflowsSelectionStore.createInitialState(sessionId);
-        },
-
-        _syncWorkflowsSelectionsToWidgets: function() {
-            var selectedItems = this._sessionWorkflowsSelectionState ? SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionWorkflowsSelectionData) {
-                this.displayWidget.setSessionWorkflowsSelectionData(selectedItems);
-            }
-            if (this.inputWidget && this.inputWidget.setSelectedWorkflows) {
-                this.inputWidget.setSelectedWorkflows(selectedItems);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'workflows', items: selectedItems });
-        },
-
-        _resetSessionImageContextState: function(sessionId) {
-            this._sessionImageContextState = {
-                sessionId: sessionId || null,
-                entries: [],
-                items: []
-            };
-        },
-
-        _syncImageContextToWidgets: function() {
-            var selectedItems = (this._sessionImageContextState && this._sessionImageContextState.items) || [];
-            if (this.displayWidget && this.displayWidget.setSessionImageContextData) {
-                this.displayWidget.setSessionImageContextData(selectedItems);
-            }
-            this._updateImagesTabVisibility();
-        },
-
-        _syncWorkspaceSelectionsToWidgets: function() {
-            var selectedItems = this._sessionWorkspaceSelectionState ? SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionWorkspaceSelectionData) {
-                this.displayWidget.setSessionWorkspaceSelectionData(selectedItems);
-            }
-            if (this.inputWidget && this.inputWidget.setSelectedWorkspaceItems) {
-                this.inputWidget.setSelectedWorkspaceItems(selectedItems);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'workspace', items: selectedItems });
-        },
-
-        _resetSessionJobsSelectionState: function(sessionId) {
-            this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(sessionId);
-        },
-
-        _syncJobsSelectionsToWidgets: function() {
-            var selectedJobs = this._sessionJobsSelectionState ? SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionJobsSelectionData) {
-                this.displayWidget.setSessionJobsSelectionData(selectedJobs);
-            }
-            if (this.inputWidget && this.inputWidget.setSelectedJobs) {
-                this.inputWidget.setSelectedJobs(selectedJobs);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'jobs', items: selectedJobs });
-        },
-
-        _workspaceSelectionSignature: function(items) {
-            var nextItems = Array.isArray(items) ? items : [];
-            var keys = [];
-            var seen = {};
-            nextItems.forEach(function(item) {
-                var normalized = SessionWorkspaceSelectionStore.normalizeItem(item);
-                if (!normalized) {
-                    return;
-                }
-                var key = String(normalized.id) + '|' + String(normalized.path) + '|' + String(normalized.type || '') + '|' + String(normalized.name || '');
-                if (!seen[key]) {
-                    seen[key] = true;
-                    keys.push(key);
-                }
-            });
-            keys.sort();
-            return keys.join('||');
-        },
-
-        _handleWorkspaceSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionWorkspaceSelectionState) {
-                return;
-            }
-            var incomingItems = payload && payload.items ? payload.items : [];
-            var nextSignature = this._workspaceSelectionSignature(incomingItems);
-            var currentSignature = this._workspaceSelectionSignature(this._sessionWorkspaceSelectionState.items || []);
-            if (nextSignature === currentSignature) {
-                this._debugContextEvent('workspace selection unchanged - skip sync', {
-                    count: Array.isArray(incomingItems) ? incomingItems.length : 0
-                });
-                return;
-            }
-            this._debugContextEvent('workspace selection changed', {
-                count: Array.isArray(incomingItems) ? incomingItems.length : 0
-            });
-            SessionWorkspaceSelectionStore.setItems(this._sessionWorkspaceSelectionState, incomingItems);
-            this._syncWorkspaceSelectionsToWidgets();
-        },
-
-        _handleJobsSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionJobsSelectionState) {
-                return;
-            }
-            this._debugContextEvent('jobs selection changed', {
-                count: payload && payload.items ? payload.items.length : 0
-            });
-            SessionJobsSelectionStore.setItems(this._sessionJobsSelectionState, payload && payload.items ? payload.items : []);
-            this._syncJobsSelectionsToWidgets();
-        },
-
-        _handleFilesSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionFilesSelectionState) {
-                return;
-            }
-            this._debugContextEvent('files selection changed', {
-                count: payload && payload.items ? payload.items.length : 0
-            });
-            SessionFilesSelectionStore.setItems(this._sessionFilesSelectionState, payload && payload.items ? payload.items : []);
-            this._syncFilesSelectionsToWidgets();
-        },
-
-        _handleWorkflowsSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionWorkflowsSelectionState) {
-                return;
-            }
-            this._debugContextEvent('workflows selection changed', {
-                count: payload && payload.items ? payload.items.length : 0
-            });
-            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, payload && payload.items ? payload.items : []);
-            this._syncWorkflowsSelectionsToWidgets();
-        },
-
-        _handleContextClearAll: function() {
-            this._debugContextEvent('clear all requested', {
-                files: (this._sessionFilesSelectionState && this._sessionFilesSelectionState.items ? this._sessionFilesSelectionState.items.length : 0),
-                workflows: (this._sessionWorkflowsSelectionState && this._sessionWorkflowsSelectionState.items ? this._sessionWorkflowsSelectionState.items.length : 0),
-                workspace: (this._sessionWorkspaceSelectionState && this._sessionWorkspaceSelectionState.items ? this._sessionWorkspaceSelectionState.items.length : 0),
-                jobs: (this._sessionJobsSelectionState && this._sessionJobsSelectionState.items ? this._sessionJobsSelectionState.items.length : 0),
-                images: (this._sessionImageContextState && this._sessionImageContextState.items ? this._sessionImageContextState.items.length : 0)
-            });
-            this._handleFilesSelectionChanged({ items: [] });
-            this._handleWorkflowsSelectionChanged({ items: [] });
-            this._handleWorkspaceSelectionChanged({ items: [] });
-            this._handleJobsSelectionChanged({ items: [] });
-            this._handleImageAttachmentsChanged({ entries: [], items: [] });
-            if (this.inputWidget && typeof this.inputWidget.setAttachedImages === 'function') {
-                this.inputWidget.setAttachedImages([]);
-            }
-        },
-
-        _handleImageAttachmentsChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionImageContextState) {
-                return;
-            }
-            var entries = payload && Array.isArray(payload.entries) ? payload.entries.slice() : [];
-            var items = payload && Array.isArray(payload.items) ? payload.items.slice() : [];
-            this._debugContextEvent('image attachments changed', {
-                entryCount: entries.length,
-                itemCount: items.length
-            });
-            this._sessionImageContextState.entries = entries;
-            this._sessionImageContextState.items = items;
-            this._syncImageContextToWidgets();
-        },
-        _applySessionWorkflowContext: function(data) {
-            var sessionWorkflowIds = [];
-
-            // From session-level response
-            if (data && data.workflow_grid && Array.isArray(data.workflow_grid.items)) {
-                data.workflow_grid.items.forEach(function(item) {
-                    var id = typeof item === 'string' ? item : (item && item.workflow_id);
-                    if (id) sessionWorkflowIds.push(id);
-                });
-            } else if (data && Array.isArray(data.workflow_ids)) {
-                sessionWorkflowIds = data.workflow_ids.slice();
-            }
-
-            // From messages (msg.workflow.workflow_id)
-            var messages = this.chatStore ? this.chatStore.query() : [];
-            messages.forEach(function(msg) {
-                if (msg.workflow && msg.workflow.workflow_id) {
-                    var wfId = msg.workflow.workflow_id;
-                    if (sessionWorkflowIds.indexOf(wfId) === -1) {
-                        sessionWorkflowIds.push(wfId);
-                    }
-                }
-            });
-
-            SessionWorkflowsSelectionStore.setItems(
-                this._sessionWorkflowsSelectionState, sessionWorkflowIds
-            );
-            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
-                this.displayWidget.setSessionWorkflows(sessionWorkflowIds);
-            }
-            this._syncWorkflowsSelectionsToWidgets();
-        },
-
-        _handleImageContextSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionImageContextState) {
-                return;
-            }
-            var nextItems = payload && Array.isArray(payload.items) ? payload.items : [];
-            this._debugContextEvent('image context selection changed', {
-                nextCount: nextItems.length
-            });
-            var allowed = {};
-            nextItems.forEach(function(item) {
-                if (item && item.id !== undefined && item.id !== null) {
-                    allowed[String(item.id)] = true;
-                }
-            });
-            var nextEntries = (this._sessionImageContextState.entries || []).filter(function(entry) {
-                var id = entry && entry.id !== undefined && entry.id !== null ? String(entry.id) : '';
-                return !!allowed[id];
-            });
-            this._handleImageAttachmentsChanged({
-                entries: nextEntries,
-                items: nextItems
-            });
-            if (this.inputWidget && typeof this.inputWidget.setAttachedImages === 'function') {
-                this.inputWidget.setAttachedImages(nextEntries);
-            }
-        },
-
-        _updateImagesTabVisibility: function() {
-            if (!this.imagesTabButton) {
-                return;
-            }
-            var imageCount = (this._sessionImageContextState && this._sessionImageContextState.entries && this._sessionImageContextState.entries.length) || 0;
-            var shouldShow = imageCount > 0;
-            this.imagesTabButton.style.display = shouldShow ? '' : 'none';
-            if (shouldShow) {
-                this.imagesTabButton.innerHTML = 'Images (' + imageCount + ')';
-            }
-            // If images tab was active but images were cleared, fall back to messages
-            if (!shouldShow && this.imagesTabButton.classList.contains('copilot-panel-tab-active')) {
-                this._setActiveTab('messages');
-            }
-        },
-
-        _syncFilesToDisplay: function() {
-            if (!this.displayWidget) return;
-            this.displayWidget.setSessionFilesLoading(Boolean(this._sessionFilesState.loading));
-            this.displayWidget.setSessionFilesData(
-                this._sessionFilesState.files,
-                this._sessionFilesState.pagination,
-                this._sessionFilesState.summary
-            );
-            if (this._sessionFilesState.error) {
-                this.displayWidget.setSessionFilesError(this._sessionFilesState.error);
-            }
-        },
-
-        _fetchSessionFiles: function(append) {
-            if (!this.sessionId || !this.copilotApi || !this.copilotApi.getSessionFiles) return;
-            var targetSessionId = this.sessionId;
-            var requestToken = this._sessionFilesRequestToken;
-            var offset = append ? SessionFilesStore.getNextOffset(this._sessionFilesState) : 0;
-
-            SessionFilesStore.setError(this._sessionFilesState, null);
-            SessionFilesStore.setLoading(this._sessionFilesState, true);
-            this._syncFilesToDisplay();
-
-            this.copilotApi.getSessionFiles(targetSessionId, this.sessionFilesPageSize, offset)
-                .then(lang.hitch(this, function(response) {
-                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
-                        return;
-                    }
-                    SessionFilesStore.applyFetchResponse(this._sessionFilesState, response, append);
-                    this._syncFilesToDisplay();
-                }))
-                .catch(lang.hitch(this, function(error) {
-                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
-                        return;
-                    }
-                    SessionFilesStore.setError(this._sessionFilesState, error);
-                    this._syncFilesToDisplay();
-                }))
-                .finally(lang.hitch(this, function() {
-                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
-                        return;
-                    }
-                    SessionFilesStore.setLoading(this._sessionFilesState, false);
-                    this._syncFilesToDisplay();
-                }));
-        },
-
-        _loadMoreSessionFiles: function() {
-            if (!this._sessionFilesState || this._sessionFilesState.loading) return;
-            if (!this._sessionFilesState.pagination || !this._sessionFilesState.pagination.has_more) return;
-            this._fetchSessionFiles(true);
-        },
-
-        _handleSessionFileCreated: function(eventPayload) {
-            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
-                return;
-            }
-
-            // Check if the SSE event has complete metadata
-            var hasCompleteMetadata = eventPayload.file &&
-                                     eventPayload.file.created_at &&
-                                     (typeof eventPayload.file.size_bytes === 'number' || eventPayload.file.size_formatted);
-
-            if (hasCompleteMetadata) {
-                // Use the SSE event data directly if it has metadata
-                SessionFilesStore.insertRealtimeFile(this._sessionFilesState, eventPayload);
-                this._syncFilesToDisplay();
-            } else {
-                // SSE event is missing metadata, refresh from API to get complete data
-                this._fetchSessionFiles(false);
-            }
-        },
-
-        _handleSessionWorkflowCreated: function(eventPayload) {
-            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
-                return;
-            }
-
-            var workflowItem = eventPayload.workflow || null;
-            if (!workflowItem) {
-                return;
-            }
-
-            // Merge with current workflow context so newly submitted workflows appear immediately.
-            var currentItems = this._sessionWorkflowsSelectionState && Array.isArray(this._sessionWorkflowsSelectionState.items)
-                ? this._sessionWorkflowsSelectionState.items
-                : [];
-            var nextItems = currentItems.concat([workflowItem]);
-            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
-
-            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
-                this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
-            }
-            this._syncWorkflowsSelectionsToWidgets();
         },
 
         /**

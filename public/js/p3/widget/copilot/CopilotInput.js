@@ -57,9 +57,6 @@ define([
       minSize: 40,
       maxSize: 200,
 
-      selectedWorkspaceItems: [],
-      selectedJobs: [],
-      selectedWorkflows: [],
       attachedImages: [],
       attachedFiles: [],    // text file attachments [{id, name, content, size, mimeType}]
       attachedPdfs: [],     // PDF attachments [{id, name, content, size, mimeType}]
@@ -68,7 +65,6 @@ define([
       imageActionMenuNode: null,
       imageActionOutsideClickHandle: null,
       screenshotMenuItemNode: null,
-      onImageAttachmentsChanged: null,
       _nextImageAttachmentId: 0,
       _isCapturingScreenshot: false,
       _attachMenuKeyHandle: null,
@@ -81,34 +77,6 @@ define([
         declare.safeMixin(this, args);
         this._nextImageAttachmentId = 0;
         this._topicHandles = [];
-      },
-
-      _toContextImageItems: function(entries) {
-        if (!Array.isArray(entries)) {
-          return [];
-        }
-        return entries.map(function(entry, index) {
-          var attachment = entry && entry.attachment ? entry.attachment : {};
-          var id = entry && entry.id ? entry.id : ('img-' + index);
-          return {
-            id: id,
-            name: attachment.name || 'Uploaded image',
-            source: attachment.source || 'upload',
-            thumbnail: entry && typeof entry.image === 'string' ? entry.image : null
-          };
-        });
-      },
-
-      _emitImageAttachmentsChanged: function() {
-        if (typeof this.onImageAttachmentsChanged !== 'function') {
-          return;
-        }
-        var entries = Array.isArray(this.attachedImages) ? this.attachedImages.slice() : [];
-        this.onImageAttachmentsChanged({
-          sessionId: this.sessionId,
-          entries: entries,
-          items: this._toContextImageItems(entries)
-        });
       },
 
       _getInputValue: function() {
@@ -297,7 +265,6 @@ define([
             }
           });
           this._renderAttachmentChips();
-          this._emitImageAttachmentsChanged();
         })).catch(lang.hitch(this, function(error) {
           console.error('Screenshot capture failed:', error);
           topic.publish('CopilotApiError', {
@@ -314,7 +281,6 @@ define([
           return entry && entry.id !== id;
         });
         this._renderAttachmentChips();
-        this._emitImageAttachmentsChanged();
       },
 
       _removeAttachedFileById: function(id) {
@@ -329,7 +295,6 @@ define([
           return entry && entry.id !== id;
         });
         this._renderAttachmentChips();
-        this._emitImageAttachmentsChanged();
       },
 
       _appendAttachmentChip: function(parentNode, options) {
@@ -515,39 +480,6 @@ define([
         this._workspacePicker.show();
       },
 
-      _getSelectedWorkspaceItemsForRequest: function() {
-        if (!Array.isArray(this.selectedWorkspaceItems) || this.selectedWorkspaceItems.length === 0) {
-          return [];
-        }
-        // Extract only path and type from items
-        return this.selectedWorkspaceItems.map(function(item) {
-          if (!item || item.selected === false || !item.path) {
-            return null;
-          }
-          return {
-            path: item.path,
-            type: item.type || null
-          };
-        }).filter(function(item) {
-          return item !== null && typeof item.path === 'string' && item.path.length > 0;
-        });
-      },
-
-      _appendWorkspaceSelectionToStreamParams: function(params) {
-        var selectedItems = this._getSelectedWorkspaceItemsForRequest();
-        if (selectedItems.length > 0) {
-          params.selected_workspace_items = selectedItems;
-        }
-        var selectedJobs = this._getSelectedJobsForRequest();
-        if (selectedJobs.length > 0) {
-          params.selected_jobs = selectedJobs;
-        }
-        var selectedWorkflows = this._getSelectedWorkflowsForRequest();
-        if (selectedWorkflows.length > 0) {
-          params.selected_workflows = selectedWorkflows;
-        }
-      },
-
       _applyToolMetadataToAssistantMessage: function(assistantMessage, toolMetadata) {
         if (!assistantMessage || !toolMetadata) {
           return;
@@ -571,62 +503,6 @@ define([
         if (toolMetadata.originalQuery) {
           assistantMessage.originalQuery = toolMetadata.originalQuery;
         }
-      },
-
-      setSelectedWorkspaceItems: function(items) {
-        this.selectedWorkspaceItems = Array.isArray(items) ? items.slice() : [];
-        this._renderWorkspaceSelectionIndicator();
-      },
-
-      _getSelectedJobsForRequest: function() {
-        if (!Array.isArray(this.selectedJobs) || this.selectedJobs.length === 0) {
-          return [];
-        }
-        return this.selectedJobs.map(function(job) {
-          if (!job || job.selected === false || job.id === null || job.id === undefined || job.id === '') {
-            return null;
-          }
-          return {
-            id: String(job.id),
-            status: job.status || null,
-            application_name: job.application_name || job.app || null
-          };
-        }).filter(function(job) {
-          return job !== null;
-        });
-      },
-
-      setSelectedJobs: function(items) {
-        this.selectedJobs = Array.isArray(items) ? items.slice() : [];
-        this._renderJobsSelectionIndicator();
-      },
-
-      _getSelectedWorkflowsForRequest: function() {
-        if (!Array.isArray(this.selectedWorkflows) || this.selectedWorkflows.length === 0) {
-          return [];
-        }
-        return this.selectedWorkflows.map(function(workflow) {
-          if (!workflow || workflow.selected === false) {
-            return null;
-          }
-          var workflowId = workflow.workflow_id || workflow.id;
-          if (!workflowId) {
-            return null;
-          }
-          return {
-            workflow_id: String(workflowId),
-            workflow_name: workflow.workflow_name || null,
-            status: workflow.status || null,
-            submitted_at: workflow.submitted_at || null,
-            completed_at: workflow.completed_at || null
-          };
-        }).filter(function(workflow) {
-          return workflow !== null;
-        });
-      },
-
-      setSelectedWorkflows: function(items) {
-        this.selectedWorkflows = Array.isArray(items) ? items.slice() : [];
       },
 
       _registerSessionIfNeeded: function() {
@@ -967,12 +843,6 @@ define([
               (data && data.execution_mode === 'execute') ? 'execute' : 'plan',
               { silent: true }
             );
-
-            this.selectedWorkspaceItems = [];
-            this._renderWorkspaceSelectionIndicator();
-            this.selectedJobs = [];
-            this._renderJobsSelectionIndicator();
-            this.selectedWorkflows = [];
         })));
 
         // Maximum height for textarea before scrolling
@@ -1331,8 +1201,6 @@ define([
           this.submitButton.onClick();
         })));
 
-        this._renderWorkspaceSelectionIndicator();
-        this._renderJobsSelectionIndicator();
         this._updateImageCapabilityUI();
         this._updateStopButtonState();
         this._renderAttachmentChips();
@@ -1389,48 +1257,6 @@ define([
         // (ChatSessionScrollBar) will hide the chip once the gateway confirms.
       },
 
-      _renderWorkspaceSelectionIndicator: function() {
-        if (!this.workspaceSelectionIndicator || !this.workspaceSelectionCountNode) {
-          return;
-        }
-
-        var selectedItems = Array.isArray(this.selectedWorkspaceItems) ? this.selectedWorkspaceItems : [];
-        var count = selectedItems.length;
-        var label = count === 1 ? '1 selected' : count + ' selected';
-        var selectedItemLabels = selectedItems.map(function(item) {
-          return item && item.path ? item.path : (item && item.name ? item.name : 'Unknown item');
-        });
-
-        this.workspaceSelectionCountNode.textContent = label;
-        this.workspaceSelectionIndicator.title = count > 0
-          ? ('Selected workspace files (' + count + ')' +
-            (selectedItemLabels.length > 0 ? '\n' + selectedItemLabels.join('\n') : ''))
-          : 'No workspace files selected';
-        this.workspaceSelectionIndicator.classList.toggle('hasSelection', count > 0);
-        this.workspaceSelectionIndicator.style.display = count > 0 ? 'inline-flex' : 'none';
-      },
-
-      _renderJobsSelectionIndicator: function() {
-        if (!this.jobsSelectionIndicator || !this.jobsSelectionCountNode) {
-          return;
-        }
-        var selectedItems = Array.isArray(this.selectedJobs) ? this.selectedJobs : [];
-        var count = selectedItems.length;
-        var label = count === 1 ? '1 job' : count + ' jobs';
-        var selectedJobLabels = selectedItems.map(function(item) {
-          var id = item && item.id ? item.id : 'Unknown job';
-          var app = item && (item.application_name || item.app) ? (' (' + (item.application_name || item.app) + ')') : '';
-          return id + app;
-        });
-        this.jobsSelectionCountNode.textContent = label;
-        this.jobsSelectionIndicator.title = count > 0
-          ? ('Selected jobs (' + count + ')' +
-            (selectedJobLabels.length > 0 ? '\n' + selectedJobLabels.join('\n') : ''))
-          : 'No jobs selected';
-        this.jobsSelectionIndicator.classList.toggle('hasSelection', count > 0);
-        this.jobsSelectionIndicator.style.display = count > 0 ? 'inline-flex' : 'none';
-      },
-
       /**
        * Resets widget state for new chat session
        * Clears textarea and sets new chat flag
@@ -1455,12 +1281,6 @@ define([
 
         this._closeAttachMenu();
         this._clearAttachedImage();
-
-        this.selectedWorkspaceItems = [];
-        this._renderWorkspaceSelectionIndicator();
-        this.selectedJobs = [];
-        this._renderJobsSelectionIndicator();
-        this.selectedWorkflows = [];
       },
 
       /**
@@ -1487,12 +1307,6 @@ define([
 
         this._closeAttachMenu();
         this._clearAttachedImage();
-
-        this.selectedWorkspaceItems = [];
-        this._renderWorkspaceSelectionIndicator();
-        this.selectedJobs = [];
-        this._renderJobsSelectionIndicator();
-        this.selectedWorkflows = [];
       },
 
       /**
@@ -1742,7 +1556,6 @@ define([
         if (!enabled && this.attachedImages && this.attachedImages.length > 0) {
           this.attachedImages = [];
           this._renderAttachmentChips();
-          this._emitImageAttachmentsChanged();
         }
       },
 
@@ -1905,7 +1718,6 @@ define([
             }
           }));
           this._renderAttachmentChips();
-          this._emitImageAttachmentsChanged();
         })).catch(function(error) {
           topic.publish('CopilotApiError', { error: error });
         }).finally(lang.hitch(this, function() {
@@ -1921,13 +1733,11 @@ define([
           this.imageUploadInput.value = '';
         }
         this._renderAttachmentChips();
-        this._emitImageAttachmentsChanged();
       },
 
       setAttachedImages: function(entries) {
         this.attachedImages = Array.isArray(entries) ? entries.slice() : [];
         this._renderAttachmentChips();
-        this._emitImageAttachmentsChanged();
       },
 
       _buildUserMessageForSubmit: function(inputText, attachmentMeta) {
@@ -2253,7 +2063,6 @@ define([
       if (hasUploadedPdfs) {
         params.pdfs = uploadedPdfsPayload.pdfs;
       }
-      this._appendWorkspaceSelectionToStreamParams(params);
 
       this._submitCopilotQueryStreamWithRegistration(params,
           (chunk, toolMetadata) => {
