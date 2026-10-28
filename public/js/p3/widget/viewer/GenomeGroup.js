@@ -1,19 +1,19 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', '../../util/PathJoin', 'dojo/request',
+  'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
   '../GenomeListOverview', '../StrainGridContainer', '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../../auth/authHeaders'
+  '../../util/genomeKingdom'
 ], function (
-  declare, lang, PathJoin, xhr,
+  declare, lang,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
   Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
   EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  authHeader
+  genomeKingdom
 ) {
 
   return declare([GenomeList], {
@@ -52,29 +52,16 @@ define([
       const query = this.state.search;
       var _self = this;
 
-      xhr.get(PathJoin(dataAPI, 'data/taxon_category/', `?${query}`), {
-        headers: {
-          // forToken: see the note in GenomeList.js -- authToken is a
-          // prototype property captured at module-declare time.
-          Authorization: authHeader.forToken('api', authToken),
-          Accept: 'application/solr+json',
-        },
-        handleAs: 'json',
-      }).then(function (data) {
-        // See the note in GenomeList.js: an unset superkingdom shows up as a literal
-        // "null" facet key, so filter it before deciding the group is single-kingdom.
-        const kingdoms = ((data && data.superkingdom) || []).filter(function (k) {
-          return k && k !== 'null';
+      // forToken: see the note in GenomeList.js -- authToken is a prototype property
+      // captured at module-declare time.
+      genomeKingdom.detect({ apiServer: dataAPI, query: query, authToken: authToken })
+        .then(function (r) {
+          if (r.kingdom === 'Bacteria') {
+            _self.changeToBacteria();
+          } else if (r.kingdom === 'Viruses') {
+            _self.changeToViruses();
+          }
         });
-        if (kingdoms.length !== 1) {
-          return;
-        }
-        if (kingdoms[0] === 'Bacteria') {
-          _self.changeToBacteria();
-        } else if (kingdoms[0] === 'Viruses') {
-          _self.changeToViruses();
-        }
-      });
       this.setActivePanelState()
     },
 
