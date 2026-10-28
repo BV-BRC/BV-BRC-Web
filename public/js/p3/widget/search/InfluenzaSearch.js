@@ -192,7 +192,6 @@ define([
       // ===== Facet-built stores =====
       // [core, facet_field, attach_point_name, condition]
       var facetBindings = [
-        ['genome', 'host_common_name', 'hostNameNode', fluCondition],
         ['genome', 'geographic_group', 'geographicGroupNode', fluCondition],
         ['genome', 'state_province', 'stateProvinceNode', fluCondition],
         ['genome', 'subtype', 'fullSubtypeNode', fluACondition],
@@ -220,6 +219,10 @@ define([
       setupCalendarPopup(this.collectionDateToCalendarIcon, this.collectionDateToNode);
       setupCalendarPopup(this.submissionDateFromCalendarIcon, this.submissionDateFromNode);
       setupCalendarPopup(this.submissionDateToCalendarIcon, this.submissionDateToNode);
+
+      // ===== Hosts follow the selected host group =====
+      this.hostGroupNode.on('change', lang.hitch(this, '_updateHostOptions'));
+      this._updateHostOptions();
 
       // ===== Countries follow the selected continent =====
       this.geographicGroupNode.on('change', lang.hitch(this, function () {
@@ -573,6 +576,39 @@ define([
       this.subcladeNode.set('value', '');
     },
 
+    _updateHostOptions: function () {
+      var group = this.hostGroupNode.get('value') || '';
+      var hostNode = this.hostNameNode;
+      var value = hostNode.get('value');
+      var isMulti = Array.isArray(value);
+      var selected = isMulti ? value.slice() : (value ? [value] : []);
+      var input = hostNode.searchBox || hostNode;
+      var requestId = this._hostRequestId = (this._hostRequestId || 0) + 1;
+      var condition = '(' + buildTaxonCondition(['A', 'B', 'C', 'D']) + ')';
+      if (group) {
+        var escaped = group.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        condition += ' AND host_group:"' + escaped + '"';
+      }
+
+      // Clear stale options while loading, including any typed search text.
+      hostNode.set('value', isMulti ? [] : '');
+      hostNode.set('store', new Memory({ data: [] }));
+      input.set('placeHolder', 'Loading hosts...');
+      return storeBuilder('genome', 'host_common_name', condition).then(lang.hitch(this, function (store) {
+        if (this._destroyed || requestId !== this._hostRequestId) return;
+        hostNode.set('store', store);
+        var retained = selected.filter(function (host) {
+          return !!store.get(host);
+        });
+        hostNode.set('value', isMulti ? retained : (retained[0] || ''));
+        input.set('placeHolder', isMulti ? 'Add hosts' : 'e.g. Chicken');
+      }), lang.hitch(this, function (error) {
+        if (this._destroyed || requestId !== this._hostRequestId) return;
+        input.set('placeHolder', 'Unable to load hosts');
+        console.error('Unable to load hosts for the selected host group', error);
+      }));
+    },
+
     _updateCountryOptions: function () {
       var continent = this.geographicGroupNode.get('value') || '';
       var countryNode = this.isolationCountryNode;
@@ -686,6 +722,7 @@ define([
       });
 
       this._updateCountryOptions();
+      this._updateHostOptions();
     },
 
     // ===== Helpers =====
