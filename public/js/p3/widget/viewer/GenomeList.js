@@ -69,9 +69,19 @@ define([
         },
         handleAs: 'json',
       }).then(function (data) {
-        if (data.superkingdom[0] === 'Bacteria' && data.superkingdom.length === 1) {
+        // `superkingdom` is a list of facet KEYS, and a genome whose superkingdom field
+        // is unset produces a literal "null" bucket. Four such records exist under
+        // Viruses out of 15.6M, so an unfiltered length check decides "mixed kingdoms"
+        // off a handful of incompletely-annotated genomes and silently stops pruning.
+        const kingdoms = ((data && data.superkingdom) || []).filter(function (k) {
+          return k && k !== 'null';
+        });
+        if (kingdoms.length !== 1) {
+          return;
+        }
+        if (kingdoms[0] === 'Bacteria') {
           _self.changeToBacteria();
-        } else if (data.superkingdom[0] === 'Viruses' && data.superkingdom.length === 1) {
+        } else if (kingdoms[0] === 'Viruses') {
           _self.changeToViruses();
         }
       });

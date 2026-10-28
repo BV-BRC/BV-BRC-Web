@@ -61,9 +61,17 @@ define([
         },
         handleAs: 'json',
       }).then(function (data) {
-        if (data.superkingdom[0] === 'Bacteria' && data.superkingdom.length === 1) {
+        // See the note in GenomeList.js: an unset superkingdom shows up as a literal
+        // "null" facet key, so filter it before deciding the group is single-kingdom.
+        const kingdoms = ((data && data.superkingdom) || []).filter(function (k) {
+          return k && k !== 'null';
+        });
+        if (kingdoms.length !== 1) {
+          return;
+        }
+        if (kingdoms[0] === 'Bacteria') {
           _self.changeToBacteria();
-        } else if (data.superkingdom[0] === 'Viruses' && data.superkingdom.length === 1) {
+        } else if (kingdoms[0] === 'Viruses') {
           _self.changeToViruses();
         }
       });
