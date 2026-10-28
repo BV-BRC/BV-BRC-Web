@@ -887,24 +887,34 @@ var loadGexfDependencies = function(callback) {
                 var boundaryAnchorSet = {};
 
                 if (type === 'superbubbles') {
-                    // In a superbubble, interior nodes only touch superbubble edges; boundary anchors touch exterior backbone edges
-                    var interior = [];
-                    var boundary = [];
-                    c.nodeIds.forEach(function(nid) {
-                        var inc = adjEdgesByNodeId[nid] || [];
-                        var touchesExterior = inc.some(function(item) { return !rawEdges[item.edge.id]; });
-                        if (touchesExterior) boundary.push(nid);
-                        else interior.push(nid);
-                    });
-                    if (interior.length > 0) {
-                        focalIds = interior;
-                        boundary.forEach(function(bid) { boundaryAnchorSet[bid] = true; });
+                    var hasExplicitSb = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
+                    var allExplicitSb = c.nodeIds.every(function(nid) { return Boolean(explicitNodes[nid]); });
+                    if (hasExplicitSb && !allExplicitSb) {
+                        // Interior variant nodes have is_superbubble=true; entry/exit pinch-point anchors are untagged endpoints of rawEdges
+                        c.nodeIds.forEach(function(nid) {
+                            if (explicitNodes[nid]) focalIds.push(nid);
+                            else boundaryAnchorSet[nid] = true;
+                        });
                     } else {
-                        focalIds = c.nodeIds.slice();
+                        // Fallback for legacy GEXF files where entry/exit anchors also had is_superbubble=true
+                        var interior = [];
+                        var boundary = [];
+                        c.nodeIds.forEach(function(nid) {
+                            var inc = adjEdgesByNodeId[nid] || [];
+                            var touchesExterior = inc.some(function(item) { return !rawEdges[item.edge.id]; });
+                            if (touchesExterior) boundary.push(nid);
+                            else interior.push(nid);
+                        });
+                        if (interior.length > 0) {
+                            focalIds = interior;
+                            boundary.forEach(function(bid) { boundaryAnchorSet[bid] = true; });
+                        } else {
+                            focalIds = c.nodeIds.slice();
+                        }
                     }
                 } else {
                     var hasExplicitInComp = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
-                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'fragmented_paralogs' || type === 'tandem_repeats')) {
+                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'inversions')) {
                         c.nodeIds.forEach(function(nid) {
                             if (explicitNodes[nid]) focalIds.push(nid);
                             else boundaryAnchorSet[nid] = true;
@@ -1011,8 +1021,8 @@ var loadGexfDependencies = function(callback) {
                 });
 
                 if (type === 'tandem_repeats' || type === 'fragmented_paralogs') {
-                    eventRoleTitle = (type === 'fragmented_paralogs') ? 'Dispersed / Multi-Contig Carriers' : 'Multi-Copy CNV Carriers';
-                    refRoleTitle = 'Single-Copy / Collinear Reference';
+                    eventRoleTitle = (type === 'fragmented_paralogs') ? 'Fragmented / Multi-Contig Carriers' : 'Multi-Copy CNV Carriers';
+                    refRoleTitle = (type === 'fragmented_paralogs') ? 'Contiguous Reference Carriers' : 'Single-Copy / Collinear Reference';
                     var detourGenomes = {};
                     var detourContigs = {};
                     Object.keys(rawEdges).forEach(function(eid) {
@@ -1025,7 +1035,7 @@ var loadGexfDependencies = function(callback) {
                         var cSet = genomeFocalContigs[gid] || {};
                         var numContigs = Object.keys(cSet).length;
                         var isEvent = (type === 'fragmented_paralogs')
-                            ? (numContigs > 1 || genomeCopies[gid] > 1 || Boolean(detourGenomes[gid]))
+                            ? (numContigs > 1 || Boolean(detourGenomes[gid]))
                             : (genomeCopies[gid] > 1 || Boolean(detourGenomes[gid]));
                         if (isEvent) {
                             eventGenomesSet[gid] = true;
@@ -1677,7 +1687,7 @@ var loadGexfDependencies = function(callback) {
             html += '<summary style="cursor:pointer; font-weight:bold; color:#2b5c8f; outline:none;"><i class="fa icon-info-circle"></i> Guide to Biological Phenomena</summary>';
             html += '<div style="margin-top:6px; line-height:1.38; color:#444;">';
             html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, or small indels flanked by the same conserved core anchor genes.<br>&bull; <i>Accessory Islands &amp; Indels (Alt Paths):</i> Asymmetric minority detours, genomic islands, prophages, or HGT insertions branching off the conserved chromosomal backbone.</div>';
-            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Dispersed Repeats / MGEs (Fragmented CNV):</i> Mobile genetic elements (IS elements, transposases) or multi-locus paralogs split across separate genomic regions or contigs.</div>';
+            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Fragmented Localized Repeats (Fragmented CNV):</i> Localized repeats that are contiguous on reference contigs but split across multiple contigs in incomplete or misassembled genomes.</div>';
             html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Rearrangements):</i> Large-scale chromosomal translocations, NAHR-mediated fusions, or chimeric misassemblies joining distinct syntenic blocks.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the consensus pan-genome coordinate frame.</div>';
             html += '<div><b>4. Assembly &amp; Scaffolding:</b><br>&bull; <i>Repeat Breaks &amp; Scaffolds:</i> Contig ends shattered inside shared repetitive elements paired with candidate reference-guided scaffold bridges.</div>';
             html += '</div></details>';
@@ -1719,16 +1729,16 @@ var loadGexfDependencies = function(callback) {
                     count: countTandem,
                     nodesDesc: 'Multi-copy paralogous gene nodes within local CNV clusters',
                     edgesDesc: 'Local repeat routing detours and tandem copy transitions',
-                    tsvReport: '*_cnv_metrics.tsv'
+                    tsvReport: '*_structural_variants.tsv'
                 },
                 'fragmented_paralogs': {
-                    label: 'Dispersed Repeats / MGEs',
+                    label: 'Fragmented Localized Repeats',
                     graphTerm: 'Fragmented CNV',
-                    subtitle: 'IS elements, transposases & paralogs split across loci or contigs',
+                    subtitle: 'Localized repeats contiguous in reference contigs but split across contigs in fragmented assemblies',
                     count: countFragmented,
-                    nodesDesc: 'Dispersed multi-locus paralogous families (conflict class 3)',
-                    edgesDesc: 'Repeat fragmentation junctions connecting dispersed copies',
-                    tsvReport: '*_cnv_metrics.tsv'
+                    nodesDesc: 'Localized repeat alternate nodes split across multiple contigs (conflict class 3)',
+                    edgesDesc: 'Repeat fragmentation junctions connecting split repeat copies',
+                    tsvReport: '*_mobilized_gene_families.tsv'
                 },
                 'rearrangements': {
                     label: 'Synteny Breakpoints',
@@ -1746,7 +1756,7 @@ var loadGexfDependencies = function(callback) {
                     count: countInversions,
                     nodesDesc: 'Gene families belonging to reverse-complement syntenic segments',
                     edgesDesc: 'Edges traversed in inverted orientation by subset of genomes',
-                    tsvReport: '*_inverted_blocks.tsv'
+                    tsvReport: '*_structural_variants.tsv'
                 },
                 'breaks': {
                     label: 'Repeat Breaks & Scaffolds',
@@ -2292,7 +2302,7 @@ var loadGexfDependencies = function(callback) {
                 // --- 5. STRUCTURAL REARRANGEMENTS ---
                 } else if (type === 'rearrangements') {
                     addEdgesByAttr('breakpoint_junction', 'true', true);
-                    addEdgesByAttr('genomic_rearrangement', 'true', true);
+                    addEdgesByAttr('inter_contig_rearrangement', 'true', true);
                     addEdgesByAttr('intra_contig_rearrangement', 'true', true);
                     
                     var conflictId = GexfJS._node_attr_value['conflict'];
@@ -2306,6 +2316,11 @@ var loadGexfDependencies = function(callback) {
                 // --- 6. INVERTED BLOCKS ---
                 } else if (type === 'inversions') {
                     addEdgesByAttr('inverted_block', 'true', false); 
+                    GexfJS.graph.nodeList.forEach(function(node) {
+                        if (checkNodeBool(node, 'inverted_block')) {
+                            explicitNodes[node.id] = true;
+                        }
+                    });
 
                 // --- 7. ASSEMBLY BREAKS & SCAFFOLDS ---
                 } else if (type === 'breaks') {
@@ -2471,6 +2486,22 @@ var loadGexfDependencies = function(callback) {
                     GexfJS.params.centreY = n.coords.base.y;
                 }
                 window.displayNode(nodeIndex);
+            });
+
+            window.selectFamilyNodes = lang.hitch(this, function(familyId) {
+                if (!window.GexfJS || !GexfJS.graph || !familyId) return;
+                var famAttrId = (GexfJS._node_attr_value && GexfJS._node_attr_value['family']) ? GexfJS._node_attr_value['family'] : 'family';
+                var matched = [];
+                GexfJS.graph.nodeList.forEach(function(n, idx) {
+                    var nFam = (n.attributes && n.attributes[famAttrId]) ? n.attributes[famAttrId] : n.label;
+                    if (String(nFam) === String(familyId)) {
+                        matched.push(idx);
+                    }
+                });
+                if (matched.length > 0) {
+                    this.multiSelectedNodeIndices = matched;
+                    this.applyMultiNodeSelection();
+                }
             });
 
             window.restorePhenomenonContext = lang.hitch(this, function() {
@@ -3324,10 +3355,40 @@ var loadGexfDependencies = function(callback) {
             if (String(namedAttrs['is_scaffold_path']).toLowerCase() === 'true') {
                 badges.push('<span style="' + badgeStyle + ' background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;" title="Candidate syntenic scaffold bridge connecting fragmented contigs">Scaffold Bridge</span>');
             }
+            if (String(namedAttrs['inverted_block']).toLowerCase() === 'true') {
+                badges.push('<span style="' + badgeStyle + ' background:#ede7f6; color:#4527a0; border:1px solid #b39ddb;" title="Locus participating in a chromosomal inversion relative to reference consensus">Inverted Block</span>');
+            }
+
+            // Detect paralogous loci sharing the same protein family across the graph
+            var curFamily = namedAttrs['family'] || node.label;
+            var paralogNodes = [];
+            if (curFamily && window.GexfJS && GexfJS.graph && Array.isArray(GexfJS.graph.nodeList)) {
+                var famAttrId = (GexfJS._node_attr_value && GexfJS._node_attr_value['family']) ? GexfJS._node_attr_value['family'] : 'family';
+                GexfJS.graph.nodeList.forEach(function(n, idx) {
+                    if (String(n.id) === String(node.id)) return;
+                    var nFam = (n.attributes && n.attributes[famAttrId]) ? n.attributes[famAttrId] : n.label;
+                    if (String(nFam) === String(curFamily)) {
+                        paralogNodes.push({ idx: idx, id: n.id, label: n.label || n.id });
+                    }
+                });
+            }
+            if (paralogNodes.length > 0) {
+                badges.push('<span style="' + badgeStyle + ' background:#e0f7fa; color:#006064; border:1px solid #80deea;" title="Gene family appears at multiple distinct syntenic loci across the graph">Paralogous Loci (' + (paralogNodes.length + 1) + ')</span>');
+            }
 
             var attrHtml = '<div style="margin-bottom:10px; font-size:0.9em; color:#555;">';
             if (badges.length > 0) {
                 attrHtml += '<div style="margin-bottom:6px;">' + badges.join('') + '</div>';
+            }
+            if (paralogNodes.length > 0) {
+                var famEsc = String(curFamily).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                var paralogLinks = paralogNodes.map(function(p) {
+                    return '<a href="#" onclick="window.inspectNodeFromLocus(' + p.idx + '); return false;" style="color:#006064; text-decoration:underline; margin-right:6px;" title="Center and inspect node ' + p.id + '">Node ' + p.id + '</a>';
+                }).join('');
+                attrHtml += '<div style="margin-bottom:6px; padding:4px 6px; background:#f0fbfc; border:1px solid #b2ebf2; border-radius:4px;">' +
+                    '<b>Other Paralogous Loci (' + paralogNodes.length + '):</b> ' + paralogLinks +
+                    '<a href="#" onclick="window.selectFamilyNodes(\'' + famEsc + '\'); return false;" style="color:#0277bd; font-weight:bold; text-decoration:underline; margin-left:4px;" title="Select all ' + (paralogNodes.length + 1) + ' nodes of this family for comparative analysis">[Select all ' + (paralogNodes.length + 1) + ']</a>' +
+                    '</div>';
             }
             attrHtml += '<div><b>Node ID:</b> ' + node.id + '</div>';
             Object.keys(namedAttrs).forEach(function(name){
