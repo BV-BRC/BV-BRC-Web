@@ -261,8 +261,8 @@ var loadGexfDependencies = function(callback) {
                         around: this.selectionActionBar._actions.ColorSelection.button,
                         orient: ["above", "below"] // Action bar is on bottom right, "above" works well
                     });
-                    if (window.GexfJS && GexfJS.params) {
-                        var nameInput = document.getElementById("gexfPinNameInput");
+                    if (window.GexfJS && GexfJS.params && this.colorMenuDiv) {
+                        var nameInput = this.colorMenuDiv.querySelector("#gexfPinNameInput");
                         if (nameInput) {
                             nameInput.value = GexfJS.params.currentHighlightName || "Custom Selection";
                         }
@@ -416,30 +416,39 @@ var loadGexfDependencies = function(callback) {
                     persistent: true,
                     validTypes:["*"],
                     validContainerTypes:["*"],
-                    tooltip: "Adjust Node Labels",
+                    tooltip: "Adjust Node Labels (Toggle On/Off, Text Size & Zoom Threshold)",
                     ignoreDataType: true
                 },
                 function (selection) {
                     // 1. OPEN THE POPUP FIRST
-                    // This injects the tooltip into the actual page DOM.
                     popup.open({
                         popup: this.labelMenu,
                         around: this.selectionActionBar._actions.LabelSettings.button,
                         orient: ["above", "below"]
                     });
                     
-                    // 2. SET THE VALUES AFTER IT IS OPEN
-                    // Now document.getElementById will successfully find the elements.
-                    if (window.GexfJS && GexfJS.params) {
-                        var toggleInput = document.getElementById('gexfLabelToggle');
+                    // 2. SET THE VALUES AFTER IT IS OPEN (scoped to this.labelMenuDiv to avoid stale DOM ID collisions)
+                    if (window.GexfJS && GexfJS.params && this.labelMenuDiv) {
+                        var toggleInput = this.labelMenuDiv.querySelector('#gexfLabelToggle');
                         if (toggleInput) {
-                            // Use the dedicated boolean we set up in the last step
                             toggleInput.checked = (GexfJS.params.showNodeLabels !== false); 
                         }
                         
-                        var sizeInput = document.getElementById('gexfLabelSize');
+                        var sizeInput = this.labelMenuDiv.querySelector('#gexfLabelSize');
                         if (sizeInput) {
-                            sizeInput.value = GexfJS.params.labelSizeFactor || 1.0;
+                            sizeInput.value = GexfJS.params.labelSizeFactor || 0.6;
+                        }
+
+                        var threshVal = (typeof GexfJS.params.textDisplayThreshold === "number" && !isNaN(GexfJS.params.textDisplayThreshold))
+                            ? GexfJS.params.textDisplayThreshold
+                            : 12;
+                        var threshInput = this.labelMenuDiv.querySelector('#gexfLabelThreshold');
+                        if (threshInput) {
+                            threshInput.value = threshVal;
+                        }
+                        var threshSlider = this.labelMenuDiv.querySelector('#gexfLabelThresholdSlider');
+                        if (threshSlider) {
+                            threshSlider.value = threshVal;
                         }
                     }
                 },
@@ -452,6 +461,19 @@ var loadGexfDependencies = function(callback) {
             this.selectionActions.forEach(function (a) {
                 this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5], a[6], a[7], a[8], a[9], a[10]);
             }, this);
+        },
+
+        updateLabelButtonState: function() {
+            if (!this.selectionActionBar || !this.selectionActionBar._actions || !this.selectionActionBar._actions.LabelSettings) return;
+            var btnNode = this.selectionActionBar._actions.LabelSettings.button;
+            if (!btnNode) return;
+            var isShown = !(window.GexfJS && GexfJS.params && GexfJS.params.showNodeLabels === false);
+            domStyle.set(btnNode, {
+                opacity: isShown ? "1.0" : "0.55"
+            });
+            query(".ActionButtonText", btnNode).forEach(function(node) {
+                node.innerHTML = isShown ? "LABELS" : "LABELS OFF";
+            });
         },
 
         postCreate: function(){
@@ -472,12 +494,13 @@ var loadGexfDependencies = function(callback) {
                            '</div>' +
                            '</div>'
             });
-
+            this.colorMenuDiv = colorMenuDiv;
             this.colorMenu = new TooltipDialog({ content: colorMenuDiv });
 
             on(colorMenuDiv, "#gexfColorApply:click", lang.hitch(this, function() {
-                var color = document.getElementById('gexfColorPicker').value;
-                var nameInput = document.getElementById('gexfPinNameInput');
+                var picker = colorMenuDiv.querySelector('#gexfColorPicker');
+                var color = picker ? picker.value : '#ff0000';
+                var nameInput = colorMenuDiv.querySelector('#gexfPinNameInput');
                 var customName = (nameInput && nameInput.value) ? nameInput.value.trim() : null;
                 this.applyColorToGraph(color, customName);
                 popup.close(this.colorMenu);
@@ -498,11 +521,12 @@ var loadGexfDependencies = function(callback) {
                            '<button id="gexfHlColorCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
                            '</div>'
             });
-
+            this.hlColorMenuDiv = hlColorMenuDiv;
             this.hlColorMenu = new TooltipDialog({ content: hlColorMenuDiv });
 
             on(hlColorMenuDiv, "#gexfHlColorApply:click", lang.hitch(this, function() {
-                var color = document.getElementById('gexfHlColorPicker').value;
+                var picker = hlColorMenuDiv.querySelector('#gexfHlColorPicker');
+                var color = picker ? picker.value : '#ff00ff';
                 if (window.GexfJS && GexfJS.params) {
                     GexfJS.params.highlightColorOverride = color;
                     delete GexfJS.oldParams.zoomLevel;
@@ -534,11 +558,12 @@ var loadGexfDependencies = function(callback) {
                            '<button id="gexfBgColorCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
                            '</div>'
             });
-
+            this.bgColorMenuDiv = bgColorMenuDiv;
             this.bgColorMenu = new TooltipDialog({ content: bgColorMenuDiv });
 
             on(bgColorMenuDiv, "#gexfBgColorApply:click", lang.hitch(this, function() {
-                var color = document.getElementById('gexfBgColorPicker').value;
+                var picker = bgColorMenuDiv.querySelector('#gexfBgColorPicker');
+                var color = picker ? picker.value : '#ffffff';
                 var zc = document.getElementById('zonecentre');
                 var oc = document.getElementById('overviewzone');
                 
@@ -561,29 +586,76 @@ var loadGexfDependencies = function(callback) {
                 popup.close(this.bgColorMenu);
             }));
 
+            // --- 4. Node Labels Menu ---
             var labelMenuDiv = domConstruct.create("div", {
-                innerHTML: '<div style="padding: 8px; white-space: nowrap;">' +
-                           '<div style="margin-bottom: 5px;"><label><input type="checkbox" id="gexfLabelToggle" checked style="vertical-align:middle; cursor:pointer;"> Show Node Labels</label></div>' +
-                           '<div style="margin-bottom: 10px;"><label>Text Size Multiplier: <input type="number" id="gexfLabelSize" value="0.6" step="0.2" min="0.2" max="5.0" style="width: 50px; text-align:center;"></label></div>' +
+                innerHTML: '<div style="padding: 8px; white-space: nowrap; font-size: 0.92em;">' +
+                           '<div style="margin-bottom: 6px;"><label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="gexfLabelToggle" checked style="vertical-align:middle; cursor:pointer;"> Show Node Labels</label></div>' +
+                           '<div style="margin-bottom: 6px; display:flex; align-items:center; justify-content:space-between; gap:8px;">' +
+                           '<label for="gexfLabelSize">Text Size Multiplier:</label>' +
+                           '<input type="number" id="gexfLabelSize" value="0.6" step="0.1" min="0.2" max="5.0" style="width: 55px; text-align:center;">' +
+                           '</div>' +
+                           '<div style="margin-bottom: 3px; display:flex; align-items:center; justify-content:space-between; gap:8px;" title="Minimum rendered node radius (px) required before labels appear when zooming">' +
+                           '<label for="gexfLabelThreshold">Zoom Threshold (px):</label>' +
+                           '<div style="display:flex; align-items:center; gap:5px;">' +
+                           '<input type="range" id="gexfLabelThresholdSlider" value="12" min="0" max="40" step="1" style="width: 80px; vertical-align:middle; cursor:pointer;">' +
+                           '<input type="number" id="gexfLabelThreshold" value="12" step="1" min="0" max="50" style="width: 48px; text-align:center;">' +
+                           '</div>' +
+                           '</div>' +
+                           '<div style="margin-bottom: 8px; font-size: 0.8em; color: #666;">Lower = show when zoomed out &middot; Higher = zoom in closer</div>' +
                            '<div style="text-align:right;">' +
                            '<button id="gexfLabelApply" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Apply</button>' +
                            '<button id="gexfLabelCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
                            '</div></div>'
             });
-
+            this.labelMenuDiv = labelMenuDiv;
             this.labelMenu = new TooltipDialog({ content: labelMenuDiv });
 
-            on(labelMenuDiv, "#gexfLabelApply:click", lang.hitch(this, function() {
-                var showLabels = document.getElementById('gexfLabelToggle').checked;
-                var labelSize = parseFloat(document.getElementById('gexfLabelSize').value) || 1.0;
-                
-                if (window.GexfJS && GexfJS.params) {
-                    // --- CHANGED: Use a dedicated boolean, don't touch the threshold ---
-                    GexfJS.params.showNodeLabels = showLabels; 
-                    GexfJS.params.labelSizeFactor = labelSize;
-                    
-                    delete GexfJS.oldParams.zoomLevel; // Force redraw
+            var syncLabelSettingsToGraph = lang.hitch(this, function() {
+                if (!window.GexfJS || !GexfJS.params) return;
+                var toggleEl = labelMenuDiv.querySelector('#gexfLabelToggle');
+                var sizeEl = labelMenuDiv.querySelector('#gexfLabelSize');
+                var threshEl = labelMenuDiv.querySelector('#gexfLabelThreshold');
+
+                var showLabels = toggleEl ? Boolean(toggleEl.checked) : true;
+                var parsedSize = sizeEl ? parseFloat(sizeEl.value) : 0.6;
+                var labelSize = (!isNaN(parsedSize) && parsedSize > 0) ? parsedSize : 0.6;
+                var parsedThresh = threshEl ? parseFloat(threshEl.value) : 12;
+                var labelThresh = (!isNaN(parsedThresh) && parsedThresh >= 0) ? parsedThresh : 12;
+
+                GexfJS.params.showNodeLabels = showLabels;
+                GexfJS.params.labelSizeFactor = labelSize;
+                GexfJS.params.textDisplayThreshold = labelThresh;
+
+                this.updateLabelButtonState();
+                if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+            });
+
+            on(labelMenuDiv, "#gexfLabelToggle:change", lang.hitch(this, function() {
+                syncLabelSettingsToGraph();
+            }));
+
+            on(labelMenuDiv, "#gexfLabelSize:input, #gexfLabelSize:change", lang.hitch(this, function() {
+                syncLabelSettingsToGraph();
+            }));
+
+            on(labelMenuDiv, "#gexfLabelThresholdSlider:input, #gexfLabelThresholdSlider:change", lang.hitch(this, function(evt) {
+                var threshEl = labelMenuDiv.querySelector('#gexfLabelThreshold');
+                if (threshEl && evt && evt.target) {
+                    threshEl.value = evt.target.value;
                 }
+                syncLabelSettingsToGraph();
+            }));
+
+            on(labelMenuDiv, "#gexfLabelThreshold:input, #gexfLabelThreshold:change", lang.hitch(this, function(evt) {
+                var sliderEl = labelMenuDiv.querySelector('#gexfLabelThresholdSlider');
+                if (sliderEl && evt && evt.target) {
+                    sliderEl.value = evt.target.value;
+                }
+                syncLabelSettingsToGraph();
+            }));
+
+            on(labelMenuDiv, "#gexfLabelApply:click", lang.hitch(this, function() {
+                syncLabelSettingsToGraph();
                 popup.close(this.labelMenu);
             }));
 
@@ -661,6 +733,15 @@ var loadGexfDependencies = function(callback) {
             // Clear resize listeners and rendering timers
             if (this._resizeHandle){ this._resizeHandle.remove(); }
             if (window.GexfJS && GexfJS.timeRefresh) { clearInterval(GexfJS.timeRefresh); }
+
+            // Cleanly close and destroy TooltipDialog popups so no duplicate DOM IDs remain in document.body
+            ["colorMenu", "hlColorMenu", "bgColorMenu", "labelMenu"].forEach(lang.hitch(this, function(menuKey) {
+                if (this[menuKey]) {
+                    try { popup.close(this[menuKey]); } catch (e) {}
+                    try { this[menuKey].destroyRecursive(); } catch (e) {}
+                    this[menuKey] = null;
+                }
+            }));
             
             // --- START PRIORITY 1 CLEANUP ---
             
@@ -758,7 +839,126 @@ var loadGexfDependencies = function(callback) {
             if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel; 
         },
 
-        buildPhenomenonLoci: function(type, rawEdges, explicitNodes) {
+        getPhenomenonData: function(type) {
+            if (!window.GexfJS || !GexfJS.graph || !GexfJS.graph.nodeList) {
+                return { rawEdges: {}, explicitNodes: {}, dashedEdges: {}, loci: [] };
+            }
+            if (!this._phenomenonDataCache) {
+                this._phenomenonDataCache = {};
+            }
+            if (this._phenomenonDataCache[type]) {
+                return this._phenomenonDataCache[type];
+            }
+
+            var rawEdges = {};
+            var explicitNodes = {};
+            var dashedEdges = {};
+
+            var addEdgesByAttr = function(attrName, attrValue, isDashed) {
+                var attrId = GexfJS._edge_attr_value && GexfJS._edge_attr_value[attrName];
+                if (typeof attrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[attrId]) {
+                    var edges = GexfJS.path_highlights[attrId][attrValue];
+                    if (edges) {
+                        for (var edgeId in edges) {
+                            rawEdges[edgeId] = true;
+                            if (isDashed) dashedEdges[edgeId] = true;
+                        }
+                    }
+                }
+            };
+
+            var checkNodeBool = function(nodeObj, attrName) {
+                var aId = GexfJS._node_attr_value && GexfJS._node_attr_value[attrName];
+                if (typeof aId !== 'undefined' && nodeObj.attributes) {
+                    return String(nodeObj.attributes[aId]).toLowerCase() === 'true';
+                }
+                return false;
+            };
+
+            if (type === 'superbubbles') {
+                addEdgesByAttr('is_superbubble', 'true', false);
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    if (checkNodeBool(node, 'is_superbubble')) {
+                        explicitNodes[node.id] = true;
+                    }
+                });
+            } else if (type === 'tandem_repeats') {
+                addEdgesByAttr('repeat_ambiguity_detour', 'true', false);
+                addEdgesByAttr('sv_class', 'repeat_ambiguity_detour', false);
+                var cnvId = GexfJS._node_attr_value && GexfJS._node_attr_value['cnv_cluster_id'];
+                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    var isSpecial = false;
+                    if (checkNodeBool(node, 'repeat_ambiguity')) isSpecial = true;
+                    if (node.attributes && typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
+                        if (typeof conflictId === 'undefined' || String(node.attributes[conflictId]) !== "3") isSpecial = true;
+                    }
+                    if (isSpecial) explicitNodes[node.id] = true;
+                });
+            } else if (type === 'fragmented_paralogs') {
+                addEdgesByAttr('repeat_fragmentation_junction', 'true', false);
+                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    var isSpecial = false;
+                    if (checkNodeBool(node, 'repeat_ambiguity_fragmentation')) isSpecial = true;
+                    if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "3") isSpecial = true;
+                    if (isSpecial) explicitNodes[node.id] = true;
+                });
+            } else if (type === 'alt_paths') {
+                addEdgesByAttr('alt_path_junction', 'true', false);
+                addEdgesByAttr('alternative_path', 'true', false);
+                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    var isSpecial = false;
+                    if (checkNodeBool(node, 'alternative_path')) isSpecial = true;
+                    if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
+                    if (isSpecial) explicitNodes[node.id] = true;
+                });
+            } else if (type === 'rearrangements') {
+                addEdgesByAttr('breakpoint_junction', 'true', true);
+                addEdgesByAttr('inter_contig_rearrangement', 'true', true);
+                addEdgesByAttr('intra_contig_rearrangement', 'true', true);
+                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    var isSpecial = false;
+                    if (checkNodeBool(node, 'synteny_breakpoint')) isSpecial = true;
+                    if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "1") isSpecial = true;
+                    if (isSpecial) explicitNodes[node.id] = true;
+                });
+            } else if (type === 'inversions') {
+                addEdgesByAttr('inverted_block', 'true', false);
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    if (checkNodeBool(node, 'inverted_block')) {
+                        explicitNodes[node.id] = true;
+                    }
+                });
+            } else if (type === 'breaks') {
+                addEdgesByAttr('is_scaffold_path', 'true', true);
+                addEdgesByAttr('sv_class', 'potential_scaffold', true);
+                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
+                var bridgeId = GexfJS._node_attr_value && GexfJS._node_attr_value['is_scaffold_bridge'];
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    var isSpecial = false;
+                    if (checkNodeBool(node, 'assembly_repeat_break')) isSpecial = true;
+                    if (checkNodeBool(node, 'is_scaffold_path')) isSpecial = true;
+                    if (node.attributes && typeof bridgeId !== 'undefined' && String(node.attributes[bridgeId]).toLowerCase() === 'true') isSpecial = true;
+                    if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "2") isSpecial = true;
+                    if (isSpecial) explicitNodes[node.id] = true;
+                });
+            }
+
+            var loci = this.buildPhenomenonLoci(type, rawEdges, explicitNodes, dashedEdges);
+            var res = {
+                rawEdges: rawEdges,
+                explicitNodes: explicitNodes,
+                dashedEdges: dashedEdges,
+                loci: loci
+            };
+            this._phenomenonDataCache[type] = res;
+            return res;
+        },
+
+        buildPhenomenonLoci: function(type, rawEdges, explicitNodes, dashedEdges) {
             if (!window.GexfJS || !GexfJS.graph) return [];
             var nodeList = GexfJS.graph.nodeList || [];
             var edgeList = GexfJS.graph.edgeList || [];
@@ -1249,6 +1449,7 @@ var loadGexfDependencies = function(callback) {
                                     delete referenceEdgeSet[reid];
                                     if (activeEdgeIds.indexOf(reid) === -1) activeEdgeIds.push(reid);
                                     if (GexfJS.params.allPhenomDashedEdges) GexfJS.params.allPhenomDashedEdges[reid] = true;
+                                    if (dashedEdges) dashedEdges[reid] = true;
                                 }
                             });
                         } else {
@@ -1586,7 +1787,10 @@ var loadGexfDependencies = function(callback) {
                     var gh = (GexfJS.graphZone && GexfJS.graphZone.height > 100) ? GexfJS.graphZone.height : 600;
                     var targetScale = Math.min((gw * 0.72) / spanX, (gh * 0.72) / spanY);
                     var idealZoom = Math.round(Math.log(targetScale) / Math.log(Math.SQRT2));
-                    GexfJS.params.zoomLevel = Math.max(8, Math.min(15, idealZoom));
+                    GexfJS.params.zoomLevel = Math.max(0, Math.min(15, idealZoom));
+                    if (window.$ && $("#zoomSlider").length) {
+                        try { $("#zoomSlider").slider("value", GexfJS.params.zoomLevel); } catch (e) {}
+                    }
                 }
             }
 
@@ -2221,126 +2425,8 @@ var loadGexfDependencies = function(callback) {
                 var hlColor = GexfJS.params.highlightColorOverride || '#d500f9';
                 this.rebuildPinnedElements();
 
-                var rawEdges = {};
-                var explicitNodes = {};
-                var dashedEdges = {};
-
-                // --- HELPER: Safely lookup and collect edges by Attribute Name & Value ---
-                var addEdgesByAttr = function(attrName, attrValue, isDashed) {
-                    var attrId = GexfJS._edge_attr_value[attrName];
-                    if (typeof attrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[attrId]) {
-                        var edges = GexfJS.path_highlights[attrId][attrValue]; 
-                        if (edges) {
-                            for (var edgeId in edges) {
-                                rawEdges[edgeId] = true;
-                                if (isDashed) dashedEdges[edgeId] = true;
-                            }
-                        }
-                    }
-                };
-
-                // --- HELPER: Safely lookup boolean node attributes ---
-                var checkNodeBool = function(nodeObj, attrName) {
-                    var aId = GexfJS._node_attr_value[attrName];
-                    if (typeof aId !== 'undefined' && nodeObj.attributes) {
-                        return String(nodeObj.attributes[aId]).toLowerCase() === 'true';
-                    }
-                    return false;
-                };
-
-                // --- 1. SUPERBUBBLES ---
-                if (type === 'superbubbles') {
-                    addEdgesByAttr('is_superbubble', 'true', false);
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        if (checkNodeBool(node, 'is_superbubble')) {
-                            explicitNodes[node.id] = true;
-                        }
-                    });
-
-                // --- 2. TANDEM REPEATS & SHIFTS ---
-                } else if (type === 'tandem_repeats') {
-                    addEdgesByAttr('repeat_ambiguity_detour', 'true', false);
-                    addEdgesByAttr('sv_class', 'repeat_ambiguity_detour', false);
-                    
-                    var cnvId = GexfJS._node_attr_value['cnv_cluster_id'];
-                    var conflictId = GexfJS._node_attr_value['conflict'];
-
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        var isSpecial = false;
-                        if (checkNodeBool(node, 'repeat_ambiguity')) isSpecial = true;
-                        if (node.attributes && typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
-                            if (typeof conflictId === 'undefined' || String(node.attributes[conflictId]) !== "3") isSpecial = true;
-                        }
-                        if (isSpecial) explicitNodes[node.id] = true;
-                    });
-
-                // --- 3. FRAGMENTED SYNTENY (PARALOGS) ---
-                } else if (type === 'fragmented_paralogs') {
-                    addEdgesByAttr('repeat_fragmentation_junction', 'true', false);
-                    
-                    var conflictId = GexfJS._node_attr_value['conflict'];
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        var isSpecial = false;
-                        if (checkNodeBool(node, 'repeat_ambiguity_fragmentation')) isSpecial = true;
-                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "3") isSpecial = true;
-                        if (isSpecial) explicitNodes[node.id] = true;
-                    });
-
-                // --- 4. ALTERNATIVE PATHS ---
-                } else if (type === 'alt_paths') {
-                    addEdgesByAttr('alt_path_junction', 'true', false);
-                    addEdgesByAttr('alternative_path', 'true', false);
-                    
-                    var conflictId = GexfJS._node_attr_value['conflict'];
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        var isSpecial = false;
-                        if (checkNodeBool(node, 'alternative_path')) isSpecial = true;
-                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
-                        if (isSpecial) explicitNodes[node.id] = true;
-                    });
-
-                // --- 5. STRUCTURAL REARRANGEMENTS ---
-                } else if (type === 'rearrangements') {
-                    addEdgesByAttr('breakpoint_junction', 'true', true);
-                    addEdgesByAttr('inter_contig_rearrangement', 'true', true);
-                    addEdgesByAttr('intra_contig_rearrangement', 'true', true);
-                    
-                    var conflictId = GexfJS._node_attr_value['conflict'];
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        var isSpecial = false;
-                        if (checkNodeBool(node, 'synteny_breakpoint')) isSpecial = true;
-                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "1") isSpecial = true;
-                        if (isSpecial) explicitNodes[node.id] = true;
-                    });
-
-                // --- 6. INVERTED BLOCKS ---
-                } else if (type === 'inversions') {
-                    addEdgesByAttr('inverted_block', 'true', false); 
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        if (checkNodeBool(node, 'inverted_block')) {
-                            explicitNodes[node.id] = true;
-                        }
-                    });
-
-                // --- 7. ASSEMBLY BREAKS & SCAFFOLDS ---
-                } else if (type === 'breaks') {
-                    addEdgesByAttr('is_scaffold_path', 'true', true);
-                    addEdgesByAttr('sv_class', 'potential_scaffold', true);
-                    
-                    var conflictId = GexfJS._node_attr_value['conflict'];
-                    var bridgeId = GexfJS._node_attr_value['is_scaffold_bridge'];
-                    
-                    GexfJS.graph.nodeList.forEach(function(node) {
-                        var isSpecial = false;
-                        if (checkNodeBool(node, 'assembly_repeat_break')) isSpecial = true;
-                        if (checkNodeBool(node, 'is_scaffold_path')) isSpecial = true;
-                        if (node.attributes && typeof bridgeId !== 'undefined' && String(node.attributes[bridgeId]).toLowerCase() === 'true') isSpecial = true;
-                        if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "2") isSpecial = true;
-                        if (isSpecial) explicitNodes[node.id] = true;
-                    });
-
                 // --- BLOCK MANIFEST SUPPORT ---
-                } else if (type === 'block') {
+                if (type === 'block') {
                     var attrId = GexfJS._node_attr_value['block_name'] || GexfJS._node_attr_value['block_id'] || GexfJS._node_attr_value['block']; 
                     if (typeof attrId !== 'undefined' && targetValue) {
                         GexfJS.graph.nodeList.forEach(function(node) {
@@ -2350,14 +2436,38 @@ var loadGexfDependencies = function(callback) {
                             }
                         });
                     }
+                    var edgeBlockAttrId = GexfJS._edge_attr_value && (GexfJS._edge_attr_value['block_name'] || GexfJS._edge_attr_value['block_id'] || GexfJS._edge_attr_value['block']);
+                    if (typeof edgeBlockAttrId !== 'undefined' && targetValue && GexfJS.path_highlights && GexfJS.path_highlights[edgeBlockAttrId]) {
+                        var matchingEdges = GexfJS.path_highlights[edgeBlockAttrId][targetValue];
+                        if (matchingEdges) {
+                            for (var edgeId in matchingEdges) {
+                                GexfJS.params.activeEdges[edgeId] = true;
+                                GexfJS.params.pinnedElements['e_' + edgeId] = hlColor;
+                                if (targetValue === 'Replicon Bridge' && GexfJS.graph.edgeLookup && GexfJS.graph.edgeLookup[edgeId]) {
+                                    var eObj = GexfJS.graph.edgeLookup[edgeId];
+                                    var sNode = GexfJS.graph.nodeList[eObj.source];
+                                    var tNode = GexfJS.graph.nodeList[eObj.target];
+                                    if (sNode) {
+                                        GexfJS.params.activeNodes[sNode.id] = true;
+                                        if (!GexfJS.params.pinnedElements['n_' + sNode.id]) GexfJS.params.pinnedElements['n_' + sNode.id] = '#2e7d32';
+                                    }
+                                    if (tNode) {
+                                        GexfJS.params.activeNodes[tNode.id] = true;
+                                        if (!GexfJS.params.pinnedElements['n_' + tNode.id]) GexfJS.params.pinnedElements['n_' + tNode.id] = '#2e7d32';
+                                    }
+                                }
+                            }
+                        }
+                    }
                     GexfJS.params.path_active = !jQuery.isEmptyObject(GexfJS.params.activeEdges);
                     delete GexfJS.oldParams.zoomLevel;
                     this.showDefaultSummary();
                     return;
                 }
                 
-                GexfJS.params.allPhenomDashedEdges = dashedEdges;
-                GexfJS.params.phenomenonLoci = this.buildPhenomenonLoci(type, rawEdges, explicitNodes);
+                var pData = this.getPhenomenonData(type);
+                GexfJS.params.allPhenomDashedEdges = jQuery.extend({}, pData.dashedEdges);
+                GexfJS.params.phenomenonLoci = pData.loci;
                 GexfJS.params.activeLocusIndex = -1;
                 this.applyPhenomenonLocusState(false);
                 this.showDefaultSummary();
@@ -2501,6 +2611,17 @@ var loadGexfDependencies = function(callback) {
                 if (matched.length > 0) {
                     this.multiSelectedNodeIndices = matched;
                     this.applyMultiNodeSelection();
+                }
+            });
+
+            window.openPhenomenonLocusFromNode = lang.hitch(this, function(type, locusIdx) {
+                if (!window.GexfJS || !GexfJS.params || !type) return;
+                this.multiSelectedNodeIndices = [];
+                this.savedPhenomenonContext = null;
+                GexfJS.params.activePhenomenon = null; // Ensure highlightSpecial activates rather than toggles off
+                window.highlightSpecial(type);
+                if (typeof locusIdx === 'number' && locusIdx >= 0 && GexfJS.params.phenomenonLoci && locusIdx < GexfJS.params.phenomenonLoci.length) {
+                    window.selectPhenomenonLocus(locusIdx);
                 }
             });
 
@@ -2686,6 +2807,18 @@ var loadGexfDependencies = function(callback) {
                 }
             });
 
+            var initShowLabels = true;
+            var initLabelSize = 0.6;
+            var initLabelThresh = 12;
+            if (this.labelMenuDiv) {
+                var tEl = this.labelMenuDiv.querySelector('#gexfLabelToggle');
+                var sEl = this.labelMenuDiv.querySelector('#gexfLabelSize');
+                var thEl = this.labelMenuDiv.querySelector('#gexfLabelThreshold');
+                if (tEl) initShowLabels = Boolean(tEl.checked);
+                if (sEl && !isNaN(parseFloat(sEl.value))) initLabelSize = parseFloat(sEl.value);
+                if (thEl && !isNaN(parseFloat(thEl.value))) initLabelThresh = parseFloat(thEl.value);
+            }
+
             var graph_params = {
                 showEdges : true,
                 zoomLevel : 0,
@@ -2695,11 +2828,12 @@ var loadGexfDependencies = function(callback) {
                 nodeSizeFactor : 2,
                 patric_on: true,
                 language: false,
-                textDisplayThreshold: 12,
-                showNodeLabels: true,
-                labelSizeFactor: 0.6
+                textDisplayThreshold: initLabelThresh,
+                showNodeLabels: initShowLabels,
+                labelSizeFactor: initLabelSize
             };
             setParams(graph_params);
+            this.updateLabelButtonState();
 
             var originalSetInterval = window.setInterval;
             window.setInterval = function() { return 999; }; 
@@ -2801,18 +2935,59 @@ var loadGexfDependencies = function(callback) {
                 }
             });
 
-            // Global wrapper for displayPath that captures the Name
+            // Global wrapper for displayPath that captures the Name and preserves Node Details view
             window.doHighlightPath = lang.hitch(this, function(eid, pstr, pattr, name) {
                 if (window.GexfJS) {
                     GexfJS.params.currentHighlightName = name || pstr;
                     GexfJS.params.activePhenomenon = null;
                 }
                 if (window.displayPath) window.displayPath(eid, pstr, pattr);
-                if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Graph Summary") !== -1) {
+                if (window.GexfJS && GexfJS.oldParams) {
+                    delete GexfJS.oldParams.zoomLevel;
+                }
+                var isSummaryView = Boolean(
+                    window.GexfJS &&
+                    GexfJS.params &&
+                    GexfJS.params.currentNode === -1 &&
+                    (!Array.isArray(this.multiSelectedNodeIndices) || this.multiSelectedNodeIndices.length === 0)
+                );
+                if (isSummaryView && this.itemDetailPanel.customDisplayNode) {
                     this.showDefaultSummary();
+                } else {
+                    var barEl = document.getElementById('node-active-highlight-bar');
+                    if (barEl && window.GexfJS && GexfJS.params && GexfJS.params.path_active) {
+                        var edgeCount = GexfJS.params.activeEdges ? Object.keys(GexfJS.params.activeEdges).length : 0;
+                        var hlLabel = String(name || pstr || 'Path');
+                        barEl.style.display = 'flex';
+                        barEl.innerHTML = '<span><i class="fa icon-bullseye" style="color:#d500f9;"></i> <b>Highlighting:</b> ' + hlLabel + ' <span style="color:#666;">(' + edgeCount + ' edges)</span></span>' +
+                            '<a href="javascript:void(0)" onclick="window.clearNodePathHighlight(); return false;" style="color:#c62828; font-weight:bold; text-decoration:none; margin-left:8px;" title="Clear path highlight and stay on this view">[Clear]</a>';
+                    }
                 }
             });
+
+            window.clearNodePathHighlight = lang.hitch(this, function() {
+                if (!window.GexfJS || !GexfJS.params) return;
+                var barEl = document.getElementById('node-active-highlight-bar');
+                if (barEl) {
+                    barEl.style.display = 'none';
+                    barEl.innerHTML = '';
+                }
+                if (GexfJS.params.currentNode === -1 && Array.isArray(this.multiSelectedNodeIndices) && this.multiSelectedNodeIndices.length > 0) {
+                    this.applyMultiNodeSelection();
+                    return;
+                }
+                GexfJS.params.activeEdges = {};
+                GexfJS.params.activeNodes = {};
+                GexfJS.params.path_active = false;
+                if (GexfJS.params.currentNode !== -1 && GexfJS.graph && GexfJS.graph.nodeList[GexfJS.params.currentNode]) {
+                    var curN = GexfJS.graph.nodeList[GexfJS.params.currentNode];
+                    GexfJS.params.currentHighlightName = "Node: " + (curN.label || curN.id);
+                }
+                if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+            });
+
             startGraphViewer(gexf_dom);
+            this._phenomenonDataCache = {};
 
             // --- START: AUTO-PIN BLOCKS ---
             if (this.graphSummary && this.graphSummary['block_manifest'] && this.graphSummary['block_manifest'].length > 0) {
@@ -2894,8 +3069,12 @@ var loadGexfDependencies = function(callback) {
                 GexfJS.params.userPins[name] = { color: color, elements: elementsToPin };
                 this.rebuildPinnedElements();
                 
-                // Refresh the summary panel to instantly show the new pin!
-                if (this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Graph Summary") !== -1) {
+                var isSummaryView = Boolean(
+                    GexfJS.params.currentNode === -1 &&
+                    (!Array.isArray(this.multiSelectedNodeIndices) || this.multiSelectedNodeIndices.length === 0)
+                );
+                // Refresh the summary panel if currently on the summary view, or refresh multi-node selection
+                if (isSummaryView && this.itemDetailPanel.customDisplayNode) {
                     this.showDefaultSummary();
                 } else if (Array.isArray(this.multiSelectedNodeIndices) && this.multiSelectedNodeIndices.length > 0 && GexfJS.params.currentNode === -1) {
                     this.updateMultiNodeSelection(this.selection, this.multiSelectedNodeIndices, false, false, name, color);
@@ -3175,6 +3354,7 @@ var loadGexfDependencies = function(callback) {
                 html += '<details open style="margin-bottom:10px; border:1px solid #ddd; border-radius:4px; background:#fff;">';
                 html += '<summary style="padding:6px 8px; font-weight:bold; font-size:0.88em; cursor:pointer; background:#fafafa; color:#333;">Implicated Genomes [' + allGenomeIds.length + '] &amp; Contigs [' + allContigIds.length + ']</summary>';
                 html += '<div style="padding:6px 8px; max-height:260px; overflow-y:auto; font-size:0.84em;">';
+                html += '<div id="node-active-highlight-bar" style="display:none; align-items:center; justify-content:space-between; margin-bottom:6px; padding:4px 7px; background:#fdf2ff; border:1px solid #e1bee7; border-left:3px solid #d500f9; border-radius:4px; font-size:0.92em; color:#4a148c;"></div>';
                 html += '<div style="margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #eee; display:flex; gap:10px;">';
                 html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allGenomeIds.join(',') + '\', \'' + genomeAttrId + '\', \'Selected Genomes (' + allGenomeIds.length + ')\'); return false;" style="color:#1565c0; font-weight:bold; text-decoration:none;" title="Highlight full paths of all genomes in selection">Highlight All Genomes</a>';
                 html += '<a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allContigIds.join(',') + '\', \'' + sequenceAttrId + '\', \'Selected Contigs (' + allContigIds.length + ')\'); return false;" style="color:#1565c0; font-weight:bold; text-decoration:none;" title="Highlight full paths of all contigs in selection">Highlight All Contigs</a>';
@@ -3281,6 +3461,10 @@ var loadGexfDependencies = function(callback) {
                 handleAs: "json",
                 data: query
             }).then(lang.hitch(this, function(records) {
+                // Guard against overwriting panel if the user navigated away (e.g., clicked a phenomenon pill) while XHR was in flight
+                if (!window.GexfJS || !GexfJS.params || GexfJS.params.currentNode === -1 || GexfJS.graph.nodeList[GexfJS.params.currentNode] !== node) {
+                    return;
+                }
                 if (records && records.length > 0) {
                     if (isFeature && fallbackRecords.length > 0) {
                         var byPatric = {};
@@ -3299,6 +3483,9 @@ var loadGexfDependencies = function(callback) {
                     this.updateSelection(fallbackRecords, featureMap, node, false, false);
                 }
             }), lang.hitch(this, function() {
+                if (!window.GexfJS || !GexfJS.params || GexfJS.params.currentNode === -1 || GexfJS.graph.nodeList[GexfJS.params.currentNode] !== node) {
+                    return;
+                }
                 if (fallbackRecords.length > 0) {
                     this.updateSelection(fallbackRecords, featureMap, node, false, false);
                 }
@@ -3331,36 +3518,158 @@ var loadGexfDependencies = function(callback) {
                 });
             }
 
-            // Build discrete biological phenomenon badges for this locus
+            // Build discrete biological phenomenon badges for this locus (including edge-implicated and boundary anchor roles)
             var badges = [];
-            var badgeStyle = 'display:inline-block; margin:2px 4px 2px 0; padding:2px 7px; border-radius:10px; font-size:0.8em; font-weight:bold;';
-            if (String(namedAttrs['is_superbubble']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#e3f2fd; color:#1565c0; border:1px solid #90caf9;" title="Bounded allelic or accessory variation flanked by conserved core anchors">Superbubble' + (namedAttrs['superbubble_id'] ? ' (' + namedAttrs['superbubble_id'] + ')' : '') + '</span>');
+            var badgeStyle = 'display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; border-radius:10px; font-size:0.8em; font-weight:bold; text-decoration:none; cursor:pointer;';
+            var curNodeId = String(node.id);
+            var cnvClusterSuffix = (namedAttrs['cnv_cluster_id'] && String(namedAttrs['cnv_cluster_id']) !== '0' && String(namedAttrs['cnv_cluster_id']) !== 'None')
+                ? (' (Cluster ' + namedAttrs['cnv_cluster_id'] + ')')
+                : '';
+            var sbIdSuffix = (namedAttrs['superbubble_id'] && String(namedAttrs['superbubble_id']) !== '0' && String(namedAttrs['superbubble_id']) !== 'None')
+                ? (' (' + namedAttrs['superbubble_id'] + ')')
+                : '';
+
+            var phenomConfigs = [
+                {
+                    type: 'superbubbles',
+                    focalLabel: 'Superbubble' + sbIdSuffix,
+                    anchorLabel: 'Superbubble Anchor',
+                    bg: '#e3f2fd', fg: '#1565c0', border: '#64b5f6',
+                    desc: 'Bounded allelic or accessory variation flanked by conserved core anchors'
+                },
+                {
+                    type: 'alt_paths',
+                    focalLabel: 'Alternative Path',
+                    anchorLabel: 'Alternative Path Anchor',
+                    bg: '#f3e5f5', fg: '#6a1b9a', border: '#ba68c8',
+                    desc: 'Minority accessory path, genomic island, or horizontal gene transfer (HGT) insertion'
+                },
+                {
+                    type: 'tandem_repeats',
+                    focalLabel: 'Copy Number Variant' + cnvClusterSuffix,
+                    anchorLabel: 'CNV Anchor',
+                    bg: '#fff3e0', fg: '#e65100', border: '#ffb74d',
+                    desc: 'Multi-copy gene family participating in a local tandem repeat or copy number variant'
+                },
+                {
+                    type: 'fragmented_paralogs',
+                    focalLabel: 'Fragmented CNV' + cnvClusterSuffix,
+                    anchorLabel: 'Fragmented CNV Anchor',
+                    bg: '#fce4ec', fg: '#ad1457', border: '#f06292',
+                    desc: 'Localized repeat contiguous in reference contigs but split across contigs in fragmented assemblies'
+                },
+                {
+                    type: 'rearrangements',
+                    focalLabel: 'Synteny Breakpoint',
+                    anchorLabel: 'Synteny Breakpoint Anchor',
+                    bg: '#ffebee', fg: '#c62828', border: '#e57373',
+                    desc: 'Boundary of a large-scale chromosomal rearrangement, translocation, or inter/intra-contig synteny break'
+                },
+                {
+                    type: 'inversions',
+                    focalLabel: 'Inverted Block',
+                    anchorLabel: 'Inverted Block Anchor',
+                    bg: '#ede7f6', fg: '#4527a0', border: '#9575cd',
+                    desc: 'Locus participating in a chromosomal inversion relative to the consensus coordinate frame'
+                },
+                {
+                    type: 'breaks',
+                    focalLabel: 'Scaffold Bridge',
+                    anchorLabel: 'Scaffold / Break Anchor',
+                    bg: '#e8f5e9', fg: '#2e7d32', border: '#81c784',
+                    desc: 'Candidate syntenic scaffold bridge or contig terminus inside a repetitive gene family'
+                }
+            ];
+
+            phenomConfigs.forEach(lang.hitch(this, function(cfg) {
+                var pData = this.getPhenomenonData(cfg.type);
+                var loci = (pData && pData.loci) ? pData.loci : [];
+                var matchedAnyLocus = false;
+
+                loci.forEach(function(loc) {
+                    var isFocal = loc.focalNodeIds && loc.focalNodeIds.indexOf(curNodeId) !== -1;
+                    var isAnchor = !isFocal && loc.anchorNodeIds && loc.anchorNodeIds.indexOf(curNodeId) !== -1;
+                    if (!isFocal && !isAnchor) return;
+                    matchedAnyLocus = true;
+                    var locNum = loc.index + 1;
+
+                    if (cfg.type === 'breaks' && isFocal) {
+                        var isRepeatBreak = String(namedAttrs['assembly_repeat_break']).toLowerCase() === 'true';
+                        var isScaffoldPath = String(namedAttrs['is_scaffold_path']).toLowerCase() === 'true' || !isRepeatBreak;
+                        if (isRepeatBreak) {
+                            badges.push(
+                                '<a href="javascript:void(0)" onclick="window.openPhenomenonLocusFromNode(\'breaks\', ' + loc.index + '); return false;" ' +
+                                'style="' + badgeStyle + ' background:#fff8e1; color:#f57f17; border:1px solid #ffd54f;" ' +
+                                'title="Contig terminus inside a repetitive gene family — click to open Locus #' + locNum + ' in Dynamic Visit View">' +
+                                'Assembly Repeat Break &middot; Locus #' + locNum + ' &#8599;</a>'
+                            );
+                        }
+                        if (isScaffoldPath) {
+                            badges.push(
+                                '<a href="javascript:void(0)" onclick="window.openPhenomenonLocusFromNode(\'breaks\', ' + loc.index + '); return false;" ' +
+                                'style="' + badgeStyle + ' background:#e8f5e9; color:#2e7d32; border:1px solid #81c784;" ' +
+                                'title="Candidate syntenic scaffold bridge connecting fragmented contigs — click to open Locus #' + locNum + ' in Dynamic Visit View">' +
+                                'Scaffold Bridge &middot; Locus #' + locNum + ' &#8599;</a>'
+                            );
+                        }
+                        return;
+                    }
+
+                    var lbl = (isFocal ? cfg.focalLabel : cfg.anchorLabel) + ' &middot; Locus #' + locNum;
+                    var bdrStyle = isAnchor ? '1px dashed ' + cfg.border : '1px solid ' + cfg.border;
+                    var roleNote = isAnchor ? ' (Flanking / Boundary Anchor)' : '';
+                    badges.push(
+                        '<a href="javascript:void(0)" onclick="window.openPhenomenonLocusFromNode(\'' + cfg.type + '\', ' + loc.index + '); return false;" ' +
+                        'style="' + badgeStyle + ' background:' + cfg.bg + '; color:' + cfg.fg + '; border:' + bdrStyle + ';" ' +
+                        'title="' + cfg.desc + roleNote + ' — click to open Locus #' + locNum + ' in Dynamic Visit View">' +
+                        lbl + ' &#8599;</a>'
+                    );
+                });
+
+                // Fallback if node has explicit attribute flag even without a multi-element locus
+                if (!matchedAnyLocus && pData && pData.explicitNodes && pData.explicitNodes[curNodeId]) {
+                    badges.push(
+                        '<a href="javascript:void(0)" onclick="window.openPhenomenonLocusFromNode(\'' + cfg.type + '\', 0); return false;" ' +
+                        'style="' + badgeStyle + ' background:' + cfg.bg + '; color:' + cfg.fg + '; border:1px solid ' + cfg.border + ';" ' +
+                        'title="' + cfg.desc + ' — click to open in Dynamic Visit View">' +
+                        cfg.focalLabel + ' &#8599;</a>'
+                    );
+                }
+            }));
+
+            // Check if node or any incident edge is classified as a cross-block Replicon Bridge
+            var isRepliconBridgeNode = String(namedAttrs['block'] || '').split(',').map(function(s) { return s.trim(); }).indexOf('Replicon Bridge') !== -1;
+            if (!isRepliconBridgeNode && window.GexfJS && GexfJS.graph && GexfJS._edge_attr_value) {
+                var eBlockAttrId = GexfJS._edge_attr_value['block_name'] || GexfJS._edge_attr_value['block_id'] || GexfJS._edge_attr_value['block'];
+                var rbEdges = (typeof eBlockAttrId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[eBlockAttrId])
+                    ? GexfJS.path_highlights[eBlockAttrId]['Replicon Bridge']
+                    : null;
+                if (rbEdges) {
+                    for (var rbEid in rbEdges) {
+                        var rbE = GexfJS.graph.edgeLookup && GexfJS.graph.edgeLookup[rbEid];
+                        if (rbE) {
+                            var sN = GexfJS.graph.nodeList[rbE.source];
+                            var tN = GexfJS.graph.nodeList[rbE.target];
+                            if ((sN && String(sN.id) === curNodeId) || (tN && String(tN.id) === curNodeId)) {
+                                isRepliconBridgeNode = true;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-            if (String(namedAttrs['repeat_ambiguity']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#fff3e0; color:#e65100; border:1px solid #ffcc80;" title="Multi-copy gene family participating in a local tandem repeat or copy number variant">Copy Number Variant' + (namedAttrs['cnv_cluster_id'] ? ' (' + namedAttrs['cnv_cluster_id'] + ')' : '') + '</span>');
-            }
-            if (String(namedAttrs['repeat_ambiguity_fragmentation']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#fce4ec; color:#ad1457; border:1px solid #f48fb1;" title="Dispersed paralogous family split across separate loci or contigs">Fragmented CNV' + (namedAttrs['cnv_cluster_id'] ? ' (' + namedAttrs['cnv_cluster_id'] + ')' : '') + '</span>');
-            }
-            if (String(namedAttrs['alternative_path']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#f3e5f5; color:#6a1b9a; border:1px solid #ce93d8;" title="Minority accessory path or horizontal gene transfer (HGT) insertion">Alternative Path</span>');
-            }
-            if (String(namedAttrs['synteny_breakpoint']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#ffebee; color:#c62828; border:1px solid #ef9a9a;" title="Boundary of a large-scale chromosomal rearrangement or translocation">Synteny Breakpoint</span>');
-            }
-            if (String(namedAttrs['assembly_repeat_break']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#fff8e1; color:#f57f17; border:1px solid #ffe082;" title="Contig terminus inside a repetitive gene family">Assembly Repeat Break</span>');
-            }
-            if (String(namedAttrs['is_scaffold_path']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#e8f5e9; color:#2e7d32; border:1px solid #a5d6a7;" title="Candidate syntenic scaffold bridge connecting fragmented contigs">Scaffold Bridge</span>');
-            }
-            if (String(namedAttrs['inverted_block']).toLowerCase() === 'true') {
-                badges.push('<span style="' + badgeStyle + ' background:#ede7f6; color:#4527a0; border:1px solid #b39ddb;" title="Locus participating in a chromosomal inversion relative to reference consensus">Inverted Block</span>');
+            if (isRepliconBridgeNode) {
+                badges.push(
+                    '<a href="javascript:void(0)" onclick="window.highlightSpecial(\'block\', \'Replicon Bridge\'); return false;" ' +
+                    'style="' + badgeStyle + ' background:#fff3e0; color:#bf360c; border:1px solid #ffab91;" ' +
+                    'title="Cross-replicon bridge or mobile hub connecting distinct Major Blocks — click to highlight all Replicon Bridges">' +
+                    'Replicon Bridge &#8599;</a>'
+                );
             }
 
             // Detect paralogous loci sharing the same protein family across the graph
             var curFamily = namedAttrs['family'] || node.label;
+            var famEsc = curFamily ? String(curFamily).replace(/\\/g, '\\\\').replace(/'/g, "\\'") : '';
             var paralogNodes = [];
             if (curFamily && window.GexfJS && GexfJS.graph && Array.isArray(GexfJS.graph.nodeList)) {
                 var famAttrId = (GexfJS._node_attr_value && GexfJS._node_attr_value['family']) ? GexfJS._node_attr_value['family'] : 'family';
@@ -3373,7 +3682,12 @@ var loadGexfDependencies = function(callback) {
                 });
             }
             if (paralogNodes.length > 0) {
-                badges.push('<span style="' + badgeStyle + ' background:#e0f7fa; color:#006064; border:1px solid #80deea;" title="Gene family appears at multiple distinct syntenic loci across the graph">Paralogous Loci (' + (paralogNodes.length + 1) + ')</span>');
+                badges.push(
+                    '<a href="javascript:void(0)" onclick="window.selectFamilyNodes(\'' + famEsc + '\'); return false;" ' +
+                    'style="' + badgeStyle + ' background:#e0f7fa; color:#006064; border:1px solid #80deea;" ' +
+                    'title="Gene family appears at multiple distinct syntenic loci across the graph — click to select all ' + (paralogNodes.length + 1) + ' paralogous nodes">' +
+                    'Paralogous Loci (' + (paralogNodes.length + 1) + ') &#8599;</a>'
+                );
             }
 
             var attrHtml = '<div style="margin-bottom:10px; font-size:0.9em; color:#555;">';
@@ -3381,7 +3695,6 @@ var loadGexfDependencies = function(callback) {
                 attrHtml += '<div style="margin-bottom:6px;">' + badges.join('') + '</div>';
             }
             if (paralogNodes.length > 0) {
-                var famEsc = String(curFamily).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                 var paralogLinks = paralogNodes.map(function(p) {
                     return '<a href="#" onclick="window.inspectNodeFromLocus(' + p.idx + '); return false;" style="color:#006064; text-decoration:underline; margin-right:6px;" title="Center and inspect node ' + p.id + '">Node ' + p.id + '</a>';
                 }).join('');
@@ -3404,12 +3717,15 @@ var loadGexfDependencies = function(callback) {
             });
 
             if (featureMap) {
-                var allGenomes = Object.keys(featureMap);
+                var allGenomes = Object.keys(featureMap).filter(function(k) {
+                    return k !== "info" && k !== "md5" && k !== "start" && k !== "end";
+                });
                 var allSequences = [];
                 var hierarchyHtml = '<div class="graph-links" style="font-size:0.9em;">';
                 
-                Object.keys(featureMap).forEach(lang.hitch(this, function(genomeId) {
+                allGenomes.forEach(lang.hitch(this, function(genomeId) {
                     var contigs = featureMap[genomeId];
+                    if (!contigs || typeof contigs !== 'object') return;
                     var genomeSequences = Object.keys(contigs);
                     allSequences = allSequences.concat(genomeSequences);
                     
@@ -3460,7 +3776,17 @@ var loadGexfDependencies = function(callback) {
                 }));
                 hierarchyHtml += '</div>';
 
+                var isPathActiveNow = Boolean(window.GexfJS && GexfJS.params && GexfJS.params.path_active);
+                var activeEdgeCountNow = (isPathActiveNow && GexfJS.params.activeEdges) ? Object.keys(GexfJS.params.activeEdges).length : 0;
+                var activeHlNameNow = (isPathActiveNow && GexfJS.params.currentHighlightName) ? String(GexfJS.params.currentHighlightName) : '';
+                var barDisplay = isPathActiveNow ? 'flex' : 'none';
+                var barInner = isPathActiveNow
+                    ? ('<span><i class="fa icon-bullseye" style="color:#d500f9;"></i> <b>Highlighting:</b> ' + activeHlNameNow + ' <span style="color:#666;">(' + activeEdgeCountNow + ' edges)</span></span>' +
+                       '<a href="javascript:void(0)" onclick="window.clearNodePathHighlight(); return false;" style="color:#c62828; font-weight:bold; text-decoration:none; margin-left:8px;" title="Clear path highlight and stay on this view">[Clear]</a>')
+                    : '';
+
                 var summaryHtml = '<div style="margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #ccc;">';
+                summaryHtml += '<div id="node-active-highlight-bar" style="display:' + barDisplay + '; align-items:center; justify-content:space-between; margin-bottom:6px; padding:4px 7px; background:#fdf2ff; border:1px solid #e1bee7; border-left:3px solid #d500f9; border-radius:4px; font-size:0.84em; color:#4a148c;">' + barInner + '</div>';
                 summaryHtml += '<div style="margin-bottom:4px;"><b><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allGenomes.join(',') + '\', \'' + genomeAttrId + '\', \'Genomes: ' + allGenomes.length + '\'); return false;">Genomes[' + allGenomes.length + ']</a></b></div>';
                 summaryHtml += '<div><b><a href="javascript:void(0)" onclick="window.doHighlightPath(undefined, \'' + allSequences.join(',') + '\', \'' + sequenceAttrId + '\', \'Sequences: ' + allSequences.length + '\'); return false;">Sequences[' + allSequences.length + ']</a></b></div>';
                 
