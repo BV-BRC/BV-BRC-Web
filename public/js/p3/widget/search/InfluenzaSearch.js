@@ -1,11 +1,11 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/popup', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/query',
   'dojo/store/Memory', 'dijit/Calendar', 'dijit/TooltipDialog', './SearchBase', './TextInputEncoder',
-  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html'
+  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser', './MultiValueSelect'
 ], function (
   declare, lang, popup, on, dom, domClass, query,
   Memory, Calendar, TooltipDialog, SearchBase, TextInputEncoder,
-  storeBuilder, hostGroupStore, template
+  storeBuilder, hostGroupStore, template, RQLParser
 ) {
 
   // Legacy + updated NCBI Taxonomy IDs — both needed for facet store scoping
@@ -884,6 +884,10 @@ define([
         [this.passageNode,          'passage'],
         [this.vaccineStrainNode,    'vaccine_strain'],
         [this.referenceNode,        'reference_genome'],
+        [this.strainNameNode,       'strain'],
+        [this.bioprojectNode,       'bioproject_accession'],
+        [this.completeGenomeNode,   'genome_status'],
+        [this.excludeDeprecatedNode, 'genome_status'],
         [this.geneNode,             'gene'],
         [this.productNode,          'product']
       ];
@@ -912,6 +916,25 @@ define([
                        (this.submissionDateToNode && this.submissionDateToNode.get('value'));
       if (subDateSet) cols.push('completion_date');
 
+      var lengthField = this.selectedDataType === 'genome' ? 'genome_length'
+        : (this.selectedDataType === 'segment' ? 'length' : 'aa_length');
+      if (this.seqLengthFromNode && this.seqLengthToNode
+          && this._buildLengthQuery(lengthField, this.seqLengthFromNode, this.seqLengthToNode)) cols.push(lengthField);
+
+      // Additional Criteria can select any searchable genome field. Use the
+      // generated clauses so empty/incomplete rows do not add columns.
+      function collect(term) {
+        if (!term || !term.args) return;
+        if (['and', 'or', 'not', 'genome'].indexOf(term.name) !== -1) {
+          term.args.forEach(collect);
+        } else if (['eq', 'ne', 'in', 'gt', 'lt', 'ge', 'le', 'between'].indexOf(term.name) !== -1) {
+          var field = term.args[0] === 'collection_date_dr' ? 'collection_date' : term.args[0];
+          if (typeof field === 'string') cols.push(field);
+        }
+      }
+      this._buildAdvancedQuery().forEach(function (clause) { collect(RQLParser.parse(clause)); });
+
+      cols = cols.filter(function (col, index) { return cols.indexOf(col) === index; });
       return cols.length ? cols.join(',') : null;
     },
 
