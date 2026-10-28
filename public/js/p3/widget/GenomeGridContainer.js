@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GenomeGrid', './AdvancedSearchFields', './GridContainer',
-  '../util/PathJoin', '../util/dateRangeWithinQuery'
+  '../util/PathJoin', './GenomeColumnProfiles', '../util/dateRangeWithinQuery'
 
 ], function (
   declare, on, domConstruct,
   popup, TooltipDialog,
   GenomeGrid, AdvancedSearchFields, GridContainer,
-  PathJoin, dateRangeWithinQuery
+  PathJoin, GenomeColumnProfiles, dateRangeWithinQuery
 ) {
 
   const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -21,6 +21,22 @@ define([
 
   return declare([GridContainer], {
     gridCtor: GenomeGrid,
+    onFirstView: function onFirstView() {
+      this.inherited(onFirstView, arguments);
+      this.applyVirusColumnDefaults(this.state);
+      // Apply explicit link overrides on the initial, lazily created grid too.
+      if (this.grid && this.state) {
+        this.onSetState('state', null, this.state);
+      }
+    },
+
+    onSetState: function onSetState(attr, oldState, state) {
+      this.applyVirusColumnDefaults(state);
+      // GridContainer applies URL defaultColumns after the virus defaults.
+      this.inherited(onSetState, arguments);
+    },
+
+    applyVirusColumnDefaults: GenomeColumnProfiles.applyDefaults,
     containerType: 'genome_data',
     tutorialLink: 'quick_references/organisms_taxon/genome_table.html',
     tooltip: 'The "Genomes" tab lists all genomes or segments associated with the current view and associated metadata',

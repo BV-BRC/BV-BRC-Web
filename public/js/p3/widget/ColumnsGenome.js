@@ -189,6 +189,7 @@ define(['./formatter'], function (formatter) {
     lineage: {
       label: 'Lineage',
       field: 'lineage',
+      width: 80,
       hidden: true,
       group: 'Type Info'
     },
