@@ -98,7 +98,9 @@ jobs:
               console.error("Refusing to release " + version + ": alpha is at " + alpha + ".");
               console.error("");
               console.error("The hotfix version must be strictly below alpha, so that the");
-              console.error("number cannot collide with alpha's next release. Bump alpha to a");
+              // No apostrophes in this script: the whole thing is a single-quoted
+              // shell word, and one would close it and break the step at parse time.
+              console.error("number cannot collide with the next alpha release. Bump alpha to a");
               console.error("new version line first (Release workflow, minor), then re-run.");
               process.exit(1);
             }
@@ -165,6 +167,19 @@ jobs:
             echo "4. Merge this PR when ready"
             echo
             echo "*After merging, a tag will be created and the changes cherry-picked to alpha and beta.*"
+            echo
+            echo "### If this fix already exists on alpha or beta"
+            echo
+            echo "Add the originating commit to **this PR description** as a trailer:"
+            echo
+            echo '```'
+            echo "Cherry-picked-from: <sha on alpha/beta>"
+            echo '```'
+            echo
+            echo "The propagation step reads it from the merge commit and skips any branch"
+            echo "that already contains that commit. Without it the cherry-pick is attempted"
+            echo "backwards -- and if the master copy was adapted for this lane, applying it"
+            echo "to the newer branch reverts the adaptation."
           } > /tmp/hotfix-body.md
 
           gh pr create --base master --head "hotfix/v${VERSION}" \
