@@ -24,16 +24,6 @@ define([
     var original$;
     
 var loadGexfDependencies = function(callback) {
-        if (scriptsReady) { callback(); return; }
-        pendingCallbacks.push(callback);
-        if (pendingCallbacks.length > 1) { return; }
-
-        // --- NEW: Snapshot the original, site-wide jQuery before legacy scripts overwrite it ---
-        if (typeof originalJQuery === 'undefined') {
-            originalJQuery = window.jQuery;
-            original$ = window.$;
-        }
-        
         var stylesToLoad =[
             '/vendor/gexf-js/styles/jquery-ui-1.10.3.custom.min.css',
             '/vendor/gexf-js/styles/gexfjs.css'
@@ -52,6 +42,16 @@ var loadGexfDependencies = function(callback) {
                 document.getElementsByTagName('head')[0].appendChild(link);
             }
         });
+
+        if (scriptsReady) { callback(); return; }
+        pendingCallbacks.push(callback);
+        if (pendingCallbacks.length > 1) { return; }
+
+        // --- NEW: Snapshot the original, site-wide jQuery before legacy scripts overwrite it ---
+        if (typeof originalJQuery === 'undefined') {
+            originalJQuery = window.jQuery;
+            original$ = window.$;
+        }
         
         var scriptsToLoad =[
             '/vendor/gexf-js/js/jquery-2.0.2.min.js',
@@ -102,8 +102,15 @@ var loadGexfDependencies = function(callback) {
         // HTML Template for the CENTER region (The Graph)
         // Note: We hide the old #leftcolumn sidebar here
         graphTemplateString: `
-            <div style="width: 100%; height: 100%; overflow: hidden;">
+            <div class="GEXFView" style="width: 100%; height: 100%; overflow: hidden;">
                 <style>
+                    /* Default graph background to clean white instead of legacy grey gradient */
+                    .GEXFView,
+                    .GEXFView .gradient {
+                        background-color: #ffffff !important;
+                        background-image: none !important;
+                    }
+
                     /* Force canvas container to top-left of the CENTER pane */
                     #zonecentre { top: 0 !important; left: 0 !important; }
                     
@@ -114,6 +121,52 @@ var loadGexfDependencies = function(callback) {
                         right: auto !important;
                         background: rgba(255,255,255,0.7);
                         border: 1px solid #999;
+                    }
+
+                    /* Ensure vertical zoom slider track, fill range, and handle always render cleanly */
+                    #zoomSlider {
+                        position: relative !important;
+                        width: 10px !important;
+                        height: 120px !important;
+                        margin: 0 auto !important;
+                        background: #ffffff !important;
+                        border: 1px solid #aaa !important;
+                        border-radius: 4px !important;
+                    }
+
+                    #zoomSlider .ui-slider-range {
+                        position: absolute !important;
+                        z-index: 1 !important;
+                        left: 0 !important;
+                        bottom: 0 !important;
+                        width: 100% !important;
+                        display: block !important;
+                        border: 0 !important;
+                        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%) !important;
+                        border-bottom-left-radius: 3px !important;
+                        border-bottom-right-radius: 3px !important;
+                    }
+
+                    #zoomSlider .ui-slider-handle {
+                        position: absolute !important;
+                        z-index: 2 !important;
+                        width: 16px !important;
+                        height: 16px !important;
+                        left: -4px !important;
+                        margin-left: 0 !important;
+                        margin-bottom: -8px !important;
+                        background: #f8fafc !important;
+                        border: 1px solid #94a3b8 !important;
+                        border-radius: 4px !important;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+                        cursor: pointer !important;
+                        outline: none !important;
+                    }
+
+                    #zoomSlider .ui-slider-handle:hover,
+                    #zoomSlider .ui-slider-handle:focus {
+                        background: #fef3c7 !important;
+                        border-color: #f59e0b !important;
                     }
 
                     /* HIDE THE OLD LEGACY SIDEBAR - We use ItemDetailPanel now */
@@ -144,28 +197,313 @@ var loadGexfDependencies = function(callback) {
                     /* Search Bar Styling */
                     #recherche {
                         position: absolute !important;
-                        top: 20px !important;
-                        left: 240px !important;
+                        top: 14px !important;
+                        left: 225px !important;
                         right: auto !important;
                         bottom: auto !important;
-                        display: block !important;
-                        background: rgba(255,255,255,0.8);
-                        padding: 5px;
-                        border-radius: 4px;
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 4px !important;
+                        background: rgba(255, 255, 255, 0.96) !important;
+                        padding: 4px 6px 4px 12px !important;
+                        border: 1px solid #cbd5e1 !important;
+                        border-radius: 20px !important;
+                        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12) !important;
                         pointer-events: auto !important;
                         z-index: 2001 !important;
+                        transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
                     }
 
-                    #searchinput, #searchsubmit {
-                        position: static !important; 
+                    #recherche:focus-within {
+                        border-color: #7b1fa2 !important;
+                        box-shadow: 0 3px 12px rgba(123, 31, 162, 0.22) !important;
+                    }
+
+                    #searchinput {
+                        position: static !important;
                         float: none !important;
                         top: auto !important; left: auto !important;
                         display: inline-block !important;
                         vertical-align: middle !important;
-                        margin: 0 2px !important;
+                        width: 310px !important;
+                        height: 24px !important;
+                        line-height: 24px !important;
+                        font-size: 13px !important;
+                        color: #1e293b !important;
+                        background: transparent !important;
+                        border: none !important;
+                        outline: none !important;
+                        padding: 0 4px !important;
+                        margin: 0 !important;
                         pointer-events: auto !important;
                         visibility: visible !important;
                         opacity: 1 !important;
+                    }
+
+                    #searchinput::placeholder {
+                        color: #94a3b8 !important;
+                        font-style: normal !important;
+                    }
+
+                    #searchclear {
+                        position: static !important;
+                        display: none;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        width: 20px !important;
+                        height: 20px !important;
+                        border: none !important;
+                        border-radius: 50% !important;
+                        background: #e2e8f0 !important;
+                        color: #475569 !important;
+                        font-size: 14px !important;
+                        line-height: 1 !important;
+                        padding: 0 !important;
+                        margin: 0 2px !important;
+                        cursor: pointer !important;
+                        pointer-events: auto !important;
+                    }
+
+                    #searchclear:hover {
+                        background: #cbd5e1 !important;
+                        color: #0f172a !important;
+                    }
+
+                    #searchsubmit {
+                        position: static !important;
+                        float: none !important;
+                        top: auto !important; left: auto !important;
+                        display: inline-flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        width: auto !important;
+                        height: 24px !important;
+                        padding: 0 11px !important;
+                        margin: 0 !important;
+                        border: none !important;
+                        border-radius: 14px !important;
+                        background: #6a1b9a !important;
+                        color: #ffffff !important;
+                        font-size: 12px !important;
+                        font-weight: 600 !important;
+                        text-indent: 0 !important;
+                        cursor: pointer !important;
+                        pointer-events: auto !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                        transition: background 0.15s ease !important;
+                    }
+
+                    #searchsubmit:hover {
+                        background: #4a148c !important;
+                    }
+
+                    /* Autocomplete Dropdown Styling */
+                    #autocomplete {
+                        position: absolute !important;
+                        top: 52px !important;
+                        left: 225px !important;
+                        width: 430px !important;
+                        max-height: 360px !important;
+                        overflow-y: auto !important;
+                        display: none;
+                        background: #ffffff !important;
+                        border: 1px solid #cbd5e1 !important;
+                        border-radius: 10px !important;
+                        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18) !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        z-index: 2002 !important;
+                        pointer-events: auto !important;
+                        list-style: none !important;
+                    }
+
+                    #autocomplete .ac-container {
+                        float: none !important;
+                        width: 100% !important;
+                        border: none !important;
+                        background: transparent !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+
+                    #autocomplete .ac-header {
+                        position: sticky !important;
+                        top: 0 !important;
+                        z-index: 2 !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: space-between !important;
+                        padding: 6px 12px !important;
+                        background: #f8fafc !important;
+                        border-bottom: 1px solid #e2e8f0 !important;
+                        font-size: 11.5px !important;
+                        color: #475569 !important;
+                        float: none !important;
+                    }
+
+                    #autocomplete .ac-select-all {
+                        display: inline-block !important;
+                        padding: 2px 8px !important;
+                        background: #f3e5f5 !important;
+                        border: 1px solid #ce93d8 !important;
+                        border-radius: 10px !important;
+                        color: #6a1b9a !important;
+                        font-weight: 600 !important;
+                        font-size: 11px !important;
+                        text-decoration: none !important;
+                    }
+
+                    #autocomplete .ac-select-all:hover {
+                        background: #6a1b9a !important;
+                        color: #ffffff !important;
+                        border-color: #6a1b9a !important;
+                    }
+
+                    #autocomplete ul.ac-list {
+                        float: none !important;
+                        width: 100% !important;
+                        list-style: none !important;
+                        margin: 0 !important;
+                        padding: 4px 0 !important;
+                    }
+
+                    #autocomplete li.ac-item {
+                        float: none !important;
+                        width: 100% !important;
+                        height: auto !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        border-bottom: 1px solid #f1f5f9 !important;
+                    }
+
+                    #autocomplete li.ac-item:last-child {
+                        border-bottom: none !important;
+                    }
+
+                    #autocomplete li.ac-item a {
+                        display: block !important;
+                        width: 100% !important;
+                        height: auto !important;
+                        box-sizing: border-box !important;
+                        padding: 6px 12px !important;
+                        background: #ffffff !important;
+                        color: #1e293b !important;
+                        text-decoration: none !important;
+                        font-weight: normal !important;
+                    }
+
+                    #autocomplete li.ac-item.hover a,
+                    #autocomplete li.ac-item a:hover {
+                        background: #f3e5f5 !important;
+                        color: #38006b !important;
+                    }
+
+                    #autocomplete .ac-row-top {
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 8px !important;
+                        float: none !important;
+                        border: none !important;
+                        background: transparent !important;
+                    }
+
+                    #autocomplete .ac-color-dot {
+                        display: inline-block !important;
+                        width: 10px !important;
+                        height: 10px !important;
+                        border-radius: 50% !important;
+                        border: 1px solid rgba(0,0,0,0.25) !important;
+                        flex-shrink: 0 !important;
+                        float: none !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+
+                    #autocomplete .ac-title {
+                        font-size: 12.5px !important;
+                        font-weight: 500 !important;
+                        color: inherit !important;
+                        line-height: 1.3 !important;
+                        word-break: break-word !important;
+                        float: none !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+
+                    #autocomplete .ac-match {
+                        color: #6a1b9a !important;
+                        font-weight: 700 !important;
+                        background: rgba(213, 0, 249, 0.10) !important;
+                        padding: 0 1px !important;
+                        border-radius: 2px !important;
+                    }
+
+                    #autocomplete .ac-row-sub {
+                        display: flex !important;
+                        flex-wrap: wrap !important;
+                        align-items: center !important;
+                        gap: 5px !important;
+                        margin-top: 3px !important;
+                        padding-left: 18px !important;
+                        float: none !important;
+                        border: none !important;
+                        background: transparent !important;
+                    }
+
+                    #autocomplete .ac-badge {
+                        display: inline-block !important;
+                        font-size: 10.5px !important;
+                        line-height: 1.2 !important;
+                        padding: 1px 6px !important;
+                        border-radius: 4px !important;
+                        float: none !important;
+                        margin: 0 !important;
+                    }
+
+                    #autocomplete .ac-badge-id {
+                        background: #f1f5f9 !important;
+                        color: #475569 !important;
+                        border: 1px solid #cbd5e1 !important;
+                    }
+
+                    #autocomplete .ac-badge-fam {
+                        background: #e0f2fe !important;
+                        color: #0369a1 !important;
+                        border: 1px solid #bae6fd !important;
+                    }
+
+                    #autocomplete .ac-badge-block {
+                        background: #fef3c7 !important;
+                        color: #92400e !important;
+                        border: 1px solid #fde68a !important;
+                    }
+
+                    #autocomplete .ac-badge-gen {
+                        background: #dcfce7 !important;
+                        color: #166534 !important;
+                        border: 1px solid #bbf7d0 !important;
+                    }
+
+                    #autocomplete .ac-badge-feat {
+                        background: #fae8ff !important;
+                        color: #86198f !important;
+                        border: 1px solid #f5d0fe !important;
+                    }
+
+                    #autocomplete .ac-badge-filtered {
+                        background: #fee2e2 !important;
+                        color: #991b1b !important;
+                        border: 1px solid #fecaca !important;
+                    }
+
+                    #autocomplete .ac-empty {
+                        padding: 12px 14px !important;
+                        font-size: 12.5px !important;
+                        color: #64748b !important;
+                        text-align: center !important;
+                        float: none !important;
+                        border: none !important;
                     }
                 </style>
                 <div id="zonecentre" class="gradient" style="position: relative; width: 100%; height: 100%;">
@@ -181,8 +519,16 @@ var loadGexfDependencies = function(callback) {
                 <div id="overviewzone" class="gradient">
                     <canvas id="overview" width="0" height="0"></canvas>
                 </div>
-                <div id="titlebar"><div id="maintitle"></div><form id="recherche"><input id="searchinput" class="grey" autocomplete="off" /><input id="searchsubmit" type="submit" /></form></div>
-                <ul id="autocomplete"></ul>
+                <div id="titlebar">
+                    <div id="maintitle"></div>
+                    <form id="recherche">
+                        <i class="fa icon-search" style="color:#64748b; font-size:13px; margin-right:2px; pointer-events:none;"></i>
+                        <input id="searchinput" autocomplete="off" placeholder="Search gene, product, family (PGF), or feature ID..." />
+                        <button id="searchclear" type="button" title="Clear search">&times;</button>
+                        <button id="searchsubmit" type="submit" title="Center and inspect matching node (Enter)">Find</button>
+                    </form>
+                </div>
+                <div id="autocomplete"></div>
             </div>
         `,
 
@@ -2343,13 +2689,41 @@ var loadGexfDependencies = function(callback) {
             html += '</div>';
 
             if (s['block_manifest'] && s['block_manifest'].length > 0) {
-                html += '<h4 style="margin-bottom:2px;">Collinear Syntenic Blocks</h4>';
-                html += '<div style="font-size:0.78em; color:#666; margin-bottom:5px;">Auto-pinned by block color; click a block to highlight its conserved gene chain</div>';
+                var activeBlocks = (window.GexfJS && GexfJS.params && GexfJS.params.activeBlockFilter) ? GexfJS.params.activeBlockFilter : {};
+                var blockFilterCount = Object.keys(activeBlocks).length;
+                var blockFilterActive = blockFilterCount > 0;
+
+                html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">';
+                html += '<h4 style="margin:0;">Syntenic Blocks</h4>';
+                if (blockFilterActive) {
+                    html += '<a href="javascript:void(0)" onclick="window.resetBlockFilter(); return false;" style="font-size:0.8em; padding:2px 8px; background:#d9534f; color:#fff; border-radius:10px; text-decoration:none; font-weight:bold;" title="Clear all active block filters and restore the full graph">Reset Filter (' + blockFilterCount + ')</a>';
+                } else {
+                    html += '<span style="font-size:0.78em; color:#777;" title="Click an eye icon next to any block to isolate it in the graph"><i class="fa icon-eye"></i> click eye to filter</span>';
+                }
+                html += '</div>';
+                html += '<div style="font-size:0.78em; color:#666; margin-bottom:5px;">Auto-pinned by block color; click a block to highlight or its eye icon to filter</div>';
                 html += '<div style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; font-size: 0.9em; background-color: #fafafa; margin-bottom: 15px;">';
-                html += '<ul style="margin:0; padding-left:20px; list-style-type: square;">';
+                html += '<ul style="margin:0; padding-left:4px; list-style-type: none;">';
                 
                 s['block_manifest'].forEach(function(blockName) {
-                    html += '<li><a href="javascript:void(0)" onclick="window.highlightSpecial(\'block\', \'' + blockName + '\'); return false;" title="Highlight Block: ' + blockName + '">' + blockName + '</a></li>';
+                    var isBlockActive = Boolean(activeBlocks[blockName]);
+                    var bEyeClass = (blockFilterActive && !isBlockActive) ? 'fa icon-eye-slash' : 'fa icon-eye';
+                    var bEyeStyle = isBlockActive
+                        ? 'cursor:pointer; margin-right:6px; color:#1f77b4; background:#dbeeff; padding:2px 4px; border-radius:4px; border:1px solid #90caf9;'
+                        : (blockFilterActive
+                            ? 'cursor:pointer; margin-right:6px; color:#bbb; padding:2px 4px;'
+                            : 'cursor:pointer; margin-right:6px; color:#888; padding:2px 4px;');
+                    var bEyeTitle = isBlockActive
+                        ? 'Block is visible in graph filter (click to remove from filter)'
+                        : (blockFilterActive
+                            ? 'Block is hidden (click to add this block to the visible graph)'
+                            : 'Isolate this block in the graph (hide unselected blocks)');
+                    var bRowOpacity = (blockFilterActive && !isBlockActive) ? '0.6' : '1.0';
+
+                    html += '<li style="margin-bottom:3px; display:flex; align-items:center; opacity:' + bRowOpacity + ';">';
+                    html += '<i class="' + bEyeClass + '" style="' + bEyeStyle + '" onclick="window.toggleBlockFilter(\'' + blockName + '\', event); return false;" title="' + bEyeTitle + '"></i>';
+                    html += '<a href="javascript:void(0)" onclick="window.highlightSpecial(\'block\', \'' + blockName + '\'); return false;" title="Highlight Block: ' + blockName + '">' + blockName + '</a>';
+                    html += '</li>';
                 });
                 
                 html += '</ul>';
@@ -2728,8 +3102,12 @@ var loadGexfDependencies = function(callback) {
             var originalDisplayNode = window.displayNode;
             this.multiSelectedNodeIndices = [];
             
-            window.displayNode = lang.hitch(this, function(nodeIndex) {
-                if (originalDisplayNode) originalDisplayNode(nodeIndex);
+            window.displayNode = lang.hitch(this, function(nodeIndex, recentre) {
+                if (typeof nodeIndex === 'string') {
+                    var pIdx = parseInt(nodeIndex, 10);
+                    nodeIndex = isNaN(pIdx) ? -1 : pIdx;
+                }
+                if (originalDisplayNode) originalDisplayNode(nodeIndex, recentre);
 
                 // --- START FIX 1: Check for Deselect & Clean Up ---
                 if (nodeIndex === -1 || typeof nodeIndex === 'undefined') {
@@ -2942,6 +3320,7 @@ var loadGexfDependencies = function(callback) {
             if (typeof GexfJS.params.muteDefaultColors === 'undefined') GexfJS.params.muteDefaultColors = false; 
             GexfJS.params.activeGenomeFilter = {};
             GexfJS.params.activeContigFilter = {};
+            GexfJS.params.activeBlockFilter = {};
             this.expandedGenomes = {};
             this.guideExpanded = false;
 
@@ -2954,7 +3333,28 @@ var loadGexfDependencies = function(callback) {
                 this.expandedGenomes[genomeId] = Boolean(isOpen);
             });
 
-            // Global Eyeball Filter Toggles for Genome Manifest
+            // Global Eyeball Filter Toggles for Syntenic Blocks & Genome Manifest
+            window.toggleBlockFilter = lang.hitch(this, function(blockName, evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (evt && evt.preventDefault) evt.preventDefault();
+                if (!window.GexfJS || !GexfJS.params) return;
+                if (!GexfJS.params.activeBlockFilter) GexfJS.params.activeBlockFilter = {};
+                if (GexfJS.params.activeBlockFilter[blockName]) {
+                    delete GexfJS.params.activeBlockFilter[blockName];
+                } else {
+                    GexfJS.params.activeBlockFilter[blockName] = true;
+                }
+                delete GexfJS.oldParams.zoomLevel;
+                this.showDefaultSummary();
+            });
+
+            window.resetBlockFilter = lang.hitch(this, function() {
+                if (!window.GexfJS || !GexfJS.params) return;
+                GexfJS.params.activeBlockFilter = {};
+                delete GexfJS.oldParams.zoomLevel;
+                this.showDefaultSummary();
+            });
+
             window.toggleGenomeFilter = lang.hitch(this, function(genomeId, evt) {
                 if (evt && evt.stopPropagation) evt.stopPropagation();
                 if (evt && evt.preventDefault) evt.preventDefault();
@@ -3791,9 +4191,17 @@ var loadGexfDependencies = function(callback) {
                 attrHtml += '<div style="margin-bottom:6px;">' + badges.join('') + '</div>';
             }
             if (paralogNodes.length > 0) {
-                var paralogLinks = paralogNodes.map(function(p) {
+                var maxParalogs = 10;
+                var renderParalogLink = function(p) {
                     return '<a href="#" onclick="window.inspectNodeFromLocus(' + p.idx + '); return false;" style="color:#006064; text-decoration:underline; margin-right:6px;" title="Center and inspect node ' + p.id + '">Node ' + p.id + '</a>';
-                }).join('');
+                };
+                var paralogLinks = paralogNodes.slice(0, maxParalogs).map(renderParalogLink).join('');
+                if (paralogNodes.length > maxParalogs) {
+                    var extraCount = paralogNodes.length - maxParalogs;
+                    var extraLinks = paralogNodes.slice(maxParalogs).map(renderParalogLink).join('');
+                    paralogLinks += '<a href="#" onclick="this.style.display=\'none\'; this.nextElementSibling.style.display=\'inline\'; return false;" style="color:#666; font-size:0.9em; text-decoration:none; margin-right:6px;" title="Click to show remaining ' + extraCount + ' paralogous loci">... +' + extraCount + ' more</a>' +
+                        '<span style="display:none;">' + extraLinks + '</span>';
+                }
                 attrHtml += '<div style="margin-bottom:6px; padding:4px 6px; background:#f0fbfc; border:1px solid #b2ebf2; border-radius:4px;">' +
                     '<b>Other Paralogous Loci (' + paralogNodes.length + '):</b> ' + paralogLinks +
                     '<a href="#" onclick="window.selectFamilyNodes(\'' + famEsc + '\'); return false;" style="color:#0277bd; font-weight:bold; text-decoration:underline; margin-left:4px;" title="Select all ' + (paralogNodes.length + 1) + ' nodes of this family for comparative analysis">[Select all ' + (paralogNodes.length + 1) + ']</a>' +
