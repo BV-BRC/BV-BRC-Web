@@ -23,7 +23,34 @@ npm test
 
 # Initialize git submodules (required after clone)
 git submodule update --init
+
+# Build the optimized client (Dojo build via Closure) for production
+./buildClient.sh
 ```
+
+## Production Build (`buildClient.sh`)
+
+`buildClient.sh` produces the optimized `public/js/release/` layers served in production (the
+versioned `js/<version>/` paths). It pins the Archaeopteryx submodule, regenerates `bundle2.js`,
+then runs the Dojo build: `public/js/util/buildscripts/build.sh --profile ./release.profile.js
+--release`, which optimizes layers with the Closure compiler.
+
+**ES version constraint (important):** The bundled Closure compiler
+(`public/js/util/closureCompiler/compiler.jar`) is **v20200112**, whose max `--language_in` is
+`ECMASCRIPT_2019` — it **cannot parse ES2020 syntax** (optional chaining `?.`, nullish `??`).
+`release.profile.js` sets `languageIn: ECMASCRIPT_2019`, `languageOut: ECMASCRIPT_2018`.
+- **Statically-layered modules** (reachable via static `require`/`define` arrays) go through Closure
+  → must stay within **ES2019**. Adding `?.`/`??` to one of these breaks the build.
+- **Dynamically-loaded / raw-served modules** (e.g. viewers loaded via `'p3/widget/viewer/' + type`
+  in `p3app.js`, like `viewer/SFVT.js`) bypass Closure and are served raw to the browser, so they
+  may use ES2020+ (the browser supports it). This is why ESLint's `ecmaVersion` is set to 2020 (it
+  lints both sets; the runtime/browser is the real target for raw-served files) while the build
+  stays at ES2019.
+
+**Known caveat — build failures are currently silent:** `buildClient.sh` (`#!/bin/sh`, no `set -e`)
+does not check the exit code of `build.sh`, so a failed optimize step leaves a stale/unoptimized
+`release/` on disk while the script still prints "Done". Treat a build as suspect unless you confirm
+`build-report.txt` is clean. (Tracked in `TODO-global-search-and-grid-perf.md`.)
 
 ## Architecture
 
@@ -43,6 +70,31 @@ git submodule update --init
   - `widget/viewer/` - Data visualization viewers
   - `store/` - Data stores (JsonRest, Memory)
   - `resources/` - CSS stylesheets
+
+### `bvbrc_js_client` is vendored, not an npm dependency
+
+`public/js/bvbrc_js_client/` holds real, tracked files. It **was** a symlink to
+`node_modules/bvbrc_js_client` installed from `github:bv-brc/bvbrc_js_client` — git tracked
+the symlink and nothing inside it, so the client's source was not editable from this repo
+at all. Upstream has been dormant since 2021-08-10 (the pinned SHA was also HEAD of
+`main`), and BV-BRC-Web is its only consumer, so it was vendored. **This copy is the source
+of truth**; upstream is not kept in sync.
+
+`dist/bvbrc_client.js` is generated and must not be hand-edited. After changing `src/`:
+
+```bash
+cd public/js/bvbrc_js_client && npm install && npm run build   # commit dist/ too
+```
+
+Two traps, both documented in that directory's README:
+
+- **`node-fetch` is pinned to `^2.7.0` on purpose.** The original `>=2.6.1` resolved to 3.x,
+  which is ESM-only and unparseable by browserify — and because the build pipes through
+  `derequire`, the failure **truncated `dist/bvbrc_client.js` to zero bytes** rather than
+  leaving the previous bundle intact.
+- **`.gitignore` has bare `src/` and `test/` rules** (unanchored, so they match at any
+  depth) which silently swallowed the vendored package's own source. They are re-included
+  explicitly. Worth knowing before vendoring anything else.
 
 ### Widget Pattern
 Widgets follow Dojo's dijit pattern:
@@ -136,6 +188,79 @@ Use RQL (Resource Query Language):
 state.search + '&' + state.hashParams.filter
 ```
 
+### HTTP 429/503 throttling: three transports, one contract (PRs #1465, #1467)
+
+The Data API sheds load with `429` (and `503`) carrying `Retry-After`. The normative client
+contract is [`BV-BRC-API/Docs/CLIENT-429.md`](https://github.com/BV-BRC/BV-BRC-API/blob/alpha/Docs/CLIENT-429.md);
+**the API ships with admission control disabled until clients implement it.**
+
+The rule is not "retry on 429" — it is *back off by the amount the server asked for, and
+give up rather than hammer*. Retry amplification caused the 2026-06-05 coordinator crash.
+
+`util/retryRequest.js` implements it: honour `Retry-After`, **jitter every wait by up to
++30%**, cap at 3 retries (interactive) or hold at a 300 s ceiling indefinitely
+(`mode: 'unattended'`, spec §3a), retry **429/503 only**, floor every delay at 1 s. It
+publishes `/throttle/{active,retrying,resolved,failed}`, which `widget/ThrottleBanner.js`
+renders as a countdown. All of it is gated on the **`enableThrottleRetry`** config flag
+(default `false`).
+
+**504 and 400 are deliberately not retried.** A 504 means the query was too expensive, so
+retrying repeats the cost; a 400 is a permanent refusal of that query.
+
+#### There is no single request funnel — there are three
+
+Knowing which transport a call uses determines whether it has 429 handling:
+
+| transport | how it gets coverage |
+|---|---|
+| `dojo/request` (the overwhelming majority of p3 imports — ~216 vs ~13 files importing `dojo/request/xhr`) | `util/throttledRequest.js`, registered as `requestProvider` in the `dojoConfig` at `views/javascript.ejs` — covers every call site with **no edits to any of them** |
+| `store/P3JsonRest.js` | uses `dojo.rawXhrPost` from legacy `dojo/_base/xhr`, which **never consults `config-requestProvider`**; wrapped separately |
+| `bvbrc_js_client` (`fetch`) | its own `src/retry.js`, a deliberate duplicate since the package is standalone with no AMD loader |
+
+The `requestProvider` hook works because `dojo/request` loads `./request/default!` with an
+empty plugin id, and `request/default.js` resolves `has('config-requestProvider')` in that
+case. The Dojo build leaves that as a **runtime** lookup while folding `has('host-browser')`
+to a literal, so it survives `buildClient.sh`. Verified.
+
+**Importing `dojo/request/xhr` directly opts you out of all of this.** Use `dojo/request`
+unless you specifically need the raw transport. The data-API callers currently doing so —
+and therefore uncovered — are `widget/search/SFVTSearch.js`, `widget/viewer/SystemStatus.js`,
+`util/DownloadExecutor.js` and `widget/download/RecordSelectorStep.js`. To find them:
+
+```bash
+grep -rl "dojo/request/xhr" public/js/p3/ | xargs grep -l "dataAPI\|dataServiceURL\|apiServer"
+```
+
+#### Two freeze traps when wrapping a dojo promise
+
+Both are silent no-ops that bite on the **success path with no 429 involved**:
+
+- **`dojo/Deferred` freezes its promise** (`Deferred.js:305`), so `promise.response = …` or
+  `results.total = …` on it does nothing. `lang.delegate()` first — which is exactly what
+  `QueryResults` does to a promise for the same reason.
+- **`dojo/request`'s contract is a *dual* promise** — the data promise plus a `.response`
+  sub-promise (`request/util.js:146`). Delegating to `dojo/request/xhr` preserves it for
+  free; wrapping does not, and dropping it breaks consumers inside dojo/dgrid even though
+  no p3 call site reads it directly.
+
+`P3JsonRest` hit a third: `results.total` used to read the xhr off `results.ioArgs`, a
+property of the *specific* Deferred `rawXhrPost` returned. Any wrapper returns a different
+promise, so that back-channel vanishes and every grid silently loses its row count.
+
+#### Never render a shed request as an empty result set
+
+This is the contract's sharpest requirement and the easiest to get wrong. Measured on a
+grid whose query was shed with the banner absent: it renders `1 - 1 of 0 results` —
+indistinguishable from a legitimate empty result, so **the user concludes their data is
+missing**. Retry logic without the banner makes throttling *less* visible, not more.
+
+#### Still uncovered: downloads
+
+`form.submit()` and `window.open()` hand the response to the browser, so no wrapper can
+reach them — and they are the heaviest requests on the site (`limit(2500000)`). See the
+Unified Download Wizard section; `DownloadExecutor`'s `xhr.post` sites also import
+`dojo/request/xhr` directly and so bypass the provider.
+
 ### Never inject collection-specific filters into `state.search` (PR #1330 / #1412)
 
 `state.search` is **shared verbatim across every tab of a list viewer**. `GenomeList.setActivePanelState()` mixes it into each sibling tab's state unchanged, and `GridContainer.buildQuery()` forwards it to the API as-is. So a clause that is only valid for one collection becomes an HTTP 400 on all the others:
@@ -159,6 +284,75 @@ eq(genome_id,*)&genome(and(eq(species,Escherichia coli),
 ```
 
 **2. Joins are expensive.** `genome_feature keyword(polymerase)` is 1.1s unjoined vs 19.7s with a `genome(...)` join. Don't add one to a query that doesn't need it — especially not to count queries.
+
+### RQL Queries in HTML Attributes (HTML-entity decoding pitfall)
+
+RQL queries are joined with `&` (e.g. `keyword(carsonella)&gt(completion_date,NOW-1YEARS)&ne(genome_status,Deprecated)`). When such a query is **string-concatenated into an HTML `href` and rendered via `innerHTML`** (or `set('content', ...)`), the browser's HTML parser decodes `&gt`, `&lt`, `&ge`, `&le` into `>`, `<`, etc. — **even without a trailing `;`**, because these are legacy named entities. This silently corrupts the query: `&gt(completion_date,...)` becomes `>(completion_date,...)`, which the rql parser mis-parses (gluing `>` onto the previous token, e.g. producing a bogus `keywordgt` operator → Solr `400 undefined field object`). Note `&ne`, `&and`, `&or`, `&eq` are NOT entities, so only the `gt`/`lt`/`ge`/`le` comparison operators corrupt.
+
+**Rules:**
+- Prefer navigating via `Topic.publish('/navigate', { href: query })` — the router uses `pushState`, which does NOT HTML-decode. This is why `GlobalSearch.js` is safe.
+- When you MUST embed a query into an HTML `href` string that will be rendered as HTML, HTML-escape it first (`&`→`&amp;`, `"`→`&quot;`). The browser decodes `&amp;` back to `&`, so navigation is correct and `&gt(` is preserved. Reuse the `escapeHtml` pattern in `public/js/p3/util/QueryToEnglish.js`.
+- Prefer building anchors with `domConstruct.create('a', { href: query })` (DOM attribute assignment, no HTML parsing) over concatenating into an innerHTML string.
+
+`AdvancedSearch.js` exhibited this bug in its `format*` result-link builders (rendered via `this.viewer.innerHTML`); `GlobalSearch.js` did not (Topic navigate).
+
+### Unified Download Wizard
+
+The `ADV DWNLD` grid action opens `widget/download/UnifiedDownloadWizard.js` — a 3-step wizard (Data
+Type → Records → format-specific Options) that replaces the older DownloadTooltipDialog/AdvancedDownload
+flow. Key modules:
+- `util/DownloadFormats.js` — format registry: `formats`, per-data-type `dataTypeFormats` (pk, sortField,
+  categories, `formatOverrides` for cross-collection routing), and `containerTypeToDataType` mapping.
+- `util/DownloadExecutor.js` — `execute(spec)` runs the download. Sequence/table/accession formats POST a
+  hidden form to `<dataServiceURL>/<dataType>/?http_download=true&http_accept=<mime>` (server-side stream);
+  FASTA adds `http_fasta_*` params. `buildQuery(spec)` builds the RQL (`in(pk,(ids))` for selected scope,
+  else cleaned grid query) plus `sort()` + `limit(2500000)`.
+- Wizard entry: `GridContainer.js` AdvancedDownload action → `QueryDescriptor.createFromGrid(grid,
+  containerType, {selection, primaryKey})` → `UnifiedDownloadWizard.show({queryDescriptor})`.
+
+**Pitfall 1 — cursorMark export requires the Solr uniqueKey in `sort()`.** The `http_download=true`
+path streams via Solr `cursorMark`, which **rejects any sort that doesn't include the collection's
+uniqueKey** (`HTTP 400` → surfaced as `500 "Unable to receive stream: Shard … failed: HTTP 400"`).
+Non-obvious: the genome-family collections have **no `id` field** — their uniqueKey is the domain id
+(`genome`→`genome_id`, `genome_feature`→`feature_id`, `genome_sequence`→`sequence_id`); everything else
+uses `id`. `buildQuery()` builds the sort from `[sortField, pk, DownloadFormats.getUniqueKey(dataType)]`
+(deduped) so the uniqueKey is always present. Any new download data type whose configured
+`sortField`/`pk` in `dataTypeFormats` is not the uniqueKey (e.g. subsystem's `subsystem_id`, pathway's
+`pathway_id`) would 500 without this — and must be added to `getUniqueKey()` if its uniqueKey isn't `id`.
+
+**Pitfall 2 — cross-collection sequence download in *selected* scope must read the linkField off the
+selected rows.** Some formats target a different collection than the source grid (e.g. specialty-genes
+grid, pk `id` UUID → sequence FASTA from `genome_feature` via `linkField: feature_id`). In selected scope
+`selectedIds` defaults to the grid pk, so querying the target with `in(feature_id,(uuids))` matches
+nothing → empty file. This is NOT a missing join: the selected grid **rows already carry the linkField**
+(`sp_gene` rows contain `feature_id`/`patric_id`) — `QueryDescriptor.extractSelectedIds()` was just
+discarding it by keeping only the pk. Fix: `createFromGrid()` retains the row objects as transient
+`selectedRows`, and `_buildDownloadSpec()` remaps `selectedIds` to the rows' `linkField` when
+`linkField !== sourcePrimaryKey` (selected scope), setting `primaryKey = linkField`. No server prefetch.
+When `linkField === pk` (e.g. genome grid → feature accession, both `genome_id`) the remap is skipped and
+the target is queried directly. Selected scope only comes from a live grid (the saved-search download
+path is always 'all' scope), so the rows are always available. General rule: for any cross-collection
+download, read the linking value off the selected row — don't reduce to the grid pk then try to recover it.
+
+**Pitfall 3 — a bare `genome(...)` join as the sole top-level RQL clause makes the data API emit `q=()`
+→ Solr `HTTP 400 "Cannot parse '()'"`.** The API's cross-collection join macro (`genome(...)`,
+`{!join method=crossCollection fromIndex=genome …}`) requires a top-level term to precede it. When
+`genome(...)` is the *only* top-level clause, the join codegen emits an empty main query `q=()` and Solr
+400s. Grids sidestep this by always prepending a term (`keyword(*)` / `eq(feature_id,*)`); the download's
+`cleanQuery()` did not — it only strips a wrapper matching the *target* collection, so a `genome(...)`
+filter on a `sp_gene` source (e.g. a taxon-view Specialty Genes protein-FASTA download, filter
+`genome(and(eq(taxon_lineage_ids,…),ne(genome_status,Deprecated)))`) passed through bare and 400'd.
+**Stopgap fix (client):** `DownloadExecutor.buildQuery` prepends `eq(<pk>,*)&` when the cleaned query
+begins with a bare `genome(`/`feature(`/`genome_feature(`/`genome_sequence(` join (narrow — only fires on
+a leading join wrapper; non-join queries untouched). Verified: `genome(...)` alone → 400,
+`eq(feature_id,*)&genome(...)` → 200. This is a STOPGAP; the proper fix is server-side — the
+cross-collection resolution in `p3_api/PLAN_CROSS_COLLECTION_DOWNLOAD.md` must decompose a source query
+that is itself a `genome(...)` join (run inner subquery → genome_ids → filter source by `in(genome_id,…)`)
+rather than forward it raw (open question #5 there).
+
+Note: the Excel serializer is slow on multi-thousand-row exports (can exceed client timeouts); the
+underlying Solr query/sort is identical to the tsv/csv path, so a slow Excel is a serializer perf issue,
+not a query bug.
 
 ### Visualization Components
 - D3.js for custom visualizations (charts, domain viewers)
@@ -302,6 +496,24 @@ with master at 3.59.12 and alpha at 3.60.1, which was alpha's own next release n
 
 If alpha is not already ahead, bump it to a new minor line (Release workflow) *first*, then
 cut the hotfix. `.github/workflows/hotfix.yml` enforces this and refuses to run otherwise.
+
+### An unmerged release PR blocks every later release run
+
+`release.yml` derives the next version from **alpha's `package.json`**, which only advances
+when a release PR *merges*. Leave one open and the next run recomputes the same number,
+then dies trying to push a branch that already exists:
+
+```
+! [rejected]  release/v3.60.6 -> release/v3.60.6 (fetch first)
+```
+
+Nothing in that message says "a release PR is still open," which is what it actually means.
+It failed safely — the push was rejected rather than clobbering the branch, and nothing
+landed on alpha — but it will recur identically until the open PR is merged or abandoned.
+
+**Merge release PRs promptly.** If one is abandoned, close it *and* delete its branch;
+check `git ls-remote --tags` first, because a tag for that version would make the number
+unusable.
 
 ### Workflow gotchas
 

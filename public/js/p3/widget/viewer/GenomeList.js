@@ -1,23 +1,23 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct', 'dojo/request',
-  './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI', '../../util/PathJoin',
+  'dojo/_base/declare', 'dojo/_base/lang', 'dojo/topic', 'dojo/dom-construct',
+  './TabViewerBase', '../../util/QueryToEnglish', '../../DataAPI',
   '../GenomeListOverview', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer',
   '../StrainGridContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
   '../InteractionsContainer', '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../../auth/authHeaders'
+  '../../util/genomeKingdom'
 ], function (
-  declare, lang, Topic, domConstruct, xhr,
-  TabViewerBase, QueryToEnglish, DataAPI, PathJoin,
+  declare, lang, Topic, domConstruct,
+  TabViewerBase, QueryToEnglish, DataAPI,
   GenomeListOverview, GenomeGridContainer,
   AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, ExperimentsContainer, SubSystemsContainer,
   StrainGridContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
   InteractionsContainer, EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  authHeader
+  genomeKingdom
 ) {
 
   return declare([TabViewerBase], {
@@ -58,23 +58,17 @@ define([
       const query = this.state.search;
       var _self = this;
 
-      xhr.get(PathJoin(dataAPI, 'data/taxon_category/', `?${query}`), {
-        headers: {
-          // forToken: authToken is captured into a prototype property at
-          // module-declare time (see `authToken:` above), so it is whatever
-          // the ambient token was when this module first loaded. Preserved
-          // as-is here; an ambient fallback would mask that.
-          Authorization: authHeader.forToken('api', authToken),
-          Accept: 'application/solr+json',
-        },
-        handleAs: 'json',
-      }).then(function (data) {
-        if (data.superkingdom[0] === 'Bacteria' && data.superkingdom.length === 1) {
-          _self.changeToBacteria();
-        } else if (data.superkingdom[0] === 'Viruses' && data.superkingdom.length === 1) {
-          _self.changeToViruses();
-        }
-      });
+      // forToken: authToken is a prototype property captured at module-declare time
+      // (see `authToken:` above), so it is whatever the ambient token was when this
+      // module first loaded. Passed through rather than substituting the ambient one.
+      genomeKingdom.detect({ apiServer: dataAPI, query: query, authToken: authToken })
+        .then(function (r) {
+          if (r.kingdom === 'Bacteria') {
+            _self.changeToBacteria();
+          } else if (r.kingdom === 'Viruses') {
+            _self.changeToViruses();
+          }
+        });
 
       this.setActivePanelState();
     },
