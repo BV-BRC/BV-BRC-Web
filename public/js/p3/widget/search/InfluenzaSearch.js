@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/popup', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/query',
   'dojo/store/Memory', 'dijit/Calendar', 'dijit/TooltipDialog', './SearchBase', './TextInputEncoder',
-  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser', './MultiValueSelect'
+  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser'
 ], function (
   declare, lang, popup, on, dom, domClass, query,
   Memory, Calendar, TooltipDialog, SearchBase, TextInputEncoder,
