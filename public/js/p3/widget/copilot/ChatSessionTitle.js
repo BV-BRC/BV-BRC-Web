@@ -80,10 +80,21 @@ define([
       this.createTitleDisplay();
       this.createTitleEditor();
 
-      // Subscribe to relevant topics
-      topic.subscribe('ChatSessionSelected', lang.hitch(this, 'onSessionSelected'));
-      topic.subscribe('ChatSessionTitleUpdated', lang.hitch(this, 'updateTitle'));
-      topic.subscribe('ChatSessionTitleMaxLengthChanged', lang.hitch(this, 'setMaxLength'));
+      // Subscribe to relevant topics (use this.own() for automatic cleanup)
+      this.own(topic.subscribe('ChatSessionTitleUpdated', lang.hitch(this, function(payload) {
+        // Accept both object { sessionId, title } and bare-string payloads.
+        if (payload && typeof payload === 'object' && payload.sessionId) {
+          // Only update if this widget is showing the matching session.
+          if (payload.sessionId === this.sessionId) {
+            this.updateTitle(payload.title);
+          }
+        } else if (typeof payload === 'string') {
+          // Legacy bare-string form — update unconditionally (caller's
+          // responsibility to target the right widget).
+          this.updateTitle(payload);
+        }
+      })));
+      this.own(topic.subscribe('ChatSessionTitleMaxLengthChanged', lang.hitch(this, 'setMaxLength')));
     },
 
     /**
@@ -232,16 +243,6 @@ define([
     },
 
     /**
-     * Handles session selection events
-     * - Updates session ID and title
-     * - Uses default title if none provided
-     */
-    onSessionSelected: function(sessionData) {
-      this.sessionId = sessionData.session_id;
-      this.updateTitle(sessionData.title || 'New Chat');
-    },
-
-    /**
      * Starts new chat session
      * - Sets session ID if provided
      * - Resets title to default
@@ -256,34 +257,14 @@ define([
     },
 
     /**
-     * Sets the session identifier
-     * Simple setter for sessionId property
+     * Sets the session identifier and optionally updates the displayed title.
+     * @param {string} sessionId - New session identifier
+     * @param {string} [title] - If provided, update the displayed title
      */
-    setSessionId: function(sessionId) {
+    setSessionId: function(sessionId, title) {
       this.sessionId = sessionId;
-    },
-
-    /**
-     * Enables title editing functionality
-     * - Sets editing flag
-     * - Updates cursor style to indicate clickable
-     */
-    enableEditing: function() {
-      this.editingEnabled = true;
-      this.titleDisplay.style.cursor = 'pointer';
-    },
-
-    /**
-     * Disables title editing functionality
-     * - Clears editing flag
-     * - Updates cursor style
-     * - Cancels any active editing
-     */
-    disableEditing: function() {
-      this.editingEnabled = false;
-      this.titleDisplay.style.cursor = 'default';
-      if (this.isEditing) {
-        this.cancelEditing();
+      if (title) {
+        this.updateTitle(title);
       }
     },
 

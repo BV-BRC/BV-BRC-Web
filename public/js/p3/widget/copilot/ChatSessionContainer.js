@@ -29,12 +29,7 @@ define([
     'dojo/Deferred',
     'dojo/dom-class',
     'dojo/dom-style',
-    './CopilotStateManager',
-    './SessionFilesStore',
-    './SessionFilesSelectionStore',
-    './SessionWorkflowsSelectionStore',
-    './SessionWorkspaceSelectionStore',
-    './SessionJobsSelectionStore'
+    './CopilotStateManager'
 ], function (
     declare,
     BorderContainer,
@@ -50,12 +45,7 @@ define([
     Deferred,
     domClass,
     domStyle,
-    CopilotStateManager,
-    SessionFilesStore,
-    SessionFilesSelectionStore,
-    SessionWorkflowsSelectionStore,
-    SessionWorkspaceSelectionStore,
-    SessionJobsSelectionStore
+    CopilotStateManager
 ) {
     /**
      * @class ChatSessionContainer
@@ -98,27 +88,12 @@ define([
                 this.sessionsStore = new ChatSessionsMemoryStore();
             }
 
-            this.sessionFilesPageSize = 20;
-            this._sessionFilesRequestToken = 0;
-            this._sessionFilesState = SessionFilesStore.createInitialState(this.sessionId, this.sessionFilesPageSize);
-            this._sessionFilesSelectionState = SessionFilesSelectionStore.createInitialState(this.sessionId);
-            this._sessionWorkflowsSelectionState = SessionWorkflowsSelectionStore.createInitialState(this.sessionId);
-            this._sessionImageContextState = {
-                sessionId: this.sessionId || null,
-                entries: [],
-                items: []
-            };
-            this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(this.sessionId);
-            this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(this.sessionId);
-            this._activeGridPanel = 'files';
-        },
-
-        /**
-         * Returns promise that resolves when initialization is complete
-         * Used by child widgets to ensure container is ready
-         */
-        whenInitialized: function() {
-            return this._initialized.promise;
+            // Whether this container should react to global topic events.
+            // Set to false when the floating window is hidden because the
+            // full-page Copilot viewer is active, preventing duplicate
+            // topic handling (e.g. double session creation, wrong title
+            // generation) from two live ChatSessionContainer instances.
+            this._active = true;
         },
 
         /**
@@ -144,6 +119,7 @@ define([
                 this._getPathState();
                 this.changeSessionId(this.sessionId);
                 this._initialized.resolve();
+                this._replaceIfArchived(this.sessionId);
             } else {
                 // No session supplied – create a brand-new one
                 this.copilotApi.getNewSessionId().then(lang.hitch(this, function(sessionId) {
@@ -153,6 +129,13 @@ define([
                     this._createInputWidget();
                     this._getPathState();
                     this.changeSessionId(sessionId);
+                    // A fresh id from /start-chat has no Mongo row yet.
+                    // setSessionId() defaults new_chat to false, which made
+                    // _registerSessionIfNeeded skip registration on the
+                    // first send: a new user's first chat got no title and
+                    // stayed out of the sidebar. Same as delete-then-create
+                    // below; the row is still only written on first send.
+                    this.inputWidget.new_chat = true;
                     this._initialized.resolve();
                 })).catch(lang.hitch(this, function(error) {
                     // Handle initialization error
@@ -173,11 +156,15 @@ define([
                 this.resize();
             }), 0);
 
-            // Set up topic subscriptions for various events
-
+            // Set up topic subscriptions for various events.
+            // Every handler checks this._active so that a hidden floating-
+            // window container does not react to topics intended for the
+            // full-page viewer (and vice-versa).  Subscriptions are
+            // registered with this.own() for automatic cleanup on destroy.
 
             // Handle creating new chat sessions
-            topic.subscribe('createNewChatSession', lang.hitch(this, function() {
+            this.own(topic.subscribe('createNewChatSession', lang.hitch(this, function() {
+                if (!this._active) { return; }
                 this.copilotApi.createAndRegisterSession('New Chat').then(lang.hitch(this, function(result) {
                     var sessionId = result && result.session_id ? result.session_id : null;
                     if (!sessionId) {
@@ -200,39 +187,35 @@ define([
                 })).catch(function(error) {
                     console.error('Error creating/registering new chat session:', error);
                 });
-            }));
+            })));
 
-            topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
-                this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
-                    console.log('[DEBUG] RefreshSession - Full response:', res);
-                    console.log('[DEBUG] RefreshSession - res.workflow_ids:', res.workflow_ids);
-                    var messages = [];
-                    if (Array.isArray(res.messages)) {
-                        if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
-                            messages = res.messages[0].messages; // Legacy nested API shape
-                        } else {
-                            messages = res.messages; // Current flat API shape
-                        }
-                    }
-                    this.chatStore.setData(messages);
-                    this.displayWidget.showMessages(messages, scrollToBottom);
-                    this._applySessionWorkflowContext(res);
-                }));
-            }));
+            this.own(topic.subscribe('RefreshSession', lang.hitch(this, function(sessionId, scrollToBottom = true) {
+                if (!this._active) { return; }
+                this._refreshMessages(sessionId, scrollToBottom, false);
+            })));
 
             // Handle selecting existing chat sessions
-            topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
-                console.log('[DEBUG] ChatSession:Selected - Full data:', data);
-                console.log('[DEBUG] ChatSession:Selected - data.workflow_ids:', data.workflow_ids);
+            this.own(topic.subscribe('ChatSession:Selected', lang.hitch(this, function(data) {
+                if (!this._active) { return; }
                 this.changeSessionId(data.sessionId);
+                // Set the title on the header widget from the selected session
+                if (data.title && this.titleWidget) {
+                    this.titleWidget.setSessionId(data.sessionId, data.title);
+                }
                 this.chatStore.addMessages(data.messages);
                 this.displayWidget.showMessages(data.messages);
                 this.inputWidget.new_chat = false;
-                this._applySessionWorkflowContext(data);
-            }));
+
+                // If the session has an in-flight turn, start polling
+                // until it finishes, then refresh messages from Mongo.
+                if (data.active_job_id) {
+                    this._pollUntilTurnComplete(data.sessionId);
+                }
+            })));
 
             // Handle chat title changes
-            topic.subscribe('ChatSessionTitleChanged', lang.hitch(this, function(data) {
+            this.own(topic.subscribe('ChatSessionTitleChanged', lang.hitch(this, function(data) {
+                if (!this._active) { return; }
                 // Update title in message store if current session
                 if (data.sessionId === this.sessionId) {
                     this.chatStore.updateSessionTitle(data.sessionId, data.title);
@@ -240,11 +223,15 @@ define([
 
                 // Always update title in sessions store
                 this.sessionsStore.updateSessionTitle(data.sessionId, data.title);
-            }));
+            })));
 
             // Handle various chat configuration changes
-            topic.subscribe('UpdateSessionTitleError', lang.hitch(this, this._handleUpdateSessionTitleError));
-            topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+            this.own(topic.subscribe('UpdateSessionTitleError', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleUpdateSessionTitleError.apply(this, arguments);
+            })));
+            this.own(topic.subscribe('ChatModel', lang.hitch(this, function(model) {
+                if (!this._active) { return; }
                 this.selectedModel = model;
                 if (window && window.App) {
                     window.App.copilotSelectedModel = model;
@@ -252,41 +239,62 @@ define([
                 if (this.inputWidget) {
                     this.inputWidget.setModel(model);
                 }
-            }));
-            topic.subscribe('ChatRagDb', lang.hitch(this, function(ragDb) {
-                this.inputWidget.setRagDb(ragDb);
-                this.inputWidget.setRagButtonLabel(ragDb);
-            }));
-            topic.subscribe('ChatNumDocs', lang.hitch(this, function(numDocs) {
-                this.inputWidget.setNumDocs(numDocs);
-            }));
-            topic.subscribe('ChatSystemPrompt', lang.hitch(this, function(systemPrompt) {
+            })));
+            this.own(topic.subscribe('ChatSystemPrompt', lang.hitch(this, function(systemPrompt) {
+                if (!this._active) { return; }
                 this.inputWidget.setSystemPrompt(systemPrompt);
-            }));
-            topic.subscribe('generateSessionTitle', lang.hitch(this, this._handleGenerateSessionTitle));
-            topic.subscribe('ChatSession:Delete', lang.hitch(this, this._handleChatSessionDelete));
-            topic.subscribe('SetConversationRating', lang.hitch(this, this._handleSetConversationRating));
-            topic.subscribe('copy-message', lang.hitch(this, this._handleCopyMessage));
-            topic.subscribe('rate-message', lang.hitch(this, this._handleRateMessage));
-            topic.subscribe('openReportIssueDialog', lang.hitch(this, this._handleOpenReportIssueDialog));
-            topic.subscribe('chatTextSizeChanged', lang.hitch(this, this._handleChatTextSizeChanged));
-            topic.subscribe('setStatePrompt', lang.hitch(this, this._handleSetStatePrompt));
-            topic.subscribe('CopilotSessionFileCreated', lang.hitch(this, this._handleSessionFileCreated));
-            topic.subscribe('CopilotSessionWorkflowCreated', lang.hitch(this, this._handleSessionWorkflowCreated));
-            topic.subscribe('CopilotWorkflowCardStatusUpdated', lang.hitch(this, this._handleWorkflowCardStatusUpdated));
-            topic.subscribe('CopilotWorkspaceBrowseOpen', lang.hitch(this, function() {
-                this._setActiveTab('grids', 'workspace');
-            }));
-            topic.subscribe('CopilotJobsBrowseOpen', lang.hitch(this, function() {
-                this._setActiveTab('grids', 'jobs');
-            }));
-            topic.subscribe('CopilotDataBrowseOpen', lang.hitch(this, function() {
-                this._setActiveTab('grids', 'data');
-            }));
-
-            // Subscribe to message submission to switch back to Messages tab and close file previews
-            topic.subscribe('ChatMessageSubmitted', lang.hitch(this, function() {
-                this._setActiveTab('messages');
+            })));
+            this.own(topic.subscribe('generateSessionTitle', lang.hitch(this, function(payload) {
+                if (!this._active) { return; }
+                this._handleGenerateSessionTitle(payload);
+            })));
+            this.own(topic.subscribe('ChatSession:Delete', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleChatSessionDelete.apply(this, arguments);
+            })));
+            this.own(topic.subscribe('SetConversationRating', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleSetConversationRating.apply(this, arguments);
+            })));
+            this.own(topic.subscribe('copy-message', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleCopyMessage.apply(this, arguments);
+            })));
+            this.own(topic.subscribe('rate-message', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleRateMessage.apply(this, arguments);
+            })));
+            this.own(topic.subscribe('openReportIssueDialog', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleOpenReportIssueDialog.apply(this, arguments);
+            })));
+            this.own(topic.subscribe('editSessionTitle', lang.hitch(this, function(sessionId) {
+                if (!this._active) { return; }
+                if (sessionId && sessionId === this.sessionId && this.titleWidget) {
+                    if (this.titleWidget.isEditing) {
+                        this.titleWidget.saveTitleEditor();
+                    } else {
+                        this.titleWidget.startEditing();
+                    }
+                }
+            })));
+            this.own(topic.subscribe('chatTextSizeChanged', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleChatTextSizeChanged.apply(this, arguments);
+            })));
+            // Progress view variant changed (options dialog or the card's
+            // toggle): redraw so every status card and summary follows.
+            this.own(topic.subscribe('copilotProgressStyleChanged', lang.hitch(this, function() {
+                if (!this._active || !this.displayWidget || !this.chatStore) { return; }
+                this.displayWidget.showMessages(this.chatStore.query());
+            })));
+            this.own(topic.subscribe('setStatePrompt', lang.hitch(this, function() {
+                if (!this._active) { return; }
+                this._handleSetStatePrompt.apply(this, arguments);
+            })));
+            // Close file previews when a message is submitted
+            this.own(topic.subscribe('ChatMessageSubmitted', lang.hitch(this, function() {
+                if (!this._active) { return; }
                 // Close any expanded file previews so they don't appear during agent SSE updates
                 var expanded = document.querySelectorAll('.file-preview-expanded');
                 for (var i = 0; i < expanded.length; i++) {
@@ -297,7 +305,39 @@ define([
                     if (toggle) { toggle.style.display = ''; }
                     if (content) { content.style.display = 'none'; }
                 }
-            }));
+            })));
+
+            // When a turn starts on the submitting tab, also start a
+            // lightweight Mongo fallback poll.  If the live SSE stream
+            // delivers events normally the poll is a harmless no-op
+            // (stopped by TurnEnded).  If SSE is buffered or dead, the
+            // poll detects active_job_id clearing and refreshes the
+            // chat from Mongo so the answer appears without a reload.
+            this.own(topic.subscribe('ChatSession:TurnStarted', lang.hitch(this, function(data) {
+                if (!this._active) { return; }
+                if (data && data.sessionId && data.sessionId === this.sessionId) {
+                    this._startFallbackPoll(data.sessionId);
+                }
+            })));
+            this.own(topic.subscribe('ChatSession:TurnEnded', lang.hitch(this, function(data) {
+                if (!this._active) { return; }
+                // SSE stream delivered successfully — cancel the fallback
+                // poll since it is no longer needed.
+                if (data && data.sessionId && data.sessionId === this.sessionId) {
+                    this._stopFallbackPoll();
+                    // A completion that came in during the turn waited for it.
+                    if (this._watchRefreshPending) {
+                        this._watchRefreshPending = false;
+                        this._refreshMessages(this.sessionId, false, true);
+                    }
+                    // The turn may have submitted jobs; their watches are
+                    // registered as it is saved, so look again shortly.
+                    var turnSessionId = this.sessionId;
+                    setTimeout(lang.hitch(this, function() {
+                        this._syncWatchPoll(turnSessionId);
+                    }), 2000);
+                }
+            })));
 
             // Start path monitoring
             this._startPathMonitoring();
@@ -342,34 +382,114 @@ define([
         },
 
         /**
-         * Generates a title for the chat session based on message history
-         * Uses AI model to analyze messages and create relevant title
+         * A restored chat id (localStorage) may belong to a chat the user
+         * deleted: the gateway archives it and answers 404 SESSION_ARCHIVED.
+         * Start a fresh chat instead of showing an error.
+         * @param {string} sessionId
          */
-        _handleGenerateSessionTitle: function() {
-            // Only auto-generate a title when the session still has the default
-            // placeholder title.  If the user (or a previous generation) has
-            // already set a custom title, we do *not* want to overwrite it.
-            var currentTitle = this.titleWidget && this.titleWidget.getTitle ? this.titleWidget.getTitle() : 'New Chat';
+        _replaceIfArchived: function(sessionId) {
+            this.copilotApi.getSessionMessages(sessionId).then(null, lang.hitch(this, function(err) {
+                var status = err && err.response && err.response.status;
+                if (status !== 404 || this.sessionId !== sessionId) { return; }
+                try {
+                    if (window.localStorage) { localStorage.removeItem('copilot-current-session-id'); }
+                } catch (e) { /* ignore */ }
+                this.copilotApi.getNewSessionId().then(lang.hitch(this, function(newId) {
+                    if (this.sessionId !== sessionId) { return; }
+                    if (this.titleWidget && this.titleWidget.startNewChat) {
+                        this.titleWidget.startNewChat(newId);
+                    }
+                    this.changeSessionId(newId);
+                    // No Mongo row yet: register and title it on first send.
+                    if (this.inputWidget) { this.inputWidget.new_chat = true; }
+                }));
+            }));
+        },
 
-            if (currentTitle && currentTitle !== 'New Chat') {
-                // Title has already been set to something meaningful – abort.
+        /**
+         * Generates a title for a chat session based on its message history.
+         * Bound to the originating session ID so switching sessions mid-flight
+         * does not write the title onto the wrong session.
+         * @param {Object} [payload] - { sessionId } identifying the target session
+         */
+        _handleGenerateSessionTitle: function(payload) {
+            var targetSessionId = (payload && payload.sessionId) || this.sessionId;
+
+            // Guard: skip if the target session already has a non-default title.
+            // When we are still viewing the target session, use the title widget;
+            // otherwise check the sessions store.
+            var existingTitle = 'New Chat';
+            if (this.sessionId === targetSessionId && this.titleWidget && this.titleWidget.getTitle) {
+                existingTitle = this.titleWidget.getTitle();
+            } else if (this.sessionsStore) {
+                var storeEntry = this.sessionsStore.get(targetSessionId);
+                if (storeEntry && storeEntry.title) {
+                    existingTitle = storeEntry.title;
+                }
+            }
+            if (existingTitle && existingTitle !== 'New Chat') {
                 return;
             }
 
-            var messages = this.chatStore.query().map(x => x.content);
+            // Source messages: use the live chat store only when we are still
+            // viewing the target session.  Otherwise fall back to the API.
+            var _self = this;
             var model = this.inputWidget.getModel();
-            this.copilotApi.generateTitleFromMessages(messages, model).then(lang.hitch(this, function(title) {
-                if (title.startsWith('"') && title.endsWith('"')) {
-                    title = title.substring(1, title.length - 1);
-                }
-                this.titleWidget.updateTitle(title);
-                this.titleWidget.saveTitle();
-                setTimeout(lang.hitch(this, function() {
-                    topic.publish('reloadUserSessions', {
-                        highlightSessionId: this.sessionId
+
+            var generateFromMessages = function(messages) {
+                _self.copilotApi.generateTitleFromMessages(messages, model).then(function(title) {
+                    if (title.startsWith('"') && title.endsWith('"')) {
+                        title = title.substring(1, title.length - 1);
+                    }
+                    // Persist directly via API — never call titleWidget.saveTitle()
+                    // because that method uses the widget's live sessionId.
+                    _self.copilotApi.updateSessionTitle(targetSessionId, title).then(function() {
+                        topic.publish('ChatSessionTitleChanged', {
+                            sessionId: targetSessionId,
+                            title: title
+                        });
+                    }, function(err) {
+                        console.log('Error persisting auto-generated title', err);
                     });
-                }), 100);
-            }));
+
+                    // Update the header widget only if we are still viewing
+                    // the target session.
+                    if (_self.sessionId === targetSessionId && _self.titleWidget) {
+                        _self.titleWidget.updateTitle(title);
+                    }
+                });
+            };
+
+            // The title comes from the user's first message only: the assistant's
+            // reply (tool output, links, job cards) made titles about the answer
+            // instead of the request.  Long pastes (FASTA) are cut.
+            var firstUserMessage = function(messages) {
+                var first = (messages || []).filter(function(m) {
+                    return m && m.role === 'user' && typeof m.content === 'string' && m.content.trim();
+                })[0];
+                return first ? [first.content.trim().slice(0, 2000)] : [];
+            };
+
+            if (this.sessionId === targetSessionId) {
+                var opening = firstUserMessage(this.chatStore.query());
+                if (opening.length) generateFromMessages(opening);
+            } else {
+                // Switched away — fetch messages from the API
+                this.copilotApi.getSessionMessages(targetSessionId).then(function(res) {
+                    var messages = [];
+                    if (Array.isArray(res.messages)) {
+                        if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                            messages = res.messages[0].messages;
+                        } else {
+                            messages = res.messages;
+                        }
+                    }
+                    var opening = firstUserMessage(messages);
+                    if (opening.length) generateFromMessages(opening);
+                }).catch(function(err) {
+                    console.warn('Could not fetch messages for title generation', err);
+                });
+            }
         },
 
         /**
@@ -410,12 +530,8 @@ define([
          * Displays and manages chat session title
          */
         _createTitleWidget: function() {
-            // Create a wrapper ContentPane to hold both title and tabs on the same line
+            // Wrapper ContentPane for the title bar
             var ContentPane = require('dijit/layout/ContentPane');
-            var domConstruct = require('dojo/dom-construct');
-            var on = require('dojo/on');
-            var lang = require('dojo/_base/lang');
-            var topic = require('dojo/topic');
 
             this.titleBarWrapper = new ContentPane({
                 region: 'top',
@@ -431,93 +547,6 @@ define([
             });
             this.titleBarWrapper.addChild(this.titleWidget);
 
-            // Create tabs container on the right side
-            this.tabsContainer = domConstruct.create('div', {
-                class: 'copilot-panel-tabs',
-                style: 'display: flex; gap: 8px; margin-left: auto;'
-            }, this.titleBarWrapper.containerNode);
-
-            this.messagesTabButton = domConstruct.create('button', {
-                type: 'button',
-                innerHTML: 'Messages',
-                class: 'copilot-panel-tab copilot-panel-tab-active'
-            }, this.tabsContainer);
-
-            this.imagesTabButton = domConstruct.create('button', {
-                type: 'button',
-                innerHTML: 'Images',
-                class: 'copilot-panel-tab',
-                style: 'display: none;'
-            }, this.tabsContainer);
-
-            this.gridsTabButton = domConstruct.create('button', {
-                type: 'button',
-                innerHTML: 'Grids',
-                class: 'copilot-panel-tab'
-            }, this.tabsContainer);
-
-            // Set up click handlers for tabs
-            on(this.messagesTabButton, 'click', lang.hitch(this, function() {
-                this._setActiveTab('messages');
-            }));
-
-            on(this.imagesTabButton, 'click', lang.hitch(this, function() {
-                this._setActiveTab('images');
-            }));
-
-            on(this.gridsTabButton, 'click', lang.hitch(this, function() {
-                this._setActiveTab('grids');
-            }));
-
-            this._updateImagesTabVisibility();
-        },
-
-        /**
-         * Sets the active tab and updates the display
-         * @param {string} panel - The panel to activate
-         * @param {string} gridPanel - Optional grid panel key when activating grids tab
-         */
-        _setActiveTab: function(panel, gridPanel) {
-            var domClass = require('dojo/dom-class');
-            var legacyGridPanels = {
-                files: true,
-                workflows: true,
-                workspace: true,
-                jobs: true,
-                data: true
-            };
-
-            if (legacyGridPanels[panel]) {
-                gridPanel = panel;
-                panel = 'grids';
-            }
-            if (gridPanel && legacyGridPanels[gridPanel]) {
-                this._activeGridPanel = gridPanel;
-            }
-            if (panel !== 'messages' && panel !== 'images' && panel !== 'grids') {
-                panel = 'messages';
-            }
-
-            // If images tab is hidden and was selected, fall back to messages
-            if (panel === 'images' && this.imagesTabButton && this.imagesTabButton.style.display === 'none') {
-                panel = 'messages';
-            }
-
-            // Update tab button styles
-            domClass.toggle(this.messagesTabButton, 'copilot-panel-tab-active', panel === 'messages');
-            domClass.toggle(this.imagesTabButton, 'copilot-panel-tab-active', panel === 'images');
-            domClass.toggle(this.gridsTabButton, 'copilot-panel-tab-active', panel === 'grids');
-
-            // Update display widget
-            if (this.displayWidget && this.displayWidget.setActivePanel) {
-                if (panel === 'messages') {
-                    this.displayWidget.setActivePanel('messages');
-                } else if (panel === 'images') {
-                    this.displayWidget.setActivePanel('images');
-                } else {
-                    this.displayWidget.setActivePanel(this._activeGridPanel || 'files');
-                }
-            }
         },
 
         /**
@@ -528,16 +557,12 @@ define([
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
                 splitter: true,
-                style: 'height: 15%; padding: 0 5px 5px 20px; border: 0;overflow: hidden;',
+                style: 'height: 15%; padding: 8px 12px 12px 12px; border: 0; overflow: visible; z-index: 20;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
                 sessionId: this.sessionId,
-                model: this.selectedModel,
-                selectedWorkspaceItems: SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState),
-                selectedJobs: SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState),
-                selectedWorkflows: SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState),
-                onImageAttachmentsChanged: lang.hitch(this, this._handleImageAttachmentsChanged)
+                model: this.selectedModel
             });
             this.addChild(this.inputWidget);
         },
@@ -553,20 +578,8 @@ define([
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 sessionId: this.sessionId,
-                onLoadMoreFiles: lang.hitch(this, this._loadMoreSessionFiles),
-                onFilesSelectionChanged: lang.hitch(this, this._handleFilesSelectionChanged),
-                onWorkflowsSelectionChanged: lang.hitch(this, this._handleWorkflowsSelectionChanged),
-                onWorkspaceSelectionChanged: lang.hitch(this, this._handleWorkspaceSelectionChanged),
-                onJobsSelectionChanged: lang.hitch(this, this._handleJobsSelectionChanged),
-                onImageContextChanged: lang.hitch(this, this._handleImageContextSelectionChanged),
-                onContextClearAll: lang.hitch(this, this._handleContextClearAll),
                 context: 'main-chat'  // Mark this as main chat context
             });
-            this.displayWidget.setSessionImageContextData(this._sessionImageContextState.items);
-            this.displayWidget.setSessionFilesSelectionData(SessionFilesSelectionStore.getSelectedItems(this._sessionFilesSelectionState));
-            this.displayWidget.setSessionWorkflowsSelectionData(SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState));
-            this.displayWidget.setSessionWorkspaceSelectionData(SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState));
-            this.displayWidget.setSessionJobsSelectionData(SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState));
             this.addChild(this.displayWidget);
         },
 
@@ -575,9 +588,55 @@ define([
          * Clears existing chat data when switching sessions
          * @param {string} sessionId New session identifier
          */
+        /**
+         * Re-read the session's messages from Mongo and render them.
+         * Refreshes only the session on screen.  The sidebar poller
+         * publishes RefreshSession when ANY session's background turn ends;
+         * the old guard let it through whenever either id was empty.
+         * @param {boolean} announce - the refresh may append messages the
+         *   user did not ask for (the workflow-watch poll): follow them if
+         *   the user is at the bottom, else show the "New response" pill.
+         */
+        _refreshMessages: function(sessionId, scrollToBottom, announce) {
+            if (!sessionId || !this.sessionId || sessionId !== this.sessionId) { return; }
+            this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
+                // The user may have switched (e.g. New Chat) while this was
+                // in flight; rendering now would show the old session's
+                // messages under the new session id (mshukla, 2026-10-09).
+                if (sessionId !== this.sessionId) { return; }
+                var messages = [];
+                if (Array.isArray(res.messages)) {
+                    if (res.messages.length > 0 && Array.isArray(res.messages[0] && res.messages[0].messages)) {
+                        messages = res.messages[0].messages; // Legacy nested API shape
+                    } else {
+                        messages = res.messages; // Current flat API shape
+                    }
+                }
+                this.chatStore.setData(messages);
+                this.displayWidget.showMessages(messages, scrollToBottom, announce);
+            }));
+        },
+
         changeSessionId: function(sessionId) {
             this.sessionId = sessionId;
             // Do not add the session to the sessions store here; it will be added after the first successful message.
+
+            // Abort any in-flight SSE stream from the *previous* session so its
+            // callbacks cannot inject stale data into the newly-active session.
+            // Skip the abort when re-entering the same session (e.g. path
+            // change, topic re-fire) to avoid killing the live SSE stream
+            // that is still painting the current turn's response.
+            if (this.copilotApi && typeof this.copilotApi.abortActiveStream === 'function') {
+                var previousSessionId = this._previousSessionId || null;
+                if (previousSessionId && previousSessionId !== sessionId) {
+                    console.warn('[ChatSessionContainer] changeSessionId: ABORTING stream (session changed from', previousSessionId, 'to', sessionId, ')');
+                    this.copilotApi.abortActiveStream();
+                } else {
+                    console.log('[ChatSessionContainer] changeSessionId: skipping abort (same session or first call)');
+                }
+            }
+            this._previousSessionId = sessionId;
+
             // Persist the current session ID so it can be restored the next time the chat opens
             try {
                 if (window && window.localStorage) {
@@ -591,29 +650,18 @@ define([
             this.inputWidget.setSessionId(sessionId);
             this.displayWidget.setSessionId(sessionId);
             this.titleWidget.setSessionId(sessionId);
-            this._resetSessionFilesState(sessionId);
-            this._fetchSessionFiles(false);
-            this._resetSessionFilesSelectionState(sessionId);
-            this._resetSessionWorkflowsSelectionState(sessionId);
-            this._resetSessionImageContextState(sessionId);
-            this._resetSessionWorkspaceSelectionState(sessionId);
-            this._resetSessionJobsSelectionState(sessionId);
+            // Attached images belong to the chat they were added in.
             if (this.inputWidget && typeof this.inputWidget.setAttachedImages === 'function') {
-                this.inputWidget.setAttachedImages((this._sessionImageContextState && this._sessionImageContextState.entries) || []);
+                this.inputWidget.setAttachedImages([]);
             }
-            this._syncFilesSelectionsToWidgets();
-            this._syncWorkflowsSelectionsToWidgets();
-            this._syncImageContextToWidgets();
-            this._syncWorkspaceSelectionsToWidgets();
-            this._syncJobsSelectionsToWidgets();
-            // Reset workflows when changing session
-            this.displayWidget.resetSessionWorkflows();
-            this.displayWidget.resetSessionWorkspaceBrowse();
-            this.displayWidget.resetSessionJobsBrowse();
 
             // Removed reloadUserSessions publish: the scroll bar will react to
             // ChatSession:Selected and other dedicated events, so a full reload
             // is unnecessary here.
+
+            // Jobs this chat submitted that are still running: watch them so
+            // their completion message appears without a reload.
+            this._syncWatchPoll(sessionId);
         },
 
         /**
@@ -622,14 +670,6 @@ define([
          */
         getSessionId: function() {
             return this.sessionId;
-        },
-
-        _debugContextEvent: function(label, payload) {
-            try {
-                console.log('[ContextDebug][Container] ' + label, payload || {});
-            } catch (e) {
-                // Debug logging should never affect control flow.
-            }
         },
 
         /**
@@ -679,9 +719,26 @@ define([
         /**
          * Handles opening the report issue dialog
          */
-        _handleOpenReportIssueDialog: function() {
-            var sessionId = this.sessionId;
-            var messages = this.chatStore.query();
+        _handleOpenReportIssueDialog: function(payload) {
+            // The cog menu sends the chat it belongs to; it may not be the
+            // open one, so fetch that chat's messages first.
+            var sessionId = (payload && payload.sessionId) || this.sessionId;
+            if (sessionId !== this.sessionId) {
+                this.copilotApi.getSessionMessages(sessionId).then(lang.hitch(this, function(res) {
+                    var msgs = Array.isArray(res && res.messages) ? res.messages : [];
+                    if (msgs.length > 0 && msgs[0] && Array.isArray(msgs[0].messages)) {
+                        msgs = msgs[0].messages; // legacy nested shape
+                    }
+                    this._openReportIssueDialog(sessionId, msgs);
+                }), function(err) {
+                    console.error('Could not load the chat to report:', err);
+                });
+                return;
+            }
+            this._openReportIssueDialog(sessionId, this.chatStore.query());
+        },
+
+        _openReportIssueDialog: function(sessionId, messages) {
 
             // Helper function to truncate long content
             var truncateContent = function(content, maxLength) {
@@ -752,433 +809,6 @@ define([
             }
         },
 
-        _resetSessionFilesState: function(sessionId) {
-            if (!this._sessionFilesState) {
-                this._sessionFilesState = SessionFilesStore.createInitialState(sessionId, this.sessionFilesPageSize);
-            } else {
-                SessionFilesStore.resetForSession(this._sessionFilesState, sessionId);
-            }
-            this._sessionFilesRequestToken += 1;
-            if (this.displayWidget && this.displayWidget.resetSessionFiles) {
-                this.displayWidget.resetSessionFiles();
-            }
-        },
-
-        _resetSessionWorkspaceSelectionState: function(sessionId) {
-            this._sessionWorkspaceSelectionState = SessionWorkspaceSelectionStore.createInitialState(sessionId);
-        },
-
-        _resetSessionFilesSelectionState: function(sessionId) {
-            this._sessionFilesSelectionState = SessionFilesSelectionStore.createInitialState(sessionId);
-        },
-
-        _syncFilesSelectionsToWidgets: function() {
-            var selectedItems = this._sessionFilesSelectionState ? SessionFilesSelectionStore.getSelectedItems(this._sessionFilesSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionFilesSelectionData) {
-                this.displayWidget.setSessionFilesSelectionData(selectedItems);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'files', items: selectedItems });
-        },
-
-        _resetSessionWorkflowsSelectionState: function(sessionId) {
-            this._sessionWorkflowsSelectionState = SessionWorkflowsSelectionStore.createInitialState(sessionId);
-        },
-
-        _syncWorkflowsSelectionsToWidgets: function() {
-            var selectedItems = this._sessionWorkflowsSelectionState ? SessionWorkflowsSelectionStore.getSelectedItems(this._sessionWorkflowsSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionWorkflowsSelectionData) {
-                this.displayWidget.setSessionWorkflowsSelectionData(selectedItems);
-            }
-            if (this.inputWidget && this.inputWidget.setSelectedWorkflows) {
-                this.inputWidget.setSelectedWorkflows(selectedItems);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'workflows', items: selectedItems });
-        },
-
-        _resetSessionImageContextState: function(sessionId) {
-            this._sessionImageContextState = {
-                sessionId: sessionId || null,
-                entries: [],
-                items: []
-            };
-        },
-
-        _syncImageContextToWidgets: function() {
-            var selectedItems = (this._sessionImageContextState && this._sessionImageContextState.items) || [];
-            if (this.displayWidget && this.displayWidget.setSessionImageContextData) {
-                this.displayWidget.setSessionImageContextData(selectedItems);
-            }
-            this._updateImagesTabVisibility();
-        },
-
-        _syncWorkspaceSelectionsToWidgets: function() {
-            var selectedItems = this._sessionWorkspaceSelectionState ? SessionWorkspaceSelectionStore.getSelectedItems(this._sessionWorkspaceSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionWorkspaceSelectionData) {
-                this.displayWidget.setSessionWorkspaceSelectionData(selectedItems);
-            }
-            if (this.inputWidget && this.inputWidget.setSelectedWorkspaceItems) {
-                this.inputWidget.setSelectedWorkspaceItems(selectedItems);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'workspace', items: selectedItems });
-        },
-
-        _resetSessionJobsSelectionState: function(sessionId) {
-            this._sessionJobsSelectionState = SessionJobsSelectionStore.createInitialState(sessionId);
-        },
-
-        _syncJobsSelectionsToWidgets: function() {
-            var selectedJobs = this._sessionJobsSelectionState ? SessionJobsSelectionStore.getSelectedItems(this._sessionJobsSelectionState) : [];
-            if (this.displayWidget && this.displayWidget.setSessionJobsSelectionData) {
-                this.displayWidget.setSessionJobsSelectionData(selectedJobs);
-            }
-            if (this.inputWidget && this.inputWidget.setSelectedJobs) {
-                this.inputWidget.setSelectedJobs(selectedJobs);
-            }
-            topic.publish('CopilotSelectionChanged', { category: 'jobs', items: selectedJobs });
-        },
-
-        _workspaceSelectionSignature: function(items) {
-            var nextItems = Array.isArray(items) ? items : [];
-            var keys = [];
-            var seen = {};
-            nextItems.forEach(function(item) {
-                var normalized = SessionWorkspaceSelectionStore.normalizeItem(item);
-                if (!normalized) {
-                    return;
-                }
-                var key = String(normalized.id) + '|' + String(normalized.path) + '|' + String(normalized.type || '') + '|' + String(normalized.name || '');
-                if (!seen[key]) {
-                    seen[key] = true;
-                    keys.push(key);
-                }
-            });
-            keys.sort();
-            return keys.join('||');
-        },
-
-        _handleWorkspaceSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionWorkspaceSelectionState) {
-                return;
-            }
-            var incomingItems = payload && payload.items ? payload.items : [];
-            var nextSignature = this._workspaceSelectionSignature(incomingItems);
-            var currentSignature = this._workspaceSelectionSignature(this._sessionWorkspaceSelectionState.items || []);
-            if (nextSignature === currentSignature) {
-                this._debugContextEvent('workspace selection unchanged - skip sync', {
-                    count: Array.isArray(incomingItems) ? incomingItems.length : 0
-                });
-                return;
-            }
-            this._debugContextEvent('workspace selection changed', {
-                count: Array.isArray(incomingItems) ? incomingItems.length : 0
-            });
-            SessionWorkspaceSelectionStore.setItems(this._sessionWorkspaceSelectionState, incomingItems);
-            this._syncWorkspaceSelectionsToWidgets();
-        },
-
-        _handleJobsSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionJobsSelectionState) {
-                return;
-            }
-            this._debugContextEvent('jobs selection changed', {
-                count: payload && payload.items ? payload.items.length : 0
-            });
-            SessionJobsSelectionStore.setItems(this._sessionJobsSelectionState, payload && payload.items ? payload.items : []);
-            this._syncJobsSelectionsToWidgets();
-        },
-
-        _handleFilesSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionFilesSelectionState) {
-                return;
-            }
-            this._debugContextEvent('files selection changed', {
-                count: payload && payload.items ? payload.items.length : 0
-            });
-            SessionFilesSelectionStore.setItems(this._sessionFilesSelectionState, payload && payload.items ? payload.items : []);
-            this._syncFilesSelectionsToWidgets();
-        },
-
-        _handleWorkflowsSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionWorkflowsSelectionState) {
-                return;
-            }
-            this._debugContextEvent('workflows selection changed', {
-                count: payload && payload.items ? payload.items.length : 0
-            });
-            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, payload && payload.items ? payload.items : []);
-            this._syncWorkflowsSelectionsToWidgets();
-        },
-
-        _handleContextClearAll: function() {
-            this._debugContextEvent('clear all requested', {
-                files: (this._sessionFilesSelectionState && this._sessionFilesSelectionState.items ? this._sessionFilesSelectionState.items.length : 0),
-                workflows: (this._sessionWorkflowsSelectionState && this._sessionWorkflowsSelectionState.items ? this._sessionWorkflowsSelectionState.items.length : 0),
-                workspace: (this._sessionWorkspaceSelectionState && this._sessionWorkspaceSelectionState.items ? this._sessionWorkspaceSelectionState.items.length : 0),
-                jobs: (this._sessionJobsSelectionState && this._sessionJobsSelectionState.items ? this._sessionJobsSelectionState.items.length : 0),
-                images: (this._sessionImageContextState && this._sessionImageContextState.items ? this._sessionImageContextState.items.length : 0)
-            });
-            this._handleFilesSelectionChanged({ items: [] });
-            this._handleWorkflowsSelectionChanged({ items: [] });
-            this._handleWorkspaceSelectionChanged({ items: [] });
-            this._handleJobsSelectionChanged({ items: [] });
-            this._handleImageAttachmentsChanged({ entries: [], items: [] });
-            if (this.inputWidget && typeof this.inputWidget.setAttachedImages === 'function') {
-                this.inputWidget.setAttachedImages([]);
-            }
-        },
-
-        _handleImageAttachmentsChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionImageContextState) {
-                return;
-            }
-            var entries = payload && Array.isArray(payload.entries) ? payload.entries.slice() : [];
-            var items = payload && Array.isArray(payload.items) ? payload.items.slice() : [];
-            this._debugContextEvent('image attachments changed', {
-                entryCount: entries.length,
-                itemCount: items.length
-            });
-            this._sessionImageContextState.entries = entries;
-            this._sessionImageContextState.items = items;
-            this._syncImageContextToWidgets();
-        },
-        _applySessionWorkflowContext: function(data) {
-            var workflowItems = [];
-            if (data && data.workflow_grid && Array.isArray(data.workflow_grid.items)) {
-                workflowItems = data.workflow_grid.items;
-            } else if (data && Array.isArray(data.workflow_ids)) {
-                workflowItems = data.workflow_ids;
-            }
-
-            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, workflowItems);
-            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
-                this.displayWidget.setSessionWorkflows(workflowItems);
-            }
-            this._syncWorkflowsSelectionsToWidgets();
-        },
-
-        _handleImageContextSelectionChanged: function(payload) {
-            var sessionId = this.sessionId;
-            if (!sessionId || !this._sessionImageContextState) {
-                return;
-            }
-            var nextItems = payload && Array.isArray(payload.items) ? payload.items : [];
-            this._debugContextEvent('image context selection changed', {
-                nextCount: nextItems.length
-            });
-            var allowed = {};
-            nextItems.forEach(function(item) {
-                if (item && item.id !== undefined && item.id !== null) {
-                    allowed[String(item.id)] = true;
-                }
-            });
-            var nextEntries = (this._sessionImageContextState.entries || []).filter(function(entry) {
-                var id = entry && entry.id !== undefined && entry.id !== null ? String(entry.id) : '';
-                return !!allowed[id];
-            });
-            this._handleImageAttachmentsChanged({
-                entries: nextEntries,
-                items: nextItems
-            });
-            if (this.inputWidget && typeof this.inputWidget.setAttachedImages === 'function') {
-                this.inputWidget.setAttachedImages(nextEntries);
-            }
-        },
-
-        _updateImagesTabVisibility: function() {
-            if (!this.imagesTabButton) {
-                return;
-            }
-            var imageCount = (this._sessionImageContextState && this._sessionImageContextState.entries && this._sessionImageContextState.entries.length) || 0;
-            var shouldShow = imageCount > 0;
-            this.imagesTabButton.style.display = shouldShow ? '' : 'none';
-            if (shouldShow) {
-                this.imagesTabButton.innerHTML = 'Images (' + imageCount + ')';
-            }
-            // If images tab was active but images were cleared, fall back to messages
-            if (!shouldShow && this.imagesTabButton.classList.contains('copilot-panel-tab-active')) {
-                this._setActiveTab('messages');
-            }
-        },
-
-        _syncFilesToDisplay: function() {
-            if (!this.displayWidget) return;
-            this.displayWidget.setSessionFilesLoading(Boolean(this._sessionFilesState.loading));
-            this.displayWidget.setSessionFilesData(
-                this._sessionFilesState.files,
-                this._sessionFilesState.pagination,
-                this._sessionFilesState.summary
-            );
-            if (this._sessionFilesState.error) {
-                this.displayWidget.setSessionFilesError(this._sessionFilesState.error);
-            }
-        },
-
-        _fetchSessionFiles: function(append) {
-            if (!this.sessionId || !this.copilotApi || !this.copilotApi.getSessionFiles) return;
-            var targetSessionId = this.sessionId;
-            var requestToken = this._sessionFilesRequestToken;
-            var offset = append ? SessionFilesStore.getNextOffset(this._sessionFilesState) : 0;
-
-            SessionFilesStore.setError(this._sessionFilesState, null);
-            SessionFilesStore.setLoading(this._sessionFilesState, true);
-            this._syncFilesToDisplay();
-
-            this.copilotApi.getSessionFiles(targetSessionId, this.sessionFilesPageSize, offset)
-                .then(lang.hitch(this, function(response) {
-                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
-                        return;
-                    }
-                    SessionFilesStore.applyFetchResponse(this._sessionFilesState, response, append);
-                    this._syncFilesToDisplay();
-                }))
-                .catch(lang.hitch(this, function(error) {
-                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
-                        return;
-                    }
-                    SessionFilesStore.setError(this._sessionFilesState, error);
-                    this._syncFilesToDisplay();
-                }))
-                .finally(lang.hitch(this, function() {
-                    if (requestToken !== this._sessionFilesRequestToken || targetSessionId !== this.sessionId) {
-                        return;
-                    }
-                    SessionFilesStore.setLoading(this._sessionFilesState, false);
-                    this._syncFilesToDisplay();
-                }));
-        },
-
-        _loadMoreSessionFiles: function() {
-            if (!this._sessionFilesState || this._sessionFilesState.loading) return;
-            if (!this._sessionFilesState.pagination || !this._sessionFilesState.pagination.has_more) return;
-            this._fetchSessionFiles(true);
-        },
-
-        _handleSessionFileCreated: function(eventPayload) {
-            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
-                return;
-            }
-
-            // Check if the SSE event has complete metadata
-            var hasCompleteMetadata = eventPayload.file &&
-                                     eventPayload.file.created_at &&
-                                     (typeof eventPayload.file.size_bytes === 'number' || eventPayload.file.size_formatted);
-
-            if (hasCompleteMetadata) {
-                // Use the SSE event data directly if it has metadata
-                SessionFilesStore.insertRealtimeFile(this._sessionFilesState, eventPayload);
-                this._syncFilesToDisplay();
-            } else {
-                // SSE event is missing metadata, refresh from API to get complete data
-                this._fetchSessionFiles(false);
-            }
-        },
-
-        _handleSessionWorkflowCreated: function(eventPayload) {
-            if (!eventPayload || eventPayload.session_id !== this.sessionId) {
-                return;
-            }
-
-            var workflowItem = eventPayload.workflow || null;
-            if (!workflowItem) {
-                return;
-            }
-
-            // Merge with current workflow context so newly submitted workflows appear immediately.
-            var currentItems = this._sessionWorkflowsSelectionState && Array.isArray(this._sessionWorkflowsSelectionState.items)
-                ? this._sessionWorkflowsSelectionState.items
-                : [];
-            var nextItems = currentItems.concat([workflowItem]);
-            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
-
-            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
-                this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
-            }
-            this._syncWorkflowsSelectionsToWidgets();
-        },
-
-        _handleWorkflowCardStatusUpdated: function(eventPayload) {
-            if (!eventPayload) {
-                return;
-            }
-            if (eventPayload.session_id && eventPayload.session_id !== this.sessionId) {
-                return;
-            }
-
-            var updatedWorkflow = eventPayload.workflow || null;
-            if (!updatedWorkflow) {
-                return;
-            }
-
-            var workflowId = updatedWorkflow.workflow_id ||
-                (updatedWorkflow.execution_metadata && updatedWorkflow.execution_metadata.workflow_id) ||
-                null;
-            if (!workflowId) {
-                return;
-            }
-            workflowId = String(workflowId);
-
-            // Keep message card data in sync so re-renders show latest status.
-            var messageId = eventPayload.message_id || null;
-            if (messageId) {
-                var message = this.chatStore.getMessageById(messageId);
-                if (message) {
-                    message.workflowData = updatedWorkflow;
-                    this.chatStore.updateMessage(message);
-                    if (this.displayWidget && this.displayWidget.showMessages) {
-                        this.displayWidget.showMessages(this.chatStore.query(), false);
-                    }
-                }
-            }
-
-            // Keep Workflows tab row in sync with the updated status.
-            var currentItems = this._sessionWorkflowsSelectionState && Array.isArray(this._sessionWorkflowsSelectionState.items)
-                ? this._sessionWorkflowsSelectionState.items
-                : [];
-            var nextItems = [];
-            var replaced = false;
-
-            for (var i = 0; i < currentItems.length; i++) {
-                var item = currentItems[i] || {};
-                var itemId = item.workflow_id ? String(item.workflow_id) : null;
-                if (itemId === workflowId) {
-                    nextItems.push(lang.mixin({}, item, {
-                        workflow_id: workflowId,
-                        id: workflowId,
-                        workflow_name: updatedWorkflow.workflow_name || item.workflow_name || 'Workflow',
-                        status: (updatedWorkflow.execution_metadata && updatedWorkflow.execution_metadata.status) || updatedWorkflow.status || item.status || null,
-                        submitted_at: updatedWorkflow.submitted_at || item.submitted_at || null,
-                        completed_at: updatedWorkflow.completed_at || item.completed_at || null
-                    }));
-                    replaced = true;
-                } else {
-                    nextItems.push(item);
-                }
-            }
-
-            if (!replaced) {
-                nextItems.push({
-                    id: workflowId,
-                    workflow_id: workflowId,
-                    workflow_name: updatedWorkflow.workflow_name || 'Workflow',
-                    status: (updatedWorkflow.execution_metadata && updatedWorkflow.execution_metadata.status) || updatedWorkflow.status || null,
-                    submitted_at: updatedWorkflow.submitted_at || null,
-                    completed_at: updatedWorkflow.completed_at || null,
-                    selected: true
-                });
-            }
-
-            SessionWorkflowsSelectionStore.setItems(this._sessionWorkflowsSelectionState, nextItems);
-            if (this.displayWidget && this.displayWidget.setSessionWorkflows) {
-                this.displayWidget.setSessionWorkflows(this._sessionWorkflowsSelectionState.items);
-            }
-            this._syncWorkflowsSelectionsToWidgets();
-        },
-
         /**
          * Gets the current path state
          */
@@ -1240,10 +870,254 @@ define([
         },
 
         /**
+         * Activate or deactivate this container's topic subscriptions.
+         * When deactivated, all global topic handlers become no-ops,
+         * preventing a hidden floating-window container from reacting
+         * to events intended for the full-page viewer (and vice-versa).
+         * @param {boolean} active
+         */
+        setActive: function(active) {
+            this._active = !!active;
+            if (this._active) {
+                this._syncWatchPoll(this.sessionId);
+            } else {
+                this._stopWatchPoll();
+            }
+        },
+
+        /**
+         * Job-completed messages without a reload (testing session #9).
+         *
+         * The gateway's workflow monitor (every 60 s) marks a finished job's
+         * watch and writes the completion message to the chat in Mongo; its
+         * SSE push reaches a browser only while a chat turn is streaming
+         * (4 of 220 completion messages up to 2026-10-20).  So while the chat
+         * on screen has an active watch, this asks every 30 s; when one
+         * finishes it re-reads the chat's messages (a few seconds later, after
+         * the monitor has written the message; after the turn if one is
+         * streaming, so the live reply is not replaced).  It stops when no
+         * watch is active, when the chat changes, or when this container is
+         * inactive (the hidden floating window).
+         * @private
+         */
+        _watchPollMs: 30000,
+
+        _syncWatchPoll: function(sessionId) {
+            if (!this._active || !sessionId || sessionId !== this.sessionId
+                || !this.copilotApi || typeof this.copilotApi.getSessionWorkflowWatches !== 'function') {
+                this._stopWatchPoll();
+                return;
+            }
+            this.copilotApi.getSessionWorkflowWatches(sessionId).then(lang.hitch(this, function(res) {
+                if (!this._active || sessionId !== this.sessionId) { return; }
+                var active = {};
+                ((res && res.watches) || []).forEach(function(w) {
+                    if (w && w.status === 'active' && w.submission_id) { active[w.submission_id] = true; }
+                });
+                var previous = (this._watchPollSessionId === sessionId && this._watchActive) || {};
+                var finished = Object.keys(previous).some(function(id) { return !active[id]; });
+                this._watchPollSessionId = sessionId;
+                this._watchActive = active;
+                if (finished) {
+                    setTimeout(lang.hitch(this, function() {
+                        if (!this._active || sessionId !== this.sessionId) { return; }
+                        if (this.inputWidget && this.inputWidget.isSubmitting) {
+                            this._watchRefreshPending = true;
+                        } else {
+                            this._refreshMessages(sessionId, false, true);
+                        }
+                    }), 3000);
+                }
+                if (Object.keys(active).length === 0) {
+                    this._stopWatchPoll();
+                } else if (!this._watchPollInterval) {
+                    this._watchPollInterval = setInterval(lang.hitch(this, function() {
+                        this._syncWatchPoll(this._watchPollSessionId);
+                    }), this._watchPollMs);
+                }
+            }), function(err) {
+                // A failed check is retried by the next tick.
+                console.warn('[ChatSessionContainer] workflow watch check failed', err);
+            });
+        },
+
+        _stopWatchPoll: function() {
+            if (this._watchPollInterval) {
+                clearInterval(this._watchPollInterval);
+                this._watchPollInterval = null;
+            }
+            this._watchActive = null;
+            this._watchPollSessionId = null;
+        },
+
+        /**
+         * Lightweight Mongo fallback poll that runs alongside the live
+         * SSE stream.  Does NOT change any UI state (no disabling
+         * buttons, no showing/hiding the loading indicator) — the SSE
+         * stream's callbacks handle all of that.
+         *
+         * If SSE works normally, onEnd fires, TurnEnded publishes, and
+         * _stopFallbackPoll cleans this up as a no-op.  If SSE is
+         * buffered/dead, this poll detects active_job_id clearing and
+         * refreshes messages from Mongo so the answer appears without
+         * a manual reload.
+         *
+         * @param {string} sessionId
+         */
+        _startFallbackPoll: function(sessionId) {
+            this._stopFallbackPoll();
+
+            var _self = this;
+            var pollCount = 0;
+            var MAX_POLLS = 120; // 120 * 3s = 6 minutes max
+            // Delay first poll to give SSE time to connect and deliver
+            // the initial events.  If SSE works, TurnEnded will cancel
+            // this poll before it even fires.
+            var INITIAL_DELAY = 6000; // 6 seconds
+
+            // Null-race guard: setSessionActiveJob (chatRunner.js:187) races the
+            // first poll. Trust a null active_job_id only after we've seen it
+            // non-null once, or after ~14s total elapsed (initial + 8s window).
+            var startedAt = Date.now();
+            var sawActiveJobId = false;
+            var MIN_ELAPSED_BEFORE_TRUSTING_NULL_MS = INITIAL_DELAY + 8000;
+
+            this._fallbackPollTimeout = setTimeout(function() {
+                _self._fallbackPollTimeout = null;
+                _self._fallbackPollInterval = setInterval(function() {
+                    pollCount++;
+                    if (!_self._active || _self.sessionId !== sessionId || pollCount > MAX_POLLS) {
+                        _self._stopFallbackPoll();
+                        return;
+                    }
+
+                    _self.copilotApi.getSessionMessages(sessionId).then(function(res) {
+                        if (_self.sessionId !== sessionId) return;
+                        if (res && res.active_job_id) {
+                            sawActiveJobId = true;
+                            return;
+                        }
+                        // active_job_id is null — apply the guard before
+                        // treating it as "done".
+                        var elapsed = Date.now() - startedAt;
+                        if (!sawActiveJobId && elapsed < MIN_ELAPSED_BEFORE_TRUSTING_NULL_MS) {
+                            return;
+                        }
+                        // Turn finished but SSE did not deliver — refresh
+                        _self._stopFallbackPoll();
+                        _self.displayWidget.hideLoadingIndicator();
+                        // Re-enable input in case SSE onEnd never fired
+                        if (_self.inputWidget) {
+                            _self.inputWidget.isSubmitting = false;
+                            _self.inputWidget.submitButton.set('disabled', false);
+                            _self.inputWidget._updateStopButtonState();
+                        }
+                        topic.publish('RefreshSession', sessionId);
+                        topic.publish('ChatSession:TurnEnded', { sessionId: sessionId });
+                    }).catch(function() {
+                        // Ignore — retry next interval
+                    });
+                }, 3000);
+            }, INITIAL_DELAY);
+        },
+
+        /**
+         * Stops the fallback Mongo poll if one is running.
+         */
+        _stopFallbackPoll: function() {
+            if (this._fallbackPollTimeout) {
+                clearTimeout(this._fallbackPollTimeout);
+                this._fallbackPollTimeout = null;
+            }
+            if (this._fallbackPollInterval) {
+                clearInterval(this._fallbackPollInterval);
+                this._fallbackPollInterval = null;
+            }
+        },
+
+        /**
+         * Poll getSessionMessages until active_job_id clears, then
+         * refresh the chat display from Mongo.  Called when the user
+         * returns to a session that has an in-flight turn.
+         *
+         * Does NOT open a second SSE — tokens from the original tab
+         * are not replayed.  The user simply sees the final messages.
+         *
+         * @param {string} sessionId
+         */
+        _pollUntilTurnComplete: function(sessionId) {
+            // Show loading indicator so the user knows something is happening
+            this.displayWidget.showLoadingIndicator('Waiting for response...');
+
+            // Disable input while a background turn is in flight to prevent
+            // overlapping submissions on the same session.
+            if (this.inputWidget) {
+                this.inputWidget.isSubmitting = true;
+                this.inputWidget.submitButton.set('disabled', true);
+                this.inputWidget._updateStopButtonState();
+            }
+
+            // Clear any previous poll for a different session
+            if (this._busyPollInterval) {
+                clearInterval(this._busyPollInterval);
+                this._busyPollInterval = null;
+            }
+
+            var _self = this;
+            var pollCount = 0;
+            var MAX_POLLS = 120; // 120 * 3s = 6 minutes max
+
+            this._busyPollInterval = setInterval(function() {
+                pollCount++;
+                // Stop if we switched sessions, are inactive, or exceeded max
+                if (!_self._active || _self.sessionId !== sessionId || pollCount > MAX_POLLS) {
+                    clearInterval(_self._busyPollInterval);
+                    _self._busyPollInterval = null;
+                    if (pollCount > MAX_POLLS) {
+                        _self.displayWidget.hideLoadingIndicator();
+                    }
+                    // Re-enable input
+                    if (_self.inputWidget) {
+                        _self.inputWidget.isSubmitting = false;
+                        _self.inputWidget.submitButton.set('disabled', false);
+                        _self.inputWidget._updateStopButtonState();
+                    }
+                    return;
+                }
+
+                _self.copilotApi.getSessionMessages(sessionId).then(function(res) {
+                    if (_self.sessionId !== sessionId) return; // session changed
+                    if (!res.active_job_id) {
+                        // Turn finished — refresh display
+                        clearInterval(_self._busyPollInterval);
+                        _self._busyPollInterval = null;
+                        _self.displayWidget.hideLoadingIndicator();
+                        // Re-enable input
+                        if (_self.inputWidget) {
+                            _self.inputWidget.isSubmitting = false;
+                            _self.inputWidget.submitButton.set('disabled', false);
+                            _self.inputWidget._updateStopButtonState();
+                        }
+                        topic.publish('RefreshSession', sessionId);
+                        topic.publish('ChatSession:TurnEnded', { sessionId: sessionId });
+                    }
+                }).catch(function() {
+                    // Ignore poll errors — will retry next interval
+                });
+            }, 3000);
+        },
+
+        /**
          * Cleanup when widget is destroyed
          */
         destroy: function() {
             this._stopPathMonitoring();
+            this._stopFallbackPoll();
+            this._stopWatchPoll();
+            if (this._busyPollInterval) {
+                clearInterval(this._busyPollInterval);
+                this._busyPollInterval = null;
+            }
             this.inherited(arguments);
         }
     });

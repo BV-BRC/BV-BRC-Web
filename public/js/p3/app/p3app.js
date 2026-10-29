@@ -63,49 +63,18 @@ define([
           }).placeAt(document.body);
           this.chatButton = chatButton;
 
-          // Create blue rectangle button for showing chat button when hidden
-          var showChatRectButton = domConstruct.create('div', {
-            className: 'ShowChatRectButton',
-            innerHTML: '<span class="show-chat-plus">+</span>',
-            title: 'show copilot button',
-            style: {
-              display: 'none'
-            }
-          });
-          domConstruct.place(showChatRectButton, document.body);
 
-          // Function to get chat button visibility from localStorage
-          function getChatButtonVisibility() {
-            try {
-              if (window && window.localStorage) {
-                var stored = localStorage.getItem('copilot-chat-button-visible');
-                return stored !== null ? (stored === 'true') : true; // default to visible
-              }
-            } catch (e) {
-              console.warn('Unable to read chat button visibility from localStorage', e);
-            }
-            return true; // default to visible
-          }
-
-          // Initialize showChatRectButton visibility based on localStorage
-          var initialChatButtonVisible = getChatButtonVisibility();
-          if (!initialChatButtonVisible) {
-            domStyle.set(showChatRectButton, 'display', 'block');
-          }
-
-          // Add click handler for the rectangle button
-          on(showChatRectButton, 'click', function(evt) {
-            Topic.publish('showChatButton', true);
-          });
-
-          Topic.subscribe('hideChatButton', lang.hitch(this, function(checked) {
-            domStyle.set(showChatRectButton, 'display', 'block');
-          }));
-
-          Topic.subscribe('showChatButton', lang.hitch(this, function(checked) {
-            domStyle.set(showChatRectButton, 'display', 'none');
-          }));
         })
+      } else {
+        // Logged out: the button is shown too; a click asks the visitor to
+        // log in (ChatButton.onClick) instead of opening the chat.
+        this.chatButton = new ChatButton({
+          region: 'center',
+          width: '60px',
+          height: '60px',
+          backgroundColor: '#007bff',
+          borderRadius: '50%'
+        }).placeAt(document.body);
       }
 
       on(document, 'keydown', function (evt) {
@@ -692,7 +661,6 @@ define([
           }, false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
-          window.App.chatButtonWidget('show');
           window.App.checkSU();
           window.App.alreadyLoggedIn = true;
         } else {
@@ -872,21 +840,6 @@ define([
         }
       } else {
         console.log('I should not see the upload and jobs widget');
-      }
-    },
-    chatButtonWidget: function (action) {
-      if (action === 'show') {
-        var chatButton = new ChatButton({
-          region: 'center',
-          width: '60px',
-          height: '60px',
-          backgroundColor: '#007bff',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-        });
-      } else {
-        console.log('I should not see the chat button');
       }
     },
     _showQueryLogIndicator: function () {
