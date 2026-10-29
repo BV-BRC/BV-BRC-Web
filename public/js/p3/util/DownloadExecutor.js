@@ -39,10 +39,6 @@ define([
     ? window.App.dataServiceURL
     : '/api/data';
 
-  var BUNDLER_API_URL = window.App && window.App.dataServiceURL
-    ? window.App.dataServiceURL.replace('/data', '/bundle')
-    : '/api/bundle';
-
   // Maximum records for client-side download
   var CLIENT_SIDE_LIMIT = 25000;
 
@@ -432,100 +428,6 @@ define([
   }
 
   /**
-   * Execute genome bundle download
-   * @param {Object} spec - Download specification
-   * @returns {Deferred} Promise that resolves when bundle is requested
-   */
-  function executeBundleDownload(spec) {
-    var deferred = new Deferred();
-
-    if (!spec.bundleConfig) {
-      deferred.reject(new Error('Bundle configuration required'));
-      return deferred;
-    }
-
-    var query = buildQuery(spec);
-
-    // Build bundle request
-    var bundleRequest = {
-      dataType: spec.dataType,
-      query: query,
-      types: spec.bundleConfig.fileTypes || [],
-      archiveType: spec.bundleConfig.archiveType || 'zip'
-    };
-
-    // Add annotation type if specified
-    if (spec.bundleConfig.annotationType) {
-      bundleRequest.annotationType = spec.bundleConfig.annotationType;
-    }
-
-    // Build request headers
-    var requestHeaders = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    };
-
-    if (window.App && window.App.authorizationToken) {
-      requestHeaders['Authorization'] = window.App.authorizationToken;
-    }
-
-    topic.publish('/Download/started', {
-      type: 'bundle',
-      spec: spec
-    });
-
-    xhr.post(BUNDLER_API_URL + '/genome/', {
-      data: JSON.stringify(bundleRequest),
-      headers: requestHeaders,
-      handleAs: 'json',
-      timeout: 60000 // 1 minute timeout for job submission
-    }).then(function (response) {
-      // Bundle service returns a job ID or direct download link
-      if (response.downloadUrl) {
-        // Direct download available
-        window.location.href = response.downloadUrl;
-
-        topic.publish('/Download/completed', {
-          type: 'bundle',
-          spec: spec,
-          downloadUrl: response.downloadUrl
-        });
-
-        deferred.resolve({
-          success: true,
-          method: 'bundle-direct',
-          downloadUrl: response.downloadUrl
-        });
-      } else if (response.jobId) {
-        // Async job submitted
-        topic.publish('/Download/jobSubmitted', {
-          type: 'bundle',
-          spec: spec,
-          jobId: response.jobId
-        });
-
-        deferred.resolve({
-          success: true,
-          method: 'bundle-async',
-          jobId: response.jobId,
-          message: 'Bundle job submitted. You will be notified when ready.'
-        });
-      } else {
-        deferred.reject(new Error('Invalid bundle service response'));
-      }
-    }, function (err) {
-      topic.publish('/Download/error', {
-        type: 'bundle',
-        spec: spec,
-        error: err
-      });
-      deferred.reject(err);
-    });
-
-    return deferred;
-  }
-
-  /**
    * Execute chunked download for large datasets
    * @param {Object} spec - Download specification
    * @param {Function} progressCallback - Progress callback
@@ -753,7 +655,6 @@ define([
      *   - totalCount: Total record count
      *   - filename: Optional filename override
      *   - fastaConfig: FASTA configuration { defLineFields, delimiter }
-     *   - bundleConfig: Bundle configuration { fileTypes, annotationType, archiveType }
      * @param {Object} options - Execution options
      *   - forceServerSide: Always use server-side
      *   - forceClientSide: Always use client-side
@@ -771,13 +672,8 @@ define([
       }
 
       // Determine download strategy
-      var isBundle = format.category === 'package' || spec.bundleConfig;
       var isLargeDataset = spec.totalCount && spec.totalCount > CLIENT_SIDE_LIMIT;
       var preferServerSide = format.serverSide !== false;
-
-      if (isBundle) {
-        return executeBundleDownload(spec);
-      }
 
       if (options.forceClientSide) {
         if (isLargeDataset) {
