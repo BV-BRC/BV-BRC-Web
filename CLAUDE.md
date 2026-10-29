@@ -610,6 +610,46 @@ Configured in `p3-web.conf`:
 - Homology Service: BLAST searches
 - Compare Regions: Genome comparison
 
+### User service `/verify/` endpoint (resend verification email)
+
+The only caller of the user-service `/verify/` API is `UserProfileForm.js`
+(`onResendEmail`) — the "resend verification email" button shown when a logged-in
+user's account email is unverified. It's an authenticated, self-service action:
+`POST <userServiceURL>/verify/` with `Authorization: <App.authorizationToken>` and
+a JSON body of **just the bare user id**: `{ id: window.localStorage.userid }` (the
+username like `olson`, NOT the full `olson@patricbrc.org`). It asks the backend to
+(re)send the verification email; it does not verify a token client-side.
+
+**curl pitfalls (both required, or you get `406 "Missing User ID"`):**
+- Must send `Content-Type: application/json`. `curl -d` defaults to
+  `application/x-www-form-urlencoded`, so the server's JSON parser never populates
+  `id` → 406. (The browser works because it sets the JSON content-type explicitly.)
+- Body must be valid JSON with a quoted key: `-d '{"id":"olson"}'` (not `{id:...}`).
+
+Do NOT confuse this with the Express routes `/verify_refresh` and `/verify_failure`
+(`app.js`, `routes/index.js`, `p3app.js`) — those are web-app landing pages for the
+email round-trip, not the user-service API.
+
+### Email routes (nodemailer + express-formidable)
+
+`routes/reportProblem.js` and `routes/notifySubmitSequence.js` send mail via
+`nodemailer` (`createTransport(opts)` + callback `sendMail(msg, cb)`) and parse
+multipart form posts via **`express-formidable`** (`formidable()` middleware →
+`req.fields` / `req.files`). `formidable` is **never imported directly** — it is a
+transitive of `express-formidable@1.2.0`. The root-level `formidable` dep in
+`package.json` exists only to control which version the (unmaintained) wrapper
+resolves; don't try to "use formidable directly."
+
+**Pitfall — formidable v2 renamed the parsed-file properties.** The wrapper resolves
+the top-level `formidable` (v2.x), where `file.name`→`file.originalFilename` and
+`file.path`→`file.filepath`. Code written against v1 (`f.name`/`f.path`) silently
+gets `undefined` on v2 — this had broken problem-report email attachments
+(`fs.createReadStream(undefined)`), fixed to read `f.originalFilename || f.name` and
+`f.filepath || f.path`. If `express-formidable` is ever bumped to pull formidable
+**v3**, note v3 is ESM (`"type": "module"`) and turns every `req.fields`/`req.files`
+value into an **array** (`fields.foo` → `["bar"]`) — a breaking change for both
+routes. See [[feedback_prod_node22_esm]] for the related CJS/ESM prod-Node-22 trap.
+
 ## Dijit Form Validation Patterns
 
 When working with dijit form validation, be aware of these key behaviors:
