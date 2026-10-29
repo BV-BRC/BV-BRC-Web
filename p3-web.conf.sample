@@ -1,11 +1,12 @@
 {
-  'appLabel': '',
-  'production': true,
-  'accountURL': '',
-  'authorizationURL': '',
-  'dataServiceURL': '/api',
-  'gaID': '',
-  'newrelic_license_key': '',
-  'enableDevTools': false,
-  'cartoBasemapApiKey': ''
+  "appLabel": "",
+  "production": true,
+  "accountURL": "",
+  "authorizationURL": "",
+  "dataServiceURL": "/api",
+  "gaID": "",
+  "newrelic_license_key": "",
+  "enableDevTools": false,
+  "cartoBasemapApiKey": "",
+  "enableThrottleRetry": false
 }

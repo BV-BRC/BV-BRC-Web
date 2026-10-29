@@ -5,7 +5,7 @@ define([
   './mapsInfoWindows/LocationInfoWindowShortList', './mapsInfoWindows/LocationInfoWindowSummary',
   'dojo/json', 'dojo/text!/public/js/p3/resources/surveillancemap/flyaways.json', 'dijit/form/CheckBox', 'dijit/ColorPalette',
   '../util/PathJoin', 'dojo/request', 'dojo/_base/lang',
-  '../util/LeafletSupport'
+  '../util/LeafletSupport', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, on, _WidgetsInTemplateMixin,
   dom, Templated, domConstruct, domStyle, mouse,
@@ -13,8 +13,8 @@ define([
   LocationInfoWindowShortList, LocationInfoWindowSummary,
   JSON, flyawaysData, CheckBox, ColorPalette,
   PathJoin, xhr, lang,
-  LeafletSupport
-) {
+  LeafletSupport,
+  authHeader) {
 
   return declare([WidgetBase, Templated, _WidgetsInTemplateMixin], {
     baseClass: 'MapsCanvas',
@@ -150,7 +150,7 @@ define([
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',

@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/on', './SubsystemServiceMemoryGrid', './SubSystemsMemoryGridContainer', 'dojo/topic',
   'dojo/_base/lang', 'dojo/when', 'dojo/request', 'dijit/TooltipDialog', 'dijit/popup', 'FileSaver', '../util/PathJoin',
   './ComparativeSystemsActionBar', './AdvancedSearchFields', './GridContainer', 'dojo/dom-construct', './PerspectiveToolTip',
-  './SelectionToGroup', 'dijit/Dialog', './DownloadTooltipDialog'
+  './SelectionToGroup', 'dijit/Dialog', './DownloadTooltipDialog', '../auth/authHeaders'
 ], function (
   declare, on, SubSystemsGrid, oldGridContainer, Topic, lang, when, request, TooltipDialog,
   popup, saveAs, PathJoin, ContainerActionBar, AdvancedSearchFields, GridContainer, domConstruct, PerspectiveToolTipDialog,
-  SelectionToGroup, Dialog, DownloadTooltipDialog
-) {
+  SelectionToGroup, Dialog, DownloadTooltipDialog,
+  authHeader) {
 
   var downloadSelectionTT = new DownloadTooltipDialog({});
   downloadSelectionTT.startup();
@@ -312,7 +312,7 @@ define([
                   Accept: 'application/solr+json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }), function (response) {
@@ -389,7 +389,7 @@ define([
                   Accept: 'application/solr+json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }), function (response) {
@@ -494,7 +494,7 @@ define([
                 Accept: 'application/solr+json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: (window.App.authorizationToken || '')
+                Authorization: authHeader()
               },
               data: query
             }), function (response) {
@@ -546,7 +546,7 @@ define([
                   Accept: 'application/solr+json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }), function (response) {

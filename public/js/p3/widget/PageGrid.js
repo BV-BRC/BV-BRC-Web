@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry', 'dgrid/extensions/Pagination',
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
-  'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard'
+  'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard', '../auth/authHeaders'
 ], function (
   declare, Grid, Store, DijitRegistry, Pagination,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
   Deferred, aspect, lang, PathJoin,
-  ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard
-) {
+  ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard,
+  authHeader) {
 
   var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
   // var hasUserSelect = has('css-user-select');
@@ -184,7 +184,7 @@ define([
           accept: 'application/json',
           'content-type': 'application/json',
           'X-Requested-With': null,
-          Authorization: token || (window.App.authorizationToken || '')
+          Authorization: authHeader('api', token)
         }
       });
       // console.log("store: ", store);

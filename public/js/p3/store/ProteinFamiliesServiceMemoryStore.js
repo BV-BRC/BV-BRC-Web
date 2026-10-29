@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic',
   'dojo/store/Memory', 'dojo/store/util/QueryResults',
-  '../util/arraysEqual', './ArrangeableMemoryStore', './HeatmapDataTypes'
+  '../util/arraysEqual', './ArrangeableMemoryStore', './HeatmapDataTypes', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic,
   Memory, QueryResults,
-  arraysEqual, ArrangeableMemoryStore, HeatmapDataTypes
-) {
+  arraysEqual, ArrangeableMemoryStore, HeatmapDataTypes,
+  authHeader) {
 
   var pfStateDefault = {
     familyType: 'pgfam', // default
@@ -410,7 +410,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: {
           q: 'genome_id:' + genomeId + ' AND annotation:PATRIC AND feature_type:CDS AND ' + familyIdName + ':[* TO *]',

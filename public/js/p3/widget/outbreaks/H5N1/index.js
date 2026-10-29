@@ -5,7 +5,7 @@ define([
   'dojo/text!./Data.html', 'dojo/text!./CommandLineTool.html', '../OutbreaksTabContainer', './genomes/GenomesGridContainer',
   'dojo/text!./OutbreaksGeoMapInfo.html',
   'dojo/text!./Clustering.html', '../OutbreaksPhylogenyTreeViewer', '../OutbreaksGeoMap', '../OutbreaksGeoMapInfo',
-  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html'
+  'dojo/text!./GeoMapHeader.html', 'dojo/text!./GeoMapFooter.html', '../../../auth/authHeaders'
 ], function (
   declare, lang, xhr, domParser, domConstruct,
   PathJoin, TabViewerBase, OutbreaksOverview, OutbreaksTab,
@@ -13,8 +13,8 @@ define([
   DataTemplate, CommandLineToolTemplate, OutbreaksTabContainer, GenomesGridContainer,
   OutbreaksGeoMapInfoTemplate,
   ClusteringTemplate, OutbreaksPhylogenyTreeViewer, OutbreaksGeoMap, OutbreaksGeoMapInfo,
-  GeoMapHeaderTemplate, GeoMapFooterTemplate
-) {
+  GeoMapHeaderTemplate, GeoMapFooterTemplate,
+  authHeader) {
   return declare([TabViewerBase], {
     perspectiveLabel: '',
     perspectiveIconClass: '',
@@ -116,223 +116,16 @@ define([
       });
 
       // Initialize Phylogenetic Tree Viewer
-      const decorator = 'vipr:';
-      const nodeVisualizations = {};
-
-      nodeVisualizations['Host'] = {
-        label: 'Host',
-        description: 'the host of the virus',
-        field: null,
-        cladeRef: decorator + 'Host',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['Host_Group'] = {
-        label: 'Host Group',
-        description: 'the host group of the virus',
-        field: null,
-        cladeRef: decorator + 'Host_Group',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20',
-        sizes: null
-      };
-
-      nodeVisualizations['Host_Group_Domestic_vs_Wild'] = {
-        label: 'Host Group (Domestic vs Wild)',
-        description: 'the host range of the virus',
-        field: null,
-        cladeRef: decorator + 'Host_Group_Domestic_vs_Wild',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20',
-        sizes: null
-      };
-
-      nodeVisualizations['Region'] = {
-        label: 'Region',
-        description: 'the geographic region of the virus',
-        field: null,
-        cladeRef: decorator + 'Region',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category20c',
-        sizes: null
-      };
-
-      nodeVisualizations['Country'] = {
-        label: 'Country',
-        description: 'the country of the virus',
-        field: null,
-        cladeRef: decorator + 'Country',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['State'] = {
-        label: 'State',
-        description: 'the state',
-        field: null,
-        cladeRef: decorator + 'State',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        sizes: null
-      };
-
-      nodeVisualizations['Year'] = {
-        label: 'Year',
-        description: 'the year of the virus',
-        field: null,
-        cladeRef: decorator + 'Year',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50c',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
-      };
-
-      nodeVisualizations['Subtype'] = {
-        label: 'Subtype',
-        description: 'the sub type of the virus',
-        field: null,
-        cladeRef: decorator + 'Subtype',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
-      };
-
-      const nodeLabels = {};
-
-      nodeLabels['Host'] = {
-        label: 'Host',
-        description: 'to use the host as part of node names',
-        propertyRef: 'vipr:Host',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group'] = {
-        label: 'Host Group',
-        description: 'to use the host range as part of node names',
-        propertyRef: 'vipr:Host_Group',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Host_Group_Domestic_vs_Wild'] = {
-        label: 'Host Group (Dom vs Wild)',
-        description: 'to use the host group (domestic vs wild) as part of node names',
-        propertyRef: 'vipr:Host_Group_Domestic_vs_Wild',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Region'] = {
-        label: 'Region',
-        description: 'to use the region as part of node names',
-        propertyRef: 'vipr:Region',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Country'] = {
-        label: 'Country',
-        description: 'to use the country as part of node names',
-        propertyRef: 'vipr:Country',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['State'] = {
-        label: 'State',
-        description: 'to use the state as part of node names',
-        propertyRef: 'vipr:State',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Year'] = {
-        label: 'Year',
-        description: 'to use the year as part of node names',
-        propertyRef: 'vipr:Year',
-        selected: false,
-        showButton: true
-      };
-
-      nodeLabels['Subtype'] = {
-        label: 'Subtype',
-        description: 'to use the subtype as part of node names',
-        propertyRef: 'vipr:Subtype',
-        selected: false,
-        showButton: true
-      };
-
-      // Add special node for Segment 4
-      const nodeVisualizationsSegment4 = {...nodeVisualizations};
-      nodeVisualizationsSegment4['H5_clade'] = {
-        label: 'H5 Clade',
-        description: 'the H5 clade',
-        field: null,
-        cladeRef: decorator + 'H5_clade',
-        regex: false,
-        shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-        colors: 'category50',
-        colorsAlt: ['#FF0000', '#000000', '#00FF00'],
-        sizes: [20, 60]
-      };
-
-      const nodeLabelsSegment4 = {...nodeLabels};
-      nodeLabelsSegment4['H5_clade'] = {
-        label: 'H5 clade',
-        description: 'to use the H5 clade as part of node names',
-        propertyRef: 'vipr:H5_clade',
-        selected: true,
-        showButton: true
-      };
-
       let options = {};
-      options.minBranchLengthValueToShow = 0.001;
-      options.minConfidenceValueToShow = 50;
-      options.initialNodeFillColorVisualization = 'Host Group (Domestic vs Wild)';
-      options.phylogram = true;
-      options.showConfidenceValues = false;
-      options.showExternalLabels = true;
-      options.showNodeName = true;
-      options.showNodeVisualizations = true;
-      options.showVisualizationsLegend = true;
-      options.visualizationsLegendOrientation = 'vertical';
-      options.visualizationsLegendXpos = 220;
+      options.initialVisualization = 'Host Group Domestic vs Wild';
       options.visualizationsLegendYpos = 30;
 
       let settings = {};
-      settings.border = '1px solid #909090';
-      settings.showSequenceButton = false;
-      settings.controls0Left = 20;
-      settings.controls1Width = 120;
-      settings.rootOffset = 220;
-      settings.controls0Top = 10;
-      settings.controls1Top = 10;
       settings.enableDownloads = true;
       settings.enableDynamicSizing = true;
-      settings.enableMsaResidueVisualizations = false;
-      settings.enableCollapseByFeature = true;
-      settings.enableNodeVisualizations = true;
-      settings.enableBranchVisualizations = false;
+      settings.enableVisualizations = true;
       settings.nhExportWriteConfidences = true;
       settings.enableSubtreeDeletion = true;
-      settings.showShortenNodeNamesButton = false;
-      settings.showExternalLabelsButton = false;
-      settings.showInternalLabelsButton = false;
-      settings.showExternalNodesButton = false;
-      settings.showInternalNodesButton = false;
 
       let phyloTabContainer = [];
       for (const [id, segment] of Object.entries(this.segments)) {
@@ -342,10 +135,7 @@ define([
           id: this.viewer.id + '_' + phylogenySegmentId,
           phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '.xml',
           updateState: true,
-          settings: settings,
-          options: options,
-          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
-          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
+          config: { ...options, ...settings, showProperties: id === '4', labelProperties: id === '4' ? ['vipr:H5_clade'] : null }
         });
 
         phyloTabContainer.push(this[phylogenySegmentId]);
@@ -365,10 +155,7 @@ define([
           id: this.viewer.id + '_' + clusteredPhyloSegmentId,
           phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_segment_' + id + '_clustered.xml',
           updateState: true,
-          settings: settings,
-          options: options,
-          nodeVisualizations: id === '4' ? nodeVisualizationsSegment4 : nodeVisualizations,
-          specialVisualizations: id === '4' ? nodeLabelsSegment4 : nodeLabels
+          config: { ...options, ...settings, showProperties: id === '4', labelProperties: id === '4' ? ['vipr:H5_clade'] : null }
         });
 
         clusteredphyloTabContainer.push(this[clusteredPhyloSegmentId]);
@@ -380,10 +167,7 @@ define([
         id: this.viewer.id + '_' + clusteredPhyloConcatenatedId,
         phyloxmlTreeURL: 'https://www.bv-brc.org/api/content/phyloxml_trees/H5N1/h5n1_all_concatenated_clustered.xml',
         updateState: true,
-        settings: settings,
-        options: options,
-        nodeVisualizations: nodeVisualizations,
-        specialVisualizations: nodeLabels
+        config: { ...options, ...settings }
       });
       clusteredphyloTabContainer.push(this[clusteredPhyloConcatenatedId]);
       this.clusteringInfo = new OutbreaksTab({
@@ -431,7 +215,7 @@ define([
           accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, async function (genomes) {

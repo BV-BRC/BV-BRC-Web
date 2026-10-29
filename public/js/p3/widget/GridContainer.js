@@ -6,7 +6,13 @@ define([
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog', './DownloadTooltipDialog', './PerspectiveToolTip',
   './CopyTooltipDialog', './PermissionEditor', '../WorkspaceManager', '../DataAPI', 'dojo/_base/Deferred', '../util/PathJoin',
   './FeatureDetailsTooltipDialog', './ServicesTooltipDialog', './RerunUtility', 'dojox/widget/Standby',
-  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel'
+  './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
+  '../auth/authHeaders',
+  '../util/QueryDescriptor',
+  './download/UnifiedDownloadWizard',
+  './download/SaveSearchDialog',
+  '../util/joinTooBroad', './JoinTooBroadMessage',
+  './ColumnsGenome', './AdvancedSearchFields', '../util/constructMetadataName', '../store/GenomeMetadataStore'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -15,8 +21,23 @@ define([
   Dialog, popup, TooltipDialog, DownloadTooltipDialog, PerspectiveToolTipDialog,
   CopyTooltipDialog, PermissionEditor, WorkspaceManager, DataAPI, Deferred, PathJoin,
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
-  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar
+  CopilotAPI, ChatSessionOptionsBar,
+  authHeader,
+  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog,
+  joinTooBroad, JoinTooBroadMessage,
+  ColumnsGenome, AdvancedSearchFields, constructMetadataName, GenomeMetadataStore
 ) {
+
+  var searchColumnDefinitions = {};
+  Object.keys(ColumnsGenome).forEach(function (name) {
+    var column = ColumnsGenome[name];
+    searchColumnDefinitions[column.field || name] = column;
+  });
+  AdvancedSearchFields.genome.forEach(function (field) {
+    if (field.search && !/^-/.test(field.field) && !searchColumnDefinitions[field.field]) {
+      searchColumnDefinitions[field.field] = { label: field.label || constructMetadataName(field.field), field: field.field, hidden: true };
+    }
+  });
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
   var viewMSATT = new TooltipDialog({
@@ -99,6 +120,69 @@ define([
   });
 
   return declare([BorderContainer], {
+    _prepareSearchColumns: function (state) {
+      var container = this;
+      var requested = state && state.hashParams && state.hashParams.defaultColumns;
+      if (!requested || !container.gridCtor) return;
+      var key = JSON.stringify([state.search || '', state.taxon_id || '', requested]);
+      if (container.grid && container._searchColumnContext === key) return;
+
+      var originals = container.grid ? container.grid._columns : (container.columns || container.gridCtor.prototype.columns);
+      if (!originals) return;
+      var columns = {};
+      Object.keys(originals).forEach(function (name) {
+        columns[name] = name === 'Selection Checkboxes' ? originals[name] : lang.mixin({}, originals[name]);
+      });
+      var childModel = container.dataModel === 'genome_sequence' || container.dataModel === 'genome_feature';
+      var genomeModel = container.dataModel === 'genome';
+      var fields = (container._searchGenomeFields || []).slice();
+      var changes = [];
+      requested.split(',').forEach(function (token) {
+        token = token.trim();
+        var hidden = token.charAt(0) === '-';
+        var field = /^[+-]/.test(token) ? token.substr(1) : token;
+        if (field === 'collection_date_dr') field = 'collection_date';
+        // Some legacy column IDs differ from the API field (e.g. H1 Clade Global).
+        var name = Object.prototype.hasOwnProperty.call(columns, field) ? field
+          : Object.keys(columns).filter(function (id) { return columns[id].field === field; })[0];
+        if (!name) {
+          if (hidden || (!childModel && !genomeModel) || !Object.prototype.hasOwnProperty.call(searchColumnDefinitions, field)) return;
+          name = field;
+          columns[name] = lang.mixin({}, searchColumnDefinitions[field]);
+          if (childModel) {
+            columns[name].sortable = false;
+            columns[name].group = 'Genome Metadata';
+            if (field === 'genome_length') columns[name].label = 'Genome Size (bp)';
+            fields.push(field);
+          }
+        }
+        columns[name].hidden = hidden;
+        changes.push({ name: name, hidden: hidden });
+      });
+
+      if (fields.length && fields.join(',') !== (container._searchGenomeFields || []).join(',')) {
+        var baseStore = container._searchBaseStore || container.store
+          || (container.grid && container.grid.store) || container.gridCtor.prototype.store;
+        if (baseStore) {
+          container._searchBaseStore = baseStore;
+          container.store = GenomeMetadataStore(baseStore, fields, container.apiServer);
+          if (container.grid) container.grid.store = container.store;
+          container._searchGenomeFields = fields;
+        }
+      }
+      if (container.grid) {
+        // Apply once per search, so subsequent filtering does not undo a user's
+        // manual column choices. New metadata fields need a column definitions rebuild.
+        if (Object.keys(columns).length !== Object.keys(originals).length) container.grid.set('columns', columns);
+        else {
+          changes.forEach(function (change) { container.grid.toggleColumnHiddenState(change.name, change.hidden); });
+        }
+        container._searchColumnContext = key;
+      } else {
+        container.columns = columns;
+      }
+    },
+
     'class': 'GridContainer',
     gutters: false,
     gridCtor: null,
@@ -221,19 +305,7 @@ define([
         }
 
         // Show/hide columns if requested by user
-        if (state.hashParams.defaultColumns && this.grid) {
-          const columns = state.hashParams.defaultColumns.split(',');
-          for (let column of columns) {
-            column = column.trim();
-            if (!column) continue; // Skip empty columns
-
-            const isHidden = column.charAt(0) === '-';
-            const name = column.charAt(0) === '-' || column.charAt(0) === '+' ? column.substring(1) : column;
-            if (name in this.grid._columns) {
-              this.grid.toggleColumnHiddenState(name, isHidden);
-            }
-          }
-        }
+        this._prepareSearchColumns(state);
       } else {
         state.hashParams = {};
         if (!oldState && this.defaultFilter) {
@@ -464,11 +536,11 @@ define([
         'DownloadSelection',
         'fa icon-download fa-2x',
         {
-          label: 'DWNLD',
+          label: 'Selected',
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
-          tooltip: 'Download Selection',
+          tooltip: 'Download selected rows',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
@@ -525,6 +597,90 @@ define([
 
         },
         false
+      ], [
+        'SaveSearch',
+        'fa icon-bookmark fa-2x',
+        {
+          label: 'SAVE',
+          multiple: false,
+          validTypes: ['*'],
+          ignoreDataType: true,
+          tooltip: 'Save Current Search',
+          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
+        },
+        function (selection, container) {
+          console.log('SaveSearch button clicked', selection, this.query);
+          try {
+            // Create descriptor from grid to capture column visibility
+            var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
+            console.log('Created descriptor:', descriptor);
+
+            if (this.state) {
+              descriptor.metadata = descriptor.metadata || {};
+              if (selection && selection.length > 0) {
+                descriptor.metadata.selectionCount = selection.length;
+              }
+            }
+            SaveSearchDialog.show({
+              queryDescriptor: descriptor,
+              onSave: lang.hitch(this, function (saved) {
+                console.log('Search saved:', saved);
+                if (window.App && window.App.showMessage) {
+                  window.App.showMessage('Search saved: ' + saved.name);
+                }
+              })
+            });
+          } catch (e) {
+            console.error('SaveSearch error:', e);
+          }
+        },
+        true
+      ], [
+        'AdvancedDownload',
+        'fa icon-download fa-2x',
+        {
+          label: 'ADV DWNLD',
+          persistent: true,
+          multiple: true,
+          validTypes: ['*'],
+          ignoreDataType: true,
+          tooltip: 'Advanced Download Options',
+          max: 100000,
+          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
+        },
+        function (selection, container) {
+          console.log('AdvancedDownload button clicked', selection, this.containerType);
+          try {
+            // Get the data model and primary key from the container
+            var dataType = this.dataModel || 'genome_feature';
+            var primaryKey = this.primaryKey || 'id';
+            console.log('Data Type:', dataType, 'Primary Key:', primaryKey);
+
+            // Create a QueryDescriptor with selection - this is the standard interface for downloads
+            var queryDescriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType, {
+              selection: selection,
+              primaryKey: primaryKey
+            });
+
+            // Override dataType with the GridContainer's dataModel (more reliable)
+            queryDescriptor.dataType = dataType;
+            queryDescriptor.primaryKey = primaryKey;
+
+            // Get the RQL query from the grid
+            var rqlQuery = this.grid.get('query') || '';
+            queryDescriptor.rqlQuery = rqlQuery;
+
+            console.log('QueryDescriptor:', queryDescriptor);
+
+            // Open the wizard with the query descriptor
+            UnifiedDownloadWizard.show({
+              queryDescriptor: queryDescriptor
+            });
+          } catch (e) {
+            console.error('AdvancedDownload error:', e);
+          }
+        },
+        true
       ], [
         'Services',
         'fa icon-cog fa-2x',
@@ -839,7 +995,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data : 'in(id,(' + idList.join(',') + '))&gt(collection_latitude,-91)&select(id,collection_latitude,collection_longitude)&limit(' + idList.length + ')'
             }), function (response) {
@@ -1058,7 +1214,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1082,7 +1238,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1209,7 +1365,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -1240,7 +1396,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1268,7 +1424,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1406,7 +1562,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: 'and(in(' + familyIdName + ',(' + familyIds.join(',') + ')),in(genome_id,(' + genomeIds.join(',') + ')))&select(feature_id)&limit(25000)'
               }), function (response) {
@@ -1440,7 +1596,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(pathway_id,(' + pathway_ids.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1465,7 +1621,7 @@ define([
                       Accept: 'application/json',
                       'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
                       'X-Requested-With': null,
-                      Authorization: (window.App.authorizationToken || '')
+                      Authorization: authHeader()
                     },
                     data: 'and(in(ec_number,(' + ec_numbers.join(',') + ')),' + queryContext + ')&select(feature_id)&limit(25000)'
                   }), function (response) {
@@ -1887,6 +2043,7 @@ define([
         console.error('Missing this.gridCtor in GridContainer');
         return;
       }
+      this._prepareSearchColumns(this.state);
       var state;
       if (this.state) {
         state = lang.mixin({}, this.state, { hashParams: lang.mixin({}, this.state.hashParams) });
@@ -1963,7 +2120,54 @@ define([
       // console.log('getAll Query: ', query);
     },
 
+    /**
+     * Render a join_too_broad rejection over the grid body, replacing the misleading
+     * "0 results". Returns silently for every other error so existing behaviour is
+     * unchanged -- in particular a 500-at-120s cold join must NOT say "narrow your
+     * filter", because narrowing is not what is wrong with it.
+     */
+    _onGridQueryError: function (err) {
+      if (!joinTooBroad.isJoinTooBroad(err)) { return; }
+      if (!this.grid || !this.grid.contentNode) { return; }
+
+      // Suppress the pager's "1 - 1 of 0 results", which is the misleading part.
+      if (this.grid.paginationStatusNode) {
+        this.grid.paginationStatusNode.innerHTML = '';
+      }
+
+      if (!this._joinTooBroadMessage) {
+        this._joinTooBroadMessage = new JoinTooBroadMessage();
+      }
+
+      // Reuse dgrid's own no-data slot so the message sits where the user is already
+      // looking, and so dgrid clears it on the next successful render.
+      if (this.grid.noDataNode) {
+        domConstruct.destroy(this.grid.noDataNode);
+        delete this.grid.noDataNode;
+      }
+      this.grid.noDataNode = domConstruct.create('div', {
+        className: 'dgrid-no-data'
+      }, this.grid.contentNode);
+
+      var viewTab = (this.state && this.state.hashParams && this.state.hashParams.view_tab) || null;
+      this._joinTooBroadMessage.render(this.grid.noDataNode, err, {
+        apiServer: this.apiServer || (window.App && window.App.dataAPI),
+        viewTab: viewTab
+      });
+    },
+
     listen: function () {
+
+      // A query the API refuses as too broad otherwise renders as "1 - 1 of 0 results",
+      // which is indistinguishable from a legitimate empty result -- so the user concludes
+      // their data is missing rather than that their filter is too wide. dgrid emits
+      // dgrid-error for a rejected store query; turn the join_too_broad 400 into an
+      // explanation plus drill-down. See util/joinTooBroad.js and the API contract in
+      // p3_api/Docs/CLIENT-join-too-broad.md.
+      this.grid.on('dgrid-error', lang.hitch(this, function (evt) {
+        this._onGridQueryError(evt && evt.error);
+      }));
+
       this.grid.on('select', lang.hitch(this, function (evt) {
 
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {

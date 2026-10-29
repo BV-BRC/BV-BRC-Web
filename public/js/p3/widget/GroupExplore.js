@@ -4,15 +4,15 @@ define([
   'dojo/_base/Deferred',
   'dojo/request', 'dojo/_base/lang', 'dojo/when', '../WorkspaceManager',
   'd3/d3', './Venn', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer',
-  '../util/encodePath'
+  '../util/encodePath', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, on, Topic,
   domClass, ContentPane, domConstruct,
   fDeferred,
   xhr, lang, when, WorkspaceManager,
   d3, Venn, Grid, ColumnResizer,
-  encodePath
-) {
+  encodePath,
+  authHeader) {
 
   var groupCompare = null;
   var myURL = null;
@@ -180,7 +180,7 @@ define([
               accept: 'application/solr+json',
               'content-type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(function (res) {
@@ -215,7 +215,7 @@ define([
               accept: 'application/solr+json',
               'content-type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(function (res) {
@@ -248,7 +248,7 @@ define([
               accept: 'application/solr+json',
               'content-type': 'application/rqlquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(function (res) {

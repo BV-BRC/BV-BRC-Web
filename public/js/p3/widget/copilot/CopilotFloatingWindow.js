@@ -177,19 +177,6 @@ define([
                 }
             }));
 
-            // Add Report Issue button
-            var reportIssueButton = domConstruct.create('div', {
-                className: 'copilotChatReportIssueButton',
-                innerHTML: '<i class="fa icon-commenting-o"></i>',
-                title: 'Report an issue with the chat session'
-            }, leftButtonContainer);
-
-            // Add click handler for report issue button
-            on(reportIssueButton, 'click', lang.hitch(this, function() {
-                topic.publish('openReportIssueDialog');
-                domClass.add(reportIssueButton, 'active');
-            }));
-
             if (this.showModelSelector) {
                 // Add model selector button
                 this.modelSelectorButton = domConstruct.create('div', {
@@ -1059,6 +1046,10 @@ define([
             domStyle.set(this.containerNode, {
                 display: 'block'
             });
+            if (this.layoutContainer && this.layoutContainer.resize) {
+                this.layoutContainer.resize();
+            }
+            this.resize();
         },
 
         hide: function() {
@@ -1178,6 +1169,11 @@ define([
                             }
                             this.controllerPanel.chatStore.addMessages(messages);
                             this.controllerPanel.displayWidget.showMessages(messages);
+
+                            // If the session has an in-flight turn, start polling
+                            if (res.active_job_id && this.controllerPanel._pollUntilTurnComplete) {
+                                this.controllerPanel._pollUntilTurnComplete(options.currentSessionId);
+                            }
                         }));
 
                         // Set the title if available

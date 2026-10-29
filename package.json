@@ -1,6 +1,6 @@
 {
   "name": "p3-web",
-  "version": "3.59.12",
+  "version": "3.60.9",
   "private": true,
   "scripts": {
     "start": "NEXTSTRAIN_DATASET_DIR=./lib/auspice-datasets node ./bin/p3-web",
@@ -17,7 +17,6 @@
     "axios": "^1.18.0",
     "body-parser": "^1.20.6",
     "braces": "^3.0.3",
-    "bvbrc_js_client": "github:bv-brc/bvbrc_js_client",
     "cookie-parser": "~1.4.6",
     "cytoscape": "^3.2.4",
     "cytoscape-cola": "^1.6.0",

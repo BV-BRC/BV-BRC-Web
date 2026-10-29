@@ -4,15 +4,15 @@ define([
   'dojo/dom', 'dojo/topic', 'dijit/form/TextBox', 'dojo/keys', 'dijit/_FocusMixin', 'dijit/focus',
   'dijit/layout/ContentPane', 'dojo/request', '../util/QueryToSearchInput', './GlobalSearch',
   'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin', 'dojo/text!./templates/AdvancedSearch.html',
-  '../util/searchToQuery', './formatter'
+  '../util/searchToQuery', './formatter', '../auth/authHeaders'
 ], function (
   declare, WidgetBase, on, domConstruct,
   domClass, base, Button, Registry, lang,
   dom, Topic, TextBox, keys, FocusMixin, focusUtil,
   ContentPane, Request, queryToSearchInput, GlobalSearch,
   TemplatedMixin, WidgetsInTemplate, Template,
-  searchToQuery, formatter
-) {
+  searchToQuery, formatter,
+  authHeader) {
   return declare([WidgetBase, TemplatedMixin, WidgetsInTemplate], {
     baseClass: 'AdvancedSearch',
     disabled: false,
@@ -665,7 +665,7 @@ define([
         headers: {
           accept: 'application/json',
           'content-type': 'application/json',
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         data: JSON.stringify(q)

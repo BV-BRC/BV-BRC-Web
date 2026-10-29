@@ -53,9 +53,6 @@ define([
         /** @property {Array} modelList - Available models list */
         modelList: null,
 
-        /** @property {Array} ragList - Available RAG databases list */
-        ragList: null,
-
         /** @property {Object} pageContentToggle - CheckBox for page content functionality */
         pageContentToggle: null,
 
@@ -126,7 +123,6 @@ define([
                 return;
             }
             window.App.copilotModelList = Array.isArray(this.modelList) ? this.modelList.slice() : [];
-            window.App.copilotRagList = Array.isArray(this.ragList) ? this.ragList.slice() : [];
         },
 
         /**
@@ -164,139 +160,6 @@ define([
             }));
 
             return selectElement;
-        },
-
-        /**
-         * Creates and configures the RAG database selection dropdown
-         * - Adds 'None' option by default
-         * - Populates with RAG DBs from ragList if provided
-         * - Otherwise adds default Cancer papers option
-         * - Publishes selected RAG DB and updates button label on change
-         *
-         * @returns {HTMLElement} Configured select element for RAG choice
-         */
-        createRagDropdown: function() {
-            var selectElement = document.createElement('select');
-            selectElement.className = 'copilotSelectElement';
-
-            // Add None option
-            var optionNone = document.createElement('option');
-            optionNone.value = 'null';
-            optionNone.text = 'None';
-            selectElement.add(optionNone);
-
-            // Add RAG DBs from provided list or use defaults
-            if (this.ragList) {
-                var check_names = [];
-                this.ragList.forEach(lang.hitch(this, function(ragdb) {
-                    // Filter out bvbrc_helpdesk
-                    if (ragdb.name === 'bvbrc_helpdesk') {
-                        return;
-                    }
-                    var option = document.createElement('option');
-                    option.value = ragdb.name;
-                    option.text = ragdb.name.split('/').reverse()[0];
-                    if (!check_names.includes(option.text)) {
-                        check_names.push(option.text);
-                        selectElement.add(option);
-                    }
-                }));
-            } else {
-                // Add default None option
-                var optionNone = document.createElement('option');
-                optionNone.value = null;
-                optionNone.text = 'None';
-                selectElement.add(optionNone);
-
-                // Add default Cancer papers option
-                var optionCancer = document.createElement('option');
-                optionCancer.value = 'cancer_papers';
-                optionCancer.text = 'Cancer';
-                selectElement.add(optionCancer);
-            }
-
-            // Handle selection changes
-            selectElement.addEventListener('change', lang.hitch(this, function(evt) {
-                var ragDb = evt.target.value;
-                topic.publish('ChatRagDb', ragDb);
-            }));
-
-            return selectElement;
-        },
-
-        /**
-         * Creates dialog for managing RAG selection
-         * - Includes RAG selection dropdown
-         * - Publishes selected RAG DB on change
-         *
-         * @returns {TooltipDialog} Configured dialog for RAG selection
-         */
-        createRagDialog: function() {
-            var ragDialog = new TooltipDialog({
-                style: "width: 250px;",
-                content: document.createElement('div')
-            });
-
-            // Add RAG selection
-            var ragLabel = document.createElement('div');
-            ragLabel.textContent = 'Database:';
-            ragLabel.style.marginBottom = '5px';
-            ragLabel.title = 'Select the database to use for the RAG query';
-            ragDialog.containerNode.appendChild(ragLabel);
-            this.ragDropdown = this.createRagDropdown();
-            ragDialog.containerNode.appendChild(this.ragDropdown);
-
-            // Add Number of Documents section
-            var numDocsContainer = document.createElement('div');
-            numDocsContainer.style.display = 'flex';
-            numDocsContainer.style.alignItems = 'center';
-            numDocsContainer.style.marginTop = '10px';
-            numDocsContainer.style.marginBottom = '10px';
-            numDocsContainer.style.gap = '10px';
-            ragDialog.containerNode.appendChild(numDocsContainer);
-
-            var numDocsLabel = document.createElement('div');
-            numDocsLabel.textContent = 'Number of Documents:';
-            numDocsLabel.title = 'Number of documents to retrieve from the database';
-            numDocsContainer.appendChild(numDocsLabel);
-
-            var numDocsInput = document.createElement('input');
-            numDocsInput.type = 'number';
-            numDocsInput.min = '1';
-            numDocsInput.max = '10';
-            numDocsInput.value = '10';
-            numDocsInput.style.width = '60px';
-            numDocsInput.addEventListener('change', lang.hitch(this, function(evt) {
-                var numDocs = evt.target.value;
-                topic.publish('ChatNumDocs', numDocs);
-            }));
-            this.numDocsInput = numDocsInput;
-            numDocsContainer.appendChild(numDocsInput);
-
-            // Add Summarize Documents checkbox
-            var summarizeContainer = document.createElement('div');
-            summarizeContainer.style.display = 'flex';
-            summarizeContainer.style.alignItems = 'center';
-            summarizeContainer.style.marginTop = '10px';
-            summarizeContainer.style.marginBottom = '10px';
-            summarizeContainer.style.gap = '10px';
-            ragDialog.containerNode.appendChild(summarizeContainer);
-
-            var summarizeLabel = document.createElement('div');
-            summarizeLabel.textContent = 'Summarize Documents';
-            summarizeLabel.title = 'Summarize each matched document; takes longer but may improve generated response';
-            summarizeContainer.appendChild(summarizeLabel);
-
-            var summarizeCheckbox = document.createElement('input');
-            summarizeCheckbox.type = 'checkbox';
-            summarizeCheckbox.checked = false;
-            summarizeCheckbox.addEventListener('change', lang.hitch(this, function(evt) {
-                var shouldSummarize = evt.target.checked;
-                topic.publish('ChatSummarizeDocs', shouldSummarize);
-            }));
-            summarizeContainer.appendChild(summarizeCheckbox);
-
-            return ragDialog;
         },
 
         /**
@@ -376,10 +239,6 @@ define([
             if ((!this.modelList || this.modelList.length === 0) && window.App && Array.isArray(window.App.copilotModelList)) {
                 this.modelList = window.App.copilotModelList.slice();
             }
-            if ((!this.ragList || this.ragList.length === 0) && window.App && Array.isArray(window.App.copilotRagList)) {
-                this.ragList = window.App.copilotRagList.slice();
-            }
-
             this.name_map = {
                 "Llama-4-Scout-17B-16E-Instruct-quantized.w4a16": "Llama-4-Scout",
                 "Llama-3.3-70B-Instruct": "Llama-3.3-70B"
@@ -398,9 +257,7 @@ define([
                 domClass.add(this.containerNode, 'ChatSessionOptionsBar-extended-two');
             }
 
-            // Create model, RAG, and enhance prompt dialogs
             var modelDialog = this.createModelDialog();
-            var ragDialog = this.createRagDialog();
             var enhancePromptDialog = null;
             if (this.showEnhancePromptButton) {
                 enhancePromptDialog = this.createEnhancePromptDialog();
@@ -497,47 +354,13 @@ define([
             //     })
             // }, this.advancedOptionsContainer);
 
-            // COMMENTED OUT: Publish initial helpdesk selection since it's on by default
-            // topic.publish('ChatRagDb', 'bvbrc_helpdesk');
-
             // Handle clicks outside dialogs to close them
             document.addEventListener('click', lang.hitch(this, function(event) {
-                // COMMENTED OUT: Model dialog click handling
-                // if (modelDialog._rendered && !modelDialog.domNode.contains(event.target) && !this.modelText.contains(event.target)) {
-                //     popup.close(modelDialog);
-                //     modelDialog.visible = false;
-                // }
-                // COMMENTED OUT: RAG dialog click handling
-                // if (ragDialog._rendered && !ragDialog.domNode.contains(event.target) && !this.ragText.contains(event.target)) {
-                //     popup.close(ragDialog);
-                //     ragDialog.visible = false;
-                // }
                 if (this.showEnhancePromptButton && enhancePromptDialog && enhancePromptDialog._rendered && !enhancePromptDialog.domNode.contains(event.target) && !this.enhancePromptText.contains(event.target)) {
                     popup.close(enhancePromptDialog);
                     enhancePromptDialog.visible = false;
                 }
             }));
-
-            // COMMENTED OUT: Handle RAG button clicks
-            // topic.subscribe('ragButtonPressed', lang.hitch(this, function(buttonNode, orient) {
-            //     console.log('rag pressed');
-            //     if (ragDialog.visible) {
-            //         popup.close(ragDialog);
-            //         ragDialog.visible = false;
-            //     } else {
-            //         if (!buttonNode) {
-            //             buttonNode = this.ragText;
-            //         }
-            //         setTimeout(function() {
-            //             popup.open({
-            //                 popup: ragDialog,
-            //                 around: buttonNode,
-            //                 orient: orient
-            //             });
-            //             ragDialog.visible = true;
-            //         }, 100);
-            //     }
-            // }));
 
             // COMMENTED OUT: Handle model button clicks
             // topic.subscribe('modelButtonPressed', lang.hitch(this, function(buttonNode, orient) {
@@ -641,10 +464,6 @@ define([
             // Additional topic subscriptions from older version
             topic.subscribe('get_model_list', lang.hitch(this, function() {
                 topic.publish('return_model_list', this.modelList);
-            }));
-
-            topic.subscribe('get_rag_list', lang.hitch(this, function() {
-                topic.publish('return_rag_list', this.ragList);
             }));
 
             this._syncGlobalModelCatalog();

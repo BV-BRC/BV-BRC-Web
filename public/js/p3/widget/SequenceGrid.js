@@ -1,9 +1,9 @@
 define([
-  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on',
+  'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', 'dojo/_base/lang',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   './PageGrid', './formatter', '../store/SequenceJsonRest', './GridSelector'
 ], function (
-  declare, BorderContainer, on,
+  declare, BorderContainer, on, lang,
   domClass, ContentPane, domConstruct,
   Grid, formatter, Store, selector
 ) {
@@ -42,6 +42,16 @@ define([
       version: { label: 'Version', field: 'version', hidden: true },
       date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
       date_modified: { label: 'Date Modified', field: 'date_modified', hidden: true }
+    },
+    postMixInProperties: function postMixInProperties() {
+      this.inherited(postMixInProperties, arguments);
+      // ColumnHider changes visibility; do not share those changes between grids.
+      var columns = {};
+      Object.keys(this.columns).forEach(function (name) {
+        columns[name] = name === 'Selection Checkboxes'
+          ? selector({ unhidable: true }) : lang.mixin({}, this.columns[name]);
+      }, this);
+      this.columns = columns;
     },
     startup: function () {
       var _self = this;

@@ -4,13 +4,14 @@ define([
   'dijit/layout/ContentPane',
   './TabViewerBase', '../../util/PathJoin',
   '../GenomeGridContainer', '../SequenceGridContainer', '../FeatureGridContainer', '../ExperimentsContainer',
+  '../../auth/authHeaders'
 ], function (
   declare, lang,
   on, request,
   ContentPane,
   TabViewerBase, PathJoin,
-  GenomeGridContainer, SequenceGridContainer, FeatureGridContainer, ExperimentsContainer
-) {
+  GenomeGridContainer, SequenceGridContainer, FeatureGridContainer, ExperimentsContainer,
+  authHeader) {
 
   return declare([TabViewerBase], {
     defaultTab: 'genomes',
@@ -42,7 +43,7 @@ define([
           accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',

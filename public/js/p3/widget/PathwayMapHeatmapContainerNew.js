@@ -7,15 +7,15 @@ define([
   'dojo/request', 'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog',
   'dijit/Dialog', 'dijit/popup', 'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', '../util/PathJoin', 'FileSaver',
-  'heatmap/dist/hotmap',  'dojo/query', './Confirmation', 'xstyle/css!heatmap/dist/hotmap.css'
+  'heatmap/dist/hotmap',  'dojo/query', './Confirmation', '../auth/authHeaders', 'xstyle/css!heatmap/dist/hotmap.css'
 
 ], function (
   declare, lang, on, when, Topic, domConstruct,
   request, ContentPane, BorderContainer, TooltipDialog,
   Dialog, popup, Select, Button, ContainerActionBar,
   HeatmapContainerNew, SelectionToGroup, PathJoin, saveAs,
-  Hotmap, Query, Confirmation
-) {
+  Hotmap, Query, Confirmation,
+  authHeader) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
     gutters: false,
@@ -245,7 +245,7 @@ define([
         headers: {
           Accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       }).then(lang.hitch(this, function (response) {
         Topic.publish('PathwayMap', 'hideLoadingMask');
@@ -284,7 +284,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         data: query
       }).then(lang.hitch(this, function (response) {

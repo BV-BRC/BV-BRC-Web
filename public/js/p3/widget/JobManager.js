@@ -3,14 +3,14 @@ define([
   'dojo/dom-class', 'dojo/dom-attr', 'dojo/dom-construct', './JobsGrid', './JobContainerActionBar',
   'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
-  './copilot/ChatSessionContainerSidePanel', './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
+  './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
   'dijit/Dialog', 'dijit/layout/ContentPane', 'dojo/hash', 'dojo/io-query'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation, rerunUtility,
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
-  ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
+  CopilotAPI, ChatSessionOptionsBar,
   Dialog, ContentPane, hash, ioQuery
 ) {
   return declare([BorderContainer], {

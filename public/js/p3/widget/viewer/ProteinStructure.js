@@ -17,9 +17,8 @@ define([
   'dojo/text!../templates/proteinStructure/ProteinStructureViewer.html',
   'dojo/request',
   '../DataItemFormatter',
-  '../../util/PathJoin'
-],
-function (
+  '../../util/PathJoin', '../../auth/authHeaders'
+], function (
   declare,
   lang,
   domConstruct,
@@ -38,8 +37,8 @@ function (
   templateString,
   xhr,
   DataItemFormatter,
-  PathJoin
-)
+  PathJoin,
+  authHeader)
 {
   return declare([Base, Templated, WidgetsInTmeplateMixin], {
     id: 'proteinStructureViewer',
@@ -92,7 +91,7 @@ function (
               urls.map(url => xhr.get(url, {
                 headers: {
                   'Accept': 'application/solr+json',
-                  'Authorization': window.App.authorizationToken
+                  'Authorization': authHeader()
                 }
               }).then(res => res)
                   .catch(e => e))
@@ -242,7 +241,7 @@ function (
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           });

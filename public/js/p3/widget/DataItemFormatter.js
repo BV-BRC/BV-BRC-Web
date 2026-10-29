@@ -1,12 +1,12 @@
 define([
   'dojo/_base/lang', 'dojo/date/locale', 'dojo/dom-construct', 'dojo/dom-class',
   'dijit/form/Button', '../JobManager', 'dijit/TitlePane', './formatter', 'dojo/on',
-  'dojo/query', '../util/PathJoin', 'dojo/request', 'dojo/when', 'dojo/NodeList-traverse'
+  'dojo/query', '../util/PathJoin', 'dojo/request', 'dojo/when', '../auth/authHeaders', 'dojo/NodeList-traverse'
 ], function (
   lang, locale, domConstruct, domClass,
   Button, JobManager, TitlePane, formatter, on,
-  query, PathJoin, request, when
-) {
+  query, PathJoin, request, when,
+  authHeader) {
 
   function renderNoInfoFound(sectionName, parent) {
     domConstruct.create('tr', {
@@ -317,7 +317,7 @@ define([
               Accept: 'application/solr+json',
               'Content-Type': 'application/solrquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data: query
           }), function (response) {
@@ -346,7 +346,7 @@ define([
               Accept: 'application/solr+json',
               'Content-Type': 'application/solrquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             data: query
           }), function (response) {

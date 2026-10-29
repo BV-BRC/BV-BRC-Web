@@ -3,14 +3,14 @@ define([
   'dojo/dom-construct', 'dojo/request', 'dojo/when',
   'dijit/layout/ContentPane',
   './Base', '../../util/PathJoin', '../PhylogenyGene', '../../WorkspaceManager',
-  'dojo/request'
+  'dojo/request', '../../auth/authHeaders'
 ], function (
   declare, lang,
   domConstruct, request, when,
   ContentPane,
   ViewerBase, PathJoin, Phylogeny, WorkspaceManager,
-  xhr
-) {
+  xhr,
+  authHeader) {
   return declare([ViewerBase], {
     disabled: false,
     query: null,
@@ -170,7 +170,7 @@ define([
           accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         'Content-Type': 'application/rqlquery+x-www-form-urlencoded',

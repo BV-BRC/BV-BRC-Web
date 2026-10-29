@@ -1,7 +1,8 @@
 define([
   'dojo/request/xhr',
-  'dojo/_base/declare'
-], function (xhr, declare) {
+  'dojo/_base/declare',
+  '../auth/authHeaders'
+], function (xhr, declare, authHeader) {
 
   return declare(null, {
 
@@ -134,7 +135,9 @@ define([
         : (this.auth.token ? this.auth.token : null);
 
       if (token != null) {
-        headers.Authorization = token;
+        // forToken, not authHeader: this client's token comes from auth_cb or
+        // this.auth and must not fall back to the ambient one.
+        headers.Authorization = authHeader.forToken('api', token);
       }
 
       var promise = xhr.post(this.url, {

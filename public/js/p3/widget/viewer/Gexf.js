@@ -5,7 +5,7 @@ define([
     "dojo/query", "dojo/dom-geometry", "dojo/dom-style", "dojo/dom-construct",
     "../ActionBar", "../ItemDetailPanel", "../PerspectiveToolTip", "dojo/dom-class",
     "../SelectionToGroup", "dijit/Dialog",
-    "dijit/TooltipDialog", "dijit/popup"
+    "dijit/TooltipDialog", "dijit/popup", '../../auth/authHeaders'
  
 
 ], function(
@@ -15,8 +15,8 @@ define([
     query, domGeom, domStyle, domConstruct,
     ActionBar, ItemDetailPanel, PerspectiveToolTipDialog, domClass,
     SelectionToGroup, Dialog,
-    TooltipDialog, popup
-){
+    TooltipDialog, popup,
+    authHeader){
     var scriptsReady = false;
     var pendingCallbacks = [];
 
@@ -765,7 +765,7 @@ destroy: function(){
                 headers: {
                     accept: "application/json",
                     "X-Requested-With": null,
-                    Authorization: (window.App.authorizationToken || "")
+                    Authorization: authHeader()
                 },
                 handleAs: "json",
                 data: query
@@ -1477,7 +1477,7 @@ destroy: function(){
                 headers: {
                     accept: "application/json",
                     "X-Requested-With": null,
-                    Authorization: (window.App.authorizationToken || "")
+                    Authorization: authHeader()
                 },
                 handleAs: "json",
                 data: query

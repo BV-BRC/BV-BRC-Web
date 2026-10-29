@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/topic', 'dojo/_base/lang', 'dojo/on', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/dom-style',
   'dojo/text!./templates/ViralAssembly.html', 'dojo/store/Memory', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Dialog',
-  './AppBase', '../../WorkspaceManager', 'dojo/request'
+  './AppBase', '../../WorkspaceManager', 'dojo/request', '../../auth/authHeaders'
 ], function (
   declare, Topic, lang, on, domClass, domConstruct, domStyle,
   Template, Memory, popup, TooltipDialog, Dialog,
-  AppBase, WorkspaceManager, xhr
-) {
+  AppBase, WorkspaceManager, xhr,
+  authHeader) {
 
   return declare([AppBase], {
     baseClass: 'ViralAssembly',
@@ -158,7 +158,7 @@ define([
       };
 
       xhr.post(window.App.genomedistanceServiceURL, {
-        headers: { Authorization: window.App.authorizationToken || '', Accept: 'application/json' },
+        headers: { Authorization: authHeader(), Accept: 'application/json' },
         handleAs: 'json',
         data: JSON.stringify(rpc)
       }).then(lang.hitch(this, function (res) {
@@ -188,7 +188,7 @@ define([
 
       xhr.post(window.App.dataAPI + 'genome/', {
         headers: {
-          Authorization: window.App.authorizationToken || '',
+          Authorization: authHeader(),
           Accept: 'application/json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null
