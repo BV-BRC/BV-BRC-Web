@@ -82,6 +82,43 @@ jobs:
           BRANCH="cherry-pick/hotfix-${VERSION}-${TARGET}"
 
           git fetch origin "$TARGET"
+
+          # A hotfix is frequently ALREADY on a downstream branch: the common case
+          # is a fix developed on alpha, merged there, and then brought to master
+          # out of band so it reaches production without waiting for the release
+          # train. Propagating it back is at best redundant and at worst harmful --
+          # the master copy may be an ADAPTED version of the original (v3.59.14
+          # kept master's inline authorization-header idiom, because alpha's
+          # auth/authHeaders module does not exist on that lane), so applying it to
+          # alpha would revert the newer branch.
+          #
+          # Today that attempt happens to conflict and the leg fails red. That is
+          # the right outcome by luck, not design: it holds only while the
+          # adaptation touches a file outside the manifest auto-resolve below. An
+          # adaptation confined to package.json would apply silently and revert the
+          # target. A red X on every hotfix also teaches everyone to ignore this
+          # workflow's status, which is how the last breakage stayed invisible.
+          #
+          # Patch-id comparison (git cherry) cannot answer this: the adapted commit
+          # is a genuinely different patch from the original, so it reports "not
+          # present" for a branch that very much has the fix. Verified on v3.59.14
+          # -- the alpha commit and its master adaptation have different patch-ids.
+          # The provenance has to be stated rather than inferred, hence a trailer
+          # on the hotfix PR description (the template asks for it):
+          #
+          #     Cherry-picked-from: <sha>
+          #
+          # If that commit is an ancestor of the target, the fix is already there.
+          ORIGIN_SHA=$(git log -1 --format=%B "$MERGE_COMMIT" |
+            sed -n 's/^Cherry-picked-from:[[:space:]]*\([0-9a-f]\{7,40\}\).*/\1/p' | head -1)
+
+          if [ -n "$ORIGIN_SHA" ] && git rev-parse --verify --quiet "${ORIGIN_SHA}^{commit}" >/dev/null &&
+              git merge-base --is-ancestor "$ORIGIN_SHA" "origin/${TARGET}"; then
+            echo "Hotfix ${VERSION} originated at ${ORIGIN_SHA}, which is already on ${TARGET}."
+            echo "Nothing to propagate; skipping."
+            exit 0
+          fi
+
           git checkout -B "$BRANCH" "origin/${TARGET}"
 
           # -m 1 selects the mainline parent and is only meaningful for a merge

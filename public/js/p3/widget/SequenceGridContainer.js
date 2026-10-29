@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/on', 'dojo/dom-construct', 'dojo/topic',
   'dijit/popup', 'dijit/TooltipDialog',
   './SequenceGrid', './AdvancedSearchFields', './GridContainer',
-  '../util/PathJoin'
+  '../util/PathJoin', './GenomeColumnProfiles'
 
 ], function (
   declare, lang, on, domConstruct, Topic,
   popup, TooltipDialog,
   SequenceGrid, AdvancedSearchFields, GridContainer,
-  PathJoin
+  PathJoin, GenomeColumnProfiles
 ) {
 
   const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -21,6 +21,16 @@ define([
 
   return declare([GridContainer], {
     gridCtor: SequenceGrid,
+    onFirstView: function onFirstView() {
+      this.inherited(onFirstView, arguments);
+      this.applyVirusColumnDefaults(this.state);
+      if (this.grid && this.state) this.onSetState('state', null, this.state);
+    },
+    onSetState: function onSetState(attr, oldState, state) {
+      this.applyVirusColumnDefaults(state);
+      this.inherited(onSetState, arguments);
+    },
+    applyVirusColumnDefaults: GenomeColumnProfiles.applyDefaults,
     containerType: 'sequence_data',
     tutorialLink: 'quick_references/organisms_taxon/sequences.html',
     facetFields: AdvancedSearchFields['genome_sequence'].filter((ff) => ff.facet),
@@ -33,10 +43,10 @@ define([
         'DownloadTable',
         'fa icon-download fa-2x',
         {
-          label: 'DOWNLOAD',
+          label: 'Metadata',
           multiple: false,
           validTypes: ['*'],
-          tooltip: 'Download Table',
+          tooltip: 'Download metadata for all filtered results',
           tooltipDialog: downloadTT
         },
         function () {
