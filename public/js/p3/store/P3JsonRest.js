@@ -4,7 +4,7 @@ define([
   'dojo/store/util/QueryResults',
   'dojo/when', 'dojo/_base/lang',
   'dojo/_base/xhr', 'dojo/json',
-  'dojo/Evented', '../auth/authHeaders', '../util/retryRequest'
+  'dojo/Evented', '../auth/authHeaders', '../util/retryRequest', '../util/dateRangeWithinQuery'
 
 ], function (
   declare,
@@ -12,8 +12,7 @@ define([
   QueryResults,
   when, lang,
   xhr, json,
-  Evented,
-  authHeader, retryRequest) {
+  Evented, authHeader, retryRequest, dateRangeWithinQuery) {
   return declare([Store, Evented], {
     headers: null,
     constructor: function (options) {
@@ -108,6 +107,7 @@ define([
 
       // this is the POST version
       query = (query && (typeof query == 'string') && (query.charAt(0) == '?')) ? query.substr(1) : query;
+      query = dateRangeWithinQuery(query);
       // console.log("DO POST: ", query)
 
       // This store uses dojo/_base/xhr, not dojo/request, so it does NOT go

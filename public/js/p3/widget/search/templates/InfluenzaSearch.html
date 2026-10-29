@@ -155,8 +155,9 @@
           <span class="bvs-accordion-toggle" data-dojo-attach-point="completenessAccordionIcon">&minus;</span>
         </div>
         <div class="bvs-accordion-body" data-dojo-attach-point="completenessAccordionBody">
+          <p class="bvs-section-intro" data-dojo-attach-point="segmentFilterHint">Genomes must contain all selected segments.</p>
           <div class="bvs-field bvs-field-wide">
-            <label>Required Segments</label>
+            <label data-dojo-attach-point="segmentFilterLabel">Required Segments</label>
             <div class="bvs-inline-checks">
               <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPB2Node" /> PB2 (1)</label>
               <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPB1Node" /> PB1 (2)</label>

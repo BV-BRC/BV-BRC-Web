@@ -11,7 +11,8 @@ define([
   '../util/QueryDescriptor',
   './download/UnifiedDownloadWizard',
   './download/SaveSearchDialog',
-  '../util/joinTooBroad', './JoinTooBroadMessage'
+  '../util/joinTooBroad', './JoinTooBroadMessage',
+  './ColumnsGenome', './AdvancedSearchFields', '../util/constructMetadataName', '../store/GenomeMetadataStore'
 ], function (
   declare, BorderContainer, on, domConstruct,
   request, when, domClass,
@@ -23,8 +24,20 @@ define([
   ChatSessionContainerSidePanel, CopilotAPI, ChatSessionOptionsBar,
   authHeader,
   QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog,
-  joinTooBroad, JoinTooBroadMessage
+  joinTooBroad, JoinTooBroadMessage,
+  ColumnsGenome, AdvancedSearchFields, constructMetadataName, GenomeMetadataStore
 ) {
+
+  var searchColumnDefinitions = {};
+  Object.keys(ColumnsGenome).forEach(function (name) {
+    var column = ColumnsGenome[name];
+    searchColumnDefinitions[column.field || name] = column;
+  });
+  AdvancedSearchFields.genome.forEach(function (field) {
+    if (field.search && !/^-/.test(field.field) && !searchColumnDefinitions[field.field]) {
+      searchColumnDefinitions[field.field] = { label: field.label || constructMetadataName(field.field), field: field.field, hidden: true };
+    }
+  });
 
   var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
   var viewMSATT = new TooltipDialog({
@@ -107,6 +120,69 @@ define([
   });
 
   return declare([BorderContainer], {
+    _prepareSearchColumns: function (state) {
+      var container = this;
+      var requested = state && state.hashParams && state.hashParams.defaultColumns;
+      if (!requested || !container.gridCtor) return;
+      var key = JSON.stringify([state.search || '', state.taxon_id || '', requested]);
+      if (container.grid && container._searchColumnContext === key) return;
+
+      var originals = container.grid ? container.grid._columns : (container.columns || container.gridCtor.prototype.columns);
+      if (!originals) return;
+      var columns = {};
+      Object.keys(originals).forEach(function (name) {
+        columns[name] = name === 'Selection Checkboxes' ? originals[name] : lang.mixin({}, originals[name]);
+      });
+      var childModel = container.dataModel === 'genome_sequence' || container.dataModel === 'genome_feature';
+      var genomeModel = container.dataModel === 'genome';
+      var fields = (container._searchGenomeFields || []).slice();
+      var changes = [];
+      requested.split(',').forEach(function (token) {
+        token = token.trim();
+        var hidden = token.charAt(0) === '-';
+        var field = /^[+-]/.test(token) ? token.substr(1) : token;
+        if (field === 'collection_date_dr') field = 'collection_date';
+        // Some legacy column IDs differ from the API field (e.g. H1 Clade Global).
+        var name = Object.prototype.hasOwnProperty.call(columns, field) ? field
+          : Object.keys(columns).filter(function (id) { return columns[id].field === field; })[0];
+        if (!name) {
+          if (hidden || (!childModel && !genomeModel) || !Object.prototype.hasOwnProperty.call(searchColumnDefinitions, field)) return;
+          name = field;
+          columns[name] = lang.mixin({}, searchColumnDefinitions[field]);
+          if (childModel) {
+            columns[name].sortable = false;
+            columns[name].group = 'Genome Metadata';
+            if (field === 'genome_length') columns[name].label = 'Genome Size (bp)';
+            fields.push(field);
+          }
+        }
+        columns[name].hidden = hidden;
+        changes.push({ name: name, hidden: hidden });
+      });
+
+      if (fields.length && fields.join(',') !== (container._searchGenomeFields || []).join(',')) {
+        var baseStore = container._searchBaseStore || container.store
+          || (container.grid && container.grid.store) || container.gridCtor.prototype.store;
+        if (baseStore) {
+          container._searchBaseStore = baseStore;
+          container.store = GenomeMetadataStore(baseStore, fields, container.apiServer);
+          if (container.grid) container.grid.store = container.store;
+          container._searchGenomeFields = fields;
+        }
+      }
+      if (container.grid) {
+        // Apply once per search, so subsequent filtering does not undo a user's
+        // manual column choices. New metadata fields need a column definitions rebuild.
+        if (Object.keys(columns).length !== Object.keys(originals).length) container.grid.set('columns', columns);
+        else {
+          changes.forEach(function (change) { container.grid.toggleColumnHiddenState(change.name, change.hidden); });
+        }
+        container._searchColumnContext = key;
+      } else {
+        container.columns = columns;
+      }
+    },
+
     'class': 'GridContainer',
     gutters: false,
     gridCtor: null,
@@ -229,19 +305,7 @@ define([
         }
 
         // Show/hide columns if requested by user
-        if (state.hashParams.defaultColumns && this.grid) {
-          const columns = state.hashParams.defaultColumns.split(',');
-          for (let column of columns) {
-            column = column.trim();
-            if (!column) continue; // Skip empty columns
-
-            const isHidden = column.charAt(0) === '-';
-            const name = column.charAt(0) === '-' || column.charAt(0) === '+' ? column.substring(1) : column;
-            if (name in this.grid._columns) {
-              this.grid.toggleColumnHiddenState(name, isHidden);
-            }
-          }
-        }
+        this._prepareSearchColumns(state);
       } else {
         state.hashParams = {};
         if (!oldState && this.defaultFilter) {
@@ -472,11 +536,11 @@ define([
         'DownloadSelection',
         'fa icon-download fa-2x',
         {
-          label: 'DWNLD',
+          label: 'Selected',
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
-          tooltip: 'Download Selection',
+          tooltip: 'Download selected rows',
           max: 10000,
           tooltipDialog: downloadSelectionTT,
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
@@ -1979,6 +2043,7 @@ define([
         console.error('Missing this.gridCtor in GridContainer');
         return;
       }
+      this._prepareSearchColumns(this.state);
       var state;
       if (this.state) {
         state = lang.mixin({}, this.state, { hashParams: lang.mixin({}, this.state.hashParams) });

@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dijit/popup', 'dijit/TooltipDialog',
   './GenomeGrid', './AdvancedSearchFields', './GridContainer',
-  '../util/PathJoin'
+  '../util/PathJoin', './GenomeColumnProfiles', '../util/dateRangeWithinQuery'
 
 ], function (
   declare, on, domConstruct,
   popup, TooltipDialog,
   GenomeGrid, AdvancedSearchFields, GridContainer,
-  PathJoin
+  PathJoin, GenomeColumnProfiles, dateRangeWithinQuery
 ) {
 
   const dfc = '<div>Download Table As...</div><div class="wsActionTooltip" rel="text/tsv">Text</div><div class="wsActionTooltip" rel="text/csv">CSV</div><div class="wsActionTooltip" rel="application/vnd.openxmlformats">Excel</div>';
@@ -21,6 +21,22 @@ define([
 
   return declare([GridContainer], {
     gridCtor: GenomeGrid,
+    onFirstView: function onFirstView() {
+      this.inherited(onFirstView, arguments);
+      this.applyVirusColumnDefaults(this.state);
+      // Apply explicit link overrides on the initial, lazily created grid too.
+      if (this.grid && this.state) {
+        this.onSetState('state', null, this.state);
+      }
+    },
+
+    onSetState: function onSetState(attr, oldState, state) {
+      this.applyVirusColumnDefaults(state);
+      // GridContainer applies URL defaultColumns after the virus defaults.
+      this.inherited(onSetState, arguments);
+    },
+
+    applyVirusColumnDefaults: GenomeColumnProfiles.applyDefaults,
     containerType: 'genome_data',
     tutorialLink: 'quick_references/organisms_taxon/genome_table.html',
     tooltip: 'The "Genomes" tab lists all genomes or segments associated with the current view and associated metadata',
@@ -38,10 +54,10 @@ define([
         'DownloadTable',
         'fa icon-download fa-2x',
         {
-          label: 'DOWNLOAD',
+          label: 'Metadata',
           multiple: false,
           validTypes: ['*'],
-          tooltip: 'Download Table',
+          tooltip: 'Download metadata for all filtered results',
           tooltipDialog: downloadTT
         },
         function () {
@@ -50,7 +66,7 @@ define([
           const totalRows = _self.grid.totalRows;
           const dataType = _self.dataModel
           const primaryKey = _self.primaryKey
-          const currentQuery = _self.grid.get('query')
+          const currentQuery = dateRangeWithinQuery(_self.grid.get('query'))
           const query = `${currentQuery}&sort(${primaryKey})&limit(${totalRows})`
 
           on(downloadTT.domNode, 'div:click', function (evt) {
