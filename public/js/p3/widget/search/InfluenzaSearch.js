@@ -13,7 +13,7 @@ define([
     A: ['11320', '2955291'],
     B: ['11520', '2955465'],
     C: ['11552', '2955935'],
-    D: ['1513237', '2955744']
+    D: ['2955744']
   };
 
   // Updated IDs only — used in search queries (last entry of each list)
