@@ -914,16 +914,36 @@ var loadGexfDependencies = function(callback) {
                     if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
                     if (isSpecial) explicitNodes[node.id] = true;
                 });
+            } else if (type === 'translocation_bridges') {
+                addEdgesByAttr('bridge_junction', 'true', true);
+                addEdgesByAttr('translocation_bridge', 'true', false);
+                GexfJS.graph.nodeList.forEach(function(node) {
+                    if (checkNodeBool(node, 'translocation_bridge')) {
+                        explicitNodes[node.id] = true;
+                    }
+                });
             } else if (type === 'rearrangements') {
                 addEdgesByAttr('breakpoint_junction', 'true', true);
-                addEdgesByAttr('inter_contig_rearrangement', 'true', true);
-                addEdgesByAttr('intra_contig_rearrangement', 'true', true);
                 var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
                 GexfJS.graph.nodeList.forEach(function(node) {
                     var isSpecial = false;
                     if (checkNodeBool(node, 'synteny_breakpoint')) isSpecial = true;
                     if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "1") isSpecial = true;
                     if (isSpecial) explicitNodes[node.id] = true;
+                });
+            } else if (type === 'rearrangement_junctions') {
+                addEdgesByAttr('inter_contig_rearrangement', 'true', true);
+                addEdgesByAttr('intra_contig_rearrangement', 'true', true);
+                // Guard against legacy GEXF files where superbubbles or alt paths were also tagged with intra/inter_contig_rearrangement
+                var excludeEdgeAttrs = ['is_superbubble', 'alternative_path', 'alt_path_junction', 'translocation_bridge', 'bridge_junction', 'breakpoint_junction'];
+                excludeEdgeAttrs.forEach(function(exAttr) {
+                    var exId = GexfJS._edge_attr_value && GexfJS._edge_attr_value[exAttr];
+                    if (typeof exId !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[exId] && GexfJS.path_highlights[exId]['true']) {
+                        for (var eid in GexfJS.path_highlights[exId]['true']) {
+                            delete rawEdges[eid];
+                            delete dashedEdges[eid];
+                        }
+                    }
                 });
             } else if (type === 'inversions') {
                 addEdgesByAttr('inverted_block', 'true', false);
@@ -1032,24 +1052,34 @@ var loadGexfDependencies = function(callback) {
                 }
             });
 
-            // 3. Union by shared superbubble_id or cnv_cluster_id when applicable
+            // 3. Union by shared superbubble_id, alt_path_event_id, bridge_event_id, or cnv_cluster_id when applicable
             var sbAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['superbubble_id'] : undefined;
+            var altEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['alt_path_event_id'] : undefined;
+            var brEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['bridge_event_id'] : undefined;
             var cnvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['cnv_cluster_id'] : undefined;
             var breakAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['assembly_repeat_break'] : undefined;
-            if (type === 'superbubbles' && typeof sbAttrId !== 'undefined') {
-                var bySb = {};
+            var unionByCsvNodeAttr = function(attrId) {
+                if (typeof attrId === 'undefined') return;
+                var byTok = {};
                 involvedIds.forEach(function(nid) {
                     var n = nodeById[nid];
-                    var val = (n && n.attributes && n.attributes[sbAttrId]) ? String(n.attributes[sbAttrId]).trim() : '';
+                    var val = (n && n.attributes && n.attributes[attrId]) ? String(n.attributes[attrId]).trim() : '';
                     if (val && val !== 'None' && val !== '0') {
                         val.split(',').forEach(function(tok) {
                             var t = tok.trim();
                             if (!t) return;
-                            if (bySb[t]) union(bySb[t], nid);
-                            else bySb[t] = nid;
+                            if (byTok[t]) union(byTok[t], nid);
+                            else byTok[t] = nid;
                         });
                     }
                 });
+            };
+            if (type === 'superbubbles') {
+                unionByCsvNodeAttr(sbAttrId);
+            } else if (type === 'alt_paths') {
+                unionByCsvNodeAttr(altEvAttrId);
+            } else if (type === 'translocation_bridges') {
+                unionByCsvNodeAttr(brEvAttrId);
             } else if ((type === 'tandem_repeats' || type === 'fragmented_paralogs') && typeof cnvAttrId !== 'undefined') {
                 var byCnv = {};
                 involvedIds.forEach(function(nid) {
@@ -1114,7 +1144,7 @@ var loadGexfDependencies = function(callback) {
                     }
                 } else {
                     var hasExplicitInComp = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
-                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'inversions')) {
+                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'translocation_bridges' || type === 'rearrangements' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'inversions')) {
                         c.nodeIds.forEach(function(nid) {
                             if (explicitNodes[nid]) focalIds.push(nid);
                             else boundaryAnchorSet[nid] = true;
@@ -1134,7 +1164,7 @@ var loadGexfDependencies = function(callback) {
                         if (!focalSet[item.neighborId]) {
                             boundaryAnchorSet[item.neighborId] = true;
                         }
-                        if (focalSet[item.neighborId] || Object.keys(c.edgeIds).length === 0) {
+                        if ((type !== 'rearrangement_junctions' && focalSet[item.neighborId]) || Object.keys(c.edgeIds).length === 0) {
                             c.edgeIds[item.edge.id] = true;
                         }
                     });
@@ -1460,17 +1490,41 @@ var loadGexfDependencies = function(callback) {
                             });
                         }
                     }
+                } else if (type === 'rearrangement_junctions') {
+                    eventRoleTitle = 'Rearrangement Junction Carriers';
+                    refRoleTitle = 'Collinear Reference Flanking Blocks';
+                    activeEdgeIds.forEach(function(eid) {
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                    });
+                    focalIds.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        if (n && n.genomes) {
+                            Object.keys(n.genomes).forEach(function(g) {
+                                if (!eventGenomesSet[g]) refGenomesSet[g] = true;
+                            });
+                        }
+                        if (n && n.sequences) {
+                            Object.keys(n.sequences).forEach(function(s) {
+                                if (!eventContigsSet[s]) refContigsSet[s] = true;
+                            });
+                        }
+                    });
                 } else {
-                    // Superbubbles, Alt Paths, Rearrangements
+                    // Superbubbles, Alt Paths, Translocation Bridges, Synteny Breakpoints
                     if (type === 'superbubbles') {
                         eventRoleTitle = 'Interior Allele / Cassette Carriers';
                         refRoleTitle = 'Conserved Boundary / Alternate Carriers';
                     } else if (type === 'alt_paths') {
                         eventRoleTitle = 'Accessory Island / Indel Carriers';
                         refRoleTitle = 'Backbone Reference (Without Detour)';
+                    } else if (type === 'translocation_bridges') {
+                        eventRoleTitle = 'Translocation / Replicon Bridge Carriers';
+                        refRoleTitle = 'Unbridged / Separate Replicon Reference';
                     } else if (type === 'rearrangements') {
-                        eventRoleTitle = 'Rearranged / Breakpoint Carriers';
-                        refRoleTitle = 'Collinear Reference Flanking Blocks';
+                        eventRoleTitle = 'Anchor Collision / Breakpoint Carriers';
+                        refRoleTitle = 'Single-Locus Reference Flanking Blocks';
                     }
 
                     focalIds.forEach(function(nid) {
@@ -1890,9 +1944,9 @@ var loadGexfDependencies = function(callback) {
             html += '<details' + guideOpenAttr + ' ontoggle="window.onGuideDetailsToggle(this.open)" style="margin-bottom:12px; font-size:0.84em; background:#f4f8fb; border:1px solid #d9e8f5; border-radius:4px; padding:6px 8px;">';
             html += '<summary style="cursor:pointer; font-weight:bold; color:#2b5c8f; outline:none;"><i class="fa icon-info-circle"></i> Guide to Biological Phenomena</summary>';
             html += '<div style="margin-top:6px; line-height:1.38; color:#444;">';
-            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, or small indels flanked by the same conserved core anchor genes.<br>&bull; <i>Accessory Islands &amp; Indels (Alt Paths):</i> Asymmetric minority detours, genomic islands, prophages, or HGT insertions branching off the conserved chromosomal backbone.</div>';
+            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, or small indels flanked by the same conserved core anchor genes.<br>&bull; <i>Accessory Islands &amp; Indels (Alt Paths):</i> Local strain-specific genomic islands, prophages, or HGT insertions between collinear flanking anchors on the same replicon.</div>';
             html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Fragmented Localized Repeats (Fragmented CNV):</i> Localized repeats that are contiguous on reference contigs but split across multiple contigs in incomplete or misassembled genomes.</div>';
-            html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Rearrangements):</i> Large-scale chromosomal translocations, NAHR-mediated fusions, or chimeric misassemblies joining distinct syntenic blocks.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the consensus pan-genome coordinate frame.</div>';
+            html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Anchor Collisions):</i> Conserved multi-gene anchor sequences where TFS homology signals from different contigs/loci collide.<br>&bull; <i>Rearrangement Junctions (Jump Edges):</i> Direct non-bubble transition edges jumping across inversion or translocation boundaries without intervening bridge genes.<br>&bull; <i>Translocation &amp; Replicon Bridges:</i> Multi-gene bridge paths connecting flanking anchors that reside on different replicons/contigs or distant chromosomal loci in reference genomes.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the polarity-normalized contig walk.</div>';
             html += '<div><b>4. Assembly &amp; Scaffolding:</b><br>&bull; <i>Repeat Breaks &amp; Scaffolds:</i> Contig ends shattered inside shared repetitive elements paired with candidate reference-guided scaffold bridges.</div>';
             html += '</div></details>';
 
@@ -1901,7 +1955,15 @@ var loadGexfDependencies = function(callback) {
             var countTandem = s.copy_number_variants || s.tandem_repeats || s.cnv_clusters || 0; 
             var countFragmented = s.fragmented_cnv || s.repeat_fragmentation || 0; 
             var countAltPaths = s.alternative_paths || s.alt_paths || 0;
-            var countRearrangements = s.structural_rearrangements || s.rearrangements || 0;
+            var countRearrangements = (typeof s.rearrangement_junctions !== 'undefined')
+                ? (s.structural_rearrangements || 0)
+                : this.getPhenomenonData('rearrangements').loci.length;
+            var countRearrangementJunctions = (typeof s.rearrangement_junctions !== 'undefined')
+                ? s.rearrangement_junctions
+                : Object.keys(this.getPhenomenonData('rearrangement_junctions').rawEdges || {}).length;
+            var countTranslocationBridges = (typeof s.translocation_bridges !== 'undefined')
+                ? s.translocation_bridges
+                : this.getPhenomenonData('translocation_bridges').loci.length;
             var countInversions = s.inverted_blocks || s.inversions || 0;
             var countBreaks = s.assembly_breaks || s.scaffolds || 0;
 
@@ -1920,10 +1982,10 @@ var loadGexfDependencies = function(callback) {
                 'alt_paths': {
                     label: 'Accessory Islands & Indels',
                     graphTerm: 'Alt Paths',
-                    subtitle: 'Strain-specific genomic islands, prophages & HGT detours off backbone',
+                    subtitle: 'Local genomic islands, prophages & HGT insertions between collinear anchors',
                     count: countAltPaths,
-                    nodesDesc: 'Accessory genes and backbone branch points',
-                    edgesDesc: 'Minority structural detours and horizontal insertion junctions',
+                    nodesDesc: 'Inserted accessory island genes and collinear flanking backbone anchors',
+                    edgesDesc: 'Internal island edges and entry/exit insertion junctions',
                     tsvReport: '*_structural_variants.tsv'
                 },
                 'tandem_repeats': {
@@ -1946,11 +2008,29 @@ var loadGexfDependencies = function(callback) {
                 },
                 'rearrangements': {
                     label: 'Synteny Breakpoints',
-                    graphTerm: 'Rearrangements',
-                    subtitle: 'Translocations, NAHR fusions, or chimeric joins between blocks',
+                    graphTerm: 'Anchor Collisions',
+                    subtitle: 'Conserved multi-gene anchor nodes where cross-contig TFS signals collide',
                     count: countRearrangements,
-                    nodesDesc: 'Flanking anchor genes at inter-block synteny breakpoints',
-                    edgesDesc: 'Inter-contig and intra-contig rearrangement junctions',
+                    nodesDesc: 'Anchor-collision synteny breakpoint nodes (c1_conflict)',
+                    edgesDesc: 'Incident breakpoint junction edges connecting divergent genomic contexts',
+                    tsvReport: '*_structural_variants.tsv'
+                },
+                'rearrangement_junctions': {
+                    label: 'Rearrangement Junctions',
+                    graphTerm: 'Jump Edges',
+                    subtitle: 'Direct non-bubble transition edges across inversion or translocation boundaries',
+                    count: countRearrangementJunctions,
+                    nodesDesc: 'Conserved boundary genes joined directly across a rearrangement seam',
+                    edgesDesc: 'Direct intra-contig and inter-contig rearrangement jump edges',
+                    tsvReport: '*_structural_variants.tsv'
+                },
+                'translocation_bridges': {
+                    label: 'Translocation & Replicon Bridges',
+                    graphTerm: 'Cross-Locus Bridges',
+                    subtitle: 'Multi-gene paths welding together separate replicons or distant chromosomal loci',
+                    count: countTranslocationBridges,
+                    nodesDesc: 'Bridge-specific genes and flanking anchors on the bridged replicons/loci',
+                    edgesDesc: 'Internal bridge path edges and entry/exit bridge junctions',
                     tsvReport: '*_structural_variants.tsv'
                 },
                 'inversions': {
@@ -1964,7 +2044,7 @@ var loadGexfDependencies = function(callback) {
                 },
                 'breaks': {
                     label: 'Repeat Breaks & Scaffolds',
-                    graphTerm: 'Bridges',
+                    graphTerm: 'Scaffold Bridges',
                     subtitle: 'Contig ends shattered at repeats with reference-guided scaffold paths',
                     count: countBreaks,
                     nodesDesc: 'Contig terminal repeat nodes and candidate scaffold bridge nodes',
@@ -1976,7 +2056,7 @@ var loadGexfDependencies = function(callback) {
             var categories = [
                 { title: '1. Accessory & Allelic Variation', keys: ['superbubbles', 'alt_paths'] },
                 { title: '2. Repeats & Paralog Expansion', keys: ['tandem_repeats', 'fragmented_paralogs'] },
-                { title: '3. Chromosomal Architecture', keys: ['rearrangements', 'inversions'] },
+                { title: '3. Chromosomal Architecture', keys: ['rearrangements', 'rearrangement_junctions', 'translocation_bridges', 'inversions'] },
                 { title: '4. Assembly & Scaffolding', keys: ['breaks'] }
             ];
 
@@ -2013,7 +2093,7 @@ var loadGexfDependencies = function(callback) {
                 var loci = (window.GexfJS && GexfJS.params && GexfJS.params.phenomenonLoci) ? GexfJS.params.phenomenonLoci : [];
                 var activeLocusIdx = (window.GexfJS && GexfJS.params && typeof GexfJS.params.activeLocusIndex === 'number') ? GexfJS.params.activeLocusIndex : -1;
                 var filterMode = (window.GexfJS && GexfJS.params && GexfJS.params.locusFilterMode) ? GexfJS.params.locusFilterMode : 'locus';
-                var hasDashed = (activePhenom === 'breaks' || activePhenom === 'rearrangements' || activePhenom === 'inversions');
+                var hasDashed = (activePhenom === 'breaks' || activePhenom === 'rearrangements' || activePhenom === 'rearrangement_junctions' || activePhenom === 'translocation_bridges' || activePhenom === 'inversions');
                 var self = this;
 
                 html += '<div style="margin-bottom:14px; padding:8px; background:#fcf4ff; border:1px solid #d580ff; border-radius:5px; font-size:0.83em; line-height:1.35; color:#333;">';
@@ -2391,8 +2471,10 @@ var loadGexfDependencies = function(callback) {
                     'superbubbles': 'Bounded Variable Loci (Superbubbles)',
                     'alt_paths': 'Accessory Islands & Indels (Alt Paths)',
                     'tandem_repeats': 'Local / Tandem CNVs',
-                    'fragmented_paralogs': 'Dispersed Repeats / MGEs (Fragmented CNV)',
-                    'rearrangements': 'Synteny Breakpoints (Rearrangements)',
+                    'fragmented_paralogs': 'Fragmented Localized Repeats (Fragmented CNV)',
+                    'rearrangements': 'Synteny Breakpoints (Anchor Collisions)',
+                    'rearrangement_junctions': 'Rearrangement Junctions (Jump Edges)',
+                    'translocation_bridges': 'Translocation & Replicon Bridges',
                     'inversions': 'Inverted Syntenic Blocks',
                     'breaks': 'Repeat Breaks & Scaffolds'
                 };
@@ -3539,10 +3621,10 @@ var loadGexfDependencies = function(callback) {
                 },
                 {
                     type: 'alt_paths',
-                    focalLabel: 'Alternative Path',
-                    anchorLabel: 'Alternative Path Anchor',
+                    focalLabel: 'Accessory Island / Indel',
+                    anchorLabel: 'Accessory Island Anchor',
                     bg: '#f3e5f5', fg: '#6a1b9a', border: '#ba68c8',
-                    desc: 'Minority accessory path, genomic island, or horizontal gene transfer (HGT) insertion'
+                    desc: 'Local strain-specific genomic island, prophage, or HGT insertion between collinear flanking anchors'
                 },
                 {
                     type: 'tandem_repeats',
@@ -3563,7 +3645,21 @@ var loadGexfDependencies = function(callback) {
                     focalLabel: 'Synteny Breakpoint',
                     anchorLabel: 'Synteny Breakpoint Anchor',
                     bg: '#ffebee', fg: '#c62828', border: '#e57373',
-                    desc: 'Boundary of a large-scale chromosomal rearrangement, translocation, or inter/intra-contig synteny break'
+                    desc: 'Conserved multi-gene anchor node where TFS homology signals from different contigs collide'
+                },
+                {
+                    type: 'rearrangement_junctions',
+                    focalLabel: 'Rearrangement Junction',
+                    anchorLabel: 'Rearrangement Junction Flank',
+                    bg: '#fbe9e7', fg: '#bf360c', border: '#ff8a65',
+                    desc: 'Boundary gene connected across a direct intra-contig or inter-contig rearrangement jump edge'
+                },
+                {
+                    type: 'translocation_bridges',
+                    focalLabel: 'Translocation / Replicon Bridge',
+                    anchorLabel: 'Bridge Flanking Anchor',
+                    bg: '#e0f2f1', fg: '#00695c', border: '#4db6ac',
+                    desc: 'Multi-gene bridge path connecting separate replicons or distant chromosomal loci'
                 },
                 {
                     type: 'inversions',
