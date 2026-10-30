@@ -157,6 +157,46 @@ by the same rules in both modes:
 those examples for the preview, then delete the rest of the module — or fold the examples into
 whatever replaces it. Do not leave two field registries behind.
 
+### Field naming differs between the two modes
+
+**Measured while building item 3, and it constrains seed-from-zones directly.**
+
+Zone mode accepts *either* naming for an enriched field; template mode accepts only the
+bare name:
+
+```
+zone      http_fasta_description_fields=genome_metadata.strain  -> MGYG-HGUT-00869
+zone      http_fasta_description_fields=strain                  -> MGYG-HGUT-00869
+template  {genome_metadata.strain}                              -> (empty)
+template  {strain}                                              -> MGYG-HGUT-00869
+```
+
+The picker's hardcoded list uses the **prefixed** form for five fields
+(`FASTAConfiguratorStep.js:247-251`), so seeding a template straight from the current zone
+selection would produce `{genome_metadata.strain}` — silently empty, the exact failure this
+feature exists to prevent.
+
+**Fix: normalise to the bare name.** Both forms work in zone mode, so stripping
+`genome_metadata.` is safe for the existing path and required for the template path.
+`/fields` lists only bare names, which is also what item 5 will adopt.
+
+### Three offered fields are not joinable at all
+
+`assembly_accession`, `bioproject_accession` and `biosample_accession` are in the picker but
+**absent from `/fields`** on both `genome_feature` and `genome_sequence`, and resolve under
+neither naming in either mode — though the genome record has values:
+
+```
+genome 1545742.911 -> assembly_accession=GCA_902466705.1, bioproject_accession=PRJEB33885
+select(feature_id,assembly_accession)  -> (field absent from the response)
+```
+
+So the picker advertises three fields that always produce nothing. Same bug class as the
+original report, still live in the hardcoded list. Either the API adds them to
+`GENOME_METADATA_FIELDS` or item 5 drops them when it switches to `/fields` — item 5 fixes
+it for free, which is an argument for doing it sooner. `genbank_accessions` *is* enriched and
+may be the intended substitute.
+
 ### Validation
 
 - Template: balanced braces, no `{}`, non-empty — mirror `validateTemplate()`. The server does

@@ -32,6 +32,90 @@ define([
   /** Sentinel <option> value; not a delimiter anyone would type. */
   var CUSTOM_DELIMITER = '\u0000custom';
 
+  /**
+   * Enriched fields are reachable under two names in zone mode
+   * ('genome_metadata.strain' and 'strain') but only the bare one works in a
+   * format string -- the prefixed form renders empty. The picker's hardcoded
+   * list still carries the prefix, so strip it whenever a field name crosses
+   * into a template. Measured on alpha; see PLAN-fasta-header-formats.md.
+   */
+  var JOIN_PREFIX = /^genome_metadata\./;
+
+  function bareFieldName(name) {
+    return String(name).replace(JOIN_PREFIX, '');
+  }
+
+  /** Field references in a template: {name}, ignoring {{escaped}} braces. */
+  var TEMPLATE_FIELD = /\{([^{}]*)\}/g;
+
+  // Stand-ins for escaped braces while scanning. These must be strings a
+  // user cannot type into the box: a readable word would be rewritten to
+  // a brace if someone used it as literal text. Applied with split/join
+  // rather than a regex, since a control character in a regex literal is
+  // both unreadable and an eslint error.
+  var ESCAPED_OPEN = String.fromCharCode(0);
+  var ESCAPED_CLOSE = String.fromCharCode(1);
+
+  /**
+   * Field names a template refers to, in order of first appearance.
+   * Mirrors templateFields() in p3_api util/fastaHeaderFormatter.js.
+   */
+  function templateFields(template) {
+    if (!template) return [];
+    var out = [];
+    var scannable = String(template).replace(/\{\{/g, '\u0000').replace(/\}\}/g, '\u0000');
+    var m;
+    TEMPLATE_FIELD.lastIndex = 0;
+    while ((m = TEMPLATE_FIELD.exec(scannable)) !== null) {
+      var name = m[1].trim();
+      if (name && out.indexOf(name) === -1) out.push(name);
+    }
+    return out;
+  }
+
+  /**
+   * Syntax check, mirroring validateTemplate() in the API. The server enforces
+   * these too, so this only fails faster -- unlike the field-name check below,
+   * which the server does NOT perform.
+   *
+   * @returns {string|null} an error message, or null when well-formed
+   */
+  function validateTemplateSyntax(template) {
+    if (typeof template !== 'string' || template.trim() === '') {
+      return 'Enter a format string, or switch back to "Build from fields".';
+    }
+    var scannable = template.replace(/\{\{/g, '\u0000').replace(/\}\}/g, '\u0000');
+    var opens = (scannable.match(/\{/g) || []).length;
+    var closes = (scannable.match(/\}/g) || []).length;
+    if (opens !== closes) {
+      return 'Unbalanced braces. Use {{ and }} for literal braces.';
+    }
+    if (/\{\s*\}/.test(scannable)) {
+      return 'Empty field reference {}.';
+    }
+    return null;
+  }
+
+  /** Cheap edit distance, capped -- only used to suggest a near-miss field. */
+  function closeTo(a, b) {
+    if (Math.abs(a.length - b.length) > 3) return false;
+    var prev = [];
+    var i;
+    for (i = 0; i <= b.length; i++) prev[i] = i;
+    for (i = 1; i <= a.length; i++) {
+      var cur = [i];
+      for (var j = 1; j <= b.length; j++) {
+        cur[j] = Math.min(
+          prev[j] + 1,
+          cur[j - 1] + 1,
+          prev[j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1)
+        );
+      }
+      prev = cur;
+    }
+    return prev[b.length] <= 3;
+  }
+
   return declare([WizardStepBase], {
     templateString: template,
     stepId: 'options',
@@ -57,6 +141,12 @@ define([
     // which makes it a trailing character -- '|' or nothing.
     idDelimiter: '|',
     descriptionDelimiter: ' | ',
+
+    // 'zones' | 'template'. Exclusive, because the API is: when
+    // http_fasta_header is present the server ignores the zone parameters
+    // rather than merging them.
+    headerMode: 'zones',
+    headerTemplate: '',
 
     // Event handlers
     _handlers: null,
@@ -108,6 +198,184 @@ define([
       // Delimiter controls
       this._populateDelimiterDropdown();
       this._syncDelimiterControls();
+
+      // Template mode
+      this._populateTemplateFieldList();
+      this._syncModeControls();
+    },
+
+    /**
+     * Compose the template the current zone selection would produce.
+     *
+     * Seeding from the zones is what makes the format string approachable: it
+     * turns the feature into an escape hatch from the picker rather than a
+     * blank box. Field names are normalised to their bare form, since the
+     * prefixed names the picker uses render empty in a template.
+     */
+    _templateFromZones: function () {
+      var idField = bareFieldName(this.sequenceIdField || 'id');
+      var parts = ['{' + idField + '}' + (this.idDelimiter || '')];
+
+      if (this.descriptionFields.length > 0) {
+        parts.push(this.descriptionFields.map(function (f) {
+          return '{' + bareFieldName(f.field) + '}';
+        }).join(this.descriptionDelimiter));
+      }
+
+      return parts.join(' ');
+    },
+
+    _populateTemplateFieldList: function () {
+      if (!this.templateFieldList) return;
+
+      var self = this;
+      domConstruct.empty(this.templateFieldList);
+
+      this.availableFields.forEach(function (f) {
+        var name = bareFieldName(f.field);
+        var chip = domConstruct.create('a', {
+          'class': 'templateFieldChip',
+          href: '#',
+          title: '{' + name + '}',
+          innerHTML: self._escapeHtml(f.label)
+        }, self.templateFieldList);
+
+        self._handlers.push(on(chip, 'click', function (e) {
+          e.preventDefault();
+          self._insertField(name);
+        }));
+      });
+    },
+
+    /** Insert {name} at the caret, keeping focus in the box. */
+    _insertField: function (name) {
+      var input = this.templateInput;
+      if (!input) return;
+
+      var token = '{' + name + '}';
+      var start = input.selectionStart;
+      var end = input.selectionEnd;
+
+      if (typeof start !== 'number') {
+        input.value += token;
+      } else {
+        input.value = input.value.slice(0, start) + token + input.value.slice(end);
+        var caret = start + token.length;
+        input.setSelectionRange(caret, caret);
+      }
+
+      input.focus();
+      this._onTemplateInput();
+    },
+
+    _onModeChange: function () {
+      var toTemplate = this.modeTemplateRadio && this.modeTemplateRadio.checked;
+      this.headerMode = toTemplate ? 'template' : 'zones';
+
+      // Seed on the first switch only; afterwards the user's edits stand.
+      if (toTemplate && !this.headerTemplate) {
+        this.headerTemplate = this._templateFromZones();
+        if (this.templateInput) this.templateInput.value = this.headerTemplate;
+      }
+
+      this._syncModeControls();
+      this._validateTemplate();
+      this._updatePreview();
+      this.notifyDataChanged();
+    },
+
+    _onTemplateInput: function () {
+      this.headerTemplate = this.templateInput ? this.templateInput.value : '';
+      this._validateTemplate();
+      this._updatePreview();
+      this.notifyDataChanged();
+    },
+
+    /** Show or hide each mode's controls. */
+    _syncModeControls: function () {
+      var template = this.headerMode === 'template';
+
+      if (this.modeZonesRadio) this.modeZonesRadio.checked = !template;
+      if (this.modeTemplateRadio) this.modeTemplateRadio.checked = template;
+
+      if (this.templateSection) {
+        domClass.toggle(this.templateSection, 'dijitHidden', !template);
+      }
+      if (this.zoneSections) {
+        domClass.toggle(this.zoneSections, 'zoneSectionsDisabled', template);
+      }
+      if (this.templateInput && this.templateInput.value !== this.headerTemplate) {
+        this.templateInput.value = this.headerTemplate;
+      }
+    },
+
+    /**
+     * Check the template and show any problem.
+     *
+     * Two classes of problem, treated differently:
+     *
+     * - SYNTAX (unbalanced braces, empty {}) is a hard error. The server
+     *   rejects these with a 400, so blocking costs the user nothing.
+     *
+     * - AN UNRECOGNISED FIELD is only a warning, because our field list is
+     *   not authoritative. The picker's hardcoded list knows 30 names while
+     *   the collection accepts 88 (/fields), so {host_name} is perfectly
+     *   valid on the server and absent from our list. Blocking on that would
+     *   refuse working templates -- worse than the thing we are guarding
+     *   against. Item 5 replaces the list with /fields, at which point this
+     *   can tighten to an error.
+     *
+     *   Worth flagging at all because the deployed API renders an unknown
+     *   field as an empty string and returns 200 (contrary to its documented
+     *   contract), so a typo like {producr} silently truncates the header.
+     *
+     * @returns {Object} { error, warning } -- error blocks, warning does not
+     */
+    _validateTemplate: function () {
+      if (this.headerMode !== 'template') {
+        this._showTemplateMessage(null);
+        return {};
+      }
+
+      var error = validateTemplateSyntax(this.headerTemplate);
+      var warning = null;
+
+      if (!error) {
+        var known = this.availableFields.map(function (f) {
+          return bareFieldName(f.field);
+        });
+        var unrecognised = templateFields(this.headerTemplate).filter(function (n) {
+          return known.indexOf(n) === -1;
+        });
+
+        if (unrecognised.length > 0) {
+          var name = unrecognised[0];
+          var suggestion = known.filter(function (k) { return closeTo(name, k); })[0];
+          warning = suggestion
+            ? 'Unrecognised field {' + name + '} — did you mean {' + suggestion + '}?'
+            : 'Unrecognised field {' + name + '}. If the collection has it the '
+              + 'download will still work; if not, it will be left blank.';
+          if (unrecognised.length > 1) {
+            warning += ' (' + (unrecognised.length - 1) + ' more)';
+          }
+        }
+      }
+
+      this._showTemplateMessage(error ? { text: error, isError: true }
+        : (warning ? { text: warning, isError: false } : null));
+
+      return { error: error, warning: warning };
+    },
+
+    _showTemplateMessage: function (message) {
+      if (!this.templateError) return;
+      if (message) {
+        this.templateError.innerHTML = this._escapeHtml(message.text);
+        domClass.toggle(this.templateError, 'templateWarning', !message.isError);
+        domClass.remove(this.templateError, 'dijitHidden');
+      } else {
+        domClass.add(this.templateError, 'dijitHidden');
+      }
     },
 
     /**
@@ -480,6 +748,25 @@ define([
      * preview shows e.g. ">patric_id|" and not ">patric_id".
      */
     _buildPreview: function () {
+      if (this.headerMode === 'template') {
+        // Render the template the way the server will: substitute each
+        // {field} with the field name itself. Escaped braces are masked
+        // first and restored last, so a literal brace is never mistaken for
+        // a field delimiter.
+        var masked = String(this.headerTemplate || '');
+        masked = masked.split('{{').join(ESCAPED_OPEN);
+        masked = masked.split('}}').join(ESCAPED_CLOSE);
+
+        var rendered = masked.replace(TEMPLATE_FIELD, function (match, raw) {
+          var name = raw.trim();
+          return name || match;
+        });
+
+        rendered = rendered.split(ESCAPED_OPEN).join('{');
+        rendered = rendered.split(ESCAPED_CLOSE).join('}');
+        return '>' + rendered;
+      }
+
       var idField = this.sequenceIdField || 'id';
       var descFields = this.descriptionFields.map(function (f) {
         return f.field;
@@ -515,6 +802,16 @@ define([
      * Validate
      */
     validate: function () {
+      if (this.headerMode === 'template') {
+        // Only a syntax error blocks; an unrecognised field is a warning,
+        // since our field list is narrower than the collection's.
+        var result = this._validateTemplate();
+        if (result.error) {
+          return { valid: false, message: result.error };
+        }
+        return true;
+      }
+
       if (!this.sequenceIdField) {
         return {
           valid: false,
@@ -528,7 +825,20 @@ define([
      * Get step data
      */
     getData: function () {
+      // In template mode the zone values are omitted entirely rather than
+      // sent alongside, matching the server: http_fasta_header makes it
+      // ignore them, and sending both would imply a merge that never happens.
+      if (this.headerMode === 'template') {
+        return {
+          headerMode: 'template',
+          headerTemplate: this.headerTemplate,
+          // Retained so switching back restores the picker, but not sent.
+          sequenceIdField: this.sequenceIdField
+        };
+      }
+
       return {
+        headerMode: 'zones',
         sequenceIdField: this.sequenceIdField,
         descriptionFields: this.descriptionFields.map(function (f) {
           return f.field;
@@ -550,6 +860,8 @@ define([
       // download's choices into the next one.
       this.idDelimiter = '|';
       this.descriptionDelimiter = ' | ';
+      this.headerMode = 'zones';
+      this.headerTemplate = '';
       this._initializeFields();
     },
 

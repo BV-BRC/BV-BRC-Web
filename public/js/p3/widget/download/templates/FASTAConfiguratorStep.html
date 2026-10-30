@@ -6,6 +6,46 @@
 
   <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
 
+  <!-- Mode switch. Exclusive, mirroring the API: when http_fasta_header is
+       present the server ignores the zone parameters entirely. -->
+  <div class="configSection modeSection">
+    <label class="modeOption">
+      <input type="radio" name="fastaHeaderMode" value="zones" checked
+             data-dojo-attach-point="modeZonesRadio"
+             data-dojo-attach-event="onchange:_onModeChange">
+      <span>Build from fields</span>
+    </label>
+    <label class="modeOption">
+      <input type="radio" name="fastaHeaderMode" value="template"
+             data-dojo-attach-point="modeTemplateRadio"
+             data-dojo-attach-event="onchange:_onModeChange">
+      <span>Custom format string</span>
+    </label>
+  </div>
+
+  <!-- Template editor, shown in template mode -->
+  <div class="configSection templateSection dijitHidden" data-dojo-attach-point="templateSection">
+    <h4>Format String</h4>
+    <p class="sectionDescription">
+      Reference a field with <code>{field_name}</code>. Click a field below to insert it.
+      Use <code>{{</code> and <code>}}</code> for literal braces.
+    </p>
+    <input type="text" class="templateInput" data-dojo-attach-point="templateInput"
+           data-dojo-attach-event="oninput:_onTemplateInput"
+           aria-label="FASTA header format string"
+           placeholder="{patric_id} {product} [{genome_name}]">
+    <div class="templateError dijitHidden" data-dojo-attach-point="templateError"></div>
+    <div class="templateFields">
+      <span class="templateFieldsLabel">Insert:</span>
+      <span data-dojo-attach-point="templateFieldList"></span>
+    </div>
+  </div>
+
+  <!-- Zone-mode sections. Disabled rather than removed in template mode, so
+       the user can see what they are setting aside; switching back restores
+       the previous selection. -->
+  <div data-dojo-attach-point="zoneSections">
+
   <!-- Section 1: Sequence ID Field -->
   <div class="configSection">
     <h4>Sequence ID Field</h4>
@@ -67,6 +107,8 @@
              placeholder="any text" aria-label="Custom description delimiter">
     </div>
   </div>
+
+  </div><!-- /zoneSections -->
 
   <!-- Preview Section -->
   <div class="configSection previewSection">

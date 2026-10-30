@@ -212,6 +212,14 @@ define([
     }
 
     var cfg = spec.fastaConfig;
+
+    // A format string replaces the zone parameters rather than supplementing
+    // them — the server ignores the zones when http_fasta_header is present,
+    // so sending both would imply a merge that never happens.
+    if (cfg.headerTemplate) {
+      return '&http_fasta_header=' + encodeURIComponent(cfg.headerTemplate);
+    }
+
     var idFields = cfg.idFields || [];
     var descFields = cfg.descriptionFields || [];
 

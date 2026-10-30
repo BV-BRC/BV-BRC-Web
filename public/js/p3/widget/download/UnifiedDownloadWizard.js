@@ -636,13 +636,18 @@ define([
         // Column selection
         columns: columns,
 
-        // FASTA configuration — maps to http_fasta_* query parameters
-        fastaConfig: optionsData.sequenceIdField ? {
-          idFields: [optionsData.sequenceIdField],
-          descriptionFields: optionsData.descriptionFields || [],
-          idDelimiter: optionsData.idDelimiter,
-          descriptionDelimiter: optionsData.descriptionDelimiter
-        } : null,
+        // FASTA configuration — maps to http_fasta_* query parameters.
+        // A template and the zone fields are mutually exclusive: the server
+        // ignores the zone parameters when http_fasta_header is present, so
+        // carry only one of them.
+        fastaConfig: optionsData.headerMode === 'template'
+          ? { headerTemplate: optionsData.headerTemplate }
+          : (optionsData.sequenceIdField ? {
+            idFields: [optionsData.sequenceIdField],
+            descriptionFields: optionsData.descriptionFields || [],
+            idDelimiter: optionsData.idDelimiter,
+            descriptionDelimiter: optionsData.descriptionDelimiter
+          } : null),
 
         // GenBank merged mode
         genbankMerged: optionsData.genbankMerged || false,

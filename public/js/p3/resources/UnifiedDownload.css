@@ -431,6 +431,88 @@
   font-size: 14px;
 }
 
+/* Header mode switch */
+.fastaConfiguratorStep .modeSection {
+  display: flex;
+  gap: 20px;
+  padding-bottom: 4px;
+}
+
+.fastaConfiguratorStep .modeOption {
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+}
+
+.fastaConfiguratorStep .modeOption input {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Zone controls in template mode: dimmed and inert, not removed, so the user
+   can see what they are setting aside. */
+.fastaConfiguratorStep .zoneSectionsDisabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Template editor */
+.fastaConfiguratorStep .templateInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.fastaConfiguratorStep .templateError {
+  margin-top: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #8a2c2c;
+  background: #fdf0f0;
+  border: 1px solid #e8c4c4;
+  border-radius: 3px;
+}
+
+/* An unrecognised field is advisory, not fatal: our field list is narrower
+   than the collection's, so the template may well be valid. Amber, not red. */
+.fastaConfiguratorStep .templateError.templateWarning {
+  color: #5c4204;
+  background: #fdf3d2;
+  border-color: #e3c14e;
+}
+
+.fastaConfiguratorStep .templateFields {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.fastaConfiguratorStep .templateFieldsLabel {
+  margin-right: 6px;
+  color: #777;
+}
+
+.fastaConfiguratorStep .templateFieldChip {
+  display: inline-block;
+  margin: 0 4px 2px 0;
+  padding: 1px 7px;
+  color: #09456f;
+  background: #eef3f7;
+  border: 1px solid #d3e0ea;
+  border-radius: 10px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.fastaConfiguratorStep .templateFieldChip:hover {
+  background: #dfeaf2;
+  text-decoration: none;
+}
+
 /* Delimiter controls.
    The ID "delimiter" is a checkbox because the ID selector is single-select --
    there is never a second ID field to separate, so all it controls is the
