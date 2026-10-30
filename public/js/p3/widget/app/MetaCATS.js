@@ -638,6 +638,90 @@ define([
       }, self);
       self.grid.refresh();
       self.getNumberGroups();
+      self.restoreAutoGroupDetails(auto_groups);
+    },
+
+    restoreAutoGroupDetails: function (auto_groups) {
+      var self = this;
+      var feature_ids = auto_groups.map(function (group) {
+        return group['id'];
+      });
+      var genome_ids = Array.from(new Set(auto_groups.map(function (group) {
+        return group['g_id'];
+      }).filter(function (genome_id) {
+        return genome_id;
+      })));
+      var remaining_requests = (feature_ids.length > 0 ? 1 : 0) + (genome_ids.length > 0 ? 1 : 0);
+      var details_failed = false;
+      var finishDetailsRequest = function (failed) {
+        details_failed = details_failed || failed;
+        remaining_requests -= 1;
+        if (remaining_requests === 0) {
+          if (details_failed) {
+            self.autoGroupDetailsStatus.innerHTML = 'Some accession or strain details could not be loaded.';
+            self.autoGroupDetailsStatus.className = 'messageContainer errorMessage';
+          } else {
+            self.autoGroupDetailsStatus.style.display = 'none';
+          }
+        }
+      };
+
+      if (remaining_requests > 0) {
+        this.autoGroupDetailsStatus.innerHTML = '<i class="fa fa-spinner fa-spin fa-lg"></i>&nbsp;&nbsp;Loading accession and strain details...';
+        this.autoGroupDetailsStatus.className = 'messageContainer workingMessage';
+        this.autoGroupDetailsStatus.style.display = 'block';
+      }
+
+      if (feature_ids.length > 0) {
+        var feature_query = 'patric_id:(' + feature_ids.map(function (feature_id) {
+          return '"' + feature_id.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+        }).join(' OR ') + ')';
+        DataAPI.queryGenomeFeatures(feature_query, {
+          limit: feature_ids.length,
+          query_lang: 'solr',
+          select: ['patric_id', 'accession', 'sequence_id']
+        }).then(function (result) {
+          result.items.forEach(function (feature) {
+            var rows = self.grid.store.query({ patric_id: feature.patric_id });
+            if (rows.length > 0) {
+              var row = rows[0];
+              row.genbank_accessions = feature.accession || feature.sequence_id || '';
+              self.grid.store.put(row);
+            }
+          });
+          self.grid.refresh();
+          finishDetailsRequest(false);
+        }).catch(function (error) {
+          console.error('Feature details query failed while restoring MetaCATS input.', error);
+          finishDetailsRequest(true);
+        });
+      }
+
+      if (genome_ids.length > 0) {
+        var genome_query = 'in(genome_id,(' + genome_ids.join(',') + '))';
+        DataAPI.queryGenomes(genome_query, {
+          limit: genome_ids.length,
+          select: ['genome_id', 'strain']
+        }).then(function (result) {
+          var strains = new Map();
+          result.items.forEach(function (genome) {
+            strains.set(genome.genome_id, genome.strain || '');
+          });
+          auto_groups.forEach(function (group) {
+            var rows = self.grid.store.query({ patric_id: group['id'] });
+            if (rows.length > 0 && strains.has(group['g_id'])) {
+              var row = rows[0];
+              row.strain = strains.get(group['g_id']);
+              self.grid.store.put(row);
+            }
+          });
+          self.grid.refresh();
+          finishDetailsRequest(false);
+        }).catch(function (error) {
+          console.error('Genome details query failed while restoring MetaCATS input.', error);
+          finishDetailsRequest(true);
+        });
+      }
     },
 
     getGenomeIDs: function (job_data) {
