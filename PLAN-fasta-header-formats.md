@@ -44,21 +44,18 @@ Four decisions that drive the UI design, not implementation trivia:
 
 The leading `>` is added by the server; the template supplies everything after it.
 
-### Two deployed behaviours diverge from that contract
+### One deployed behaviour still diverges from that contract
 
-Measured on alpha after the restart. Both affect the UI design, so they are worth settling
-before item 3 is built.
-
-**(a) An unknown field renders empty rather than 400** — contract decision 4 does not hold:
+**An unknown field renders empty rather than 400** — contract decision 4 does not hold.
+Re-verified 2026-10-30 after the field update:
 
 ```
-http_fasta_header={patric_id} {bogus_field}   -> HTTP 200,  >fig|1545742.911.peg.9
-http_fasta_header={patric_id} {hostname}      -> HTTP 200,  >fig|1545742.911.peg.9
+http_fasta_header={accession} {hostname}   -> HTTP 200,  >CY086966
 ```
 
-That second one is the realistic case: `{hostname}` instead of `{host_name}`. The user gets a
-silently truncated header — exactly the failure mode decision 4 was written to prevent ("how
-the original enrichment bug hid for weeks"). *Syntax* validation does fire correctly:
+That is the realistic case: `{hostname}` instead of `{host_name}`. The user gets a silently
+truncated header — exactly the failure mode decision 4 was written to prevent ("how the
+original enrichment bug hid for weeks"). *Syntax* validation does fire correctly:
 
 ```
 {patric_id        -> 400  "unbalanced braces (use {{ and }} for literal braces)"
@@ -68,17 +65,10 @@ the original enrichment bug hid for weeks"). *Syntax* validation does fire corre
 So the validator runs; the field-name check against the collection registry is what is
 missing. **Client-side validation against `/fields` is therefore required, not just nice** —
 it is currently the only thing standing between a typo and a bad download. Worth reporting
-upstream regardless.
+upstream regardless, since a direct API caller gets no protection from our validation.
 
-**(b) `{{` / `}}` do not round-trip** — the escaped content is dropped:
-
-```
-A{{x}}B   -> >A{}B        expected  >A{x}B
-{{lit}}   -> >{}          expected  >{lit}
-```
-
-The inner text is lost and only the braces survive. Minor, but it means the UI should not
-advertise `{{...}}` as a way to emit literal braces until it is fixed.
+*(A second divergence — `{{`/`}}` dropping their contents — was fixed in the same update.
+`A{{x}}B` now renders `>A{x}B`, so brace escaping can be documented in the UI.)*
 
 ---
 
@@ -232,8 +222,6 @@ Three text inputs + preview wiring. Still no API dependency.
 field-reference helper (clicking a field in the picker inserts `{name}` at the cursor),
 client-side validation against `/fields`, seed-from-zones on first switch.
 
-Do not surface `{{...}}` escaping in the UI help text until divergence (b) is fixed.
-
 ### 4. `util/FastaFormatStore.js` + save/load UI
 
 Independent of item 3 — it can store zone configs before templates exist. Build it after 2,
@@ -245,15 +233,12 @@ Out of scope for the reported bug but adjacent: `_getDefaultFieldsForDataType()`
 (`FASTAConfiguratorStep.js:92-133`) hardcodes fields that already drifted from the server
 twice. `/<collection>/fields` now reports `source: native|enriched` with labels.
 
-**Two cautions:**
-- `/fields` **404s on production** — needs a fallback to the current hardcoded list, or must
-  ship in lockstep with the API release.
-- The `genome`/`genome_sequence` branch currently offers Species/Strain/Host/Country/Collection
-  Date. `/fields` reports `genome_sequence` as having 33 enriched fields now, but **its FASTA
-  serializer still has no join** (`media/dna+fasta.js:379`, *"no join needed"*), so those stay
-  inert on a sequence FASTA download even though `select()` and CSV resolve them. Consuming
-  `/fields` naively would keep advertising them. Either the serializer gains a join or the UI
-  filters them for that one format.
+**One caution:** `/fields` **404s on production** — needs a fallback to the current hardcoded
+list, or must ship in lockstep with the API release.
+
+The `genome_sequence` concern is resolved: that serializer now enriches (verified with two
+enriched-only fields, `{subtype}` and `{host_common_name}` → `>CY086966|3|N1|Human`), so
+consuming `/fields` directly is safe for every FASTA data type.
 
 ---
 
@@ -266,7 +251,10 @@ twice. `/<collection>/fields` now reports `source: native|enriched` with labels.
 - [ ] Missing field value: zones collapse the delimiter, template leaves a gap (per contract)
 - [ ] Template with an unknown field is caught client-side — the server returns 200 with an
       empty substitution, so nothing else will catch it
-- [ ] `{{literal}}` braces survive round-trip (**currently fails server-side** — divergence (b))
+- [ ] `{{literal}}` braces survive round-trip
+- [ ] Each built-in preset renders exactly the header recorded in `REPORT-fasta-header-presets.md`
+- [ ] Flu B preset on a record with empty `strain` — leading empty field is visible, not silent
+- [ ] `{patric_id}` in a `|`-delimited template triggers the pipe warning
 - [ ] Save, reload the page, load the format back
 - [ ] Two tabs saving different formats — neither is lost (mod-time merge)
 - [ ] Logged out: delimiters/templates work, save UI absent, no console error
@@ -278,136 +266,73 @@ twice. `/<collection>/fields` now reports `source: native|enriched` with labels.
 
 ## Built-in format presets
 
-Candidates for ship-with-the-product named formats. All tested live on alpha; the rendered
-output shown is real, against *A/New York/3197/2009* (`646741.3`) and *M. tuberculosis*
-H37Rv-adjacent records.
+**All verified against live alpha** — see [`REPORT-fasta-header-presets.md`](REPORT-fasta-header-presets.md)
+for the full output, field reference and reproduction commands. The API update of 2026-10-30
+added the seven virology fields (`genome_feature` enrichment 35 → 42), so every preset below
+works today.
 
-### NCBI / GenBank source-modifier style
+Ship them **per data type**, since `{product}` is meaningless on `genome_sequence`:
 
-NCBI's documented submission defline is `>SeqID [modifier=text] [modifier=text]`
-(https://www.ncbi.nlm.nih.gov/genbank/fastaformat/). Rules that constrain us:
+| # | preset | data type | format string |
+|---|---|---|---|
+| 1 | Classic NCBI / BLAST | genome_feature | `{patric_id} {product} [{genome_name}]` |
+| 2 | NCBI source modifiers | genome_feature | `{patric_id} [organism={genome_name}] [strain={strain}] [host={host_name}] [country={isolation_country}] [collection_date={collection_date}]` |
+| 3 | NCBI source modifiers, influenza | genome_feature | `{accession} [organism={genome_name}] [strain={strain}] [serotype={subtype}] [segment={segment}] [host={host_name}] [country={isolation_country}] [collection_date={collection_date}]` |
+| 4 | GISAID / augur, influenza A | genome_feature | `{strain}\|A\|{subtype}\|{collection_date}\|\|{isolation_country}\|{host_common_name}\|{accession}` |
+| 5 | GISAID / augur, influenza B | genome_feature | `{strain}\|B\|{lineage}\|{collection_date}\|\|{isolation_country}\|{host_common_name}\|{accession}` |
+| 6 | GISAID-style, sequence level | genome_sequence | `{accession}\|{segment}\|{strain}\|{collection_date}\|{isolation_country}\|{host_common_name}` |
+| 7 | Bacterial, metadata-rich | genome_feature | `{patric_id} {product} [{genome_name}] [{strain}] [{host_name}] [{isolation_country}]` |
 
-- SeqID must be **unique, space-free, ≤25 characters**; letters, digits, `- _ . : * #`
-- `[modifier=value]` with **no spaces around the `=`**
-- organism (scientific name) is the minimum required modifier
-- the whole defline must be one line
-
-```
-{patric_id} [organism={genome_name}] [strain={strain}] [host={host_name}] [country={isolation_country}] [collection_date={collection_date}]
-```
-
-renders
-
-```
->fig|646741.3.CDS.1 [organism=Influenza A virus (A/New York/3197/2009(N1))] [strain=A/New York/3197/2009] [host=Homo sapiens] [country=USA] [collection_date=2009-04-29]
-```
-
-**Caveat worth surfacing in the UI:** `patric_id` is ~20 chars here but is not guaranteed
-under 25, and `genome_name` contains parentheses and spaces — fine inside a modifier value,
-not in the SeqID. This preset is *NCBI-shaped*, not submission-ready; label it as such rather
-than implying a submission can be built from it unedited.
-
-### Plain NCBI/BLAST style (the common read-only case)
+Real output for #4 and #1:
 
 ```
-{patric_id} {product} [{genome_name}]
-  -> >fig|646741.3.CDS.1 putative polymerase PA, fragment [Influenza A virus (A/New York/3197/2009(N1))]
+>A/New York/3197/2009|A|N1|2009-04-29||USA|Human|CY086966
+>fig|83332.12.peg.1000 Beta-carotene ketolase [Mycobacterium tuberculosis H37Rv]
 ```
 
-This is what most tools expect from a downloaded protein FASTA, and it is close to the
-current zone default — worth offering as the explicit "classic" preset.
+GISAID field order is pinned by `augur parse`
+(https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/parse.html):
+`strain type subtype date season country host accession`, separator `|`.
+NCBI's defline rules are at https://www.ncbi.nlm.nih.gov/genbank/fastaformat/.
 
-### GISAID / Nextstrain influenza style
+### Four data facts that constrain preset design
 
-GISAID's own EpiFlu download builder is behind a login, but the **pipe-delimited order it
-produces is pinned by `augur parse`**, which is the de-facto consumer. Augur's documented
-example (https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/parse.html):
+1. **`subtype` is not always a subtype.** Influenza B records carry the literal string
+   `Influenza B`, with the discriminator in `lineage` (`Yamagata`/`Victoria`). Hence separate
+   A and B presets, and `type` hardcoded in each — BV-BRC has no type field distinct from
+   subtype. **Presets are per-organism, not one generic "GISAID" entry.**
+2. **`strain` can be empty** (4 of a 200-genome influenza sample) even when `genome_name`
+   carries the name, and it *leads* the GISAID format: `>|B|Yamagata|2015-06-12|...`. A
+   leading empty field is worse for a positional parser than a missing record.
+3. **An absent value yields a malformed NCBI modifier**: `[collection_date=]`. Per contract
+   decision 1 this is intended, but it means preset #2/#3 must be labelled **"NCBI-shaped,
+   not submission-ready"**. Zone mode does not have this problem — it skips absent fields.
+4. **`{patric_id}` contains a pipe** (`fig|646741.3.CDS.1`), which hands `augur parse` an
+   extra field. Flu presets use `{accession}`. **Warn when `{patric_id}` appears in a template
+   whose delimiter is `|`.**
 
-```
->A/Canoas/LACENRS_1793/2015|A|H3N2|07/17/2015||Brazil|Human|KY925125
---fields  strain type subtype date season country host accession
-```
-
-so: `strain | type | subtype | date | season | country | host | accession`, separator `|`,
-empty positions preserved. Our nearest expressible equivalent:
-
-```
-{strain}|A|{subtype}|{collection_date}||{isolation_country}|{host_name}|{accession}
-```
-
-renders — and this is the problem —
-
-```
->A/New York/3197/2009|A||2009-04-29||USA|Homo sapiens|CY086966
-                        ^^ subtype empty
-```
-
-**`subtype` is not available on `genome_feature`.** See the gap below. Also note `type` is
-hardcoded `A` in the template because BV-BRC has no separate type field; a B-lineage preset
-would need its own entry, which argues for shipping *per-organism* presets rather than one
-"GISAID" preset.
-
-### A blocking gap: virology fields are not enriched
-
-The enrichment set is bacterial-metadata shaped. Checked against `/fields`:
-
-| field | on `genome` | on `genome_feature` |
-|---|---|---|
-| `subtype` | yes | **absent** |
-| `segment` | yes | **absent** (native on `genome_sequence`) |
-| `lineage` | yes | **absent** |
-| `clade`, `h5_clade`, `h3_clade` | yes | **absent** |
-| `genbank_accessions` | yes | **absent** |
-| `species` | yes | **absent** |
-| `passage` | yes | enriched |
-
-`passage` is in `GENOME_METADATA_FIELDS`; the virology fields are not. So a GISAID-style
-preset cannot be built on `genome_feature` today, and the failure is silent — divergence (a)
-again:
-
-```
-{strain}|{subtype}|{segment}   ->   >A/New York/3197/2009||
-```
-
-`genome_sequence` fares better because `segment` and `accession` are native there:
-
-```
-{accession}|{segment}|{host_name}   ->   >CY086966|3|Homo sapiens
-```
-
-**Ask the API side to add `subtype`, `segment`, `lineage`, `clade`, `genbank_accessions`
-and `species` to `GENOME_METADATA_FIELDS`** — one line each, per that module's own comment,
-and it unblocks the flu presets. `segment` is multi-valued on `genome` (`["3"]`), and
-`getFieldValue` joins arrays with `,`, so confirm it renders as `3` and not `["3"]`.
-
-### Recommendation
-
-Ship presets **per data type**, since a template referencing `{product}` is meaningless on
-`genome_sequence`:
-
-| preset | data types | status |
-|---|---|---|
-| Classic NCBI (`{patric_id} {product} [{genome_name}]`) | genome_feature | works now |
-| NCBI source modifiers | genome_feature, genome_sequence | works now |
-| GISAID influenza (A) | genome_feature | **blocked** on `subtype` |
-| GISAID influenza (sequence) | genome_sequence | works now |
-
-Built-ins should be read-only entries in the same picker as saved formats, with a "duplicate
-and edit" action — that teaches the template syntax by example, which is the cheapest way to
-make the feature discoverable.
+Built-ins are read-only entries in the same picker as saved formats, with "duplicate and
+edit" — the cheapest way to make the template syntax discoverable.
 
 ## Open questions
 
 1. **Should a saved format be shareable?** The preferences file is private by design. If
    sharing is wanted, add an explicit "Export…" writing a single-format file (the
    `SavedSearchManager.exportToWorkspace` pattern) rather than moving the primary store.
-2. ~~Ship built-in named formats?~~ **Resolved** — see *Built-in format presets* above. Open
-   sub-question: should the NCBI source-modifier preset warn that it is not submission-ready
-   (SeqID length/charset is not enforced), or should we enforce those rules when it is chosen?
-3. **`genome_sequence` FASTA enrichment** — serializer gains a join, or the UI keeps filtering
-   those fields out? Affects item 5 and is an API-side call.
-4. **Report divergences (a) and (b) upstream?** (a) in particular undercuts a decision the API
-   authors made deliberately, and the client workaround only protects users coming through the
-   wizard — anyone calling the API directly still gets a silent empty substitution.
-5. **Add the virology fields to `GENOME_METADATA_FIELDS`?** API-side, blocks the influenza
-   presets. Listed in *A blocking gap* above.
+2. **Should the NCBI modifier presets enforce their own rules, or just warn?** NCBI requires a
+   SeqID ≤25 chars from a restricted charset, and does not define an empty modifier value —
+   we produce `[collection_date=]`. Current plan is to label them "NCBI-shaped"; enforcing
+   would mean rejecting templates rather than describing them.
+3. **Report the unknown-field divergence upstream?** It undercuts a decision the API authors
+   made deliberately, and our validation only protects users coming through the wizard —
+   a direct API caller still gets a silent empty substitution.
+4. **`species` returns the ICTV name** (`Alphainfluenzavirus influenzae`), not
+   `Influenza A virus`. Correct, but surprising inside `[organism=…]`; `{genome_name}` is
+   closer to submitter expectation. Decide before preset #3 ships.
+
+### Resolved since first draft
+
+- ~~Ship built-in named formats?~~ Yes — seven, all verified. See above.
+- ~~Add the virology fields to `GENOME_METADATA_FIELDS`?~~ Done, 2026-10-30.
+- ~~`genome_sequence` FASTA enrichment?~~ Done — that serializer now joins.
+- ~~`{{`/`}}` escaping broken?~~ Fixed in the same update.
