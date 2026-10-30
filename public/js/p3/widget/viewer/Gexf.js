@@ -617,22 +617,46 @@ var loadGexfDependencies = function(callback) {
                 true
             ],
             [
-                "HighlightColor",
-                "fa icon-eye fa-2x", // Or any icon you prefer, e.g., icon-magic
+                "VisualSettings",
+                "fa icon-eye fa-2x",
                 {
-                    label: "HIGHLIGHT",
+                    label: "VISUALS",
                     persistent: true,
                     validTypes: ["*"],
-                    validContainerTypes:["*"],
-                    tooltip: "Set Highlight Color Override",
+                    validContainerTypes: ["*"],
+                    tooltip: "Adjust Graph Visuals (Background, Highlight, Edge Color & Weight, Label Color)",
                     ignoreDataType: true
                 },
                 function (selection) {
                     popup.open({
-                        popup: this.hlColorMenu,
-                        around: this.selectionActionBar._actions.HighlightColor.button,
+                        popup: this.visualsMenu,
+                        around: this.selectionActionBar._actions.VisualSettings.button,
                         orient: ["above", "below"]
                     });
+                    if (this.visualsMenuDiv) {
+                        var bgPicker = this.visualsMenuDiv.querySelector('#gexfBgColorPicker');
+                        if (bgPicker) bgPicker.value = this.customBgColor || '#ffffff';
+
+                        var hlVal = (window.GexfJS && GexfJS.params && GexfJS.params.highlightColorOverride) || this.customHlColor || '#d500f9';
+                        var hlPicker = this.visualsMenuDiv.querySelector('#gexfHlColorPicker');
+                        if (hlPicker) hlPicker.value = hlVal;
+
+                        var edgeVal = (window.GexfJS && GexfJS.params && GexfJS.params.edgeColorOverride) || this.customEdgeColor || '#6e7681';
+                        var edgePicker = this.visualsMenuDiv.querySelector('#gexfEdgeColorPicker');
+                        if (edgePicker) edgePicker.value = edgeVal;
+
+                        var ewVal = (window.GexfJS && GexfJS.params && typeof GexfJS.params.defaultEdgeWidth === 'number' && !isNaN(GexfJS.params.defaultEdgeWidth))
+                            ? GexfJS.params.defaultEdgeWidth
+                            : (this.customEdgeWidth || 1.0);
+                        var ewSlider = this.visualsMenuDiv.querySelector('#gexfEdgeWeightSlider');
+                        if (ewSlider) ewSlider.value = ewVal;
+                        var ewInput = this.visualsMenuDiv.querySelector('#gexfEdgeWeightInput');
+                        if (ewInput) ewInput.value = ewVal;
+
+                        var lblVal = (window.GexfJS && GexfJS.params && GexfJS.params.labelColorOverride) || this.customLblColor || '#000000';
+                        var lblPicker = this.visualsMenuDiv.querySelector('#gexfLblColorPicker');
+                        if (lblPicker) lblPicker.value = lblVal;
+                    }
                 },
                 true
             ],
@@ -659,26 +683,6 @@ var loadGexfDependencies = function(callback) {
                 true
             ],
             [
-                "BackgroundColor",
-                "fa icon-desktop fa-2x", // Standard icon for background/display 
-                {
-                    label: "BG COLOR",
-                    persistent: true,
-                    validTypes: ["*"],
-                    validContainerTypes:["*"],
-                    tooltip: "Set Graph Background Color",
-                    ignoreDataType: true
-                },
-                function (selection) {
-                    popup.open({
-                        popup: this.bgColorMenu,
-                        around: this.selectionActionBar._actions.BackgroundColor.button,
-                        orient: ["above", "below"]
-                    });
-                },
-                true // Enabled by default
-            ],
-            [
                 "ViewFeatureItem",
                 "MultiButton fa icon-selection-Feature fa-2x",
                 {
@@ -688,16 +692,168 @@ var loadGexfDependencies = function(callback) {
                     tooltip: "Switch to Feature View. Press and Hold for more options.",
                     validContainerTypes: ["feature_data"],
                     pressAndHold: function(selection, button, opts, evt){
+                        var sel = selection && selection[0];
+                        var featureId = sel && (sel.feature_id || sel.patric_id);
+                        if (!featureId) return;
                         popup.open({
-                            popup: new PerspectiveToolTipDialog({ perspective: "Feature", perspectiveUrl: "/view/Feature/" + selection[0].feature_id }),
+                            popup: new PerspectiveToolTipDialog({
+                                perspective: "Feature",
+                                perspectiveUrl: "/view/Feature/" + featureId
+                            }),
                             around: button,
                             orient: ["below"]
                         });
                     }
                 },
                 function(selection){
-                    var sel = selection[0];
-                    Topic.publish("/navigate", { href: "/view/Feature/" + sel.patric_id + "#view_tab=overview", target: "blank" });
+                    var sel = selection && selection[0];
+                    var featureId = sel && (sel.feature_id || sel.patric_id);
+                    if (!featureId) return;
+                    Topic.publish("/navigate", { href: "/view/Feature/" + featureId + "#view_tab=overview", target: "blank" });
+                },
+                false
+            ],
+            [
+                "ViewFeatureItems",
+                "MultiButton fa icon-selection-FeatureList fa-2x",
+                {
+                    label: "FEATURES",
+                    validTypes: ["*"],
+                    multiple: true,
+                    min: 2,
+                    max: 10000,
+                    ignoreDataType: true,
+                    tooltip: "Switch to Feature List View. Press and Hold for more options.",
+                    validContainerTypes: ["feature_data"],
+                    pressAndHold: function(selection, button, opts, evt){
+                        var realFeatureIds = [];
+                        var patricIds = [];
+                        (selection || []).forEach(function(x){
+                            if (!x) return;
+                            if (x.feature_id && String(x.feature_id).indexOf("fig|") !== 0) {
+                                realFeatureIds.push(x.feature_id);
+                            } else if (x.patric_id || x.feature_id) {
+                                patricIds.push(encodeURIComponent(x.patric_id || x.feature_id));
+                            }
+                        });
+                        var queryPart = "";
+                        if (realFeatureIds.length > 0 && patricIds.length === 0) {
+                            queryPart = "in(feature_id,(" + realFeatureIds.join(",") + "))";
+                        } else if (patricIds.length > 0 && realFeatureIds.length === 0) {
+                            queryPart = "in(patric_id,(" + patricIds.join(",") + "))";
+                        } else if (realFeatureIds.length > 0 && patricIds.length > 0) {
+                            queryPart = "or(in(feature_id,(" + realFeatureIds.join(",") + ")),in(patric_id,(" + patricIds.join(",") + ")))";
+                        }
+                        if (!queryPart) return;
+                        popup.open({
+                            popup: new PerspectiveToolTipDialog({
+                                perspective: "FeatureList",
+                                perspectiveUrl: "/view/FeatureList/?" + queryPart
+                            }),
+                            around: button,
+                            orient: ["below"]
+                        });
+                    }
+                },
+                function(selection){
+                    var realFeatureIds = [];
+                    var patricIds = [];
+                    (selection || []).forEach(function(x){
+                        if (!x) return;
+                        if (x.feature_id && String(x.feature_id).indexOf("fig|") !== 0) {
+                            realFeatureIds.push(x.feature_id);
+                        } else if (x.patric_id || x.feature_id) {
+                            patricIds.push(encodeURIComponent(x.patric_id || x.feature_id));
+                        }
+                    });
+                    var queryPart = "";
+                    if (realFeatureIds.length > 0 && patricIds.length === 0) {
+                        queryPart = "in(feature_id,(" + realFeatureIds.join(",") + "))";
+                    } else if (patricIds.length > 0 && realFeatureIds.length === 0) {
+                        queryPart = "in(patric_id,(" + patricIds.join(",") + "))";
+                    } else if (realFeatureIds.length > 0 && patricIds.length > 0) {
+                        queryPart = "or(in(feature_id,(" + realFeatureIds.join(",") + ")),in(patric_id,(" + patricIds.join(",") + ")))";
+                    }
+                    if (!queryPart) return;
+                    Topic.publish("/navigate", {
+                        href: "/view/FeatureList/?" + queryPart + "#view_tab=features",
+                        target: "blank"
+                    });
+                },
+                false
+            ],
+            [
+                "ViewGenomeItem",
+                "MultiButton fa icon-selection-Genome fa-2x",
+                {
+                    label: "GENOME",
+                    validTypes: ["*"],
+                    multiple: false,
+                    ignoreDataType: true,
+                    tooltip: "Switch to Genome View. Press and Hold for more options.",
+                    validContainerTypes: ["feature_data", "genome_data"],
+                    pressAndHold: function(selection, button, opts, evt){
+                        var sel = selection && selection[0];
+                        if (!sel || !sel.genome_id) return;
+                        popup.open({
+                            popup: new PerspectiveToolTipDialog({
+                                perspective: "Genome",
+                                perspectiveUrl: "/view/Genome/" + sel.genome_id
+                            }),
+                            around: button,
+                            orient: ["below"]
+                        });
+                    }
+                },
+                function(selection){
+                    var sel = selection && selection[0];
+                    if (!sel || !sel.genome_id) return;
+                    Topic.publish("/navigate", { href: "/view/Genome/" + sel.genome_id, target: "blank" });
+                },
+                false
+            ],
+            [
+                "ViewGenomeItems",
+                "MultiButton fa icon-selection-GenomeList fa-2x",
+                {
+                    label: "GENOMES",
+                    validTypes: ["*"],
+                    multiple: true,
+                    min: 2,
+                    max: 0,
+                    ignoreDataType: true,
+                    tooltip: "Switch to Genome List View. Press and Hold for more options.",
+                    validContainerTypes: ["feature_data", "genome_data"],
+                    pressAndHold: function(selection, button, opts, evt){
+                        var genome_ids = [];
+                        (selection || []).forEach(function(sel){
+                            if (sel && sel.genome_id && genome_ids.indexOf(sel.genome_id) === -1) {
+                                genome_ids.push(sel.genome_id);
+                            }
+                        });
+                        if (genome_ids.length === 0) return;
+                        popup.open({
+                            popup: new PerspectiveToolTipDialog({
+                                perspective: "GenomeList",
+                                perspectiveUrl: "/view/GenomeList/?eq(*,*)&genome(in(genome_id,(" + genome_ids.join(",") + ")))"
+                            }),
+                            around: button,
+                            orient: ["below"]
+                        });
+                    }
+                },
+                function(selection){
+                    var genome_ids = [];
+                    (selection || []).forEach(function(sel){
+                        if (sel && sel.genome_id && genome_ids.indexOf(sel.genome_id) === -1) {
+                            genome_ids.push(sel.genome_id);
+                        }
+                    });
+                    if (genome_ids.length === 0) return;
+                    Topic.publish("/navigate", {
+                        href: "/view/GenomeList/?eq(*,*)&genome(in(genome_id,(" + genome_ids.join(",") + ")))#view_tab=genomes",
+                        target: "blank"
+                    });
                 },
                 false
             ],
@@ -857,82 +1013,178 @@ var loadGexfDependencies = function(callback) {
                 popup.close(this.colorMenu);
             }));
 
-            // --- 2. Highlight Color Override Menu ---
-            var hlColorMenuDiv = domConstruct.create("div", {
-                innerHTML: '<div style="padding: 8px; display: flex; align-items: center; white-space: nowrap;">' +
-                           '<span style="margin-right: 10px; font-weight: bold;">Highlight Color:</span>' + 
-                           '<input type="color" id="gexfHlColorPicker" value="#ff00ff" style="cursor: pointer; margin-right: 15px; width: 30px; height: 30px; padding: 0; border: 1px solid #ccc;">' +
-                           '<button id="gexfHlColorApply" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Apply</button>' +
-                           '<button id="gexfHlColorClear" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Clear</button>' +
-                           '<button id="gexfHlColorCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
-                           '</div>'
+            // --- 2. Combined Graph Visuals Menu (Background, Highlight, Edge Color, Default Edge Weight, Label Color) ---
+            var visualsMenuDiv = domConstruct.create("div", {
+                innerHTML: '<div style="padding: 10px 12px; white-space: nowrap; font-size: 0.92em; min-width: 265px;">' +
+                           '<div style="font-weight: bold; font-size: 1.02em; color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 8px;">Graph Visuals</div>' +
+                           '<div style="margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">' +
+                           '<label for="gexfBgColorPicker" style="font-weight: 600; color: #333;">Background Color:</label>' +
+                           '<div style="display: flex; align-items: center; gap: 6px;">' +
+                           '<input type="color" id="gexfBgColorPicker" value="#ffffff" style="cursor: pointer; width: 28px; height: 24px; padding: 0; border: 1px solid #ccc; border-radius: 3px;">' +
+                           '<button id="gexfBgColorReset" type="button" style="padding: 2px 7px; font-size: 0.85em; cursor: pointer;" title="Reset background to default gradient">Default</button>' +
+                           '</div></div>' +
+                           '<div style="margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">' +
+                           '<label for="gexfHlColorPicker" style="font-weight: 600; color: #333;">Highlight Color:</label>' +
+                           '<div style="display: flex; align-items: center; gap: 6px;">' +
+                           '<input type="color" id="gexfHlColorPicker" value="#d500f9" style="cursor: pointer; width: 28px; height: 24px; padding: 0; border: 1px solid #ccc; border-radius: 3px;">' +
+                           '<button id="gexfHlColorReset" type="button" style="padding: 2px 7px; font-size: 0.85em; cursor: pointer;" title="Reset highlight color to default magenta (#d500f9)">Default</button>' +
+                           '</div></div>' +
+                           '<div style="margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">' +
+                           '<label for="gexfEdgeColorPicker" style="font-weight: 600; color: #333;">Edge Color:</label>' +
+                           '<div style="display: flex; align-items: center; gap: 6px;">' +
+                           '<input type="color" id="gexfEdgeColorPicker" value="#6e7681" style="cursor: pointer; width: 28px; height: 24px; padding: 0; border: 1px solid #ccc; border-radius: 3px;">' +
+                           '<button id="gexfEdgeColorReset" type="button" style="padding: 2px 7px; font-size: 0.85em; cursor: pointer;" title="Reset default edge color">Default</button>' +
+                           '</div></div>' +
+                           '<div style="margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; gap: 10px;" title="Stroke width (px) for default graph edges">' +
+                           '<label for="gexfEdgeWeightInput" style="font-weight: 600; color: #333;">Default Edge Weight:</label>' +
+                           '<div style="display: flex; align-items: center; gap: 5px;">' +
+                           '<input type="range" id="gexfEdgeWeightSlider" value="1.0" min="0.2" max="5.0" step="0.2" style="width: 75px; vertical-align: middle; cursor: pointer;">' +
+                           '<input type="number" id="gexfEdgeWeightInput" value="1.0" min="0.2" max="8.0" step="0.2" style="width: 48px; text-align: center;">' +
+                           '<button id="gexfEdgeWeightReset" type="button" style="padding: 2px 7px; font-size: 0.85em; cursor: pointer;" title="Reset edge weight to 1.0px">Default</button>' +
+                           '</div></div>' +
+                           '<div style="margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">' +
+                           '<label for="gexfLblColorPicker" style="font-weight: 600; color: #333;">Label Color:</label>' +
+                           '<div style="display: flex; align-items: center; gap: 6px;">' +
+                           '<input type="color" id="gexfLblColorPicker" value="#000000" style="cursor: pointer; width: 28px; height: 24px; padding: 0; border: 1px solid #ccc; border-radius: 3px;">' +
+                           '<button id="gexfLblColorReset" type="button" style="padding: 2px 7px; font-size: 0.85em; cursor: pointer;" title="Reset node label color to default">Default</button>' +
+                           '</div></div>' +
+                           '<div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px;">' +
+                           '<button id="gexfVisualsResetAll" type="button" style="padding: 4px 10px; cursor: pointer;">Reset All</button>' +
+                           '<button id="gexfVisualsClose" type="button" style="padding: 4px 12px; cursor: pointer; font-weight: bold;">Close</button>' +
+                           '</div></div>'
             });
-            this.hlColorMenuDiv = hlColorMenuDiv;
-            this.hlColorMenu = new TooltipDialog({ content: hlColorMenuDiv });
+            this.visualsMenuDiv = visualsMenuDiv;
+            this.visualsMenu = new TooltipDialog({ content: visualsMenuDiv });
 
-            on(hlColorMenuDiv, "#gexfHlColorApply:click", lang.hitch(this, function() {
-                var picker = hlColorMenuDiv.querySelector('#gexfHlColorPicker');
-                var color = picker ? picker.value : '#ff00ff';
-                if (window.GexfJS && GexfJS.params) {
-                    GexfJS.params.highlightColorOverride = color;
-                    delete GexfJS.oldParams.zoomLevel;
-                }
-                popup.close(this.hlColorMenu);
-            }));
-
-            on(hlColorMenuDiv, "#gexfHlColorClear:click", lang.hitch(this, function() {
-                if (window.GexfJS && GexfJS.params) {
-                    GexfJS.params.highlightColorOverride = null;
-                    delete GexfJS.oldParams.zoomLevel;
-                }
-                popup.close(this.hlColorMenu);
-            }));
-
-            // Explicit Close button handler
-            on(hlColorMenuDiv, "#gexfHlColorCancel:click", lang.hitch(this, function() {
-                popup.close(this.hlColorMenu);
-            }));
-
-            
-            // --- 3. Background Color Menu ---
-            var bgColorMenuDiv = domConstruct.create("div", {
-                innerHTML: '<div style="padding: 8px; display: flex; align-items: center; white-space: nowrap;">' +
-                           '<span style="margin-right: 10px; font-weight: bold;">Background:</span>' + 
-                           '<input type="color" id="gexfBgColorPicker" value="#ffffff" style="cursor: pointer; margin-right: 15px; width: 30px; height: 30px; padding: 0; border: 1px solid #ccc;">' +
-                           '<button id="gexfBgColorApply" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Apply</button>' +
-                           '<button id="gexfBgColorReset" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Reset</button>' +
-                           '<button id="gexfBgColorCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
-                           '</div>'
-            });
-            this.bgColorMenuDiv = bgColorMenuDiv;
-            this.bgColorMenu = new TooltipDialog({ content: bgColorMenuDiv });
-
-            on(bgColorMenuDiv, "#gexfBgColorApply:click", lang.hitch(this, function() {
-                var picker = bgColorMenuDiv.querySelector('#gexfBgColorPicker');
-                var color = picker ? picker.value : '#ffffff';
+            var applyBgColor = lang.hitch(this, function(colorOrNull) {
+                this.customBgColor = colorOrNull || null;
                 var zc = document.getElementById('zonecentre');
                 var oc = document.getElementById('overviewzone');
-                
-                if (zc) { domClass.remove(zc, 'gradient'); domStyle.set(zc, 'background', color); }
-                if (oc) { domClass.remove(oc, 'gradient'); domStyle.set(oc, 'background', color); }
-                popup.close(this.bgColorMenu);
+                if (this.customBgColor) {
+                    if (zc) { domClass.remove(zc, 'gradient'); domStyle.set(zc, 'background', this.customBgColor); }
+                    if (oc) { domClass.remove(oc, 'gradient'); domStyle.set(oc, 'background', this.customBgColor); }
+                } else {
+                    if (zc) { domStyle.set(zc, 'background', ''); domClass.add(zc, 'gradient'); }
+                    if (oc) { domStyle.set(oc, 'background', ''); domClass.add(oc, 'gradient'); }
+                }
+            });
+
+            var refreshHighlightVisuals = lang.hitch(this, function(colorOrNull) {
+                this.customHlColor = colorOrNull || null;
+                if (window.GexfJS && GexfJS.params) {
+                    GexfJS.params.highlightColorOverride = this.customHlColor;
+                    if (GexfJS.params.activePhenomenon && GexfJS.params.activePhenomenon !== 'block') {
+                        this.applyPhenomenonLocusState(false);
+                    }
+                    if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+                }
+            });
+
+            var refreshEdgeColorVisuals = lang.hitch(this, function(colorOrNull) {
+                this.customEdgeColor = colorOrNull || null;
+                if (window.GexfJS && GexfJS.params) {
+                    GexfJS.params.edgeColorOverride = this.customEdgeColor;
+                    if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+                }
+            });
+
+            var refreshEdgeWeightVisuals = lang.hitch(this, function(weightVal) {
+                var parsed = parseFloat(weightVal);
+                var w = (!isNaN(parsed) && parsed > 0) ? parsed : 1.0;
+                this.customEdgeWidth = w;
+                if (window.GexfJS && GexfJS.params) {
+                    GexfJS.params.defaultEdgeWidth = w;
+                    if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+                }
+            });
+
+            var refreshLabelColorVisuals = lang.hitch(this, function(colorOrNull) {
+                this.customLblColor = colorOrNull || null;
+                if (window.GexfJS && GexfJS.params) {
+                    GexfJS.params.labelColorOverride = this.customLblColor;
+                    if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+                }
+            });
+
+            on(visualsMenuDiv, "#gexfBgColorPicker:input, #gexfBgColorPicker:change", lang.hitch(this, function(evt) {
+                if (evt && evt.target) applyBgColor(evt.target.value);
+            }));
+            on(visualsMenuDiv, "#gexfBgColorReset:click", lang.hitch(this, function() {
+                var picker = visualsMenuDiv.querySelector('#gexfBgColorPicker');
+                if (picker) picker.value = '#ffffff';
+                applyBgColor(null);
             }));
 
-            on(bgColorMenuDiv, "#gexfBgColorReset:click", lang.hitch(this, function() {
-                var zc = document.getElementById('zonecentre');
-                var oc = document.getElementById('overviewzone');
-                
-                if (zc) { domStyle.set(zc, 'background', ''); domClass.add(zc, 'gradient'); }
-                if (oc) { domStyle.set(oc, 'background', ''); domClass.add(oc, 'gradient'); }
-                popup.close(this.bgColorMenu);
+            on(visualsMenuDiv, "#gexfHlColorPicker:input, #gexfHlColorPicker:change", lang.hitch(this, function(evt) {
+                if (evt && evt.target) refreshHighlightVisuals(evt.target.value);
+            }));
+            on(visualsMenuDiv, "#gexfHlColorReset:click", lang.hitch(this, function() {
+                var picker = visualsMenuDiv.querySelector('#gexfHlColorPicker');
+                if (picker) picker.value = '#d500f9';
+                refreshHighlightVisuals(null);
             }));
 
-            // Explicit Close button handler
-            on(bgColorMenuDiv, "#gexfBgColorCancel:click", lang.hitch(this, function() {
-                popup.close(this.bgColorMenu);
+            on(visualsMenuDiv, "#gexfEdgeColorPicker:input, #gexfEdgeColorPicker:change", lang.hitch(this, function(evt) {
+                if (evt && evt.target) refreshEdgeColorVisuals(evt.target.value);
+            }));
+            on(visualsMenuDiv, "#gexfEdgeColorReset:click", lang.hitch(this, function() {
+                var picker = visualsMenuDiv.querySelector('#gexfEdgeColorPicker');
+                if (picker) picker.value = '#6e7681';
+                refreshEdgeColorVisuals(null);
             }));
 
-            // --- 4. Node Labels Menu ---
+            on(visualsMenuDiv, "#gexfEdgeWeightSlider:input, #gexfEdgeWeightSlider:change", lang.hitch(this, function(evt) {
+                var numEl = visualsMenuDiv.querySelector('#gexfEdgeWeightInput');
+                if (numEl && evt && evt.target) numEl.value = evt.target.value;
+                if (evt && evt.target) refreshEdgeWeightVisuals(evt.target.value);
+            }));
+            on(visualsMenuDiv, "#gexfEdgeWeightInput:input, #gexfEdgeWeightInput:change", lang.hitch(this, function(evt) {
+                var sliderEl = visualsMenuDiv.querySelector('#gexfEdgeWeightSlider');
+                if (sliderEl && evt && evt.target) sliderEl.value = evt.target.value;
+                if (evt && evt.target) refreshEdgeWeightVisuals(evt.target.value);
+            }));
+            on(visualsMenuDiv, "#gexfEdgeWeightReset:click", lang.hitch(this, function() {
+                var sliderEl = visualsMenuDiv.querySelector('#gexfEdgeWeightSlider');
+                var numEl = visualsMenuDiv.querySelector('#gexfEdgeWeightInput');
+                if (sliderEl) sliderEl.value = 1.0;
+                if (numEl) numEl.value = 1.0;
+                refreshEdgeWeightVisuals(1.0);
+            }));
+
+            on(visualsMenuDiv, "#gexfLblColorPicker:input, #gexfLblColorPicker:change", lang.hitch(this, function(evt) {
+                if (evt && evt.target) refreshLabelColorVisuals(evt.target.value);
+            }));
+            on(visualsMenuDiv, "#gexfLblColorReset:click", lang.hitch(this, function() {
+                var picker = visualsMenuDiv.querySelector('#gexfLblColorPicker');
+                if (picker) picker.value = '#000000';
+                refreshLabelColorVisuals(null);
+            }));
+
+            on(visualsMenuDiv, "#gexfVisualsResetAll:click", lang.hitch(this, function() {
+                var bgPicker = visualsMenuDiv.querySelector('#gexfBgColorPicker');
+                var hlPicker = visualsMenuDiv.querySelector('#gexfHlColorPicker');
+                var edgePicker = visualsMenuDiv.querySelector('#gexfEdgeColorPicker');
+                var ewSlider = visualsMenuDiv.querySelector('#gexfEdgeWeightSlider');
+                var ewInput = visualsMenuDiv.querySelector('#gexfEdgeWeightInput');
+                var lblPicker = visualsMenuDiv.querySelector('#gexfLblColorPicker');
+                if (bgPicker) bgPicker.value = '#ffffff';
+                if (hlPicker) hlPicker.value = '#d500f9';
+                if (edgePicker) edgePicker.value = '#6e7681';
+                if (ewSlider) ewSlider.value = 1.0;
+                if (ewInput) ewInput.value = 1.0;
+                if (lblPicker) lblPicker.value = '#000000';
+                applyBgColor(null);
+                refreshHighlightVisuals(null);
+                refreshEdgeColorVisuals(null);
+                refreshEdgeWeightVisuals(1.0);
+                refreshLabelColorVisuals(null);
+            }));
+
+            on(visualsMenuDiv, "#gexfVisualsClose:click", lang.hitch(this, function() {
+                popup.close(this.visualsMenu);
+            }));
+
+            // --- 3. Node Labels Menu ---
             var labelMenuDiv = domConstruct.create("div", {
                 innerHTML: '<div style="padding: 8px; white-space: nowrap; font-size: 0.92em;">' +
                            '<div style="margin-bottom: 6px;"><label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="gexfLabelToggle" checked style="vertical-align:middle; cursor:pointer;"> Show Node Labels</label></div>' +
@@ -1081,7 +1333,7 @@ var loadGexfDependencies = function(callback) {
             if (window.GexfJS && GexfJS.timeRefresh) { clearInterval(GexfJS.timeRefresh); }
 
             // Cleanly close and destroy TooltipDialog popups so no duplicate DOM IDs remain in document.body
-            ["colorMenu", "hlColorMenu", "bgColorMenu", "labelMenu"].forEach(lang.hitch(this, function(menuKey) {
+            ["colorMenu", "visualsMenu", "labelMenu"].forEach(lang.hitch(this, function(menuKey) {
                 if (this[menuKey]) {
                     try { popup.close(this[menuKey]); } catch (e) {}
                     try { this[menuKey].destroyRecursive(); } catch (e) {}
@@ -1185,6 +1437,323 @@ var loadGexfDependencies = function(callback) {
             if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel; 
         },
 
+        getCnvClassification: function() {
+            if (!window.GexfJS || !GexfJS.graph || !GexfJS.graph.nodeList) {
+                return { localNodes: {}, fragNodes: {}, remoteNodes: {}, localClusterCount: 0, fragClusterCount: 0, remoteClusterCount: 0 };
+            }
+            if (this._phenomenonDataCache && this._phenomenonDataCache._cnvClass) {
+                return this._phenomenonDataCache._cnvClass;
+            }
+
+            var nodeList = GexfJS.graph.nodeList || [];
+            var edgeList = GexfJS.graph.edgeList || [];
+            var cnvIdAttr = GexfJS._node_attr_value && GexfJS._node_attr_value['cnv_cluster_id'];
+            var remoteAttr = GexfJS._node_attr_value && GexfJS._node_attr_value['remote_cnv'];
+            var repAmbigAttr = GexfJS._node_attr_value && GexfJS._node_attr_value['repeat_ambiguity'];
+            var repFragAttr = GexfJS._node_attr_value && GexfJS._node_attr_value['repeat_ambiguity_fragmentation'];
+            var conflictAttr = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
+
+            var localNodes = {};
+            var fragNodes = {};
+            var remoteNodes = {};
+            var localClusters = {};
+            var fragClusters = {};
+            var remoteClusters = {};
+
+            // Build undirected adjacency and partition cnv_cluster_id groups into spatially localized sub-components (<= 4 hops)
+            var adj = {};
+            var fragJuncNodes = {};
+            var fragJuncEdgeAttr = GexfJS._edge_attr_value && GexfJS._edge_attr_value['repeat_fragmentation_junction'];
+            var fragJuncEdges = (typeof fragJuncEdgeAttr !== 'undefined' && GexfJS.path_highlights && GexfJS.path_highlights[fragJuncEdgeAttr] && GexfJS.path_highlights[fragJuncEdgeAttr]['true'])
+                ? GexfJS.path_highlights[fragJuncEdgeAttr]['true']
+                : {};
+
+            edgeList.forEach(function(e) {
+                var sn = nodeList[e.source];
+                var tn = nodeList[e.target];
+                if (!sn || !tn) return;
+                if (!adj[sn.id]) adj[sn.id] = {};
+                if (!adj[tn.id]) adj[tn.id] = {};
+                adj[sn.id][tn.id] = true;
+                adj[tn.id][sn.id] = true;
+                if (fragJuncEdges[e.id]) {
+                    fragJuncNodes[sn.id] = true;
+                    fragJuncNodes[tn.id] = true;
+                }
+            });
+
+            var nodeById = {};
+            var byCnv = {};
+            nodeList.forEach(function(node) {
+                nodeById[node.id] = node;
+                var attrs = node.attributes || {};
+                var cVal = (typeof cnvIdAttr !== 'undefined' && attrs[cnvIdAttr] != null) ? String(attrs[cnvIdAttr]).trim() : '';
+                if (cVal && cVal !== '0' && cVal !== 'None') {
+                    if (!byCnv[cVal]) byCnv[cVal] = [];
+                    byCnv[cVal].push(node.id);
+                }
+                if (typeof remoteAttr !== 'undefined') {
+                    var hasCnv = (cVal !== '' && cVal !== '0' && cVal !== 'None');
+                    if (typeof repAmbigAttr !== 'undefined' && String(attrs[repAmbigAttr]).toLowerCase() === 'true') {
+                        localNodes[node.id] = true;
+                        if (hasCnv) localClusters[cVal] = true;
+                    }
+                } else if (typeof conflictAttr !== 'undefined' && String(attrs[conflictAttr]) === '3') {
+                    fragNodes[node.id] = true;
+                }
+            });
+
+            Object.keys(byCnv).forEach(function(cVal) {
+                var nlist = byCnv[cVal];
+                var clusterGenCopies = {};
+                nlist.forEach(function(nid) {
+                    var n = nodeById[nid];
+                    var fmap = (n && n.featureMap) ? n.featureMap : {};
+                    for (var gid in fmap) {
+                        if (gid === 'info') continue;
+                        var cMap = fmap[gid];
+                        if (cMap && typeof cMap === 'object') {
+                            for (var sid in cMap) {
+                                var fArr = cMap[sid];
+                                clusterGenCopies[gid] = (clusterGenCopies[gid] || 0) + (Array.isArray(fArr) ? fArr.length : 1);
+                            }
+                        }
+                    }
+                });
+                var hasMultiCopyInCluster = Object.keys(clusterGenCopies).some(function(g) { return clusterGenCopies[g] > 1; });
+                if (!hasMultiCopyInCluster) return;
+
+                var parent = {};
+                var inCluster = {};
+                nlist.forEach(function(nid) {
+                    parent[nid] = nid;
+                    inCluster[nid] = true;
+                });
+                var find = function(x) {
+                    while (parent[x] !== x) {
+                        parent[x] = parent[parent[x]];
+                        x = parent[x];
+                    }
+                    return x;
+                };
+                // Union cluster nodes within <= 4 hops in the graph
+                nlist.forEach(function(startId) {
+                    var q = [{ id: startId, d: 0 }];
+                    var seen = {};
+                    seen[startId] = true;
+                    for (var qi = 0; qi < q.length; qi++) {
+                        var item = q[qi];
+                        if (item.d >= 4) continue;
+                        var nbrs = adj[item.id] || {};
+                        for (var nb in nbrs) {
+                            if (!seen[nb]) {
+                                seen[nb] = true;
+                                if (inCluster[nb]) {
+                                    var ra = find(startId), rb = find(nb);
+                                    if (ra !== rb) parent[ra] = rb;
+                                }
+                                q.push({ id: nb, d: item.d + 1 });
+                            }
+                        }
+                    }
+                });
+
+                var subcomps = {};
+                nlist.forEach(function(nid) {
+                    var r = find(nid);
+                    if (!subcomps[r]) subcomps[r] = [];
+                    subcomps[r].push(nid);
+                });
+
+                var scKeys = Object.keys(subcomps);
+                var genomeSubcomps = {};
+                scKeys.forEach(function(rk) {
+                    var scNodes = subcomps[rk];
+                    var scCopies = {};
+                    var scContigs = {};
+                    scNodes.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        var fmap = (n && n.featureMap) ? n.featureMap : {};
+                        for (var gid in fmap) {
+                            if (gid === 'info') continue;
+                            var cMap = fmap[gid];
+                            if (cMap && typeof cMap === 'object') {
+                                if (!genomeSubcomps[gid]) genomeSubcomps[gid] = {};
+                                genomeSubcomps[gid][rk] = true;
+                                if (!scContigs[gid]) scContigs[gid] = {};
+                                for (var sid in cMap) {
+                                    scContigs[gid][sid] = true;
+                                    var fArr = cMap[sid];
+                                    scCopies[gid] = (scCopies[gid] || 0) + (Array.isArray(fArr) ? fArr.length : 1);
+                                }
+                            }
+                        }
+                    });
+                    if (typeof remoteAttr === 'undefined') {
+                        if (Object.keys(scCopies).some(function(g) { return scCopies[g] > 1; })) {
+                            localClusters[cVal] = true;
+                            scNodes.forEach(function(nid) { localNodes[nid] = true; });
+                        }
+                    }
+                    var scGenKeys = Object.keys(scContigs);
+                    var hasMultiContigGen = scGenKeys.some(function(g) { return Object.keys(scContigs[g]).length > 1; });
+                    var hasSingleContigGen = scGenKeys.some(function(g) { return Object.keys(scContigs[g]).length === 1; });
+                    if (hasMultiContigGen && hasSingleContigGen) {
+                        fragClusters[cVal] = true;
+                        scNodes.forEach(function(nid) { fragNodes[nid] = true; });
+                    }
+                });
+
+                var hasGenomeAcrossMultipleSubcomps = scKeys.length > 1 && Object.keys(genomeSubcomps).some(function(g) {
+                    return Object.keys(genomeSubcomps[g]).length > 1;
+                });
+                if (hasGenomeAcrossMultipleSubcomps) {
+                    remoteClusters[cVal] = true;
+                    nlist.forEach(function(nid) { remoteNodes[nid] = true; });
+                }
+            });
+
+            var res = {
+                localNodes: localNodes,
+                fragNodes: fragNodes,
+                remoteNodes: remoteNodes,
+                localClusterCount: Object.keys(localClusters).length,
+                fragClusterCount: Object.keys(fragClusters).length,
+                remoteClusterCount: Object.keys(remoteClusters).length
+            };
+            if (!this._phenomenonDataCache) this._phenomenonDataCache = {};
+            this._phenomenonDataCache._cnvClass = res;
+            return res;
+        },
+
+        getContigPolarities: function() {
+            if (!window.GexfJS || !GexfJS.graph || !GexfJS.graph.nodeList || !GexfJS.graph.edgeList) {
+                return {};
+            }
+            if (this._phenomenonDataCache && this._phenomenonDataCache._contigPolarities) {
+                return this._phenomenonDataCache._contigPolarities;
+            }
+
+            var invEdgeAttr = GexfJS._edge_attr_value && GexfJS._edge_attr_value['inverted_block'];
+            var invNodeAttr = GexfJS._node_attr_value && GexfJS._node_attr_value['inverted_block'];
+
+            var getNodeContigMap = function(nodeObj) {
+                if (!nodeObj || !nodeObj.featureMap) return {};
+                if (nodeObj._cachedContigPos) return nodeObj._cachedContigPos;
+                var map = {};
+                for (var gKey in nodeObj.featureMap) {
+                    if (gKey === 'info' || gKey === 'md5' || gKey === 'start' || gKey === 'end') continue;
+                    var cMap = nodeObj.featureMap[gKey];
+                    if (!cMap || typeof cMap !== 'object') continue;
+                    for (var sid in cMap) {
+                        var fArr = cMap[sid];
+                        if (!fArr || !fArr.length) continue;
+                        var peg = null;
+                        var m = String(fArr[0]).match(/(\d+)$/);
+                        if (m) peg = parseInt(m[1], 10);
+                        var pos = peg;
+                        if (nodeObj.featureMap.info && nodeObj.featureMap.info[gKey] && nodeObj.featureMap.info[gKey][sid] &&
+                            nodeObj.featureMap.info[gKey][sid][0] && typeof nodeObj.featureMap.info[gKey][sid][0].start !== 'undefined') {
+                            var st = parseInt(nodeObj.featureMap.info[gKey][sid][0].start, 10);
+                            if (!isNaN(st)) pos = st;
+                        }
+                        if (pos !== null) {
+                            map[sid] = { gid: gKey, pos: pos, peg: peg };
+                        }
+                    }
+                }
+                nodeObj._cachedContigPos = map;
+                return map;
+            };
+
+            var pairVotes = {};
+            var contigWeight = {};
+            var edgeFwdVotes = {};
+
+            GexfJS.graph.edgeList.forEach(function(e) {
+                var uNode = GexfJS.graph.nodeList[e.source];
+                var vNode = GexfJS.graph.nodeList[e.target];
+                if (!uNode || !vNode) return;
+
+                var isInv = false;
+                if (typeof invEdgeAttr !== 'undefined' && e.attributes && String(e.attributes[invEdgeAttr]).toLowerCase() === 'true') isInv = true;
+                if (typeof invNodeAttr !== 'undefined') {
+                    if (uNode.attributes && String(uNode.attributes[invNodeAttr]).toLowerCase() === 'true') isInv = true;
+                    if (vNode.attributes && String(vNode.attributes[invNodeAttr]).toLowerCase() === 'true') isInv = true;
+                }
+                var w = isInv ? 1 : 100;
+
+                var uMap = getNodeContigMap(uNode);
+                var vMap = getNodeContigMap(vNode);
+                var dirs = {};
+                for (var sid in uMap) {
+                    if (!vMap[sid]) continue;
+                    var uEntry = uMap[sid];
+                    var vEntry = vMap[sid];
+                    if (uEntry.pos === vEntry.pos) continue;
+                    if (uEntry.peg !== null && vEntry.peg !== null && Math.abs(vEntry.peg - uEntry.peg) > 15) continue;
+                    var dVal = (vEntry.pos > uEntry.pos) ? 1 : -1;
+                    dirs[sid] = dVal;
+                    contigWeight[sid] = (contigWeight[sid] || 0) + (isInv ? 1 : 10);
+                    edgeFwdVotes[sid] = (edgeFwdVotes[sid] || 0) + dVal * w;
+                }
+
+                var cList = Object.keys(dirs).sort();
+                for (var i = 0; i < cList.length; i++) {
+                    var ca = cList[i];
+                    if (!pairVotes[ca]) pairVotes[ca] = {};
+                    for (var j = i + 1; j < cList.length; j++) {
+                        var cb = cList[j];
+                        if (!pairVotes[cb]) pairVotes[cb] = {};
+                        var prod = dirs[ca] * dirs[cb] * w;
+                        pairVotes[ca][cb] = (pairVotes[ca][cb] || 0) + prod;
+                        pairVotes[cb][ca] = (pairVotes[cb][ca] || 0) + prod;
+                    }
+                }
+            });
+
+            var contigPol = {};
+            var allContigs = Object.keys(contigWeight).sort(function(a, b) {
+                var diff = (contigWeight[b] || 0) - (contigWeight[a] || 0);
+                return diff !== 0 ? diff : a.localeCompare(b);
+            });
+
+            allContigs.forEach(function(seed) {
+                if (contigPol[seed]) return;
+                contigPol[seed] = ((edgeFwdVotes[seed] || 0) >= 0) ? 1 : -1;
+                var assigned = [seed];
+                while (true) {
+                    var bestC = null;
+                    var bestSc = 0;
+                    var bestP = 1;
+                    for (var ai = 0; ai < assigned.length; ai++) {
+                        var u = assigned[ai];
+                        var nbs = pairVotes[u] || {};
+                        for (var v in nbs) {
+                            if (contigPol[v]) continue;
+                            var sc = 0;
+                            for (var bi = 0; bi < assigned.length; bi++) {
+                                var a = assigned[bi];
+                                sc += ((pairVotes[v] && pairVotes[v][a]) || 0) * contigPol[a];
+                            }
+                            if (Math.abs(sc) > Math.abs(bestSc)) {
+                                bestSc = sc;
+                                bestC = v;
+                                bestP = (sc >= 0) ? 1 : -1;
+                            }
+                        }
+                    }
+                    if (!bestC) break;
+                    contigPol[bestC] = bestP;
+                    assigned.push(bestC);
+                }
+            });
+
+            if (!this._phenomenonDataCache) this._phenomenonDataCache = {};
+            this._phenomenonDataCache._contigPolarities = contigPol;
+            return contigPol;
+        },
+
         getPhenomenonData: function(type) {
             if (!window.GexfJS || !GexfJS.graph || !GexfJS.graph.nodeList) {
                 return { rawEdges: {}, explicitNodes: {}, dashedEdges: {}, loci: [] };
@@ -1223,32 +1792,35 @@ var loadGexfDependencies = function(callback) {
 
             if (type === 'superbubbles') {
                 addEdgesByAttr('is_superbubble', 'true', false);
+                addEdgesByAttr('alt_path_junction', 'true', false);
+                addEdgesByAttr('alternative_path', 'true', false);
+                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
                 GexfJS.graph.nodeList.forEach(function(node) {
-                    if (checkNodeBool(node, 'is_superbubble')) {
-                        explicitNodes[node.id] = true;
-                    }
+                    var isSpecial = false;
+                    if (checkNodeBool(node, 'is_superbubble')) isSpecial = true;
+                    if (checkNodeBool(node, 'alternative_path')) isSpecial = true;
+                    if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "4") isSpecial = true;
+                    if (isSpecial) explicitNodes[node.id] = true;
                 });
             } else if (type === 'tandem_repeats') {
                 addEdgesByAttr('repeat_ambiguity_detour', 'true', false);
                 addEdgesByAttr('sv_class', 'repeat_ambiguity_detour', false);
-                var cnvId = GexfJS._node_attr_value && GexfJS._node_attr_value['cnv_cluster_id'];
-                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
-                GexfJS.graph.nodeList.forEach(function(node) {
-                    var isSpecial = false;
-                    if (checkNodeBool(node, 'repeat_ambiguity')) isSpecial = true;
-                    if (node.attributes && typeof cnvId !== 'undefined' && node.attributes[cnvId] != null && String(node.attributes[cnvId]) !== "" && String(node.attributes[cnvId]) !== "0") {
-                        if (typeof conflictId === 'undefined' || String(node.attributes[conflictId]) !== "3") isSpecial = true;
-                    }
-                    if (isSpecial) explicitNodes[node.id] = true;
+                var cnvClass = this.getCnvClassification();
+                Object.keys(cnvClass.localNodes).forEach(function(nid) {
+                    explicitNodes[nid] = true;
                 });
             } else if (type === 'fragmented_paralogs') {
-                addEdgesByAttr('repeat_fragmentation_junction', 'true', false);
-                var conflictId = GexfJS._node_attr_value && GexfJS._node_attr_value['conflict'];
-                GexfJS.graph.nodeList.forEach(function(node) {
-                    var isSpecial = false;
-                    if (checkNodeBool(node, 'repeat_ambiguity_fragmentation')) isSpecial = true;
-                    if (node.attributes && typeof conflictId !== 'undefined' && String(node.attributes[conflictId]) === "3") isSpecial = true;
-                    if (isSpecial) explicitNodes[node.id] = true;
+                var cnvClass = this.getCnvClassification();
+                Object.keys(cnvClass.fragNodes).forEach(function(nid) {
+                    explicitNodes[nid] = true;
+                });
+                if (Object.keys(explicitNodes).length === 0) {
+                    addEdgesByAttr('repeat_fragmentation_junction', 'true', false);
+                }
+            } else if (type === 'remote_cnv') {
+                var cnvClass = this.getCnvClassification();
+                Object.keys(cnvClass.remoteNodes).forEach(function(nid) {
+                    explicitNodes[nid] = true;
                 });
             } else if (type === 'alt_paths') {
                 addEdgesByAttr('alt_path_junction', 'true', false);
@@ -1326,6 +1898,7 @@ var loadGexfDependencies = function(callback) {
 
         buildPhenomenonLoci: function(type, rawEdges, explicitNodes, dashedEdges) {
             if (!window.GexfJS || !GexfJS.graph) return [];
+            var _self = this;
             var nodeList = GexfJS.graph.nodeList || [];
             var edgeList = GexfJS.graph.edgeList || [];
             var nodeById = {};
@@ -1422,19 +1995,49 @@ var loadGexfDependencies = function(callback) {
             };
             if (type === 'superbubbles') {
                 unionByCsvNodeAttr(sbAttrId);
+                unionByCsvNodeAttr(altEvAttrId);
             } else if (type === 'alt_paths') {
                 unionByCsvNodeAttr(altEvAttrId);
             } else if (type === 'translocation_bridges') {
                 unionByCsvNodeAttr(brEvAttrId);
+            } else if (type === 'remote_cnv') {
+                // Union all copies sharing a cnv_cluster_id across the graph so each Remote CNV Cluster locus
+                // highlights its dispersed paralogous copies together across the genome.
+                unionByCsvNodeAttr(cnvAttrId);
             } else if ((type === 'tandem_repeats' || type === 'fragmented_paralogs') && typeof cnvAttrId !== 'undefined') {
-                var byCnv = {};
+                // Only union nodes sharing a cnv_cluster_id if they are locally proximate in the graph (distance <= 4 hops).
+                // Distant paralogous operons that share a cnv_cluster_id remain separate spatial loci in Local / Fragmented views.
+                var byCnvList = {};
                 involvedIds.forEach(function(nid) {
                     var n = nodeById[nid];
                     var val = (n && n.attributes && n.attributes[cnvAttrId]) ? String(n.attributes[cnvAttrId]).trim() : '';
                     if (val && val !== 'None' && val !== '0') {
-                        if (byCnv[val]) union(byCnv[val], nid);
-                        else byCnv[val] = nid;
+                        if (!byCnvList[val]) byCnvList[val] = [];
+                        byCnvList[val].push(nid);
                     }
+                });
+                Object.keys(byCnvList).forEach(function(val) {
+                    var list = byCnvList[val];
+                    var inList = {};
+                    list.forEach(function(id) { inList[id] = true; });
+                    list.forEach(function(startId) {
+                        var q = [{ id: startId, d: 0 }];
+                        var seen = {};
+                        seen[startId] = true;
+                        for (var qi = 0; qi < q.length; qi++) {
+                            var item = q[qi];
+                            if (item.d >= 4) continue;
+                            var inc = adjEdgesByNodeId[item.id] || [];
+                            for (var ii = 0; ii < inc.length; ii++) {
+                                var nb = inc[ii].neighborId;
+                                if (!seen[nb]) {
+                                    seen[nb] = true;
+                                    if (inList[nb]) union(startId, nb);
+                                    q.push({ id: nb, d: item.d + 1 });
+                                }
+                            }
+                        }
+                    });
                 });
             }
 
@@ -1490,7 +2093,7 @@ var loadGexfDependencies = function(callback) {
                     }
                 } else {
                     var hasExplicitInComp = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
-                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'translocation_bridges' || type === 'rearrangements' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'inversions')) {
+                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'translocation_bridges' || type === 'rearrangements' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'remote_cnv' || type === 'inversions')) {
                         c.nodeIds.forEach(function(nid) {
                             if (explicitNodes[nid]) focalIds.push(nid);
                             else boundaryAnchorSet[nid] = true;
@@ -1506,11 +2109,12 @@ var loadGexfDependencies = function(callback) {
                 // Discover 1-hop flanking conserved anchor nodes connected to focal nodes
                 focalIds.forEach(function(nid) {
                     var inc = adjEdgesByNodeId[nid] || [];
+                    var hasFocalNeighbor = inc.some(function(item) { return Boolean(focalSet[item.neighborId]); });
                     inc.forEach(function(item) {
                         if (!focalSet[item.neighborId]) {
                             boundaryAnchorSet[item.neighborId] = true;
                         }
-                        if ((type !== 'rearrangement_junctions' && focalSet[item.neighborId]) || Object.keys(c.edgeIds).length === 0) {
+                        if ((type !== 'rearrangement_junctions' && (focalSet[item.neighborId] || !hasFocalNeighbor)) || Object.keys(c.edgeIds).length === 0) {
                             c.edgeIds[item.edge.id] = true;
                         }
                     });
@@ -1596,9 +2200,13 @@ var loadGexfDependencies = function(callback) {
                     if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { allAnchorContigs[s] = true; });
                 });
 
-                if (type === 'tandem_repeats' || type === 'fragmented_paralogs') {
-                    eventRoleTitle = (type === 'fragmented_paralogs') ? 'Fragmented / Multi-Contig Carriers' : 'Multi-Copy CNV Carriers';
-                    refRoleTitle = (type === 'fragmented_paralogs') ? 'Contiguous Reference Carriers' : 'Single-Copy / Collinear Reference';
+                if (type === 'tandem_repeats' || type === 'fragmented_paralogs' || type === 'remote_cnv') {
+                    eventRoleTitle = (type === 'fragmented_paralogs')
+                        ? 'Fragmented / Multi-Contig Carriers'
+                        : (type === 'remote_cnv' ? 'Multi-Locus CNV Carriers' : 'Multi-Copy CNV Carriers');
+                    refRoleTitle = (type === 'fragmented_paralogs')
+                        ? 'Contiguous Reference Carriers'
+                        : 'Single-Copy / Collinear Reference';
                     var detourGenomes = {};
                     var detourContigs = {};
                     Object.keys(rawEdges).forEach(function(eid) {
@@ -1607,12 +2215,54 @@ var loadGexfDependencies = function(callback) {
                         if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { detourGenomes[g] = true; });
                         if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { detourContigs[s] = true; });
                     });
+                    // Also check cluster-wide contigs/copies across all involved nodes sharing this locus's cnv_cluster_id(s)
+                    var locusCnvIds = {};
+                    if (typeof cnvAttrId !== 'undefined') {
+                        focalIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            var val = (n && n.attributes && n.attributes[cnvAttrId]) ? String(n.attributes[cnvAttrId]).trim() : '';
+                            if (val && val !== 'None' && val !== '0') locusCnvIds[val] = true;
+                        });
+                    }
+                    var clusterGlobalContigs = {};
+                    var clusterGlobalCopies = {};
+                    if (Object.keys(locusCnvIds).length > 0) {
+                        involvedIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            if (!n || !n.featureMap) return;
+                            var val = (n.attributes && n.attributes[cnvAttrId]) ? String(n.attributes[cnvAttrId]).trim() : '';
+                            if (!locusCnvIds[val]) return;
+                            for (var gid in n.featureMap) {
+                                if (gid === 'info') continue;
+                                var cMap = n.featureMap[gid];
+                                if (cMap && typeof cMap === 'object') {
+                                    if (!clusterGlobalContigs[gid]) clusterGlobalContigs[gid] = {};
+                                    if (!clusterGlobalCopies[gid]) clusterGlobalCopies[gid] = {};
+                                    for (var sid in cMap) {
+                                        clusterGlobalContigs[gid][sid] = true;
+                                        var fArr = cMap[sid];
+                                        var cnt = Array.isArray(fArr) ? fArr.length : 1;
+                                        clusterGlobalCopies[gid][val] = (clusterGlobalCopies[gid][val] || 0) + cnt;
+                                    }
+                                }
+                            }
+                        });
+                    }
                     Object.keys(genomeCopies).forEach(function(gid) {
                         var cSet = genomeFocalContigs[gid] || {};
                         var numContigs = Object.keys(cSet).length;
+                        var globalNumContigs = clusterGlobalContigs[gid] ? Object.keys(clusterGlobalContigs[gid]).length : numContigs;
+                        var maxGlobalCopies = genomeCopies[gid] || 0;
+                        if (clusterGlobalCopies[gid]) {
+                            for (var cv in clusterGlobalCopies[gid]) {
+                                if (clusterGlobalCopies[gid][cv] > maxGlobalCopies) maxGlobalCopies = clusterGlobalCopies[gid][cv];
+                            }
+                        }
                         var isEvent = (type === 'fragmented_paralogs')
-                            ? (numContigs > 1 || Boolean(detourGenomes[gid]))
-                            : (genomeCopies[gid] > 1 || Boolean(detourGenomes[gid]));
+                            ? (numContigs > 1)
+                            : (type === 'remote_cnv'
+                                ? (maxGlobalCopies > 1 || globalNumContigs > 1)
+                                : (genomeCopies[gid] > 1 || Boolean(detourGenomes[gid])));
                         if (isEvent) {
                             eventGenomesSet[gid] = true;
                             Object.keys(cSet).forEach(function(s) { eventContigsSet[s] = true; });
@@ -1621,7 +2271,9 @@ var loadGexfDependencies = function(callback) {
                             Object.keys(cSet).forEach(function(s) { refContigsSet[s] = true; });
                         }
                     });
-                    Object.keys(detourContigs).forEach(function(s) { eventContigsSet[s] = true; });
+                    if (type !== 'fragmented_paralogs') {
+                        Object.keys(detourContigs).forEach(function(s) { eventContigsSet[s] = true; });
+                    }
                     // If all genomes had 1 copy per node (e.g., 2 separate paralog nodes), fallback to showing all focal as event
                     if (Object.keys(eventGenomesSet).length === 0) {
                         Object.keys(genomeCopies).forEach(function(gid) {
@@ -1631,16 +2283,70 @@ var loadGexfDependencies = function(callback) {
                         refGenomesSet = {};
                         refContigsSet = {};
                     }
+                    // For Fragmented Localized Repeats, highlight edges carried by fragmented event contigs as active (purple)
+                    // and edges carried exclusively by contiguous reference contigs (bridging the contig break) as reference (green dashed)
+                    if (type === 'fragmented_paralogs' && Object.keys(eventContigsSet).length > 0 && Object.keys(refContigsSet).length > 0) {
+                        var newActiveEdgeSet = {};
+                        var newRefEdgeSet = {};
+                        var checkLocusEdge = function(eid) {
+                            var eObj = GexfJS.graph.edgeLookup[eid];
+                            if (!eObj || !eObj.sequences) return;
+                            var hasEvSeq = false, hasRefSeq = false;
+                            for (var seqId in eObj.sequences) {
+                                if (eventContigsSet[seqId]) hasEvSeq = true;
+                                if (refContigsSet[seqId]) hasRefSeq = true;
+                            }
+                            if (hasEvSeq) {
+                                newActiveEdgeSet[eid] = true;
+                            } else if (hasRefSeq) {
+                                newRefEdgeSet[eid] = true;
+                            }
+                        };
+                        focalIds.forEach(function(nid) {
+                            (adjEdgesByNodeId[nid] || []).forEach(function(item) {
+                                if (focalSet[item.neighborId] || boundaryAnchorSet[item.neighborId]) {
+                                    checkLocusEdge(item.edge.id);
+                                }
+                            });
+                        });
+                        if (Object.keys(newActiveEdgeSet).length > 0) {
+                            c.edgeIds = newActiveEdgeSet;
+                            activeEdgeIds = Object.keys(newActiveEdgeSet);
+                            Object.keys(newRefEdgeSet).forEach(function(reid) { referenceEdgeSet[reid] = true; });
+                            Object.keys(newActiveEdgeSet).forEach(function(aeid) { delete referenceEdgeSet[aeid]; });
+                        }
+                    }
                 } else if (type === 'breaks') {
                     eventRoleTitle = 'Fragmented / Repeat-Broken Contigs';
                     refRoleTitle = 'Bridging Scaffold Reference';
                     var bridgeContigs = {};
                     var bridgeGenomes = {};
+                    var scaffoldTargetGenomes = {};
+                    var svEntAttrId = GexfJS._edge_attr_value ? (GexfJS._edge_attr_value['sv_entities'] || GexfJS._edge_attr_value['scaffold_entities']) : undefined;
                     Object.keys(rawEdges).forEach(function(eid) {
                         if (!c.edgeIds[eid]) return;
                         var e = GexfJS.graph.edgeLookup[eid];
-                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { bridgeGenomes[g] = true; });
-                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { bridgeContigs[s] = true; });
+                        if (!e) return;
+                        if (e.genomes) Object.keys(e.genomes).forEach(function(g) { bridgeGenomes[g] = true; });
+                        if (e.sequences) Object.keys(e.sequences).forEach(function(s) { bridgeContigs[s] = true; });
+                        if (typeof svEntAttrId !== 'undefined' && e.attributes && e.attributes[svEntAttrId]) {
+                            String(e.attributes[svEntAttrId]).split(',').forEach(function(tok) {
+                                var g = tok.trim();
+                                if (g && g !== 'None') scaffoldTargetGenomes[g] = true;
+                            });
+                        }
+                    });
+                    var locusContigsByGenome = {};
+                    focalIds.concat(anchorIds).forEach(function(nid) {
+                        var n = nodeById[nid];
+                        if (!n || !n.sequences) return;
+                        Object.keys(n.sequences).forEach(function(s) {
+                            var g = contigToGenome[s];
+                            if (g) {
+                                if (!locusContigsByGenome[g]) locusContigsByGenome[g] = {};
+                                locusContigsByGenome[g][s] = true;
+                            }
+                        });
                     });
                     focalIds.forEach(function(nid) {
                         var n = nodeById[nid];
@@ -1648,21 +2354,44 @@ var loadGexfDependencies = function(callback) {
                         var isBreakNode = (typeof breakAttrId !== 'undefined' && n.attributes && String(n.attributes[breakAttrId]).toLowerCase() === 'true');
                         if (n.sequences) {
                             Object.keys(n.sequences).forEach(function(s) {
-                                if (bridgeContigs[s] && !isBreakNode) {
-                                    refContigsSet[s] = true;
-                                    if (contigToGenome[s]) refGenomesSet[contigToGenome[s]] = true;
-                                } else if (!bridgeContigs[s]) {
+                                var g = contigToGenome[s];
+                                var gLocusContigCount = (g && locusContigsByGenome[g]) ? Object.keys(locusContigsByGenome[g]).length : 0;
+                                if ((g && scaffoldTargetGenomes[g]) || gLocusContigCount > 1 || (!bridgeContigs[s] && isBreakNode)) {
+                                    if (g) {
+                                        eventGenomesSet[g] = true;
+                                        if (locusContigsByGenome[g]) {
+                                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) { eventContigsSet[cs] = true; });
+                                        }
+                                    }
                                     eventContigsSet[s] = true;
-                                    if (contigToGenome[s]) eventGenomesSet[contigToGenome[s]] = true;
                                 }
                             });
                         }
                     });
-                    Object.keys(bridgeContigs).forEach(function(s) {
-                        refContigsSet[s] = true;
-                        if (contigToGenome[s]) refGenomesSet[contigToGenome[s]] = true;
+                    Object.keys(scaffoldTargetGenomes).forEach(function(g) {
+                        eventGenomesSet[g] = true;
+                        if (locusContigsByGenome[g]) {
+                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) { eventContigsSet[cs] = true; });
+                        }
                     });
-                    Object.keys(bridgeGenomes).forEach(function(g) { refGenomesSet[g] = true; });
+                    Object.keys(locusContigsByGenome).forEach(function(g) {
+                        if (!eventGenomesSet[g]) {
+                            refGenomesSet[g] = true;
+                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) {
+                                if (!eventContigsSet[cs]) refContigsSet[cs] = true;
+                            });
+                        }
+                    });
+                    Object.keys(bridgeContigs).forEach(function(s) {
+                        var g = contigToGenome[s];
+                        if (!eventContigsSet[s] && (!g || !eventGenomesSet[g])) {
+                            refContigsSet[s] = true;
+                            if (g) refGenomesSet[g] = true;
+                        }
+                    });
+                    Object.keys(bridgeGenomes).forEach(function(g) {
+                        if (!eventGenomesSet[g]) refGenomesSet[g] = true;
+                    });
                     if (Object.keys(eventContigsSet).length === 0) {
                         focalIds.forEach(function(nid) {
                             var n = nodeById[nid];
@@ -1671,30 +2400,41 @@ var loadGexfDependencies = function(callback) {
                         });
                     }
                 } else if (type === 'inversions') {
-                    // Recover relative orientation split across undirected inverted_block edges using sequential feature positions
+                    // Recover relative orientation split across undirected inverted_block edges using polarity-normalized sequential feature positions
                     eventRoleTitle = 'Inverted / Minority Orientation (-)';
                     refRoleTitle = 'Majority / Consensus Orientation (+)';
 
-                    var getFeatPos = function(nodeObj, gid, sid) {
+                    var contigPol = _self.getContigPolarities();
+                    var getFeatPosAndPeg = function(nodeObj, gid, sid) {
                         if (!nodeObj || !nodeObj.featureMap) return null;
-                        if (nodeObj.featureMap.info && nodeObj.featureMap.info[gid] && nodeObj.featureMap.info[gid][sid] &&
-                            nodeObj.featureMap.info[gid][sid][0] && typeof nodeObj.featureMap.info[gid][sid][0].start !== 'undefined') {
-                            var st = parseInt(nodeObj.featureMap.info[gid][sid][0].start, 10);
-                            if (!isNaN(st)) return st;
-                        }
+                        var peg = null;
                         if (nodeObj.featureMap[gid] && nodeObj.featureMap[gid][sid] && nodeObj.featureMap[gid][sid][0]) {
                             var fid = String(nodeObj.featureMap[gid][sid][0]);
                             var m = fid.match(/(\d+)$/);
-                            if (m) return parseInt(m[1], 10);
+                            if (m) peg = parseInt(m[1], 10);
                         }
-                        return null;
+                        var pos = peg;
+                        if (nodeObj.featureMap.info && nodeObj.featureMap.info[gid] && nodeObj.featureMap.info[gid][sid] &&
+                            nodeObj.featureMap.info[gid][sid][0] && typeof nodeObj.featureMap.info[gid][sid][0].start !== 'undefined') {
+                            var st = parseInt(nodeObj.featureMap.info[gid][sid][0].start, 10);
+                            if (!isNaN(st)) pos = st;
+                        }
+                        return pos !== null ? { pos: pos, peg: peg } : null;
                     };
 
-                    var pairSigns = {};
                     var allInvGenomes = Object.keys(genomeFocalContigs);
-                    allInvGenomes.forEach(function(g) { pairSigns[g] = {}; });
+                    var focalContigToGenome = {};
+                    allInvGenomes.forEach(function(g) {
+                        Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) {
+                            focalContigToGenome[s] = g;
+                        });
+                    });
 
-                    // 1. Compare coordinate step direction (pv - pu) across every internal edge of the inverted block
+                    var contigPairSigns = {};
+                    var contigSteps = {};
+                    var contigNetNorm = {};
+
+                    // 1. Compare polarity-normalized coordinate step direction across every internal edge of the inverted block
                     activeEdgeIds.forEach(function(eid) {
                         var e = GexfJS.graph.edgeLookup[eid];
                         if (!e) return;
@@ -1702,30 +2442,37 @@ var loadGexfDependencies = function(callback) {
                         var vNode = GexfJS.graph.nodeList[e.target];
                         if (!uNode || !vNode || !uNode.featureMap || !vNode.featureMap) return;
 
-                        var edgeDirs = {};
+                        var edgeContigDirs = {};
                         allInvGenomes.forEach(function(g) {
                             var uContigs = uNode.featureMap[g];
                             var vContigs = vNode.featureMap[g];
                             if (!uContigs || !vContigs) return;
                             for (var sid in uContigs) {
                                 if (vContigs[sid]) {
-                                    var pu = getFeatPos(uNode, g, sid);
-                                    var pv = getFeatPos(vNode, g, sid);
-                                    if (pu !== null && pv !== null && pv !== pu) {
-                                        edgeDirs[g] = (pv > pu) ? 1 : -1;
-                                        break;
+                                    var uEntry = getFeatPosAndPeg(uNode, g, sid);
+                                    var vEntry = getFeatPosAndPeg(vNode, g, sid);
+                                    if (uEntry && vEntry && uEntry.pos !== vEntry.pos) {
+                                        if (uEntry.peg !== null && vEntry.peg !== null && Math.abs(vEntry.peg - uEntry.peg) > 15) continue;
+                                        var rawDir = (vEntry.pos > uEntry.pos) ? 1 : -1;
+                                        var normDir = rawDir * (contigPol[sid] || 1);
+                                        edgeContigDirs[sid] = normDir;
+                                        contigSteps[sid] = (contigSteps[sid] || 0) + 1;
+                                        contigNetNorm[sid] = (contigNetNorm[sid] || 0) + normDir;
+                                        focalContigToGenome[sid] = g;
+                                        if (!contigPairSigns[sid]) contigPairSigns[sid] = {};
                                     }
                                 }
                             }
                         });
 
-                        var dirGens = Object.keys(edgeDirs);
-                        for (var i = 0; i < dirGens.length; i++) {
-                            for (var j = i + 1; j < dirGens.length; j++) {
-                                var g1 = dirGens[i], g2 = dirGens[j];
-                                var prod = edgeDirs[g1] * edgeDirs[g2];
-                                pairSigns[g1][g2] = (pairSigns[g1][g2] || 0) + prod;
-                                pairSigns[g2][g1] = (pairSigns[g2][g1] || 0) + prod;
+                        var dirContigs = Object.keys(edgeContigDirs);
+                        for (var i = 0; i < dirContigs.length; i++) {
+                            var c1 = dirContigs[i];
+                            for (var j = i + 1; j < dirContigs.length; j++) {
+                                var c2 = dirContigs[j];
+                                var prod = edgeContigDirs[c1] * edgeContigDirs[c2];
+                                contigPairSigns[c1][c2] = (contigPairSigns[c1][c2] || 0) + prod;
+                                contigPairSigns[c2][c1] = (contigPairSigns[c2][c1] || 0) + prod;
                             }
                         }
                     });
@@ -1733,30 +2480,47 @@ var loadGexfDependencies = function(callback) {
                     // 2. Reinforce with boundary edges connecting flanking anchors to opposite ends of the inverted block
                     anchorIds.forEach(function(aid) {
                         var inc = adjEdgesByNodeId[aid] || [];
-                        var boundaryEdges = [];
+                        var boundaryContigGroups = [];
                         inc.forEach(function(item) {
-                            if (focalSet[item.neighborId] && item.edge && item.edge.genomes) {
-                                boundaryEdges.push(Object.keys(item.edge.genomes));
+                            if (focalSet[item.neighborId] && item.edge) {
+                                var bContigs = [];
+                                if (item.edge.sequences && Object.keys(item.edge.sequences).length > 0) {
+                                    Object.keys(item.edge.sequences).forEach(function(s) {
+                                        if (focalContigToGenome[s]) bContigs.push(s);
+                                    });
+                                } else if (item.edge.genomes) {
+                                    Object.keys(item.edge.genomes).forEach(function(g) {
+                                        Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) {
+                                            bContigs.push(s);
+                                        });
+                                    });
+                                }
+                                if (bContigs.length > 0) {
+                                    bContigs.forEach(function(s) {
+                                        if (!contigPairSigns[s]) contigPairSigns[s] = {};
+                                        if (!contigSteps[s]) contigSteps[s] = 1;
+                                    });
+                                    boundaryContigGroups.push(bContigs);
+                                }
                             }
                         });
-                        if (boundaryEdges.length > 1) {
-                            for (var b1 = 0; b1 < boundaryEdges.length; b1++) {
-                                var gens1 = boundaryEdges[b1];
-                                for (var p = 0; p < gens1.length; p++) {
-                                    for (var q = p + 1; q < gens1.length; q++) {
-                                        if (pairSigns[gens1[p]] && pairSigns[gens1[q]]) {
-                                            pairSigns[gens1[p]][gens1[q]] = (pairSigns[gens1[p]][gens1[q]] || 0) + 2;
-                                            pairSigns[gens1[q]][gens1[p]] = (pairSigns[gens1[q]][gens1[p]] || 0) + 2;
-                                        }
+                        if (boundaryContigGroups.length > 1) {
+                            for (var b1 = 0; b1 < boundaryContigGroups.length; b1++) {
+                                var cs1 = boundaryContigGroups[b1];
+                                for (var p = 0; p < cs1.length; p++) {
+                                    for (var q = p + 1; q < cs1.length; q++) {
+                                        var s1 = cs1[p], s2 = cs1[q];
+                                        contigPairSigns[s1][s2] = (contigPairSigns[s1][s2] || 0) + 2;
+                                        contigPairSigns[s2][s1] = (contigPairSigns[s2][s1] || 0) + 2;
                                     }
                                 }
-                                for (var b2 = b1 + 1; b2 < boundaryEdges.length; b2++) {
-                                    var gens2 = boundaryEdges[b2];
-                                    gens1.forEach(function(ga) {
-                                        gens2.forEach(function(gb) {
-                                            if (ga !== gb && pairSigns[ga] && pairSigns[gb]) {
-                                                pairSigns[ga][gb] = (pairSigns[ga][gb] || 0) - 2;
-                                                pairSigns[gb][ga] = (pairSigns[gb][ga] || 0) - 2;
+                                for (var b2 = b1 + 1; b2 < boundaryContigGroups.length; b2++) {
+                                    var cs2 = boundaryContigGroups[b2];
+                                    cs1.forEach(function(sa) {
+                                        cs2.forEach(function(sb) {
+                                            if (sa !== sb) {
+                                                contigPairSigns[sa][sb] = (contigPairSigns[sa][sb] || 0) - 2;
+                                                contigPairSigns[sb][sa] = (contigPairSigns[sb][sa] || 0) - 2;
                                             }
                                         });
                                     });
@@ -1765,50 +2529,87 @@ var loadGexfDependencies = function(callback) {
                         }
                     });
 
-                    // 3. Partition genomes into two orientation groups (grpA vs grpB)
-                    if (allInvGenomes.length > 0) {
-                        var seedG = allInvGenomes[0];
+                    // 3. Partition active locus contigs into two orientation groups (grpA vs grpB)
+                    var activeInvContigs = Object.keys(contigSteps);
+                    if (activeInvContigs.length > 0) {
+                        var seedC = activeInvContigs[0];
                         var bestScore = -1;
-                        allInvGenomes.forEach(function(g) {
+                        var bestSteps = -1;
+                        activeInvContigs.forEach(function(c) {
                             var sScore = 0;
-                            for (var other in pairSigns[g]) {
-                                sScore += Math.abs(pairSigns[g][other]);
+                            for (var other in contigPairSigns[c]) {
+                                sScore += Math.abs(contigPairSigns[c][other]);
                             }
-                            if (sScore > bestScore) {
+                            var st = contigSteps[c] || 0;
+                            if (sScore > bestScore || (sScore === bestScore && st > bestSteps)) {
                                 bestScore = sScore;
-                                seedG = g;
+                                bestSteps = st;
+                                seedC = c;
                             }
                         });
 
-                        var grpA = [seedG];
+                        var grpA = [seedC];
                         var grpB = [];
-                        allInvGenomes.forEach(function(g) {
-                            if (g === seedG) return;
-                            var rel = (pairSigns[seedG] && typeof pairSigns[seedG][g] === 'number') ? pairSigns[seedG][g] : 0;
+                        activeInvContigs.forEach(function(c) {
+                            if (c === seedC) return;
+                            var rel = (contigPairSigns[seedC] && typeof contigPairSigns[seedC][c] === 'number') ? contigPairSigns[seedC][c] : 0;
                             if (rel < 0) {
-                                grpB.push(g);
+                                grpB.push(c);
                             } else {
-                                grpA.push(g);
+                                grpA.push(c);
                             }
                         });
 
                         if (grpB.length > 0) {
-                            var invGrp = grpB;
-                            var refGrp = grpA;
-                            if (grpA.length < grpB.length) {
-                                invGrp = grpA;
-                                refGrp = grpB;
-                            } else if (grpA.length === grpB.length) {
+                            var minMainSteps = Math.max(1, Math.floor(focalIds.length * 0.05));
+                            var getMainGenomes = function(cArr) {
+                                var gSet = {};
+                                cArr.forEach(function(c) {
+                                    if ((contigSteps[c] || 0) >= minMainSteps && focalContigToGenome[c]) {
+                                        gSet[focalContigToGenome[c]] = true;
+                                    }
+                                });
+                                if (Object.keys(gSet).length === 0) {
+                                    cArr.forEach(function(c) {
+                                        if (focalContigToGenome[c]) gSet[focalContigToGenome[c]] = true;
+                                    });
+                                }
+                                return gSet;
+                            };
+
+                            var gASet = getMainGenomes(grpA);
+                            var gBSet = getMainGenomes(grpB);
+                            var gACount = Object.keys(gASet).length;
+                            var gBCount = Object.keys(gBSet).length;
+                            var stepsA = 0, stepsB = 0, netNormA = 0, netNormB = 0;
+                            grpA.forEach(function(c) { stepsA += (contigSteps[c] || 0); netNormA += (contigNetNorm[c] || 0); });
+                            grpB.forEach(function(c) { stepsB += (contigSteps[c] || 0); netNormB += (contigNetNorm[c] || 0); });
+
+                            var invContigs = grpB;
+                            var refContigs = grpA;
+                            if (gACount < gBCount || (gACount === gBCount && (stepsA < stepsB || (stepsA === stepsB && netNormA < netNormB)))) {
+                                invContigs = grpA;
+                                refContigs = grpB;
+                            }
+                            if (gACount === gBCount) {
                                 eventRoleTitle = 'Orientation B (Inverted vs. A)';
                                 refRoleTitle = 'Orientation A (Reference)';
                             }
-                            invGrp.forEach(function(g) {
-                                eventGenomesSet[g] = true;
-                                Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) { eventContigsSet[s] = true; });
+
+                            var invMainGenomes = getMainGenomes(invContigs);
+                            var refMainGenomes = getMainGenomes(refContigs);
+
+                            invContigs.forEach(function(s) {
+                                var g = focalContigToGenome[s];
+                                if ((contigSteps[s] || 0) < minMainSteps && g && refMainGenomes[g] && !invMainGenomes[g]) return;
+                                eventContigsSet[s] = true;
+                                if (g) eventGenomesSet[g] = true;
                             });
-                            refGrp.forEach(function(g) {
-                                refGenomesSet[g] = true;
-                                Object.keys(genomeFocalContigs[g] || {}).forEach(function(s) { refContigsSet[s] = true; });
+                            refContigs.forEach(function(s) {
+                                var g = focalContigToGenome[s];
+                                if ((contigSteps[s] || 0) < minMainSteps && g && invMainGenomes[g] && !refMainGenomes[g]) return;
+                                refContigsSet[s] = true;
+                                if (g) refGenomesSet[g] = true;
                             });
 
                             // Highlight boundary crossover edges carried strictly by the inverted orientation as dashed active edges
@@ -1857,8 +2658,65 @@ var loadGexfDependencies = function(callback) {
                             });
                         }
                     });
+                } else if (type === 'rearrangements') {
+                    eventRoleTitle = 'Anchor Collision / Breakpoint Carriers';
+                    refRoleTitle = 'Single-Locus Reference Flanking Blocks';
+                    var bpJuncGenomes = {};
+                    var bpJuncContigs = {};
+                    activeEdgeIds.forEach(function(eid) {
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { bpJuncGenomes[g] = true; });
+                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { bpJuncContigs[s] = true; });
+                    });
+                    var locusContigsByG = {};
+                    focalIds.concat(anchorIds).forEach(function(nid) {
+                        var n = nodeById[nid];
+                        if (!n || !n.sequences) return;
+                        Object.keys(n.sequences).forEach(function(s) {
+                            var g = contigToGenome[s];
+                            if (g) {
+                                if (!locusContigsByG[g]) locusContigsByG[g] = {};
+                                locusContigsByG[g][s] = true;
+                            }
+                        });
+                    });
+                    var multiOrJuncG = {};
+                    var singleRefG = {};
+                    Object.keys(locusContigsByG).forEach(function(g) {
+                        var cCount = Object.keys(locusContigsByG[g]).length;
+                        var fCount = genomeFocalContigs[g] ? Object.keys(genomeFocalContigs[g]).length : 0;
+                        if (bpJuncGenomes[g] || fCount > 1 || cCount > 1 || (genomeCopies[g] || 0) > 1) {
+                            multiOrJuncG[g] = true;
+                        } else {
+                            singleRefG[g] = true;
+                        }
+                    });
+                    if (Object.keys(multiOrJuncG).length > 0 && Object.keys(singleRefG).length > 0) {
+                        Object.keys(multiOrJuncG).forEach(function(g) {
+                            eventGenomesSet[g] = true;
+                            Object.keys(locusContigsByG[g] || {}).forEach(function(s) { eventContigsSet[s] = true; });
+                        });
+                        Object.keys(bpJuncContigs).forEach(function(s) { eventContigsSet[s] = true; });
+                        Object.keys(singleRefG).forEach(function(g) {
+                            refGenomesSet[g] = true;
+                            Object.keys(locusContigsByG[g] || {}).forEach(function(s) {
+                                if (!eventContigsSet[s]) refContigsSet[s] = true;
+                            });
+                        });
+                    } else {
+                        focalIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                            if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                        });
+                        activeEdgeIds.forEach(function(eid) {
+                            var e = GexfJS.graph.edgeLookup[eid];
+                            if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                            if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                        });
+                    }
                 } else {
-                    // Superbubbles, Alt Paths, Translocation Bridges, Synteny Breakpoints
+                    // Superbubbles, Alt Paths, Translocation Bridges
                     if (type === 'superbubbles') {
                         eventRoleTitle = 'Interior Allele / Cassette Carriers';
                         refRoleTitle = 'Conserved Boundary / Alternate Carriers';
@@ -1868,9 +2726,6 @@ var loadGexfDependencies = function(callback) {
                     } else if (type === 'translocation_bridges') {
                         eventRoleTitle = 'Translocation / Replicon Bridge Carriers';
                         refRoleTitle = 'Unbridged / Separate Replicon Reference';
-                    } else if (type === 'rearrangements') {
-                        eventRoleTitle = 'Anchor Collision / Breakpoint Carriers';
-                        refRoleTitle = 'Single-Locus Reference Flanking Blocks';
                     }
 
                     focalIds.forEach(function(nid) {
@@ -1885,12 +2740,19 @@ var loadGexfDependencies = function(callback) {
                     });
                 }
 
-                // Any genome/contig on the flanking anchors not already in eventContigsSet is part of the flanking reference context
+                // Any genome/contig on the flanking anchors not already in eventGenomesSet/eventContigsSet is part of the flanking reference context;
+                // anchor contigs belonging to an event-only genome stay in eventContigsSet so all locus contigs of that genome remain grouped together.
                 Object.keys(allAnchorGenomes).forEach(function(g) {
                     if (!eventGenomesSet[g]) refGenomesSet[g] = true;
                 });
                 Object.keys(allAnchorContigs).forEach(function(s) {
-                    if (!eventContigsSet[s]) refContigsSet[s] = true;
+                    if (eventContigsSet[s] || refContigsSet[s]) return;
+                    var g = contigToGenome[s];
+                    if (g && eventGenomesSet[g] && !refGenomesSet[g]) {
+                        eventContigsSet[s] = true;
+                    } else {
+                        refContigsSet[s] = true;
+                    }
                 });
 
                 // Union of all genomes and contigs involved in this locus (Event + Flanking Anchor Reference)
@@ -1930,6 +2792,79 @@ var loadGexfDependencies = function(callback) {
 
                 var evGenCount = Object.keys(eventGenomesSet).length;
                 var totGenCount = Object.keys(allLocusGenomes).length;
+                var cnvSet = {};
+                if (typeof cnvAttrId !== 'undefined') {
+                    focalIds.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        var val = (n && n.attributes && n.attributes[cnvAttrId]) ? String(n.attributes[cnvAttrId]).trim() : '';
+                        if (val && val !== 'None' && val !== '0') cnvSet[val] = true;
+                    });
+                }
+
+                // For Remote CNV Clusters, partition focalIds into spatially distinct copy sites (<= 4 hops)
+                var remoteSites = [];
+                if (type === 'remote_cnv' && focalIds.length > 1) {
+                    var sParent = {};
+                    var inFocal = {};
+                    focalIds.forEach(function(id) { sParent[id] = id; inFocal[id] = true; });
+                    var sFind = function(x) {
+                        while (sParent[x] !== x) {
+                            sParent[x] = sParent[sParent[x]];
+                            x = sParent[x];
+                        }
+                        return x;
+                    };
+                    focalIds.forEach(function(startId) {
+                        var q = [{ id: startId, d: 0 }];
+                        var seen = {};
+                        seen[startId] = true;
+                        for (var qi = 0; qi < q.length; qi++) {
+                            var item = q[qi];
+                            if (item.d >= 4) continue;
+                            var inc = adjEdgesByNodeId[item.id] || [];
+                            for (var ii = 0; ii < inc.length; ii++) {
+                                var nb = inc[ii].neighborId;
+                                if (!seen[nb]) {
+                                    seen[nb] = true;
+                                    if (inFocal[nb]) {
+                                        var ra = sFind(startId), rb = sFind(nb);
+                                        if (ra !== rb) sParent[ra] = rb;
+                                    }
+                                    q.push({ id: nb, d: item.d + 1 });
+                                }
+                            }
+                        }
+                    });
+                    var siteGroups = {};
+                    focalIds.forEach(function(id) {
+                        var r = sFind(id);
+                        if (!siteGroups[r]) siteGroups[r] = [];
+                        siteGroups[r].push(id);
+                    });
+                    var blockAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['block'] : undefined;
+                    Object.keys(siteGroups).forEach(function(rk) {
+                        var sFocal = siteGroups[rk];
+                        var sAnchors = {};
+                        var sBlocks = {};
+                        sFocal.forEach(function(fid) {
+                            var nObj = nodeById[fid];
+                            if (nObj && nObj.attributes && typeof blockAttrId !== 'undefined' && nObj.attributes[blockAttrId]) {
+                                var bVal = String(nObj.attributes[blockAttrId]).trim();
+                                if (bVal && bVal !== 'None') sBlocks[bVal] = true;
+                            }
+                            (adjEdgesByNodeId[fid] || []).forEach(function(item) {
+                                if (!inFocal[item.neighborId]) sAnchors[item.neighborId] = true;
+                            });
+                        });
+                        var blkKeys = Object.keys(sBlocks);
+                        remoteSites.push({
+                            focalNodeIds: sFocal,
+                            anchorNodeIds: Object.keys(sAnchors),
+                            blockLabel: blkKeys.length > 0 ? blkKeys.join('/') : 'Locus'
+                        });
+                    });
+                    remoteSites.sort(function(a, b) { return b.focalNodeIds.length - a.focalNodeIds.length; });
+                }
 
                 loci.push({
                     focalNodeIds: focalIds,
@@ -1952,6 +2887,9 @@ var loadGexfDependencies = function(callback) {
                     contigCount: Object.keys(eventContigsSet).length || Object.keys(allLocusContigs).length,
                     totalLocusContigs: Object.keys(allLocusContigs).length,
                     shortTitle: shortTitle,
+                    cnvClusters: Object.keys(cnvSet),
+                    remoteSites: remoteSites,
+                    relatedParalogLoci: [],
                     nodeIdxById: nodeIdxById,
                     nodeById: nodeById
                 });
@@ -1967,10 +2905,148 @@ var loadGexfDependencies = function(callback) {
 
             loci.forEach(function(loc, idx) {
                 loc.index = idx;
-                loc.dropdownLabel = '#' + (idx + 1) + ': ' + loc.shortTitle + ' (' + loc.focalNodeIds.length + (loc.focalNodeIds.length === 1 ? ' gene, ' : ' genes, ') + loc.genomeCount + ' gen)';
+                var siteTag = (loc.remoteSites && loc.remoteSites.length > 1) ? (loc.remoteSites.length + ' sites, ') : '';
+                loc.dropdownLabel = '#' + (idx + 1) + ': ' + loc.shortTitle + ' (' + siteTag + loc.focalNodeIds.length + (loc.focalNodeIds.length === 1 ? ' gene, ' : ' genes, ') + loc.genomeCount + ' gen)';
             });
 
+            // Cross-reference spatially separated loci that share any cnv_cluster_id
+            for (var li = 0; li < loci.length; li++) {
+                var lA = loci[li];
+                if (!lA.cnvClusters || lA.cnvClusters.length === 0) continue;
+                var setA = {};
+                lA.cnvClusters.forEach(function(cid) { setA[cid] = true; });
+                for (var lj = 0; lj < loci.length; lj++) {
+                    if (li === lj) continue;
+                    var lB = loci[lj];
+                    if (!lB.cnvClusters || lB.cnvClusters.length === 0) continue;
+                    var shared = lB.cnvClusters.filter(function(cid) { return Boolean(setA[cid]); });
+                    if (shared.length > 0) {
+                        lA.relatedParalogLoci.push({
+                            index: lB.index,
+                            shortTitle: lB.shortTitle,
+                            sharedClusters: shared
+                        });
+                    }
+                }
+            }
+
             return loci;
+        },
+
+        getRoleGenomeContigs: function(loc, isEvent, phenomType) {
+            if (!loc) return { gKeys: [], byGenome: {} };
+            var gids = isEvent ? (loc.eventGenomes || []) : (loc.refGenomes || []);
+            var cids = isEvent ? (loc.eventContigs || []) : (loc.refContigs || []);
+            var oppositeContigSet = {};
+            var oppList = isEvent ? (loc.refContigs || []) : (loc.eventContigs || []);
+            oppList.forEach(function(c) { oppositeContigSet[c] = true; });
+
+            var byGenome = {};
+            cids.forEach(function(cid) {
+                var gid = (loc.contigToGenome && loc.contigToGenome[cid]) ? loc.contigToGenome[cid] : 'unknown';
+                if (!byGenome[gid]) byGenome[gid] = [];
+                if (byGenome[gid].indexOf(cid) === -1) byGenome[gid].push(cid);
+            });
+            gids.forEach(function(gid) {
+                if (!byGenome[gid]) byGenome[gid] = [];
+                Object.keys(loc.allLocusContigs || {}).forEach(function(cid) {
+                    if (loc.contigToGenome && loc.contigToGenome[cid] === gid && !oppositeContigSet[cid]) {
+                        if (byGenome[gid].indexOf(cid) === -1) byGenome[gid].push(cid);
+                    }
+                });
+                if (byGenome[gid].length === 0) {
+                    Object.keys(loc.allLocusContigs || {}).forEach(function(cid) {
+                        if (loc.contigToGenome && loc.contigToGenome[cid] === gid && byGenome[gid].indexOf(cid) === -1) {
+                            byGenome[gid].push(cid);
+                        }
+                    });
+                }
+            });
+
+            var gKeys = Object.keys(byGenome);
+            var preferMultiContigEvent = Boolean(
+                isEvent && (phenomType === 'fragmented_paralogs' || phenomType === 'breaks' || phenomType === 'rearrangements') &&
+                gKeys.some(function(g) { return (byGenome[g] || []).length >= 2; })
+            );
+            var totalAssemblyContigs = function(gid) {
+                if (window.GexfJS && GexfJS.graph && GexfJS.graph.contig_map && GexfJS.graph.contig_map[gid]) {
+                    return GexfJS.graph.contig_map[gid].length;
+                }
+                return 999999;
+            };
+
+            gKeys.sort(function(a, b) {
+                var lenA = (byGenome[a] || []).length;
+                var lenB = (byGenome[b] || []).length;
+                if ((lenA === 0) !== (lenB === 0)) return lenA === 0 ? 1 : -1;
+                if (preferMultiContigEvent) {
+                    var multiA = lenA >= 2 ? 0 : 1;
+                    var multiB = lenB >= 2 ? 0 : 1;
+                    if (multiA !== multiB) return multiA - multiB;
+                }
+                if (lenA !== lenB) return lenA - lenB;
+                var totA = totalAssemblyContigs(a);
+                var totB = totalAssemblyContigs(b);
+                if (totA !== totB) return totA - totB;
+                return String(a).localeCompare(String(b));
+            });
+
+            return { gKeys: gKeys, byGenome: byGenome };
+        },
+
+        getDefaultLocusSpotlightContigs: function(loc, phenomType) {
+            var exemplarTypes = {
+                'tandem_repeats': true,
+                'fragmented_paralogs': true,
+                'rearrangements': true,
+                'rearrangement_junctions': true,
+                'translocation_bridges': true,
+                'inversions': true,
+                'breaks': true
+            };
+            if (!loc || !exemplarTypes[phenomType]) return {};
+
+            var spot = {};
+            var evRole = this.getRoleGenomeContigs(loc, true, phenomType);
+            var refRole = this.getRoleGenomeContigs(loc, false, phenomType);
+
+            var pickedEvGid = null;
+            for (var i = 0; i < evRole.gKeys.length; i++) {
+                var eg = evRole.gKeys[i];
+                if (evRole.byGenome[eg] && evRole.byGenome[eg].length > 0) {
+                    pickedEvGid = eg;
+                    evRole.byGenome[eg].forEach(function(cid) {
+                        spot[cid] = 'event';
+                    });
+                    break;
+                }
+            }
+
+            var pickedRefGid = null;
+            for (var j = 0; j < refRole.gKeys.length; j++) {
+                var rg = refRole.gKeys[j];
+                if (rg === pickedEvGid) continue;
+                if (refRole.byGenome[rg] && refRole.byGenome[rg].length > 0) {
+                    pickedRefGid = rg;
+                    refRole.byGenome[rg].forEach(function(cid) {
+                        if (!spot[cid]) spot[cid] = 'reference';
+                    });
+                    break;
+                }
+            }
+            if (!pickedRefGid) {
+                for (var k = 0; k < refRole.gKeys.length; k++) {
+                    var rg2 = refRole.gKeys[k];
+                    if (refRole.byGenome[rg2] && refRole.byGenome[rg2].length > 0) {
+                        refRole.byGenome[rg2].forEach(function(cid) {
+                            if (!spot[cid]) spot[cid] = 'reference';
+                        });
+                        break;
+                    }
+                }
+            }
+
+            return spot;
         },
 
         applyPhenomenonLocusState: function(autoPan) {
@@ -2039,6 +3115,7 @@ var loadGexfDependencies = function(callback) {
             var spotContigIds = isSingleLocus ? Object.keys(spotMap) : [];
             if (isSingleLocus && spotContigIds.length > 0) {
                 var sLoc = loci[idx];
+                var contigPol = this.getContigPolarities();
                 var allLocNodeIds = sLoc.focalNodeIds.concat(sLoc.anchorNodeIds);
                 var locNodeSet = {};
                 allLocNodeIds.forEach(function(nid) { locNodeSet[nid] = true; });
@@ -2071,9 +3148,10 @@ var loadGexfDependencies = function(callback) {
                         var m = String(fid).match(/(\d+)$/);
                         if (m) pegNums.push(parseInt(m[1], 10));
                     });
-                    if (pos === null && pegNums.length > 0) pos = pegNums[0];
+                    var peg = pegNums.length > 0 ? pegNums[0] : null;
+                    if (pos === null && peg !== null) pos = peg;
                     var tag = pegNums.length > 0 ? ('peg.' + pegNums.join(',')) : cid;
-                    return { pos: pos, tag: tag };
+                    return { pos: pos, peg: peg, tag: tag };
                 };
 
                 var anyFound = false;
@@ -2128,7 +3206,11 @@ var loadGexfDependencies = function(callback) {
                         if (onEdge) {
                             var dir = 0;
                             if (uInfo && vInfo && uInfo.pos !== null && vInfo.pos !== null && uInfo.pos !== vInfo.pos) {
-                                dir = (vInfo.pos > uInfo.pos) ? 1 : -1;
+                                if (uInfo.peg === null || vInfo.peg === null || Math.abs(vInfo.peg - uInfo.peg) <= 50) {
+                                    var rawDir = (vInfo.pos > uInfo.pos) ? 1 : -1;
+                                    var cPol = (contigPol && contigPol[cid]) ? contigPol[cid] : 1;
+                                    dir = rawDir * cPol;
+                                }
                             }
                             if (role === 'event') {
                                 hasEv = true;
@@ -2158,7 +3240,10 @@ var loadGexfDependencies = function(callback) {
             // Auto-pan & high-magnification auto-zoom to frame the active locus and its flanking anchors
             if (autoPan && isSingleLocus) {
                 var loc = loci[idx];
-                var frameNodeIds = loc.focalNodeIds.concat(loc.anchorNodeIds);
+                var siteIdx = (typeof GexfJS.params.activeRemoteSiteIndex === 'number') ? GexfJS.params.activeRemoteSiteIndex : -1;
+                var frameNodeIds = (loc.remoteSites && siteIdx >= 0 && siteIdx < loc.remoteSites.length)
+                    ? loc.remoteSites[siteIdx].focalNodeIds.concat(loc.remoteSites[siteIdx].anchorNodeIds)
+                    : loc.focalNodeIds.concat(loc.anchorNodeIds);
                 var xmin = 1e9, xmax = -1e9, ymin = 1e9, ymax = -1e9, count = 0;
                 frameNodeIds.forEach(function(nid) {
                     var nIdx = loc.nodeIdxById[nid];
@@ -2290,17 +3375,21 @@ var loadGexfDependencies = function(callback) {
             html += '<details' + guideOpenAttr + ' ontoggle="window.onGuideDetailsToggle(this.open)" style="margin-bottom:12px; font-size:0.84em; background:#f4f8fb; border:1px solid #d9e8f5; border-radius:4px; padding:6px 8px;">';
             html += '<summary style="cursor:pointer; font-weight:bold; color:#2b5c8f; outline:none;"><i class="fa icon-info-circle"></i> Guide to Biological Phenomena</summary>';
             html += '<div style="margin-top:6px; line-height:1.38; color:#444;">';
-            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, or small indels flanked by the same conserved core anchor genes.<br>&bull; <i>Accessory Islands &amp; Indels (Alt Paths):</i> Local strain-specific genomic islands, prophages, or HGT insertions between collinear flanking anchors on the same replicon.</div>';
-            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Fragmented Localized Repeats (Fragmented CNV):</i> Localized repeats that are contiguous on reference contigs but split across multiple contigs in incomplete or misassembled genomes.</div>';
+            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles &amp; Local Islands/Indels):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, strain-specific genomic islands, prophages, or local indels flanked by conserved collinear anchor genes on the same replicon.</div>';
+            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Fragmented Localized Repeats (Fragmented CNV):</i> Localized repeats that are contiguous on reference contigs but split across multiple contigs in incomplete or misassembled genomes.<br>&bull; <i>Remote CNV Clusters (Segmental Paralogs):</i> Multi-gene (&ge;<i>k</i>) paralogous operons, segmental duplications, or mobile cassettes present at two or more spatially disconnected chromosomal loci.</div>';
             html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Anchor Collisions):</i> Conserved multi-gene anchor sequences where TFS homology signals from different contigs/loci collide.<br>&bull; <i>Rearrangement Junctions (Jump Edges):</i> Direct non-bubble transition edges jumping across inversion or translocation boundaries without intervening bridge genes.<br>&bull; <i>Translocation &amp; Replicon Bridges:</i> Multi-gene bridge paths connecting flanking anchors that reside on different replicons/contigs or distant chromosomal loci in reference genomes.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the polarity-normalized contig walk.</div>';
             html += '<div><b>4. Assembly &amp; Scaffolding:</b><br>&bull; <i>Repeat Breaks &amp; Scaffolds:</i> Contig ends shattered inside shared repetitive elements paired with candidate reference-guided scaffold bridges.</div>';
             html += '</div></details>';
 
             // Map the old/new summary counts safely
+            var cnvClass = this.getCnvClassification();
             var countSuperbubbles = s.superbubbles || s.is_superbubble || 0;
-            var countTandem = s.copy_number_variants || s.tandem_repeats || s.cnv_clusters || 0; 
-            var countFragmented = s.fragmented_cnv || s.repeat_fragmentation || 0; 
+            var countTandem = (typeof s.local_cnv !== 'undefined') ? s.local_cnv : (cnvClass.localClusterCount || s.copy_number_variants || s.tandem_repeats || s.cnv_clusters || 0);
+            var countFragmented = (typeof s.remote_cnv !== 'undefined') ? (s.fragmented_cnv || 0) : cnvClass.fragClusterCount;
+            var countRemoteCnv = (typeof s.remote_cnv !== 'undefined') ? s.remote_cnv : cnvClass.remoteClusterCount;
             var countAltPaths = s.alternative_paths || s.alt_paths || 0;
+            var unifiedBoundedLoci = this.getPhenomenonData('superbubbles').loci.length;
+            var countBoundedVariableLoci = unifiedBoundedLoci > 0 ? unifiedBoundedLoci : (countSuperbubbles + countAltPaths);
             var countRearrangements = (typeof s.rearrangement_junctions !== 'undefined')
                 ? (s.structural_rearrangements || 0)
                 : this.getPhenomenonData('rearrangements').loci.length;
@@ -2318,12 +3407,12 @@ var loadGexfDependencies = function(callback) {
             var phenomenaMeta = {
                 'superbubbles': {
                     label: 'Bounded Variable Loci',
-                    graphTerm: 'Superbubbles',
-                    subtitle: 'Allelic swaps, cassettes & small indels between conserved anchors',
-                    count: countSuperbubbles,
-                    nodesDesc: 'Conserved core boundary anchors and interior allelic/cassette gene families',
-                    edgesDesc: 'Alternative allelic paths traversing the bounded variable locus',
-                    tsvReport: '*_superbubbles.tsv'
+                    graphTerm: 'Superbubbles & Local Indels / Islands',
+                    subtitle: 'Allelic swaps, cassettes, local genomic islands & indels between collinear anchors',
+                    count: countBoundedVariableLoci,
+                    nodesDesc: 'Conserved collinear boundary anchors and interior allelic, cassette, or island gene families',
+                    edgesDesc: 'Alternative allelic paths, local island insertions, and indel bypass edges',
+                    tsvReport: '*_superbubbles.tsv, *_structural_variants.tsv'
                 },
                 'alt_paths': {
                     label: 'Accessory Islands & Indels',
@@ -2348,8 +3437,17 @@ var loadGexfDependencies = function(callback) {
                     graphTerm: 'Fragmented CNV',
                     subtitle: 'Localized repeats contiguous in reference contigs but split across contigs in fragmented assemblies',
                     count: countFragmented,
-                    nodesDesc: 'Localized repeat alternate nodes split across multiple contigs (conflict class 3)',
+                    nodesDesc: 'Localized repeat alternate nodes split across multiple contigs',
                     edgesDesc: 'Repeat fragmentation junctions connecting split repeat copies',
+                    tsvReport: '*_mobilized_gene_families.tsv'
+                },
+                'remote_cnv': {
+                    label: 'Remote CNV Clusters',
+                    graphTerm: 'Segmental Paralogs',
+                    subtitle: 'Multi-gene paralogous operons, segmental duplications & dispersed repeat cassettes at distant loci',
+                    count: countRemoteCnv,
+                    nodesDesc: 'Multi-gene repeat clusters resolved into two or more spatially separate chromosomal loci',
+                    edgesDesc: 'Internal cassette edges and flanking chromosomal connections at each paralogous locus',
                     tsvReport: '*_mobilized_gene_families.tsv'
                 },
                 'rearrangements': {
@@ -2400,8 +3498,8 @@ var loadGexfDependencies = function(callback) {
             };
 
             var categories = [
-                { title: '1. Accessory & Allelic Variation', keys: ['superbubbles', 'alt_paths'] },
-                { title: '2. Repeats & Paralog Expansion', keys: ['tandem_repeats', 'fragmented_paralogs'] },
+                { title: '1. Accessory & Allelic Variation', keys: ['superbubbles'] },
+                { title: '2. Repeats & Paralog Expansion', keys: ['tandem_repeats', 'fragmented_paralogs', 'remote_cnv'] },
                 { title: '3. Chromosomal Architecture', keys: ['rearrangements', 'rearrangement_junctions', 'translocation_bridges', 'inversions'] },
                 { title: '4. Assembly & Scaffolding', keys: ['breaks'] }
             ];
@@ -2526,29 +3624,49 @@ var loadGexfDependencies = function(callback) {
                         if (curLoc.anchorNodeIds.length > 0) {
                             html += '<div style="margin-bottom:5px;"><b style="color:#1b5e20;">Flanking Anchors (' + curLoc.anchorNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.anchorNodeIds, true) + '</div>';
                         }
+                        if (curLoc.remoteSites && curLoc.remoteSites.length > 1) {
+                            var curSiteIdx = (window.GexfJS && GexfJS.params && typeof GexfJS.params.activeRemoteSiteIndex === 'number') ? GexfJS.params.activeRemoteSiteIndex : -1;
+                            html += '<div style="margin-bottom:5px;"><b style="color:#01579b;">Remote Copy Sites (' + curLoc.remoteSites.length + '):</b><br>';
+                            var allSiteStyle = (curSiteIdx === -1)
+                                ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#0277bd; border:1px solid #01579b; border-radius:10px; color:#fff; font-weight:bold; text-decoration:none; font-size:0.86em;'
+                                : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.86em;';
+                            html += '<a href="javascript:void(0)" style="' + allSiteStyle + '" onclick="window.focusRemoteSite(-1); return false;" title="Zoom out to frame all ' + curLoc.remoteSites.length + ' remote copy sites of this cluster">All ' + curLoc.remoteSites.length + ' Sites</a>';
+                            curLoc.remoteSites.slice(0, 10).forEach(function(st, sIdx) {
+                                var isSelSite = (curSiteIdx === sIdx);
+                                var sStyle = isSelSite
+                                    ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#0277bd; border:1px solid #01579b; border-radius:10px; color:#fff; font-weight:bold; text-decoration:none; font-size:0.86em;'
+                                    : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.86em;';
+                                var sLabel = 'Site #' + (sIdx + 1) + ': ' + st.blockLabel + ' (' + st.focalNodeIds.length + ')';
+                                html += '<a href="javascript:void(0)" style="' + sStyle + '" onclick="window.focusRemoteSite(' + sIdx + '); return false;" title="Zoom camera to remote copy Site #' + (sIdx + 1) + ' while keeping all remote copies highlighted">' + sLabel + '</a>';
+                            });
+                            if (curLoc.remoteSites.length > 10) {
+                                html += '<span style="font-size:0.85em; color:#777;"> +' + (curLoc.remoteSites.length - 10) + ' more</span>';
+                            }
+                            html += '</div>';
+                        }
+                        if (curLoc.relatedParalogLoci && curLoc.relatedParalogLoci.length > 0) {
+                            html += '<div style="margin-bottom:5px;"><b style="color:#0277bd;">Distant Paralogous Loci (' + curLoc.relatedParalogLoci.length + '):</b><br>';
+                            var maxRel = 8;
+                            curLoc.relatedParalogLoci.slice(0, maxRel).forEach(function(rel) {
+                                var relNum = rel.index + 1;
+                                var cText = rel.sharedClusters && rel.sharedClusters.length > 0 ? (' [CNV ' + rel.sharedClusters.slice(0, 3).join(',') + ']') : '';
+                                var safeRelLbl = ('Locus #' + relNum + ': ' + rel.shortTitle + cText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                html += '<a href="javascript:void(0)" style="display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.88em;" onclick="window.selectPhenomenonLocus(' + rel.index + '); return false;" title="Jump to distant paralogous copy at Locus #' + relNum + '">' + safeRelLbl + ' &#8599;</a>';
+                            });
+                            if (curLoc.relatedParalogLoci.length > maxRel) {
+                                html += '<span style="font-size:0.85em; color:#777;"> +' + (curLoc.relatedParalogLoci.length - maxRel) + ' more</span>';
+                            }
+                            html += '</div>';
+                        }
 
                         // Relative Genome & Contig Comparison (Event Carriers vs. Flanking / Backbone Reference)
                         var formatGenomeList = function(gids, cids, isEvent) {
                             if (gids.length === 0 && cids.length === 0) return '<span style="color:#888; font-style:italic;">None</span>';
                             var maxItems = 6;
                             var items = [];
-                            var byGenome = {};
-                            cids.forEach(function(cid) {
-                                var gid = curLoc.contigToGenome[cid] || 'unknown';
-                                if (!byGenome[gid]) byGenome[gid] = [];
-                                if (byGenome[gid].indexOf(cid) === -1) byGenome[gid].push(cid);
-                            });
-                            gids.forEach(function(gid) {
-                                if (!byGenome[gid]) {
-                                    byGenome[gid] = [];
-                                    Object.keys(curLoc.allLocusContigs || {}).forEach(function(cid) {
-                                        if (curLoc.contigToGenome[cid] === gid && byGenome[gid].indexOf(cid) === -1) {
-                                            byGenome[gid].push(cid);
-                                        }
-                                    });
-                                }
-                            });
-                            var gKeys = Object.keys(byGenome);
+                            var roleData = self.getRoleGenomeContigs(curLoc, isEvent, activePhenom);
+                            var byGenome = roleData.byGenome;
+                            var gKeys = roleData.gKeys;
                             gKeys.slice(0, maxItems).forEach(function(gid) {
                                 var gName = (self.genomeNameMap && self.genomeNameMap[gid]) ? self.genomeNameMap[gid] : gid;
                                 var shortG = gName.length > 26 ? gName.substr(0, 24) + '...' : gName;
@@ -2808,6 +3926,10 @@ var loadGexfDependencies = function(callback) {
             html += '</div>';
             
             // Clear current selection state to reset action bar
+            this.selection = [];
+            if (this.selectionActionBar) {
+                this.selectionActionBar.set('selection', []);
+            }
             this.itemDetailPanel.set('selection',[]);
             this.itemDetailPanel.customDisplayNode.innerHTML = html;
         },
@@ -2934,18 +4056,26 @@ var loadGexfDependencies = function(callback) {
                 if (!window.GexfJS || !GexfJS.params || !GexfJS.params.activePhenomenon) return;
                 var idx = parseInt(locusIdx, 10);
                 if (isNaN(idx)) idx = -1;
+                var baseType = GexfJS.params.activePhenomenon;
                 if (GexfJS.params.activeLocusIndex !== idx) {
-                    GexfJS.params.locusSpotlightContigs = {};
+                    if (idx >= 0 && GexfJS.params.phenomenonLoci && GexfJS.params.phenomenonLoci[idx]) {
+                        GexfJS.params.locusSpotlightContigs = this.getDefaultLocusSpotlightContigs(GexfJS.params.phenomenonLoci[idx], baseType);
+                    } else {
+                        GexfJS.params.locusSpotlightContigs = {};
+                    }
                 }
                 GexfJS.params.activeLocusIndex = idx;
+                GexfJS.params.activeRemoteSiteIndex = -1;
 
-                var baseType = GexfJS.params.activePhenomenon;
                 var labelMap = {
                     'superbubbles': 'Bounded Variable Loci',
                     'alt_paths': 'Accessory Islands & Indels',
                     'tandem_repeats': 'Local / Tandem CNVs',
-                    'fragmented_paralogs': 'Dispersed Repeats / MGEs',
+                    'fragmented_paralogs': 'Fragmented Localized Repeats',
+                    'remote_cnv': 'Remote CNV Clusters',
                     'rearrangements': 'Synteny Breakpoints',
+                    'rearrangement_junctions': 'Rearrangement Junctions',
+                    'translocation_bridges': 'Translocation & Replicon Bridges',
                     'inversions': 'Inverted Syntenic Blocks',
                     'breaks': 'Repeat Breaks & Scaffolds'
                 };
@@ -2953,6 +4083,15 @@ var loadGexfDependencies = function(callback) {
                 GexfJS.params.currentHighlightName = (idx >= 0) ? (baseTitle + ' (Locus #' + (idx + 1) + ')') : baseTitle;
 
                 this.applyPhenomenonLocusState(idx >= 0);
+                this.showDefaultSummary();
+            });
+
+            window.focusRemoteSite = lang.hitch(this, function(siteIdx) {
+                if (!window.GexfJS || !GexfJS.params || !GexfJS.params.activePhenomenon) return;
+                var sIdx = parseInt(siteIdx, 10);
+                if (isNaN(sIdx)) sIdx = -1;
+                GexfJS.params.activeRemoteSiteIndex = sIdx;
+                this.applyPhenomenonLocusState(true);
                 this.showDefaultSummary();
             });
 
@@ -2985,21 +4124,17 @@ var loadGexfDependencies = function(callback) {
                 var isMulti = evt && (evt.shiftKey || evt.metaKey || evt.ctrlKey);
                 var targetRole = (role === 'reference' || role === 'ref') ? 'reference' : 'event';
 
-                if (isMulti) {
-                    if (current[contigId]) {
-                        delete current[contigId];
-                    } else {
-                        current[contigId] = targetRole;
-                    }
+                if (current[contigId]) {
+                    // Clicking an already-checked contig always unchecks it; unchecking all returns to the default locus view
+                    delete current[contigId];
+                } else if (isMulti) {
+                    current[contigId] = targetRole;
                 } else {
-                    var keys = Object.keys(current);
-                    if (keys.length === 1 && current[contigId] === targetRole) {
-                        GexfJS.params.locusSpotlightContigs = {};
-                    } else {
-                        var nextMap = {};
-                        nextMap[contigId] = targetRole;
-                        GexfJS.params.locusSpotlightContigs = nextMap;
-                    }
+                    // Plain-clicking an unchecked contig replaces the active selection in that role (preserving the other role's exemplar)
+                    Object.keys(current).forEach(function(k) {
+                        if (current[k] === targetRole) delete current[k];
+                    });
+                    current[contigId] = targetRole;
                 }
                 this.applyPhenomenonLocusState(false);
                 this.showDefaultSummary();
@@ -3014,23 +4149,19 @@ var loadGexfDependencies = function(callback) {
                 var current = GexfJS.params.locusSpotlightContigs;
                 var isMulti = evt && (evt.shiftKey || evt.metaKey || evt.ctrlKey);
                 var targetRole = (role === 'reference' || role === 'ref') ? 'reference' : 'event';
-                var allAlreadyActive = cids.every(function(c) { return current[c] === targetRole; });
+                var allAlreadyActive = cids.every(function(c) { return Boolean(current[c]); });
 
-                if (isMulti) {
-                    if (allAlreadyActive) {
-                        cids.forEach(function(c) { delete current[c]; });
-                    } else {
-                        cids.forEach(function(c) { current[c] = targetRole; });
-                    }
+                if (allAlreadyActive) {
+                    // Clicking an already-checked genome always unchecks its contigs; unchecking all returns to the default locus view
+                    cids.forEach(function(c) { delete current[c]; });
+                } else if (isMulti) {
+                    cids.forEach(function(c) { current[c] = targetRole; });
                 } else {
-                    var keys = Object.keys(current);
-                    if (keys.length === cids.length && allAlreadyActive) {
-                        GexfJS.params.locusSpotlightContigs = {};
-                    } else {
-                        var nextMap = {};
-                        cids.forEach(function(c) { nextMap[c] = targetRole; });
-                        GexfJS.params.locusSpotlightContigs = nextMap;
-                    }
+                    // Plain-clicking an unchecked genome replaces the active selection in that role (preserving the other role's exemplar)
+                    Object.keys(current).forEach(function(k) {
+                        if (current[k] === targetRole) delete current[k];
+                    });
+                    cids.forEach(function(c) { current[c] = targetRole; });
                 }
                 this.applyPhenomenonLocusState(false);
                 this.showDefaultSummary();
@@ -3283,6 +4414,7 @@ var loadGexfDependencies = function(callback) {
                 showEdges : true,
                 zoomLevel : 0,
                 edgeWidthFactor : 10,
+                defaultEdgeWidth : this.customEdgeWidth || 1.0,
                 pathAttr : "sequences",
                 colorNodeAttr : "diversity",
                 nodeSizeFactor : 2,
@@ -3301,6 +4433,16 @@ var loadGexfDependencies = function(callback) {
             // Initialize persistent pin and filter storage
             if (!GexfJS.params.userPins) GexfJS.params.userPins = {};
             if (typeof GexfJS.params.pinsMuted === 'undefined') GexfJS.params.pinsMuted = false;
+            GexfJS.params.highlightColorOverride = this.customHlColor || null;
+            GexfJS.params.edgeColorOverride = this.customEdgeColor || null;
+            GexfJS.params.labelColorOverride = this.customLblColor || null;
+            GexfJS.params.defaultEdgeWidth = this.customEdgeWidth || 1.0;
+            if (this.customBgColor) {
+                var zcInit = document.getElementById('zonecentre');
+                var ocInit = document.getElementById('overviewzone');
+                if (zcInit) { domClass.remove(zcInit, 'gradient'); domStyle.set(zcInit, 'background', this.customBgColor); }
+                if (ocInit) { domClass.remove(ocInit, 'gradient'); domStyle.set(ocInit, 'background', this.customBgColor); }
+            }
             GexfJS.params.currentHighlightName = "Selection";
             GexfJS.params.activePhenomenon = null;
             GexfJS.params.activeLocusIndex = -1;
@@ -3808,6 +4950,7 @@ var loadGexfDependencies = function(callback) {
             html += '</div>';
             html += '<div style="font-size:0.78em; color:#555; background:rgba(255,255,255,0.7); padding:5px 7px; border-radius:3px; line-height:1.35;">';
             html += '<div>&bull; <b>Add / Toggle Nodes:</b> <code>Shift+Click</code> or <code>Cmd/Ctrl+Click</code> a node, or <code>Shift+Drag</code> a box.</div>';
+            html += '<div>&bull; <b>View Tables:</b> Click <b>FEATURES</b> (' + totalFeatureCount + ') or <b>GENOMES</b> (' + allGenomeIds.length + ') on the Action Bar.</div>';
             html += '<div>&bull; <b>Create Group:</b> Click <b>GROUP</b> on the Action Bar to create a <b>Feature Group</b> (' + totalFeatureCount + ') or <b>Genome Group</b> (' + allGenomeIds.length + ').</div>';
             html += '<div>&bull; <b>Pin Selection:</b> Click <b>PIN</b> on the Action Bar to color and save this selection.</div>';
             html += '</div>';
@@ -4007,29 +5150,23 @@ var loadGexfDependencies = function(callback) {
             var cnvClusterSuffix = (namedAttrs['cnv_cluster_id'] && String(namedAttrs['cnv_cluster_id']) !== '0' && String(namedAttrs['cnv_cluster_id']) !== 'None')
                 ? (' (Cluster ' + namedAttrs['cnv_cluster_id'] + ')')
                 : '';
+            var isAltPathNode = String(namedAttrs['alternative_path']).toLowerCase() === 'true' || String(namedAttrs['conflict']) === '4';
             var sbIdSuffix = (namedAttrs['superbubble_id'] && String(namedAttrs['superbubble_id']) !== '0' && String(namedAttrs['superbubble_id']) !== 'None')
                 ? (' (' + namedAttrs['superbubble_id'] + ')')
-                : '';
+                : (isAltPathNode ? ' (Accessory Island / Indel)' : '');
 
             var phenomConfigs = [
                 {
                     type: 'superbubbles',
-                    focalLabel: 'Superbubble' + sbIdSuffix,
-                    anchorLabel: 'Superbubble Anchor',
+                    focalLabel: 'Bounded Variable Locus' + sbIdSuffix,
+                    anchorLabel: 'Bounded Variable Locus Anchor',
                     bg: '#e3f2fd', fg: '#1565c0', border: '#64b5f6',
-                    desc: 'Bounded allelic or accessory variation flanked by conserved core anchors'
-                },
-                {
-                    type: 'alt_paths',
-                    focalLabel: 'Accessory Island / Indel',
-                    anchorLabel: 'Accessory Island Anchor',
-                    bg: '#f3e5f5', fg: '#6a1b9a', border: '#ba68c8',
-                    desc: 'Local strain-specific genomic island, prophage, or HGT insertion between collinear flanking anchors'
+                    desc: 'Bounded allelic variation, cassette, or local accessory island/indel flanked by collinear conserved anchors'
                 },
                 {
                     type: 'tandem_repeats',
-                    focalLabel: 'Copy Number Variant' + cnvClusterSuffix,
-                    anchorLabel: 'CNV Anchor',
+                    focalLabel: 'Local / Tandem CNV' + cnvClusterSuffix,
+                    anchorLabel: 'Local CNV Anchor',
                     bg: '#fff3e0', fg: '#e65100', border: '#ffb74d',
                     desc: 'Multi-copy gene family participating in a local tandem repeat or copy number variant'
                 },
@@ -4039,6 +5176,13 @@ var loadGexfDependencies = function(callback) {
                     anchorLabel: 'Fragmented CNV Anchor',
                     bg: '#fce4ec', fg: '#ad1457', border: '#f06292',
                     desc: 'Localized repeat contiguous in reference contigs but split across contigs in fragmented assemblies'
+                },
+                {
+                    type: 'remote_cnv',
+                    focalLabel: 'Remote CNV Cluster' + cnvClusterSuffix,
+                    anchorLabel: 'Remote CNV Anchor',
+                    bg: '#e1f5fe', fg: '#01579b', border: '#4fc3f7',
+                    desc: 'Multi-gene paralogous operon, segmental duplication, or dispersed repeat cassette present at distant chromosomal loci'
                 },
                 {
                     type: 'rearrangements',
