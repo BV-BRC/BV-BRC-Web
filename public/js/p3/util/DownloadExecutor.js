@@ -193,6 +193,45 @@ define([
   }
 
   /**
+   * Build the http_fasta_* query parameters for a spec.
+   *
+   * Returns a string beginning with '&', or '' when the spec carries no FASTA
+   * configuration. Shared by the form-POST and xhr paths, which previously
+   * each had their own copy of this and so could drift.
+   *
+   * Delimiters are sent only when the configurator supplied them. The server
+   * defaults are '|' for the ID section and ' ' for the description
+   * (p3_api util/fastaHeaderFormatter.js), so an absent value means "leave the
+   * server's default alone" rather than "send empty" — note that an empty
+   * string is itself a meaningful delimiter and must still be transmitted,
+   * which is why these test for undefined rather than falsiness.
+   */
+  function buildFastaParams(spec) {
+    if (!spec.fastaConfig) {
+      return '';
+    }
+
+    var cfg = spec.fastaConfig;
+    var idFields = cfg.idFields || [];
+    var descFields = cfg.descriptionFields || [];
+
+    var params = '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
+    params += '&http_fasta_id_prefix=';
+    params += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
+    params += '&http_fasta_context_fields=';
+
+    if (cfg.idDelimiter !== undefined) {
+      params += '&http_fasta_id_delimiter=' + encodeURIComponent(cfg.idDelimiter);
+    }
+    if (cfg.descriptionDelimiter !== undefined) {
+      params += '&http_fasta_description_delimiter='
+        + encodeURIComponent(cfg.descriptionDelimiter);
+    }
+
+    return params;
+  }
+
+  /**
    * Execute server-side download via form POST
    * @param {Object} spec - Download specification
    * @returns {Deferred} Promise that resolves when download starts
@@ -221,14 +260,7 @@ define([
 
     // FASTA header configuration via http_fasta_* query parameters.
     // Send all params when configured — empty string disables a section/prefix.
-    if (spec.fastaConfig) {
-      var idFields = spec.fastaConfig.idFields || [];
-      var descFields = spec.fastaConfig.descriptionFields || [];
-      actionUrl += '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
-      actionUrl += '&http_fasta_id_prefix=';
-      actionUrl += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
-      actionUrl += '&http_fasta_context_fields=';
-    }
+    actionUrl += buildFastaParams(spec);
 
     var form = domConstruct.create('form', {
       method: 'POST',
@@ -378,14 +410,7 @@ define([
     }
 
     // FASTA header configuration — send all params when configured
-    if (spec.fastaConfig) {
-      var idFields = spec.fastaConfig.idFields || [];
-      var descFields = spec.fastaConfig.descriptionFields || [];
-      query += '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
-      query += '&http_fasta_id_prefix=';
-      query += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
-      query += '&http_fasta_context_fields=';
-    }
+    query += buildFastaParams(spec);
 
     topic.publish('/Download/started', {
       type: 'client-side',
@@ -716,13 +741,19 @@ define([
     var fastaConfig = spec.fastaConfig || {};
     var idFields = fastaConfig.idFields || ['feature_id'];
     var descFields = fastaConfig.descriptionFields || [];
+    // Honour the configured delimiters here too. This path builds the header in
+    // the browser rather than asking the server for one, so hardcoding them
+    // would reintroduce the same preview/download mismatch on this route.
+    var idDelimiter = fastaConfig.idDelimiter !== undefined ? fastaConfig.idDelimiter : '|';
+    var descDelimiter = fastaConfig.descriptionDelimiter !== undefined
+      ? fastaConfig.descriptionDelimiter : ' ';
     var sequenceField = spec.format === 'protein+fasta' ? 'aa_sequence' : 'na_sequence';
 
     data.forEach(function (record) {
-      var idPart = idFields.map(function (f) { return record[f] || ''; }).join('|');
+      var idPart = idFields.map(function (f) { return record[f] || ''; }).join(idDelimiter);
       var defLine = '>' + idPart;
       if (descFields.length > 0) {
-        var descPart = descFields.map(function (f) { return record[f] || ''; }).join(' ');
+        var descPart = descFields.map(function (f) { return record[f] || ''; }).join(descDelimiter);
         defLine += ' ' + descPart;
       }
       lines.push(defLine);
