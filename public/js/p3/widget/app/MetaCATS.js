@@ -287,12 +287,30 @@ define([
       }
       return ans;
     },
+
+    showAutoGroupDetailsStatus: function (message) {
+      this.autoGroupDetailsStatus.innerHTML = '<i class="fa fa-spinner fa-spin fa-lg"></i>&nbsp;&nbsp;' + message;
+      this.autoGroupDetailsStatus.className = 'messageContainer workingMessage';
+      this.autoGroupDetailsStatus.style.display = 'block';
+    },
+
+    showAutoGroupDetailsError: function (message) {
+      this.autoGroupDetailsStatus.innerHTML = message;
+      this.autoGroupDetailsStatus.className = 'messageContainer errorMessage';
+      this.autoGroupDetailsStatus.style.display = 'block';
+    },
+
+    hideAutoGroupDetailsStatus: function () {
+      this.autoGroupDetailsStatus.style.display = 'none';
+    },
+
     onAddAutoGroup: function () {
       query('.auto_feature_button').style('visibility', 'hidden');
       var self = this;
       var my_group = this.auto_feature_group.value;
       var metadata_value = this.metadata_group.value;
       this.metadata_group.set('disabled', true);
+      this.showAutoGroupDetailsStatus('Loading feature group details...');
       DataAPI.queryGenomeFeatures('in(feature_id,FeatureGroup(' + encodeURIComponent(my_group) + '))', { 'limit' : 1000 })
         .then((result) => {
           const genome_map = new Map();
@@ -309,9 +327,9 @@ define([
             }
           });
           return genome_map;
-        }).catch(error => { console.log('Genome feature query failed.'); })
+        })
         .then((genome_map) => {
-          DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`, { 'limit' : 1000 })
+          return DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`, { 'limit' : 1000 })
             .then((genome_results) => {
               var group_names = new Set();
               var ranges = [];
@@ -403,14 +421,19 @@ define([
               self.grid.refresh();
               self.getNumberGroups();
               if (self.grid.store.data.length == 0) {
-                this.metadata_group.set('disabled', false);
+                self.metadata_group.set('disabled', false);
               }
-            }).catch(error => {
-              if (self.grid.store.data.length == 0) {
-                this.metadata_group.set('disabled', false);
-              }
-              console.log('Genome query failed.');
-            })
+            });
+        })
+        .then(() => {
+          self.hideAutoGroupDetailsStatus();
+        })
+        .catch(error => {
+          if (self.grid.store.data.length == 0) {
+            self.metadata_group.set('disabled', false);
+          }
+          self.showAutoGroupDetailsError('Feature group details could not be loaded.');
+          console.error('Feature group details query failed.', error);
         })
         .finally(() => {
           query('.auto_feature_button').style('visibility', 'visible');
@@ -658,18 +681,15 @@ define([
         remaining_requests -= 1;
         if (remaining_requests === 0) {
           if (details_failed) {
-            self.autoGroupDetailsStatus.innerHTML = 'Some accession or strain details could not be loaded.';
-            self.autoGroupDetailsStatus.className = 'messageContainer errorMessage';
+            self.showAutoGroupDetailsError('Some accession or strain details could not be loaded.');
           } else {
-            self.autoGroupDetailsStatus.style.display = 'none';
+            self.hideAutoGroupDetailsStatus();
           }
         }
       };
 
       if (remaining_requests > 0) {
-        this.autoGroupDetailsStatus.innerHTML = '<i class="fa fa-spinner fa-spin fa-lg"></i>&nbsp;&nbsp;Loading accession and strain details...';
-        this.autoGroupDetailsStatus.className = 'messageContainer workingMessage';
-        this.autoGroupDetailsStatus.style.display = 'block';
+        this.showAutoGroupDetailsStatus('Loading accession and strain details...');
       }
 
       if (feature_ids.length > 0) {
