@@ -276,15 +276,138 @@ twice. `/<collection>/fields` now reports `source: native|enriched` with labels.
 
 ---
 
+## Built-in format presets
+
+Candidates for ship-with-the-product named formats. All tested live on alpha; the rendered
+output shown is real, against *A/New York/3197/2009* (`646741.3`) and *M. tuberculosis*
+H37Rv-adjacent records.
+
+### NCBI / GenBank source-modifier style
+
+NCBI's documented submission defline is `>SeqID [modifier=text] [modifier=text]`
+(https://www.ncbi.nlm.nih.gov/genbank/fastaformat/). Rules that constrain us:
+
+- SeqID must be **unique, space-free, ≤25 characters**; letters, digits, `- _ . : * #`
+- `[modifier=value]` with **no spaces around the `=`**
+- organism (scientific name) is the minimum required modifier
+- the whole defline must be one line
+
+```
+{patric_id} [organism={genome_name}] [strain={strain}] [host={host_name}] [country={isolation_country}] [collection_date={collection_date}]
+```
+
+renders
+
+```
+>fig|646741.3.CDS.1 [organism=Influenza A virus (A/New York/3197/2009(N1))] [strain=A/New York/3197/2009] [host=Homo sapiens] [country=USA] [collection_date=2009-04-29]
+```
+
+**Caveat worth surfacing in the UI:** `patric_id` is ~20 chars here but is not guaranteed
+under 25, and `genome_name` contains parentheses and spaces — fine inside a modifier value,
+not in the SeqID. This preset is *NCBI-shaped*, not submission-ready; label it as such rather
+than implying a submission can be built from it unedited.
+
+### Plain NCBI/BLAST style (the common read-only case)
+
+```
+{patric_id} {product} [{genome_name}]
+  -> >fig|646741.3.CDS.1 putative polymerase PA, fragment [Influenza A virus (A/New York/3197/2009(N1))]
+```
+
+This is what most tools expect from a downloaded protein FASTA, and it is close to the
+current zone default — worth offering as the explicit "classic" preset.
+
+### GISAID / Nextstrain influenza style
+
+GISAID's own EpiFlu download builder is behind a login, but the **pipe-delimited order it
+produces is pinned by `augur parse`**, which is the de-facto consumer. Augur's documented
+example (https://docs.nextstrain.org/projects/augur/en/stable/usage/cli/parse.html):
+
+```
+>A/Canoas/LACENRS_1793/2015|A|H3N2|07/17/2015||Brazil|Human|KY925125
+--fields  strain type subtype date season country host accession
+```
+
+so: `strain | type | subtype | date | season | country | host | accession`, separator `|`,
+empty positions preserved. Our nearest expressible equivalent:
+
+```
+{strain}|A|{subtype}|{collection_date}||{isolation_country}|{host_name}|{accession}
+```
+
+renders — and this is the problem —
+
+```
+>A/New York/3197/2009|A||2009-04-29||USA|Homo sapiens|CY086966
+                        ^^ subtype empty
+```
+
+**`subtype` is not available on `genome_feature`.** See the gap below. Also note `type` is
+hardcoded `A` in the template because BV-BRC has no separate type field; a B-lineage preset
+would need its own entry, which argues for shipping *per-organism* presets rather than one
+"GISAID" preset.
+
+### A blocking gap: virology fields are not enriched
+
+The enrichment set is bacterial-metadata shaped. Checked against `/fields`:
+
+| field | on `genome` | on `genome_feature` |
+|---|---|---|
+| `subtype` | yes | **absent** |
+| `segment` | yes | **absent** (native on `genome_sequence`) |
+| `lineage` | yes | **absent** |
+| `clade`, `h5_clade`, `h3_clade` | yes | **absent** |
+| `genbank_accessions` | yes | **absent** |
+| `species` | yes | **absent** |
+| `passage` | yes | enriched |
+
+`passage` is in `GENOME_METADATA_FIELDS`; the virology fields are not. So a GISAID-style
+preset cannot be built on `genome_feature` today, and the failure is silent — divergence (a)
+again:
+
+```
+{strain}|{subtype}|{segment}   ->   >A/New York/3197/2009||
+```
+
+`genome_sequence` fares better because `segment` and `accession` are native there:
+
+```
+{accession}|{segment}|{host_name}   ->   >CY086966|3|Homo sapiens
+```
+
+**Ask the API side to add `subtype`, `segment`, `lineage`, `clade`, `genbank_accessions`
+and `species` to `GENOME_METADATA_FIELDS`** — one line each, per that module's own comment,
+and it unblocks the flu presets. `segment` is multi-valued on `genome` (`["3"]`), and
+`getFieldValue` joins arrays with `,`, so confirm it renders as `3` and not `["3"]`.
+
+### Recommendation
+
+Ship presets **per data type**, since a template referencing `{product}` is meaningless on
+`genome_sequence`:
+
+| preset | data types | status |
+|---|---|---|
+| Classic NCBI (`{patric_id} {product} [{genome_name}]`) | genome_feature | works now |
+| NCBI source modifiers | genome_feature, genome_sequence | works now |
+| GISAID influenza (A) | genome_feature | **blocked** on `subtype` |
+| GISAID influenza (sequence) | genome_sequence | works now |
+
+Built-ins should be read-only entries in the same picker as saved formats, with a "duplicate
+and edit" action — that teaches the template syntax by example, which is the cheapest way to
+make the feature discoverable.
+
 ## Open questions
 
 1. **Should a saved format be shareable?** The preferences file is private by design. If
    sharing is wanted, add an explicit "Export…" writing a single-format file (the
    `SavedSearchManager.exportToWorkspace` pattern) rather than moving the primary store.
-2. **Ship built-in named formats?** "NCBI style", "Legacy BV-BRC", "ID only" as read-only
-   entries alongside the user's own would teach the template syntax by example.
+2. ~~Ship built-in named formats?~~ **Resolved** — see *Built-in format presets* above. Open
+   sub-question: should the NCBI source-modifier preset warn that it is not submission-ready
+   (SeqID length/charset is not enforced), or should we enforce those rules when it is chosen?
 3. **`genome_sequence` FASTA enrichment** — serializer gains a join, or the UI keeps filtering
    those fields out? Affects item 5 and is an API-side call.
 4. **Report divergences (a) and (b) upstream?** (a) in particular undercuts a decision the API
    authors made deliberately, and the client workaround only protects users coming through the
    wizard — anyone calling the API directly still gets a silent empty substitution.
+5. **Add the virology fields to `GENOME_METADATA_FIELDS`?** API-side, blocks the influenza
+   presets. Listed in *A blocking gap* above.
