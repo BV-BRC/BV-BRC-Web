@@ -639,7 +639,9 @@ define([
         // FASTA configuration — maps to http_fasta_* query parameters
         fastaConfig: optionsData.sequenceIdField ? {
           idFields: [optionsData.sequenceIdField],
-          descriptionFields: optionsData.descriptionFields || []
+          descriptionFields: optionsData.descriptionFields || [],
+          idDelimiter: optionsData.idDelimiter,
+          descriptionDelimiter: optionsData.descriptionDelimiter
         } : null,
 
         // GenBank merged mode

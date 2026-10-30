@@ -38,6 +38,16 @@ define([
     descriptionFields: null, // Array of fields for description
     availableFields: null,   // All available fields from query descriptor
 
+    // Delimiters. These mirror the server's own defaults
+    // (p3_api util/fastaHeaderFormatter.js createFastaHeaderFormatter) so that
+    // sending them explicitly cannot change output for a user who never touches
+    // them. The description delimiter defaults to ' ' on the server; we send
+    // ' | ' because that is what the preview has always shown and what makes a
+    // multi-field description parseable -- several values (host_name, product)
+    // contain spaces of their own.
+    idDelimiter: '|',
+    descriptionDelimiter: ' | ',
+
     // Event handlers
     _handlers: null,
 
@@ -345,20 +355,49 @@ define([
     /**
      * Update the preview
      */
-    _updatePreview: function () {
-      if (!this.previewNode) return;
-
+    /**
+     * Build the header the way the server will.
+     *
+     * This must mirror p3_api util/fastaHeaderFormatter.js formatHeader(): the
+     * preview previously hardcoded ' | ' between description fields while the
+     * server joined them with a space, so the preview promised a layout the
+     * download never produced. Deriving both from the same delimiter values is
+     * the actual fix -- keep this in step with getData().
+     *
+     * Note the server appends a TRAILING id delimiter after the ID section
+     * (fastaHeaderFormatter.js, "matches legacy format"), which is why the
+     * preview shows e.g. ">patric_id|" and not ">patric_id".
+     */
+    _buildPreview: function () {
       var idField = this.sequenceIdField || 'id';
       var descFields = this.descriptionFields.map(function (f) {
         return f.field;
       });
 
-      var previewParts = ['>' + idField];
+      var id = idField + (this.idDelimiter || '');
+      var parts = ['>' + id];
+
       if (descFields.length > 0) {
-        previewParts.push(descFields.join(' | '));
+        parts.push(descFields.join(this.descriptionDelimiter));
       }
 
-      this.previewNode.innerHTML = '<code>' + previewParts.join(' ') + '</code>';
+      return parts.join(' ');
+    },
+
+    _updatePreview: function () {
+      if (!this.previewNode) return;
+      this.previewNode.innerHTML = '<code>' + this._escapeHtml(this._buildPreview()) + '</code>';
+    },
+
+    /**
+     * Field names and delimiters are user-influenced and land in innerHTML; a
+     * delimiter of '<b>' should render as text, not markup.
+     */
+    _escapeHtml: function (s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
     },
 
     /**
@@ -382,7 +421,9 @@ define([
         sequenceIdField: this.sequenceIdField,
         descriptionFields: this.descriptionFields.map(function (f) {
           return f.field;
-        })
+        }),
+        idDelimiter: this.idDelimiter,
+        descriptionDelimiter: this.descriptionDelimiter
       };
     },
 
