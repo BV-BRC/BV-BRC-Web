@@ -297,10 +297,15 @@ define([
         .then((result) => {
           const genome_map = new Map();
           result.items.forEach(function (sel) {
+            const feature = {
+              patric_id: sel.patric_id,
+              accession: sel.accession,
+              sequence_id: sel.sequence_id
+            };
             if (genome_map.has(sel.genome_id)) {
-              genome_map.get(sel.genome_id).push(sel.patric_id);
+              genome_map.get(sel.genome_id).push(feature);
             } else {
-              genome_map.set(sel.genome_id, [sel.patric_id]);
+              genome_map.set(sel.genome_id, [feature]);
             }
           });
           return genome_map;
@@ -378,15 +383,15 @@ define([
                     group_names.add(m_value.toString());
                   }
                 }
-                var feature_ids = genome_map.get(genome.genome_id);
-                feature_ids.forEach(function (feature_id) {
-                  if (self.grid.store.query({ patric_id: feature_id }).length == 0) {
+                var features = genome_map.get(genome.genome_id);
+                features.forEach(function (feature) {
+                  if (self.grid.store.query({ patric_id: feature.patric_id }).length == 0) {
                     self.grid.store.put({
-                      patric_id: feature_id,
+                      patric_id: feature.patric_id,
                       metadata: m_value.toString(),
                       group: g_value.toString(),
                       genome_id: genome.genome_id,
-                      genbank_accessions: genome.genbank_accessions,
+                      genbank_accessions: feature.accession || feature.sequence_id || genome.genbank_accessions,
                       strain: genome.strain
                     });
                   }
