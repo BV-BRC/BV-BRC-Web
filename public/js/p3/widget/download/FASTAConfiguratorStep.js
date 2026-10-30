@@ -25,7 +25,12 @@ define([
    * Allows users to:
    * - Select the field to use as sequence ID (default: BV-BRC ID)
    * - Select fields to include in the sequence description
+   * - Choose how description fields are separated, and whether the ID is
+   *   followed by a trailing '|'
    */
+
+  /** Sentinel <option> value; not a delimiter anyone would type. */
+  var CUSTOM_DELIMITER = '\u0000custom';
 
   return declare([WizardStepBase], {
     templateString: template,
@@ -45,6 +50,11 @@ define([
     // ' | ' because that is what the preview has always shown and what makes a
     // multi-field description parseable -- several values (host_name, product)
     // contain spaces of their own.
+    //
+    // idDelimiter is exposed as a checkbox rather than a delimiter control: the
+    // ID selector is single-select, so there is never a second ID field to
+    // separate. The server appends this after the ID section unconditionally,
+    // which makes it a trailing character -- '|' or nothing.
     idDelimiter: '|',
     descriptionDelimiter: ' | ',
 
@@ -94,6 +104,107 @@ define([
 
       // Populate the available fields lists
       this._populateFieldLists();
+
+      // Delimiter controls
+      this._populateDelimiterDropdown();
+      this._syncDelimiterControls();
+    },
+
+    /**
+     * Named delimiter choices.
+     *
+     * A dropdown rather than a bare text box because the useful values differ
+     * only in whitespace -- ' | ' and '|' look identical in an input, and the
+     * difference is visible in the output. Naming them makes the space
+     * explicit. CUSTOM_DELIMITER falls back to a text field for anything else.
+     */
+    delimiterOptions: [
+      { value: ' | ', label: 'Pipe  ( a | b )' },
+      { value: '|', label: 'Pipe, no spaces  ( a|b )' },
+      { value: ' ', label: 'Space  ( a b )' },
+      { value: ', ', label: 'Comma  ( a, b )' },
+      { value: '_', label: 'Underscore  ( a_b )' },
+      { value: '', label: 'Nothing  ( ab )' }
+    ],
+
+    _populateDelimiterDropdown: function () {
+      if (!this.descDelimiterSelect || this._delimiterDropdownReady) return;
+
+      var self = this;
+      domConstruct.empty(this.descDelimiterSelect);
+
+      this.delimiterOptions.forEach(function (opt) {
+        domConstruct.create('option', {
+          value: opt.value,
+          innerHTML: opt.label
+        }, self.descDelimiterSelect);
+      });
+
+      domConstruct.create('option', {
+        value: CUSTOM_DELIMITER,
+        innerHTML: 'Custom…'
+      }, this.descDelimiterSelect);
+
+      this._delimiterDropdownReady = true;
+    },
+
+    /**
+     * Point the controls at the current state. Called on (re)initialisation so
+     * a loaded configuration shows up in the widgets rather than only in the
+     * preview.
+     */
+    _syncDelimiterControls: function () {
+      if (this.idTrailingCheck) {
+        this.idTrailingCheck.checked = (this.idDelimiter === '|');
+      }
+
+      if (!this.descDelimiterSelect) return;
+
+      var known = this.delimiterOptions.some(function (o) {
+        return o.value === this.descriptionDelimiter;
+      }, this);
+
+      if (known) {
+        this.descDelimiterSelect.value = this.descriptionDelimiter;
+        domClass.add(this.descDelimiterCustom, 'dijitHidden');
+      } else {
+        this.descDelimiterSelect.value = CUSTOM_DELIMITER;
+        this.descDelimiterCustom.value = this.descriptionDelimiter;
+        domClass.remove(this.descDelimiterCustom, 'dijitHidden');
+      }
+    },
+
+    _onDescDelimiterChange: function () {
+      var value = this.descDelimiterSelect.value;
+
+      if (value === CUSTOM_DELIMITER) {
+        domClass.remove(this.descDelimiterCustom, 'dijitHidden');
+        // Seed the box with the delimiter being replaced, so switching to
+        // Custom is an edit rather than a blank slate.
+        this.descDelimiterCustom.value = this.descriptionDelimiter;
+        this.descDelimiterCustom.focus();
+        this.descDelimiterCustom.select();
+        return;
+      }
+
+      domClass.add(this.descDelimiterCustom, 'dijitHidden');
+      this.descriptionDelimiter = value;
+      this._updatePreview();
+      this.notifyDataChanged();
+    },
+
+    _onDescDelimiterCustomInput: function () {
+      // No trimming: leading and trailing spaces are significant here, which
+      // is the whole reason the named options spell them out.
+      this.descriptionDelimiter = this.descDelimiterCustom.value;
+      this._updatePreview();
+      this.notifyDataChanged();
+    },
+
+    _onIdTrailingChange: function () {
+      this.idDelimiter = this.idTrailingCheck.checked ? '|' : '';
+      this._updatePreview();
+      this.notifyDataChanged();
     },
 
     /**
@@ -434,6 +545,11 @@ define([
       this.inherited(arguments);
       this.sequenceIdField = null;
       this.descriptionFields = [];
+      // Delimiters are part of the step's state, so a reset must restore their
+      // defaults too -- otherwise a reused step silently carries the previous
+      // download's choices into the next one.
+      this.idDelimiter = '|';
+      this.descriptionDelimiter = ' | ';
       this._initializeFields();
     },
 

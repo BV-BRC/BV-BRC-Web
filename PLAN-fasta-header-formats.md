@@ -110,13 +110,36 @@ most useful thing we can do to make the format string approachable.
 
 ### Delimiters
 
-Three inputs, in the respective sections: ID, description, context. Short text fields, not
-dropdowns — the useful values (`|`, ` | `, `_`, `;`, tab) do not enumerate well, and the API
-takes an arbitrary string.
+~~Three inputs: ID, description, context.~~ **Revised during item 2** — only two of the three
+are meaningful in this UI, and one of them is not a delimiter at all:
 
-Leading/trailing spaces are significant and users cannot see them. Render the current value
-with visible markers in the preview legend (e.g. `"·|·"`) or show the delimiter inside the
-live preview — the preview already updates on change, which handles most of it.
+- **Description delimiter.** Real, and the one the bug was about. Needs a control.
+- **"ID delimiter" is a trailing character here.** The ID selector is a single-select
+  (`<select>`, template line 14), so there is never a second ID field to delimit. The server
+  appends it unconditionally after the ID section ("matches legacy format"), so all it
+  controls is whether the header reads `>fig|...peg.9|` or `>fig|...peg.9`. Measured:
+
+  ```
+  id_delimiter='|'   -> >fig|1545742.911.peg.9| MGYG-HGUT-00869
+  id_delimiter=''    -> >fig|1545742.911.peg.9 MGYG-HGUT-00869
+  id_delimiter='_'   -> >fig|1545742.911.peg.9_ MGYG-HGUT-00869
+  ```
+
+  Worth exposing — the trailing pipe is legacy noise some users will want gone — but
+  **labelling it "ID delimiter" would be a lie**. Label it for what it does.
+
+- **No context delimiter.** `DownloadExecutor` hardcodes `http_fasta_context_fields=` empty
+  and the configurator has no context concept, so there are no context fields to separate.
+  The server supports them (`...&http_fasta_context_fields=genome_name,genome_id` →
+  `[... | 1545742.911]`), so this is unexposed capability, not a dead end — but a delimiter
+  control for fields that cannot be chosen would adjust nothing. Revisit if context fields
+  are ever surfaced.
+
+**Dropdown with a Custom escape, not a bare text field.** The plan originally called for text
+inputs on the grounds that useful values do not enumerate. They mostly do — and a text field
+makes `' | '` and `'|'` indistinguishable on screen, which is exactly the invisible-whitespace
+problem flagged below. Named options (`Pipe ( | )`, `Space`, `Comma`) make the whitespace
+legible; `Custom…` reveals a text input for anything else.
 
 ### Preview
 
@@ -214,7 +237,9 @@ Small, no API dependency, resolves the complaint. **Land this first.**
 
 ### 2. Delimiter controls in the UI
 
-Three text inputs + preview wiring. Still no API dependency.
+Two controls (see *Delimiters* above — the third would adjust nothing): a description
+delimiter dropdown with a Custom escape, and a checkbox for the trailing ID character.
+Preview wiring comes free, since item 1 made the preview derive from these values.
 
 ### 3. Format-string mode
 

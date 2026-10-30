@@ -431,6 +431,57 @@
   font-size: 14px;
 }
 
+/* Delimiter controls.
+   The ID "delimiter" is a checkbox because the ID selector is single-select --
+   there is never a second ID field to separate, so all it controls is the
+   trailing character. */
+.fastaConfiguratorStep .delimiterCheckbox {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+}
+
+.fastaConfiguratorStep .delimiterCheckbox input {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.fastaConfiguratorStep .delimiterCheckbox code {
+  padding: 1px 4px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.fastaConfiguratorStep .delimiterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #444;
+}
+
+.fastaConfiguratorStep .delimiterDropdown {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.fastaConfiguratorStep .delimiterCustom {
+  width: 110px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  /* Monospace so a leading or trailing space in a custom delimiter is at
+     least measurable against the box edge. */
+  font-family: monospace;
+  font-size: 13px;
+}
+
 /* Two-column field selector */
 .fastaConfiguratorStep .fieldSelector {
   display: flex;

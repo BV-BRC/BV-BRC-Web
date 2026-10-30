@@ -13,6 +13,11 @@
     <div class="idFieldSelector">
       <select data-dojo-attach-point="idFieldSelect" class="idFieldDropdown"></select>
     </div>
+    <label class="delimiterCheckbox">
+      <input type="checkbox" data-dojo-attach-point="idTrailingCheck"
+             data-dojo-attach-event="onchange:_onIdTrailingChange" checked>
+      Append <code>|</code> after the sequence ID
+    </label>
   </div>
 
   <!-- Section 2: Description Fields -->
@@ -49,6 +54,17 @@
         <div class="columnHeader">Selected Fields</div>
         <div class="fieldList" data-dojo-attach-point="selectedFieldsList"></div>
       </div>
+    </div>
+
+    <div class="delimiterRow">
+      <span class="delimiterLabel">Separate description fields with</span>
+      <select data-dojo-attach-point="descDelimiterSelect" class="delimiterDropdown"
+              aria-label="Separate description fields with"
+              data-dojo-attach-event="onchange:_onDescDelimiterChange"></select>
+      <input type="text" data-dojo-attach-point="descDelimiterCustom"
+             class="delimiterCustom dijitHidden" maxlength="10"
+             data-dojo-attach-event="oninput:_onDescDelimiterCustomInput"
+             placeholder="any text" aria-label="Custom description delimiter">
     </div>
   </div>
 
