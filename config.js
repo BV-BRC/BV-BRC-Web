@@ -37,6 +37,19 @@ const defaults = {
   // traffic through p3/util/throttledRequest, so it wants a soak on a
   // deployment before being turned on everywhere.
   enableThrottleRetry: false,
+  // Workspace folder holding the shipped FASTA header format presets (NCBI,
+  // GISAID, ...) offered in the download wizard's FASTA options step. One
+  // JSON file per preset, so a curator can add a format without a release.
+  //
+  // Empty by default: a deployment that has not created the folder simply
+  // shows no presets, and users keep their own saved formats. The folder is
+  // read with Workspace.ls, which needs no token for a public path, so
+  // presets are available to signed-out users too.
+  //
+  // Note that ls on a nonexistent path returns an empty result rather than an
+  // error, so a typo here degrades silently -- the client logs a warning when
+  // a configured path yields nothing.
+  fastaFormatPresetsPath: '',
   reportProblemEmailAddress: 'help@bv-brc.org',
   sequenceSubmissionNotificationEmailAddress: ['gbsubmit@bvbrc.org'],
   // Folder paths (relative to workspace root) to exclude from the output folder dropdown selector
