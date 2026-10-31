@@ -6,6 +6,66 @@
 
   <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
 
+  <!-- Saved formats. Sits above everything because applying one sets the
+       mode and every control below. Hidden entirely when there is nothing
+       to offer: no presets configured and no saved formats. -->
+  <div class="configSection savedFormatsSection dijitHidden"
+       data-dojo-attach-point="savedFormatsSection">
+    <div class="savedFormatsRow">
+      <span class="savedFormatsLabel">Saved format</span>
+      <select data-dojo-attach-point="savedFormatSelect" class="savedFormatDropdown"
+              aria-label="Apply a saved format"
+              data-dojo-attach-event="onchange:_onSavedFormatChange"></select>
+      <button type="button" class="savedFormatBtn dijitHidden"
+              data-dojo-attach-point="saveFormatBtn"
+              data-dojo-attach-event="onclick:_onSaveFormat">Save as…</button>
+      <button type="button" class="savedFormatBtn dijitHidden"
+              data-dojo-attach-point="deleteFormatBtn"
+              data-dojo-attach-event="onclick:_onDeleteFormat">Delete</button>
+    </div>
+    <div class="savedFormatDescription" data-dojo-attach-point="savedFormatDescription"></div>
+  </div>
+
+  <!-- Mode switch. Exclusive, mirroring the API: when http_fasta_header is
+       present the server ignores the zone parameters entirely. -->
+  <div class="configSection modeSection">
+    <label class="modeOption">
+      <input type="radio" name="fastaHeaderMode" value="zones" checked
+             data-dojo-attach-point="modeZonesRadio"
+             data-dojo-attach-event="onchange:_onModeChange">
+      <span>Build from fields</span>
+    </label>
+    <label class="modeOption">
+      <input type="radio" name="fastaHeaderMode" value="template"
+             data-dojo-attach-point="modeTemplateRadio"
+             data-dojo-attach-event="onchange:_onModeChange">
+      <span>Custom format string</span>
+    </label>
+  </div>
+
+  <!-- Template editor, shown in template mode -->
+  <div class="configSection templateSection dijitHidden" data-dojo-attach-point="templateSection">
+    <h4>Format String</h4>
+    <p class="sectionDescription">
+      Reference a field with <code>{field_name}</code>. Click a field below to insert it.
+      Use <code>{{</code> and <code>}}</code> for literal braces.
+    </p>
+    <input type="text" class="templateInput" data-dojo-attach-point="templateInput"
+           data-dojo-attach-event="oninput:_onTemplateInput"
+           aria-label="FASTA header format string"
+           placeholder="{patric_id} {product} [{genome_name}]">
+    <div class="templateError dijitHidden" data-dojo-attach-point="templateError"></div>
+    <div class="templateFields">
+      <span class="templateFieldsLabel">Insert:</span>
+      <span data-dojo-attach-point="templateFieldList"></span>
+    </div>
+  </div>
+
+  <!-- Zone-mode sections. Disabled rather than removed in template mode, so
+       the user can see what they are setting aside; switching back restores
+       the previous selection. -->
+  <div data-dojo-attach-point="zoneSections">
+
   <!-- Section 1: Sequence ID Field -->
   <div class="configSection">
     <h4>Sequence ID Field</h4>
@@ -13,6 +73,11 @@
     <div class="idFieldSelector">
       <select data-dojo-attach-point="idFieldSelect" class="idFieldDropdown"></select>
     </div>
+    <label class="delimiterCheckbox">
+      <input type="checkbox" data-dojo-attach-point="idTrailingCheck"
+             data-dojo-attach-event="onchange:_onIdTrailingChange" checked>
+      Append <code>|</code> after the sequence ID
+    </label>
   </div>
 
   <!-- Section 2: Description Fields -->
@@ -50,7 +115,20 @@
         <div class="fieldList" data-dojo-attach-point="selectedFieldsList"></div>
       </div>
     </div>
+
+    <div class="delimiterRow">
+      <span class="delimiterLabel">Separate description fields with</span>
+      <select data-dojo-attach-point="descDelimiterSelect" class="delimiterDropdown"
+              aria-label="Separate description fields with"
+              data-dojo-attach-event="onchange:_onDescDelimiterChange"></select>
+      <input type="text" data-dojo-attach-point="descDelimiterCustom"
+             class="delimiterCustom dijitHidden" maxlength="10"
+             data-dojo-attach-event="oninput:_onDescDelimiterCustomInput"
+             placeholder="any text" aria-label="Custom description delimiter">
+    </div>
   </div>
+
+  </div><!-- /zoneSections -->
 
   <!-- Preview Section -->
   <div class="configSection previewSection">

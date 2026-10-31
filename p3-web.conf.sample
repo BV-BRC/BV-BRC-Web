@@ -8,5 +8,6 @@
   "newrelic_license_key": "",
   "enableDevTools": false,
   "cartoBasemapApiKey": "",
-  "enableThrottleRetry": false
+  "enableThrottleRetry": false,
+  "fastaFormatPresetsPath": ""
 }
