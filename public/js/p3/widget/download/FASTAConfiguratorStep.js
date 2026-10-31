@@ -7,7 +7,8 @@ define([
   'dojo/query',
   './WizardStepBase',
   'dojo/text!./templates/FASTAConfiguratorStep.html',
-  '../../util/DownloadFormats'
+  '../../util/DownloadFormats',
+  '../../util/FastaFormatStore'
 ], function (
   declare,
   lang,
@@ -17,7 +18,8 @@ define([
   query,
   WizardStepBase,
   template,
-  DownloadFormats
+  DownloadFormats,
+  FastaFormatStore
 ) {
   /**
    * FASTAConfiguratorStep - Step 3 configurator for FASTA formats
@@ -148,6 +150,12 @@ define([
     headerMode: 'zones',
     headerTemplate: '',
 
+    // Presets + the user's own, as loaded by FastaFormatStore.
+    _savedFormats: null,
+    _pendingSelection: null,
+    // The template of an applied preset, while it remains unedited.
+    _appliedPresetTemplate: null,
+
     // Event handlers
     _handlers: null,
 
@@ -202,6 +210,230 @@ define([
       // Template mode
       this._populateTemplateFieldList();
       this._syncModeControls();
+
+      // Saved formats and presets
+      this._loadSavedFormats();
+    },
+
+    // ------------------------------------------------------------ saved formats
+
+    /** Sentinel <option> value for "no format applied". */
+    NO_FORMAT: '',
+
+    /**
+     * Fetch presets and the user's formats, then build the dropdown.
+     *
+     * Failure is silent by design -- the store resolves to an empty list
+     * rather than rejecting, and with nothing to offer the whole section
+     * stays hidden. A download must not be blocked by a preset folder.
+     */
+    _loadSavedFormats: function () {
+      var self = this;
+      var dataType = this.context ? this.context.dataType : 'genome_feature';
+
+      FastaFormatStore.list(dataType).then(function (formats) {
+        self._savedFormats = formats || [];
+        self._renderSavedFormats();
+      });
+    },
+
+    _renderSavedFormats: function () {
+      if (!this.savedFormatsSection) return;
+
+      var self = this;
+      var formats = this._savedFormats || [];
+      var canSave = FastaFormatStore.canSave();
+
+      // Nothing to show and nothing to save: no empty furniture.
+      if (formats.length === 0 && !canSave) {
+        domClass.add(this.savedFormatsSection, 'dijitHidden');
+        return;
+      }
+      domClass.remove(this.savedFormatsSection, 'dijitHidden');
+
+      domConstruct.empty(this.savedFormatSelect);
+      domConstruct.create('option', {
+        value: this.NO_FORMAT,
+        innerHTML: formats.length ? '— choose a format —' : '— no saved formats —'
+      }, this.savedFormatSelect);
+
+      // Presets first, then the user's own, each under a heading so it is
+      // clear which ones can be deleted.
+      var presets = formats.filter(function (f) { return f.isPreset; });
+      var mine = formats.filter(function (f) { return !f.isPreset; });
+
+      [['Standard formats', presets], ['My formats', mine]].forEach(function (pair) {
+        if (pair[1].length === 0) return;
+        var group = domConstruct.create('optgroup', { label: pair[0] }, self.savedFormatSelect);
+        pair[1].forEach(function (f) {
+          domConstruct.create('option', {
+            value: f.name,
+            innerHTML: self._escapeHtml(f.name)
+          }, group);
+        });
+      });
+
+      domClass.toggle(this.saveFormatBtn, 'dijitHidden', !canSave);
+
+      // Reselect after a save, so the user sees the result rather than the
+      // list resetting to "choose a format".
+      if (this._pendingSelection) {
+        this.savedFormatSelect.value = this._pendingSelection;
+        this._pendingSelection = null;
+      }
+
+      this._syncSavedFormatButtons();
+    },
+
+    /** Delete is for the user's own formats only; presets are read-only. */
+    _syncSavedFormatButtons: function () {
+      if (!this.deleteFormatBtn) return;
+      var selected = this._findSavedFormat(this.savedFormatSelect.value);
+      var deletable = !!selected && !selected.isPreset && FastaFormatStore.canSave();
+      domClass.toggle(this.deleteFormatBtn, 'dijitHidden', !deletable);
+
+      if (this.savedFormatDescription) {
+        this.savedFormatDescription.innerHTML = selected && selected.description
+          ? this._escapeHtml(selected.description) : '';
+      }
+    },
+
+    _findSavedFormat: function (name) {
+      if (!name) return null;
+      return (this._savedFormats || []).filter(function (f) {
+        return f.name === name;
+      })[0] || null;
+    },
+
+    _onSavedFormatChange: function () {
+      var format = this._findSavedFormat(this.savedFormatSelect.value);
+      this._syncSavedFormatButtons();
+      if (format) this._applyFormat(format);
+    },
+
+    /**
+     * Put a stored format into the controls.
+     *
+     * A preset is applied, not loaded for editing: the user can change
+     * anything afterwards, and "Save as..." makes it their own. That keeps
+     * presets read-only without a separate "duplicate" step.
+     */
+    _applyFormat: function (format) {
+      // Remember a preset's template verbatim so validation can tell an
+      // untouched preset from one the user has edited.
+      this._appliedPresetTemplate = (format.isPreset && format.mode === 'template')
+        ? (format.template || '') : null;
+
+      if (format.mode === 'template') {
+        this.headerMode = 'template';
+        this.headerTemplate = format.template || '';
+      } else {
+        this.headerMode = 'zones';
+        if (format.idFields && format.idFields.length) {
+          this.sequenceIdField = format.idFields[0];
+        } else if (format.sequenceIdField) {
+          this.sequenceIdField = format.sequenceIdField;
+        }
+        if (format.idDelimiter !== undefined) this.idDelimiter = format.idDelimiter;
+        if (format.descriptionDelimiter !== undefined) {
+          this.descriptionDelimiter = format.descriptionDelimiter;
+        }
+        if (format.descriptionFields) {
+          var available = this.availableFields;
+          this.descriptionFields = format.descriptionFields.map(function (name) {
+            // Keep the stored name even when the picker does not know it;
+            // dropping it would silently change the user's format.
+            return available.filter(function (f) {
+              return f.field === name || bareFieldName(f.field) === bareFieldName(name);
+            })[0] || { field: name, label: name };
+          });
+        }
+        this._populateIdFieldDropdown();
+        this._populateFieldLists();
+        this._syncDelimiterControls();
+      }
+
+      this._syncModeControls();
+      this._validateTemplate();
+      this._updatePreview();
+      this.notifyDataChanged();
+    },
+
+    /** Capture the current configuration as a storable record. */
+    _currentFormatRecord: function (name) {
+      if (this.headerMode === 'template') {
+        return {
+          name: name,
+          dataType: this.context ? this.context.dataType : undefined,
+          mode: 'template',
+          template: this.headerTemplate
+        };
+      }
+      return {
+        name: name,
+        dataType: this.context ? this.context.dataType : undefined,
+        mode: 'zones',
+        idFields: [this.sequenceIdField],
+        idDelimiter: this.idDelimiter,
+        descriptionFields: this.descriptionFields.map(function (f) { return f.field; }),
+        descriptionDelimiter: this.descriptionDelimiter
+      };
+    },
+
+    _onSaveFormat: function () {
+      var self = this;
+
+      // Block saving something the server would reject.
+      var validation = this._validateTemplate();
+      if (validation.error) {
+        this.showError(validation.error);
+        return;
+      }
+
+      // eslint-disable-next-line no-alert
+      var name = window.prompt('Save this format as:', this.savedFormatSelect.value || '');
+      if (name === null) return;
+      name = name.trim();
+      if (!name) return;
+
+      var existing = this._findSavedFormat(name);
+      if (existing && existing.isPreset) {
+        this.showError('"' + name + '" is a standard format. Choose another name.');
+        return;
+      }
+      // eslint-disable-next-line no-alert
+      if (existing && !window.confirm('Replace your saved format "' + name + '"?')) {
+        return;
+      }
+
+      FastaFormatStore.save(this._currentFormatRecord(name)).then(
+        function () {
+          // Set before reloading: _renderSavedFormats consumes this as it
+          // rebuilds, and the store may resolve synchronously from cache.
+          self._pendingSelection = name;
+          self._loadSavedFormats();
+        },
+        function (err) {
+          self.showError('Could not save: ' + (err && err.message ? err.message : err));
+        }
+      );
+    },
+
+    _onDeleteFormat: function () {
+      var self = this;
+      var name = this.savedFormatSelect.value;
+      var format = this._findSavedFormat(name);
+      if (!format || format.isPreset) return;
+
+      // eslint-disable-next-line no-alert
+      if (!window.confirm('Delete your saved format "' + name + '"?')) return;
+
+      FastaFormatStore.remove(name).then(
+        function () { self._loadSavedFormats(); },
+        function (err) {
+          self.showError('Could not delete: ' + (err && err.message ? err.message : err));
+        }
+      );
     },
 
     /**
@@ -340,7 +572,16 @@ define([
       var error = validateTemplateSyntax(this.headerTemplate);
       var warning = null;
 
-      if (!error) {
+      // A preset applied unmodified is curated and verified against the live
+      // API, so do not second-guess its field names with our narrower list.
+      // Without this the shipped GISAID preset warns about {subtype} -- a
+      // field that demonstrably works -- which reads as "this preset is
+      // broken". Once the user edits the template it is theirs, and the
+      // normal check resumes.
+      var pristine = this._appliedPresetTemplate
+        && this._appliedPresetTemplate === this.headerTemplate;
+
+      if (!error && !pristine) {
         var known = this.availableFields.map(function (f) {
           return bareFieldName(f.field);
         });
@@ -862,6 +1103,9 @@ define([
       this.descriptionDelimiter = ' | ';
       this.headerMode = 'zones';
       this.headerTemplate = '';
+      this._pendingSelection = null;
+      this._appliedPresetTemplate = null;
+      if (this.savedFormatSelect) this.savedFormatSelect.value = this.NO_FORMAT;
       this._initializeFields();
     },
 

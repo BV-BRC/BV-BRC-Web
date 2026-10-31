@@ -6,6 +6,26 @@
 
   <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
 
+  <!-- Saved formats. Sits above everything because applying one sets the
+       mode and every control below. Hidden entirely when there is nothing
+       to offer: no presets configured and no saved formats. -->
+  <div class="configSection savedFormatsSection dijitHidden"
+       data-dojo-attach-point="savedFormatsSection">
+    <div class="savedFormatsRow">
+      <span class="savedFormatsLabel">Saved format</span>
+      <select data-dojo-attach-point="savedFormatSelect" class="savedFormatDropdown"
+              aria-label="Apply a saved format"
+              data-dojo-attach-event="onchange:_onSavedFormatChange"></select>
+      <button type="button" class="savedFormatBtn dijitHidden"
+              data-dojo-attach-point="saveFormatBtn"
+              data-dojo-attach-event="onclick:_onSaveFormat">Save as…</button>
+      <button type="button" class="savedFormatBtn dijitHidden"
+              data-dojo-attach-point="deleteFormatBtn"
+              data-dojo-attach-event="onclick:_onDeleteFormat">Delete</button>
+    </div>
+    <div class="savedFormatDescription" data-dojo-attach-point="savedFormatDescription"></div>
+  </div>
+
   <!-- Mode switch. Exclusive, mirroring the API: when http_fasta_header is
        present the server ignores the zone parameters entirely. -->
   <div class="configSection modeSection">

@@ -431,6 +431,51 @@
   font-size: 14px;
 }
 
+/* Saved formats and presets */
+.fastaConfiguratorStep .savedFormatsSection {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.fastaConfiguratorStep .savedFormatsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #444;
+}
+
+.fastaConfiguratorStep .savedFormatDropdown {
+  flex: 1 1 auto;
+  max-width: 340px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.fastaConfiguratorStep .savedFormatBtn {
+  padding: 5px 10px;
+  color: #09456f;
+  background: #fff;
+  border: 1px solid #c8d8e4;
+  border-radius: 3px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.fastaConfiguratorStep .savedFormatBtn:hover {
+  background: #eef3f7;
+}
+
+.fastaConfiguratorStep .savedFormatDescription {
+  margin-top: 5px;
+  min-height: 15px;
+  font-size: 12px;
+  font-style: italic;
+  color: #78848c;
+}
+
 /* Header mode switch */
 .fastaConfiguratorStep .modeSection {
   display: flex;
