@@ -8,7 +8,8 @@ define([
   './WizardStepBase',
   'dojo/text!./templates/FASTAConfiguratorStep.html',
   '../../util/DownloadFormats',
-  '../../util/FastaFormatStore'
+  '../../util/FastaFormatStore',
+  '../../util/CollectionFields'
 ], function (
   declare,
   lang,
@@ -19,7 +20,8 @@ define([
   WizardStepBase,
   template,
   DownloadFormats,
-  FastaFormatStore
+  FastaFormatStore,
+  CollectionFields
 ) {
   /**
    * FASTAConfiguratorStep - Step 3 configurator for FASTA formats
@@ -99,8 +101,19 @@ define([
   }
 
   /** Cheap edit distance, capped -- only used to suggest a near-miss field. */
+  var MAX_SUGGESTION_DISTANCE = 3;
+
+  /**
+   * Edit distance between two field names, or null when they are too far
+   * apart to be worth suggesting.
+   *
+   * Returns the DISTANCE rather than a boolean so the caller can pick the
+   * closest match. With a boolean it took the first field in list order that
+   * happened to be within range, which suggested {host_age} for {hostname}
+   * when {host_name} was sitting right there.
+   */
   function closeTo(a, b) {
-    if (Math.abs(a.length - b.length) > 3) return false;
+    if (Math.abs(a.length - b.length) > MAX_SUGGESTION_DISTANCE) return null;
     var prev = [];
     var i;
     for (i = 0; i <= b.length; i++) prev[i] = i;
@@ -115,7 +128,21 @@ define([
       }
       prev = cur;
     }
-    return prev[b.length] <= 3;
+    return prev[b.length] <= MAX_SUGGESTION_DISTANCE ? prev[b.length] : null;
+  }
+
+  /** The closest field name to `name`, or undefined if none is near enough. */
+  function bestSuggestion(name, known) {
+    var best;
+    var bestDistance = Infinity;
+    known.forEach(function (candidate) {
+      var d = closeTo(name, candidate);
+      if (d !== null && d < bestDistance) {
+        bestDistance = d;
+        best = candidate;
+      }
+    });
+    return best;
   }
 
   return declare([WizardStepBase], {
@@ -188,7 +215,11 @@ define([
     _initializeFields: function () {
       var self = this;
 
-      // Use fields appropriate for the target collection, not the source grid's columns
+      // Use fields appropriate for the target collection, not the source
+      // grid's columns. This is the built-in list; _refreshFieldsFromApi()
+      // replaces it with the collection's real fields when /fields is
+      // available. Render from the built-in first so the step never waits
+      // on a network call to appear.
       this.availableFields = this._getDefaultFieldsForDataType();
 
       // Set default sequence ID field
@@ -213,6 +244,61 @@ define([
 
       // Saved formats and presets
       this._loadSavedFormats();
+
+      // Real field list, when the API offers one
+      this._refreshFieldsFromApi();
+    },
+
+    /**
+     * Replace the built-in field list with the collection's real fields.
+     *
+     * The hardcoded list has drifted from the server twice: it offers
+     * `genome_metadata.*` names that a format string cannot resolve, and
+     * three accession fields that are not joinable at all and so always
+     * render empty. /fields reports what the collection actually exposes.
+     *
+     * Asynchronous and best-effort. The endpoint 404s on production while
+     * serving on alpha, so CollectionFields.load() falls back to the list
+     * we already rendered and this becomes a no-op there.
+     */
+    _refreshFieldsFromApi: function () {
+      var self = this;
+      var dataType = this.context ? this.context.dataType : 'genome_feature';
+      var builtIn = this.availableFields;
+
+      CollectionFields.load(dataType, builtIn).then(function (fields) {
+        if (self._stepDestroyed || !fields || !fields.length) return;
+        // Nothing to do when the fallback came back.
+        if (fields === builtIn) return;
+
+        self.availableFields = fields;
+
+        // The selected ID field may not exist in the real list -- notably
+        // the built-in default for a cross-collection download. Keep it if
+        // the collection has it, otherwise fall back to the configured
+        // default so the dropdown never shows a field that cannot resolve.
+        var names = fields.map(function (f) { return f.field; });
+        if (names.indexOf(self.sequenceIdField) === -1) {
+          var preferred = DownloadFormats.getDefaultIdField(dataType);
+          self.sequenceIdField = names.indexOf(preferred) !== -1 ? preferred : names[0];
+        }
+
+        // Description fields chosen before the refresh may use the prefixed
+        // name for an enriched field; map them onto the real entries so the
+        // selection survives rather than silently resetting.
+        self.descriptionFields = self.descriptionFields.map(function (chosen) {
+          return fields.filter(function (f) {
+            return f.field === chosen.field
+              || bareFieldName(f.field) === bareFieldName(chosen.field);
+          })[0] || chosen;
+        });
+
+        self._populateIdFieldDropdown();
+        self._populateFieldLists();
+        self._populateTemplateFieldList();
+        self._validateTemplate();
+        self._updatePreview();
+      });
     },
 
     // ------------------------------------------------------------ saved formats
@@ -591,7 +677,7 @@ define([
 
         if (unrecognised.length > 0) {
           var name = unrecognised[0];
-          var suggestion = known.filter(function (k) { return closeTo(name, k); })[0];
+          var suggestion = bestSuggestion(name, known);
           warning = suggestion
             ? 'Unrecognised field {' + name + '} — did you mean {' + suggestion + '}?'
             : 'Unrecognised field {' + name + '}. If the collection has it the '
@@ -1113,6 +1199,11 @@ define([
      * Destroy
      */
     destroy: function () {
+      // The wizard destroys and recreates this step on every format change,
+      // so an in-flight /fields response can arrive after teardown. Flag it
+      // rather than trusting dijit's own _destroyed, whose timing relative
+      // to this hook is not something to depend on.
+      this._stepDestroyed = true;
       this._handlers.forEach(function (h) {
         h.remove();
       });

@@ -44,6 +44,7 @@ function loadHelpers() {
         templateFields: templateFields,
         validateTemplateSyntax: validateTemplateSyntax,
         closeTo: closeTo,
+        bestSuggestion: bestSuggestion,
         ESCAPED_OPEN: ESCAPED_OPEN,
         ESCAPED_CLOSE: ESCAPED_CLOSE,
         TEMPLATE_FIELD: TEMPLATE_FIELD
@@ -120,7 +121,7 @@ function makeStep(overrides) {
           .filter((n) => known.indexOf(n) === -1);
         if (unrecognised.length > 0) {
           const name = unrecognised[0];
-          const suggestion = known.filter((k) => H.closeTo(name, k))[0];
+          const suggestion = H.bestSuggestion(name, known);
           warning = suggestion
             ? 'Unrecognised field {' + name + '} \u2014 did you mean {' + suggestion + '}?'
             : 'Unrecognised field {' + name + '}. If the collection has it the '
@@ -275,6 +276,22 @@ describe('FASTA template mode', () => {
     test('suggests a near miss', () => {
       const step = makeStep({ headerMode: 'template', headerTemplate: '{producr}' });
       expect(step._validateTemplate().warning).toMatch(/did you mean \{product\}\?/);
+    });
+
+    test('suggests the CLOSEST match, not the first one in range', () => {
+      // Measured in the browser: with a boolean closeTo() this suggested
+      // {host_age} for {hostname}, because host_age came first in the
+      // field list and was also within the distance threshold.
+      const step = makeStep({
+        headerMode: 'template',
+        headerTemplate: '{hostname}',
+        availableFields: [
+          { field: 'host_age', label: 'Host Age' },
+          { field: 'host_name', label: 'Host Name' },
+          { field: 'host_group', label: 'Host Group' }
+        ]
+      });
+      expect(step._validateTemplate().warning).toMatch(/did you mean \{host_name\}\?/);
     });
 
     test('explains itself when there is no near miss', () => {
