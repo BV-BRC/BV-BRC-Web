@@ -257,9 +257,92 @@ format vanished.
 
 ### Logged out
 
-**Decision: hide the save/load section entirely.** Delimiters and templates still work for
-everyone — only persistence requires an account. `FavoriteFolders._getFilePath()` returns null
-with no `window.App.user.id`, so the guard is the same one-liner. No dead buttons.
+**Decision: hide the *save* controls, not the whole section.** Saving requires an account;
+*loading a preset does not* — see below. So a logged-out user still sees the preset list and
+can apply one, but has no Save/Delete. `FavoriteFolders._getFilePath()` returns null with no
+`window.App.user.id`, so the guard is the same one-liner.
+
+*(Revised from "hide the section entirely" once presets became workspace-hosted and readable
+anonymously.)*
+
+### Built-in presets live in the workspace, not in the code
+
+**Decision: a config option points at a workspace folder holding the standard presets.**
+
+```js
+// config.js
+fastaFormatPresetsPath: '/ARWattam@patricbrc.org/public/FASTA Formats',
+```
+
+surfaced on `window.App` in `app.js` beside the other client options. Precedent:
+`workspaceSelectorExcludeFolders` is already a workspace path configured this way.
+
+Why this beats shipping presets in the JS:
+
+- **Curators can add a format without a release.** The GISAID/NCBI set will grow — H5 clade,
+  flu B lineage, per-organism variants — and each one is data, not code.
+- **Deployments can differ.** Alpha can trial a preset set that production does not have.
+- **Same storage shape as a user's own saved formats**, so one loader handles both.
+
+**Anonymous read works — verified on alpha, no token:**
+
+```
+POST https://alpha.bv-brc.org/services/Workspace
+  {"method":"Workspace.ls", "params":[{"paths":["/ARWattam@patricbrc.org/BV-BRC Workshop"]}]}
+  -> 200, full folder listing
+```
+
+So presets are available to logged-out users, which is why only the *save* half of the UI is
+gated on login.
+
+**A missing path fails silently, not loudly** — `ls` on a nonexistent path returns
+`{"result":[{}]}`, not an error:
+
+```
+ls /nobody@patricbrc.org/NoSuchFolder   ->   {"result":[{}]}
+```
+
+Good for resilience (a typo'd config degrades to "no presets" rather than a broken dialog)
+but it means **a misconfigured path is invisible**. Log a console warning when the configured
+path yields nothing, or the first report will be "the presets disappeared" with no clue why.
+
+#### Layout
+
+One file per preset, so a curator can add one by dropping a file in:
+
+```
+<presetsPath>/
+  ncbi-classic.json
+  ncbi-source-modifiers.json
+  gisaid-influenza-a.json
+  gisaid-influenza-b.json
+```
+
+Each file is the same shape as an entry in the user's `fasta-formats.json`, plus a
+`description` for the tooltip:
+
+```json
+{
+  "name": "GISAID / augur, influenza A",
+  "description": "strain|type|subtype|date|season|country|host|accession",
+  "dataType": "genome_feature",
+  "mode": "template",
+  "template": "{strain}|A|{subtype}|{collection_date}||{isolation_country}|{host_common_name}|{accession}"
+}
+```
+
+The seven verified strings in [`REPORT-fasta-header-presets.md`](REPORT-fasta-header-presets.md)
+are the initial contents.
+
+#### Behaviour
+
+- Presets are **read-only** in the picker, listed above the user's own formats and visually
+  distinguished. "Duplicate and edit" copies one into the user's file.
+- **Filtered by `dataType`**, as saved formats are.
+- **Cache per session.** This is a second workspace round-trip on a dialog that must feel
+  instant; fetch once, reuse.
+- **Unset config means no presets, silently.** Not an error state — a deployment that has
+  not created the folder should see the feature degrade to user-saved formats only.
 
 ---
 
@@ -289,8 +372,23 @@ client-side validation against `/fields`, seed-from-zones on first switch.
 
 ### 4. `util/FastaFormatStore.js` + save/load UI
 
-Independent of item 3 — it can store zone configs before templates exist. Build it after 2,
-ship with whichever of 2/3 is ready.
+Two sources behind one picker:
+
+- **Presets** — read-only, from the workspace folder named by `fastaFormatPresetsPath`
+  (new config option). Readable without a token, so available logged out.
+- **User formats** — read/write, from `/<user>/home/.preferences/fasta-formats.json`.
+
+Both use the same record shape, so one loader and one apply-path serve both. Save/Delete are
+hidden when logged out; the preset list is not.
+
+Sub-steps, each shippable:
+
+1. `FastaFormatStore` — list/save/remove/load against the preferences file
+   (`FavoriteFolders` pattern: ensure-dir, mod-time merge, per-user cache)
+2. `fastaFormatPresetsPath` config + preset loading, cached per session, warn on a
+   configured-but-empty path
+3. Picker UI: presets section, user section, Save / Duplicate and edit / Delete
+4. Seed the preset folder with the seven verified formats from the report
 
 ### 5. Replace the hardcoded field list with `/fields`
 
@@ -322,7 +420,15 @@ consuming `/fields` directly is safe for every FASTA data type.
 - [ ] `{patric_id}` in a `|`-delimited template triggers the pipe warning
 - [ ] Save, reload the page, load the format back
 - [ ] Two tabs saving different formats — neither is lost (mod-time merge)
-- [ ] Logged out: delimiters/templates work, save UI absent, no console error
+- [ ] Logged out: delimiters/templates work, **presets still listed and applicable**, save UI
+      absent, no console error
+- [ ] `fastaFormatPresetsPath` unset — no presets section, no error
+- [ ] `fastaFormatPresetsPath` pointing at a nonexistent folder — degrades to no presets
+      **and logs a warning** (the service returns `{"result":[{}]}`, not an error, so this is
+      otherwise invisible)
+- [ ] A preset applies to the picker in zone mode and to the box in template mode
+- [ ] "Duplicate and edit" copies a preset into the user's own formats, leaving the original
+      untouched
 - [ ] Format saved for `genome_feature` is marked unavailable on a `genome_sequence` download
 - [ ] First-ever save creates `.preferences/` when it does not exist
 - [ ] Both FASTA data types (protein and DNA) and both grid sources
@@ -381,17 +487,22 @@ edit" — the cheapest way to make the template syntax discoverable.
 
 ## Open questions
 
-1. **Should a saved format be shareable?** The preferences file is private by design. If
-   sharing is wanted, add an explicit "Export…" writing a single-format file (the
-   `SavedSearchManager.exportToWorkspace` pattern) rather than moving the primary store.
-2. **Should the NCBI modifier presets enforce their own rules, or just warn?** NCBI requires a
+1. **Which workspace path should hold the presets, and who curates it?** Needs a real folder
+   before item 4 ships. A public path under a team account, matching the Workshop precedent
+   (`/ARWattam@patricbrc.org/...`), seems right — but the owner is a decision, not a default.
+   Alpha and production can point at different folders.
+2. **Should a user's saved format be shareable?** The preferences file is private by design.
+   If sharing is wanted, add an explicit "Export…" writing a single-format file (the
+   `SavedSearchManager.exportToWorkspace` pattern) rather than moving the primary store. Note
+   that the preset mechanism already gives a *curated* sharing path, which may be enough.
+3. **Should the NCBI modifier presets enforce their own rules, or just warn?** NCBI requires a
    SeqID ≤25 chars from a restricted charset, and does not define an empty modifier value —
    we produce `[collection_date=]`. Current plan is to label them "NCBI-shaped"; enforcing
    would mean rejecting templates rather than describing them.
-3. **Report the unknown-field divergence upstream?** It undercuts a decision the API authors
+4. **Report the unknown-field divergence upstream?** It undercuts a decision the API authors
    made deliberately, and our validation only protects users coming through the wizard —
    a direct API caller still gets a silent empty substitution.
-4. **`species` returns the ICTV name** (`Alphainfluenzavirus influenzae`), not
+5. **`species` returns the ICTV name** (`Alphainfluenzavirus influenzae`), not
    `Influenza A virus`. Correct, but surprising inside `[organism=…]`; `{genome_name}` is
    closer to submitter expectation. Decide before preset #3 ships.
 
