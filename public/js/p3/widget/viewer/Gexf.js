@@ -918,7 +918,7 @@ var loadGexfDependencies = function(callback) {
                     persistent: true,
                     validTypes:["*"],
                     validContainerTypes:["*"],
-                    tooltip: "Adjust Node Labels (Toggle On/Off, Text Size & Zoom Threshold)",
+                    tooltip: "Adjust Node Labels (Toggle On/Off, Non-Overlapping Layout, Leader Lines, Size & Zoom Threshold)",
                     ignoreDataType: true
                 },
                 function (selection) {
@@ -934,6 +934,22 @@ var loadGexfDependencies = function(callback) {
                         var toggleInput = this.labelMenuDiv.querySelector('#gexfLabelToggle');
                         if (toggleInput) {
                             toggleInput.checked = (GexfJS.params.showNodeLabels !== false); 
+                        }
+
+                        var layoutSelect = this.labelMenuDiv.querySelector('#gexfLabelLayout');
+                        var curLayout = GexfJS.params.labelLayoutMode || 'stagger';
+                        if (layoutSelect) {
+                            layoutSelect.value = curLayout;
+                        }
+
+                        var leadersInput = this.labelMenuDiv.querySelector('#gexfLabelLeaders');
+                        if (leadersInput) {
+                            leadersInput.checked = (GexfJS.params.showLabelLeaders !== false);
+                            leadersInput.disabled = (curLayout === 'standard');
+                        }
+                        var leadersRow = this.labelMenuDiv.querySelector('#gexfLabelLeadersRow');
+                        if (leadersRow) {
+                            leadersRow.style.opacity = (curLayout === 'standard') ? '0.5' : '1.0';
                         }
                         
                         var sizeInput = this.labelMenuDiv.querySelector('#gexfLabelSize');
@@ -1186,8 +1202,21 @@ var loadGexfDependencies = function(callback) {
 
             // --- 3. Node Labels Menu ---
             var labelMenuDiv = domConstruct.create("div", {
-                innerHTML: '<div style="padding: 8px; white-space: nowrap; font-size: 0.92em;">' +
-                           '<div style="margin-bottom: 6px;"><label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="gexfLabelToggle" checked style="vertical-align:middle; cursor:pointer;"> Show Node Labels</label></div>' +
+                innerHTML: '<div style="padding: 10px 12px; white-space: nowrap; font-size: 0.92em; min-width: 265px;">' +
+                           '<div style="font-weight: bold; font-size: 1.02em; color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 8px;">Node Labels</div>' +
+                           '<div style="margin-bottom: 7px;"><label style="cursor:pointer; font-weight:bold;"><input type="checkbox" id="gexfLabelToggle" checked style="vertical-align:middle; cursor:pointer;"> Show Node Labels</label></div>' +
+                           '<div style="margin-bottom: 7px; display:flex; align-items:center; justify-content:space-between; gap:8px;" title="Choose how labels are positioned to prevent horizontal overlap">' +
+                           '<label for="gexfLabelLayout" style="font-weight:600; color:#333;">Label Layout:</label>' +
+                           '<select id="gexfLabelLayout" style="padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; cursor: pointer;">' +
+                           '<option value="stagger" selected>Vertical Stagger (Default)</option>' +
+                           '<option value="standard">Centered on Node</option>' +
+                           '<option value="vertical">Vertical Text (-90&deg;)</option>' +
+                           '<option value="angled">Angled Text (-45&deg;)</option>' +
+                           '</select>' +
+                           '</div>' +
+                           '<div id="gexfLabelLeadersRow" style="margin-bottom: 8px; padding-left: 4px; opacity: 1.0;" title="Draw subtle dashed leader lines connecting displaced labels back to their nodes (can be unchecked to reduce visual clutter)">' +
+                           '<label style="cursor:pointer;"><input type="checkbox" id="gexfLabelLeaders" checked style="vertical-align:middle; cursor:pointer;"> Show Leader Lines <span style="font-size:0.84em; color:#64748b;">(when offset)</span></label>' +
+                           '</div>' +
                            '<div style="margin-bottom: 6px; display:flex; align-items:center; justify-content:space-between; gap:8px;">' +
                            '<label for="gexfLabelSize">Text Size Multiplier:</label>' +
                            '<input type="number" id="gexfLabelSize" value="0.6" step="0.1" min="0.2" max="5.0" style="width: 55px; text-align:center;">' +
@@ -1200,7 +1229,7 @@ var loadGexfDependencies = function(callback) {
                            '</div>' +
                            '</div>' +
                            '<div style="margin-bottom: 8px; font-size: 0.8em; color: #666;">Lower = show when zoomed out &middot; Higher = zoom in closer</div>' +
-                           '<div style="text-align:right;">' +
+                           '<div style="text-align:right; border-top: 1px solid #e2e8f0; padding-top: 7px;">' +
                            '<button id="gexfLabelApply" style="padding: 4px 10px; cursor: pointer; margin-right: 5px;">Apply</button>' +
                            '<button id="gexfLabelCancel" style="padding: 4px 10px; cursor: pointer;">Close</button>' +
                            '</div></div>'
@@ -1211,16 +1240,30 @@ var loadGexfDependencies = function(callback) {
             var syncLabelSettingsToGraph = lang.hitch(this, function() {
                 if (!window.GexfJS || !GexfJS.params) return;
                 var toggleEl = labelMenuDiv.querySelector('#gexfLabelToggle');
+                var layoutEl = labelMenuDiv.querySelector('#gexfLabelLayout');
+                var leadersEl = labelMenuDiv.querySelector('#gexfLabelLeaders');
+                var leadersRowEl = labelMenuDiv.querySelector('#gexfLabelLeadersRow');
                 var sizeEl = labelMenuDiv.querySelector('#gexfLabelSize');
                 var threshEl = labelMenuDiv.querySelector('#gexfLabelThreshold');
 
                 var showLabels = toggleEl ? Boolean(toggleEl.checked) : true;
+                var layoutMode = (layoutEl && layoutEl.value) ? layoutEl.value : 'stagger';
+                var showLeaders = leadersEl ? Boolean(leadersEl.checked) : true;
                 var parsedSize = sizeEl ? parseFloat(sizeEl.value) : 0.6;
                 var labelSize = (!isNaN(parsedSize) && parsedSize > 0) ? parsedSize : 0.6;
                 var parsedThresh = threshEl ? parseFloat(threshEl.value) : 12;
                 var labelThresh = (!isNaN(parsedThresh) && parsedThresh >= 0) ? parsedThresh : 12;
 
+                if (leadersEl) {
+                    leadersEl.disabled = (layoutMode === 'standard');
+                }
+                if (leadersRowEl) {
+                    leadersRowEl.style.opacity = (layoutMode === 'standard') ? '0.5' : '1.0';
+                }
+
                 GexfJS.params.showNodeLabels = showLabels;
+                GexfJS.params.labelLayoutMode = layoutMode;
+                GexfJS.params.showLabelLeaders = showLeaders;
                 GexfJS.params.labelSizeFactor = labelSize;
                 GexfJS.params.textDisplayThreshold = labelThresh;
 
@@ -1229,6 +1272,14 @@ var loadGexfDependencies = function(callback) {
             });
 
             on(labelMenuDiv, "#gexfLabelToggle:change", lang.hitch(this, function() {
+                syncLabelSettingsToGraph();
+            }));
+
+            on(labelMenuDiv, "#gexfLabelLayout:change", lang.hitch(this, function() {
+                syncLabelSettingsToGraph();
+            }));
+
+            on(labelMenuDiv, "#gexfLabelLeaders:change", lang.hitch(this, function() {
                 syncLabelSettingsToGraph();
             }));
 
@@ -4399,13 +4450,19 @@ var loadGexfDependencies = function(callback) {
             });
 
             var initShowLabels = true;
+            var initLabelLayout = "stagger";
+            var initLabelLeaders = true;
             var initLabelSize = 0.6;
             var initLabelThresh = 12;
             if (this.labelMenuDiv) {
                 var tEl = this.labelMenuDiv.querySelector('#gexfLabelToggle');
+                var layEl = this.labelMenuDiv.querySelector('#gexfLabelLayout');
+                var ldrEl = this.labelMenuDiv.querySelector('#gexfLabelLeaders');
                 var sEl = this.labelMenuDiv.querySelector('#gexfLabelSize');
                 var thEl = this.labelMenuDiv.querySelector('#gexfLabelThreshold');
                 if (tEl) initShowLabels = Boolean(tEl.checked);
+                if (layEl && layEl.value) initLabelLayout = layEl.value;
+                if (ldrEl) initLabelLeaders = Boolean(ldrEl.checked);
                 if (sEl && !isNaN(parseFloat(sEl.value))) initLabelSize = parseFloat(sEl.value);
                 if (thEl && !isNaN(parseFloat(thEl.value))) initLabelThresh = parseFloat(thEl.value);
             }
@@ -4422,6 +4479,8 @@ var loadGexfDependencies = function(callback) {
                 language: false,
                 textDisplayThreshold: initLabelThresh,
                 showNodeLabels: initShowLabels,
+                labelLayoutMode: initLabelLayout,
+                showLabelLeaders: initLabelLeaders,
                 labelSizeFactor: initLabelSize
             };
             setParams(graph_params);
