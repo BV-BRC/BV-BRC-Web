@@ -163,7 +163,8 @@ app.use(function (req, res, next) {
     workspaceSelectorExcludeFolders: config.get('workspaceSelectorExcludeFolders') || [],
     cartoBasemapApiKey: config.get('cartoBasemapApiKey') || '',
     queryLoggingEnabled: !!config.get('queryLogDir'),
-    enableThrottleRetry: config.get('enableThrottleRetry') || false
+    enableThrottleRetry: config.get('enableThrottleRetry') || false,
+    fastaFormatPresetsPath: config.get('fastaFormatPresetsPath') || ''
   };
   // console.log("Application Options: ", req.applicationOptions);
   next();

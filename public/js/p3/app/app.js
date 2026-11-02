@@ -583,8 +583,26 @@ define([
         // var acceptType = newNavState.widgetClass ? 'application/json' : 'text/html';
         var instance;
         var cur = _self.getCurrentContainer();
+        // Reuse the current container only when it is EXACTLY this viewer,
+        // not merely an instance of it.
+        //
+        // `cur instanceof ctor` was true for a subclass, so navigating from
+        // a specialised viewer to its parent reused the specialised one and
+        // only updated its state: /view/Bacteria/2 -> /view/Taxonomy/2955291
+        // reloaded influenza data into a viewer still labelled "Bacteria
+        // View", still showing the Bacteria genera panel. The URL and
+        // breadcrumbs changed; the chrome did not.
+        //
+        // The bug was directional -- parent -> subclass already rebuilt --
+        // and affected every viewer pair in an inheritance relationship:
+        // Bacteria/Virus over Taxonomy, GenomeGroup over GenomeList,
+        // FeatureGroup over FeatureList, and the several viewers extending
+        // JobResult.
+        //
+        // dojo/declare assigns proto.constructor (declare.js:860), so this
+        // is a reliable identity test for declared classes.
         /*  istanbul ignore else */
-        if (cur instanceof ctor) {
+        if (cur && cur.constructor === ctor) {
           instance = cur;
           // console.log("newNavState: ", newNavState);
           /*  istanbul ignore if */

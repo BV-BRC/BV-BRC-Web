@@ -34,10 +34,15 @@ define([
    * - /Download/error - When download fails
    */
 
-  // Configuration
-  var DATA_API_URL = window.App && window.App.dataServiceURL
+  // Configuration.
+  //
+  // The trailing slash is stripped because every use below joins this with
+  // '/' + dataType. A configured base ending in one yields
+  // `/proxyapi//genome_feature/?...`, which the API 404s -- so a deployment
+  // whose dataServiceURL happens to end in '/' loses downloads entirely.
+  var DATA_API_URL = (window.App && window.App.dataServiceURL
     ? window.App.dataServiceURL
-    : '/api/data';
+    : '/api/data').replace(/\/+$/, '');
 
   var BUNDLER_API_URL = window.App && window.App.dataServiceURL
     ? window.App.dataServiceURL.replace('/data', '/bundle')
@@ -193,6 +198,132 @@ define([
   }
 
   /**
+   * Build the http_fasta_* query parameters for a spec.
+   *
+   * Returns a string beginning with '&', or '' when the spec carries no FASTA
+   * configuration. Shared by the form-POST and xhr paths, which previously
+   * each had their own copy of this and so could drift.
+   *
+   * Delimiters are sent only when the configurator supplied them. The server
+   * defaults are '|' for the ID section and ' ' for the description
+   * (p3_api util/fastaHeaderFormatter.js), so an absent value means "leave the
+   * server's default alone" rather than "send empty" — note that an empty
+   * string is itself a meaningful delimiter and must still be transmitted,
+   * which is why these test for undefined rather than falsiness.
+   */
+  function buildFastaParams(spec) {
+    if (!spec.fastaConfig) {
+      return '';
+    }
+
+    var cfg = spec.fastaConfig;
+
+    // A format string replaces the zone parameters rather than supplementing
+    // them — the server ignores the zones when http_fasta_header is present,
+    // so sending both would imply a merge that never happens.
+    if (cfg.headerTemplate) {
+      return '&http_fasta_header=' + encodeURIComponent(cfg.headerTemplate);
+    }
+
+    var idFields = cfg.idFields || [];
+    var descFields = cfg.descriptionFields || [];
+
+    var params = '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
+    params += '&http_fasta_id_prefix=';
+    params += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
+    params += '&http_fasta_context_fields=';
+
+    if (cfg.idDelimiter !== undefined) {
+      params += '&http_fasta_id_delimiter=' + encodeURIComponent(cfg.idDelimiter);
+    }
+    if (cfg.descriptionDelimiter !== undefined) {
+      params += '&http_fasta_description_delimiter='
+        + encodeURIComponent(cfg.descriptionDelimiter);
+    }
+
+    return params;
+  }
+
+  /**
+   * Ask the API to validate a FASTA format string before downloading.
+   *
+   * The default behaviour for an unknown field is to render it as an empty
+   * string and return 200, so a typo like {hostname} yields a silently
+   * truncated header with no error. `http_fasta_strict=true` turns that
+   * into a 400 naming the offending fields.
+   *
+   * Run as `limit(0)`: the server validates before fetching anything, so a
+   * bad template costs ~250ms and a good one returns zero bytes in ~160ms.
+   * That is cheap enough to precede a download and far better than letting
+   * the user discover the problem in a multi-megabyte file.
+   *
+   * This is authoritative where the client's own check is not: the picker
+   * knows one collection's field list, the server knows what it will
+   * actually resolve.
+   *
+   * @returns {Deferred} resolves (valid, or validation unavailable), rejects
+   *   with an Error carrying the server's message
+   */
+  function validateFastaHeader(spec) {
+    var def = new Deferred();
+    var cfg = spec.fastaConfig;
+
+    // Only a format string can carry an unknown field reference; the zone
+    // parameters are built from a picker.
+    if (!cfg || !cfg.headerTemplate) {
+      def.resolve();
+      return def;
+    }
+
+    var format = DownloadFormats.getFormat(spec.format);
+    var acceptType = (format && format.mimeType) || 'text/plain';
+    var url = DATA_API_URL + '/' + spec.dataType + '/'
+      + '?http_download=true&http_accept=' + acceptType
+      + '&http_fasta_strict=true'
+      + buildFastaParams(spec);
+
+    var headers = {
+      'Accept': acceptType,
+      'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+    };
+    if (window.App && window.App.authorizationToken) {
+      headers['Authorization'] = window.App.authorizationToken;
+    }
+
+    xhr.post(url, {
+      data: buildQuery(spec).replace(/limit\(\d+\)/, 'limit(0)'),
+      headers: headers,
+      handleAs: 'text',
+      timeout: 30000
+    }).then(
+      function () { def.resolve(); },
+      function (err) {
+        var message = null;
+        // The contract is a 400 with a JSON body naming the fields.
+        if (err && err.response && err.response.status === 400) {
+          try {
+            var body = err.response.data;
+            var parsed = typeof body === 'string' ? JSON.parse(body) : body;
+            message = parsed && parsed.message;
+          } catch (e) {
+            message = null;
+          }
+        }
+        if (message) {
+          def.reject(new Error(message));
+        } else {
+          // Anything else -- a timeout, a deployment without strict mode,
+          // a network blip -- must not block the download. The validation
+          // is an improvement on the status quo, not a gate.
+          def.resolve();
+        }
+      }
+    );
+
+    return def;
+  }
+
+  /**
    * Execute server-side download via form POST
    * @param {Object} spec - Download specification
    * @returns {Deferred} Promise that resolves when download starts
@@ -221,14 +352,7 @@ define([
 
     // FASTA header configuration via http_fasta_* query parameters.
     // Send all params when configured — empty string disables a section/prefix.
-    if (spec.fastaConfig) {
-      var idFields = spec.fastaConfig.idFields || [];
-      var descFields = spec.fastaConfig.descriptionFields || [];
-      actionUrl += '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
-      actionUrl += '&http_fasta_id_prefix=';
-      actionUrl += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
-      actionUrl += '&http_fasta_context_fields=';
-    }
+    actionUrl += buildFastaParams(spec);
 
     var form = domConstruct.create('form', {
       method: 'POST',
@@ -378,14 +502,7 @@ define([
     }
 
     // FASTA header configuration — send all params when configured
-    if (spec.fastaConfig) {
-      var idFields = spec.fastaConfig.idFields || [];
-      var descFields = spec.fastaConfig.descriptionFields || [];
-      query += '&http_fasta_id_fields=' + encodeURIComponent(idFields.join(','));
-      query += '&http_fasta_id_prefix=';
-      query += '&http_fasta_description_fields=' + encodeURIComponent(descFields.join(','));
-      query += '&http_fasta_context_fields=';
-    }
+    query += buildFastaParams(spec);
 
     topic.publish('/Download/started', {
       type: 'client-side',
@@ -716,13 +833,19 @@ define([
     var fastaConfig = spec.fastaConfig || {};
     var idFields = fastaConfig.idFields || ['feature_id'];
     var descFields = fastaConfig.descriptionFields || [];
+    // Honour the configured delimiters here too. This path builds the header in
+    // the browser rather than asking the server for one, so hardcoding them
+    // would reintroduce the same preview/download mismatch on this route.
+    var idDelimiter = fastaConfig.idDelimiter !== undefined ? fastaConfig.idDelimiter : '|';
+    var descDelimiter = fastaConfig.descriptionDelimiter !== undefined
+      ? fastaConfig.descriptionDelimiter : ' ';
     var sequenceField = spec.format === 'protein+fasta' ? 'aa_sequence' : 'na_sequence';
 
     data.forEach(function (record) {
-      var idPart = idFields.map(function (f) { return record[f] || ''; }).join('|');
+      var idPart = idFields.map(function (f) { return record[f] || ''; }).join(idDelimiter);
       var defLine = '>' + idPart;
       if (descFields.length > 0) {
-        var descPart = descFields.map(function (f) { return record[f] || ''; }).join(' ');
+        var descPart = descFields.map(function (f) { return record[f] || ''; }).join(descDelimiter);
         defLine += ' ' + descPart;
       }
       lines.push(defLine);
@@ -768,6 +891,24 @@ define([
         var deferred = new Deferred();
         deferred.reject(new Error('Unknown format: ' + spec.format));
         return deferred;
+      }
+
+      // A custom format string is checked against the API first. Without
+      // this an unknown field is silently blank in every record, and the
+      // user finds out by reading the downloaded file.
+      if (spec.fastaConfig && spec.fastaConfig.headerTemplate
+          && !options.skipValidation) {
+        var self = this;
+        var gated = new Deferred();
+        validateFastaHeader(spec).then(
+          function () {
+            when(self.execute(spec, lang.mixin({}, options, { skipValidation: true })),
+              function (r) { gated.resolve(r); },
+              function (e) { gated.reject(e); });
+          },
+          function (err) { gated.reject(err); }
+        );
+        return gated;
       }
 
       // Determine download strategy
