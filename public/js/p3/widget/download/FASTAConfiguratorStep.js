@@ -177,6 +177,9 @@ define([
     headerMode: 'zones',
     headerTemplate: '',
 
+    // Type-to-filter text for the available-fields list.
+    fieldFilter: '',
+
     // Presets + the user's own, as loaded by FastaFormatStore.
     _savedFormats: null,
     _pendingSelection: null,
@@ -899,12 +902,47 @@ define([
         return f.field;
       });
 
-      // Populate available fields (excluding those already selected)
-      this.availableFields.forEach(function (f) {
-        if (selectedFieldNames.indexOf(f.field) === -1) {
-          self._createFieldItem(f, self.availableFieldsList, 'available');
-        }
+      // Available fields, minus what is already selected, minus anything
+      // the filter excludes.
+      var filter = (this.fieldFilter || '').toLowerCase();
+      var candidates = this.availableFields.filter(function (f) {
+        if (selectedFieldNames.indexOf(f.field) !== -1) return false;
+        if (!filter) return true;
+        // Match the label and the raw field name: someone who knows the
+        // API will type `host_name`, not "Host Name".
+        return f.label.toLowerCase().indexOf(filter) !== -1
+          || f.field.toLowerCase().indexOf(filter) !== -1;
       });
+
+      // Headings, so 77 fields read as sections rather than one long run.
+      // Only emitted when the list is actually grouped -- the built-in
+      // fallback list has no group information.
+      var groups = CollectionFields.groups(this._collectionGroupLabel());
+      var grouped = candidates.some(function (f) { return f.group; });
+
+      if (grouped) {
+        groups.forEach(function (g) {
+          var inGroup = candidates.filter(function (f) {
+            return (f.group || 'collection') === g.key;
+          });
+          if (!inGroup.length) return;
+          domConstruct.create('div', {
+            'class': 'fieldGroupHeading',
+            innerHTML: self._escapeHtml(g.label)
+          }, self.availableFieldsList);
+          inGroup.forEach(function (f) {
+            self._createFieldItem(f, self.availableFieldsList, 'available');
+          });
+        });
+      } else {
+        candidates.forEach(function (f) {
+          self._createFieldItem(f, self.availableFieldsList, 'available');
+        });
+      }
+
+      if (this.fieldListEmpty) {
+        domClass.toggle(this.fieldListEmpty, 'dijitHidden', candidates.length > 0);
+      }
 
       // Populate selected fields
       this.descriptionFields.forEach(function (f) {
@@ -912,6 +950,22 @@ define([
       });
 
       this._updateButtonStates();
+    },
+
+    /** Heading for the collection's own fields, e.g. "Feature fields". */
+    _collectionGroupLabel: function () {
+      var dataType = this.context ? this.context.dataType : 'genome_feature';
+      return {
+        genome_feature: 'Feature fields',
+        genome_sequence: 'Sequence fields',
+        genome: 'Genome fields',
+        sp_gene: 'Specialty gene fields'
+      }[dataType] || 'Fields';
+    },
+
+    _onFieldFilter: function () {
+      this.fieldFilter = this.fieldFilterInput ? this.fieldFilterInput.value : '';
+      this._populateFieldLists();
     },
 
     /**
@@ -1191,6 +1245,8 @@ define([
       this.headerTemplate = '';
       this._pendingSelection = null;
       this._appliedPresetTemplate = null;
+      this.fieldFilter = '';
+      if (this.fieldFilterInput) this.fieldFilterInput.value = '';
       if (this.savedFormatSelect) this.savedFormatSelect.value = this.NO_FORMAT;
       this._initializeFields();
     },

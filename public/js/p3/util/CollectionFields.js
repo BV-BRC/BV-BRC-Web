@@ -61,6 +61,89 @@ define([
     segments: 'Segments (coordinates)'
   };
 
+  /**
+   * Field groups, in display order.
+   *
+   * A genome_feature download offers 77 fields. Sorted flat they are
+   * unnavigable in a short scrolling box -- `subtype` landed at position 75
+   * of 77, roughly sixteen screens down, which read as "the viral typing
+   * fields are missing". Grouping puts the typing fields in a section of
+   * their own rather than at the bottom of an alphabetical run.
+   *
+   * `match` is checked in order, so the first group that claims a field
+   * wins; anything unclaimed falls through to the collection's own group.
+   */
+  var VIRAL_TYPING = {
+    subtype: true,
+    lineage: true,
+    clade: true,
+    h5_clade: true,
+    h3_clade: true,
+    h1_clade_global: true,
+    h1_clade_us: true,
+    subclade: true,
+    ph1n1_like: true,
+    segment: true,
+    segments: true,
+    species: true,
+    strain: true,
+    genbank_accessions: true
+  };
+
+  var HOST = {
+    host_name: true,
+    host_common_name: true,
+    host_scientific_name: true,
+    host_group: true,
+    host_gender: true,
+    host_age: true,
+    host_health: true,
+    lab_host: true,
+    passage: true,
+    other_clinical: true,
+    disease: true
+  };
+
+  var GEOGRAPHY = {
+    isolation_country: true,
+    isolation_source: true,
+    isolation_comments: true,
+    geographic_group: true,
+    geographic_location: true,
+    state_province: true,
+    county: true,
+    city: true,
+    other_environmental: true,
+    collection_date: true,
+    collection_year: true,
+    season: true
+  };
+
+  var GROUPS = [
+    {
+      key: 'typing',
+      label: 'Virus typing',
+      match: function (f) { return VIRAL_TYPING[f.field]; }
+    },
+    {
+      key: 'host',
+      label: 'Host and sample',
+      match: function (f) { return HOST[f.field]; }
+    },
+    {
+      key: 'geo',
+      label: 'Collection and geography',
+      match: function (f) { return GEOGRAPHY[f.field]; }
+    },
+    {
+      // Everything else that came from the genome join: phenotype, growth
+      // conditions, assembly status.
+      key: 'genome',
+      label: 'Genome metadata',
+      match: function (f) { return f.source === 'enriched'; }
+    }
+  ];
+
   var _cache = {};
   var _pending = {};
 
@@ -71,6 +154,27 @@ define([
 
   function labelFor(field) {
     return LABEL_OVERRIDES[field.name] || field.label || field.name;
+  }
+
+  /**
+   * The group a field belongs to. Native fields that no group claims are
+   * the collection's own, which is the default and sorts first.
+   */
+  var DEFAULT_GROUP = 'collection';
+
+  function groupFor(entry) {
+    for (var i = 0; i < GROUPS.length; i++) {
+      if (GROUPS[i].match(entry)) return GROUPS[i].key;
+    }
+    return DEFAULT_GROUP;
+  }
+
+  function groupIndex(key) {
+    if (key === DEFAULT_GROUP) return -1;
+    for (var i = 0; i < GROUPS.length; i++) {
+      if (GROUPS[i].key === key) return i;
+    }
+    return GROUPS.length;
   }
 
   return {
@@ -146,18 +250,32 @@ define([
           return f && f.name && !EXCLUDED[f.name];
         })
         .map(function (f) {
-          return {
+          var entry = {
             field: f.name,
             label: labelFor(f),
             source: f.source || 'native'
           };
+          entry.group = groupFor(entry);
+          return entry;
         })
         .sort(function (a, b) {
-          // Native fields first — they are the ones specific to this
-          // collection, and the enriched set is the same 42 everywhere.
-          if (a.source !== b.source) return a.source === 'native' ? -1 : 1;
+          // Group order first, then alphabetical inside a group. Sorting
+          // native-before-enriched instead put every joined field after all
+          // 46 native ones, which is what buried the virus typing fields.
+          if (a.group !== b.group) return groupIndex(a.group) - groupIndex(b.group);
           return a.label.localeCompare(b.label);
         });
+    },
+
+    /**
+     * Group definitions in display order, for a caller rendering headings.
+     * The collection's own fields lead, under a caller-supplied label since
+     * only the caller knows what collection it is showing.
+     */
+    groups: function (ownLabel) {
+      return [{ key: DEFAULT_GROUP, label: ownLabel || 'Fields' }].concat(
+        GROUPS.map(function (g) { return { key: g.key, label: g.label }; })
+      );
     },
 
     /** Drop cached responses. For tests, and after a config change. */

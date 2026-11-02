@@ -89,7 +89,9 @@ describe('parse', () => {
     const M = loadModule({ request: { get: () => ({}) } });
     const out = M.parse(payload([NATIVE('product', 'Product')]));
 
-    expect(out).toEqual([{ field: 'product', label: 'Product', source: 'native' }]);
+    expect(out).toEqual([
+      { field: 'product', label: 'Product', source: 'native', group: 'collection' }
+    ]);
   });
 
   test('drops internal fields that should never reach a FASTA header', () => {
@@ -139,20 +141,79 @@ describe('parse', () => {
     });
   });
 
-  test('native fields sort before enriched', () => {
-    const M = loadModule({ request: { get: () => ({}) } });
-    const out = M.parse(payload([
-      ENRICHED('host_name', 'Host Name'),
-      NATIVE('product', 'Product'),
-      ENRICHED('collection_date', 'Collection Date'),
-      NATIVE('accession', 'Accession')
-    ]));
+  describe('grouping', () => {
+    /**
+     * A genome_feature download offers 77 fields. Sorting flat put every
+     * joined field after all 46 native ones, which buried `subtype` at
+     * position 75 of 77 in a box showing five at a time -- reported as
+     * "the viral typing fields are missing". Groups keep them findable.
+     */
+    test('the collection\'s own fields lead, then typed groups', () => {
+      const M = loadModule({ request: { get: () => ({}) } });
+      const out = M.parse(payload([
+        ENRICHED('host_name', 'Host Name'),
+        NATIVE('product', 'Product'),
+        ENRICHED('collection_date', 'Collection Date'),
+        NATIVE('accession', 'Accession'),
+        ENRICHED('subtype', 'Subtype'),
+        ENRICHED('gram_stain', 'Gram Stain')
+      ]));
 
-    expect(out.map((f) => f.source))
-      .toEqual(['native', 'native', 'enriched', 'enriched']);
-    // Alphabetical within each group.
-    expect(out.map((f) => f.field))
-      .toEqual(['accession', 'product', 'collection_date', 'host_name']);
+      expect(out.map((f) => f.group)).toEqual([
+        'collection', 'collection', // accession, product
+        'typing',                   // subtype
+        'host',                     // host_name
+        'geo',                      // collection_date
+        'genome'                    // gram_stain
+      ]);
+    });
+
+    test('alphabetical within a group', () => {
+      const M = loadModule({ request: { get: () => ({}) } });
+      const out = M.parse(payload([
+        NATIVE('product', 'Product'),
+        NATIVE('accession', 'Accession'),
+        NATIVE('annotation', 'Annotation')
+      ]));
+
+      expect(out.map((f) => f.field)).toEqual(['accession', 'annotation', 'product']);
+    });
+
+    test('virus typing fields are not left at the bottom', () => {
+      const M = loadModule({ request: { get: () => ({}) } });
+      // 20 native fields ahead of a typing field: flat sorting would put
+      // subtype last; grouping puts it right after them.
+      const many = [];
+      for (let i = 0; i < 20; i++) many.push(NATIVE('zz_native_' + i, 'ZZ Native ' + i));
+      many.push(ENRICHED('subtype', 'Subtype'));
+      many.push(ENRICHED('host_name', 'Host Name'));
+
+      const out = M.parse(payload(many));
+      const names = out.map((f) => f.field);
+
+      expect(names.indexOf('subtype')).toBe(20);
+      expect(names.indexOf('subtype')).toBeLessThan(names.indexOf('host_name'));
+    });
+
+    test.each([
+      ['subtype', 'typing'], ['lineage', 'typing'], ['clade', 'typing'],
+      ['segment', 'typing'], ['h5_clade', 'typing'], ['strain', 'typing'],
+      ['host_name', 'host'], ['lab_host', 'host'], ['disease', 'host'],
+      ['isolation_country', 'geo'], ['collection_date', 'geo'], ['city', 'geo'],
+      ['gram_stain', 'genome'], ['oxygen_requirement', 'genome']
+    ])('%s is grouped as %s', (name, group) => {
+      const M = loadModule({ request: { get: () => ({}) } });
+      expect(M.parse(payload([ENRICHED(name, name)]))[0].group).toBe(group);
+    });
+
+    test('groups() leads with a caller-supplied label for the collection', () => {
+      const M = loadModule({ request: { get: () => ({}) } });
+      const g = M.groups('Feature fields');
+
+      expect(g[0]).toEqual({ key: 'collection', label: 'Feature fields' });
+      expect(g.map((x) => x.key))
+        .toEqual(['collection', 'typing', 'host', 'geo', 'genome']);
+    });
   });
 
   test('an empty or malformed payload parses to nothing', () => {

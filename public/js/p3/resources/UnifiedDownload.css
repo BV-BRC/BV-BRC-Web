@@ -631,12 +631,50 @@
 
 .fastaConfiguratorStep .fieldColumn .fieldList {
   flex: 1;
-  min-height: 180px;
-  max-height: 200px;
+  /* A genome_feature download offers 77 fields; at the old 200px that was
+     five at a time, which is why the virus typing fields read as missing
+     rather than merely distant. Kept modest on purpose -- the step already
+     scrolls on a laptop, and growing the list further just pushes it
+     further below the fold. The filter box is what makes 77 navigable;
+     this only widens the window onto the result. */
+  min-height: 240px;
+  max-height: 300px;
   overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 4px;
   background: #fff;
+}
+
+.fastaConfiguratorStep .fieldFilter {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 6px;
+  padding: 5px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* Section heading inside the scrolling list. Sticky so the group stays
+   identifiable while scrolling a long list. */
+.fastaConfiguratorStep .fieldGroupHeading {
+  position: sticky;
+  top: 0;
+  padding: 4px 10px;
+  background: #eef3f7;
+  border-bottom: 1px solid #dde7ee;
+  font-size: 11px;
+  font-weight: bold;
+  color: #5a6b78;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fastaConfiguratorStep .fieldListEmpty {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-style: italic;
+  color: #78848c;
 }
 
 .fastaConfiguratorStep .fieldItem {
@@ -1687,7 +1725,12 @@
 .downloadWizardContent {
   padding: 20px;
   min-height: 200px;
-  max-height: 400px;
+  /* A fixed 400px left the FASTA field picker below the fold on a laptop:
+     the content area held 1096px of step and showed 440 of it, so the
+     Available Fields list was only ~112px visible however tall it was.
+     Scale with the viewport instead, keeping room for the dialog's own
+     header, step indicator and footer. */
+  max-height: calc(100vh - 260px);
   overflow-y: auto;
   flex: 1;
 }

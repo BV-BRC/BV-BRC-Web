@@ -240,6 +240,85 @@ define([
   }
 
   /**
+   * Ask the API to validate a FASTA format string before downloading.
+   *
+   * The default behaviour for an unknown field is to render it as an empty
+   * string and return 200, so a typo like {hostname} yields a silently
+   * truncated header with no error. `http_fasta_strict=true` turns that
+   * into a 400 naming the offending fields.
+   *
+   * Run as `limit(0)`: the server validates before fetching anything, so a
+   * bad template costs ~250ms and a good one returns zero bytes in ~160ms.
+   * That is cheap enough to precede a download and far better than letting
+   * the user discover the problem in a multi-megabyte file.
+   *
+   * This is authoritative where the client's own check is not: the picker
+   * knows one collection's field list, the server knows what it will
+   * actually resolve.
+   *
+   * @returns {Deferred} resolves (valid, or validation unavailable), rejects
+   *   with an Error carrying the server's message
+   */
+  function validateFastaHeader(spec) {
+    var def = new Deferred();
+    var cfg = spec.fastaConfig;
+
+    // Only a format string can carry an unknown field reference; the zone
+    // parameters are built from a picker.
+    if (!cfg || !cfg.headerTemplate) {
+      def.resolve();
+      return def;
+    }
+
+    var format = DownloadFormats.getFormat(spec.format);
+    var acceptType = (format && format.mimeType) || 'text/plain';
+    var url = DATA_API_URL + '/' + spec.dataType + '/'
+      + '?http_download=true&http_accept=' + acceptType
+      + '&http_fasta_strict=true'
+      + buildFastaParams(spec);
+
+    var headers = {
+      'Accept': acceptType,
+      'Content-Type': 'application/rqlquery+x-www-form-urlencoded'
+    };
+    if (window.App && window.App.authorizationToken) {
+      headers['Authorization'] = window.App.authorizationToken;
+    }
+
+    xhr.post(url, {
+      data: buildQuery(spec).replace(/limit\(\d+\)/, 'limit(0)'),
+      headers: headers,
+      handleAs: 'text',
+      timeout: 30000
+    }).then(
+      function () { def.resolve(); },
+      function (err) {
+        var message = null;
+        // The contract is a 400 with a JSON body naming the fields.
+        if (err && err.response && err.response.status === 400) {
+          try {
+            var body = err.response.data;
+            var parsed = typeof body === 'string' ? JSON.parse(body) : body;
+            message = parsed && parsed.message;
+          } catch (e) {
+            message = null;
+          }
+        }
+        if (message) {
+          def.reject(new Error(message));
+        } else {
+          // Anything else -- a timeout, a deployment without strict mode,
+          // a network blip -- must not block the download. The validation
+          // is an improvement on the status quo, not a gate.
+          def.resolve();
+        }
+      }
+    );
+
+    return def;
+  }
+
+  /**
    * Execute server-side download via form POST
    * @param {Object} spec - Download specification
    * @returns {Deferred} Promise that resolves when download starts
@@ -807,6 +886,24 @@ define([
         var deferred = new Deferred();
         deferred.reject(new Error('Unknown format: ' + spec.format));
         return deferred;
+      }
+
+      // A custom format string is checked against the API first. Without
+      // this an unknown field is silently blank in every record, and the
+      // user finds out by reading the downloaded file.
+      if (spec.fastaConfig && spec.fastaConfig.headerTemplate
+          && !options.skipValidation) {
+        var self = this;
+        var gated = new Deferred();
+        validateFastaHeader(spec).then(
+          function () {
+            when(self.execute(spec, lang.mixin({}, options, { skipValidation: true })),
+              function (r) { gated.resolve(r); },
+              function (e) { gated.reject(e); });
+          },
+          function (err) { gated.reject(err); }
+        );
+        return gated;
       }
 
       // Determine download strategy
