@@ -110,13 +110,36 @@ most useful thing we can do to make the format string approachable.
 
 ### Delimiters
 
-Three inputs, in the respective sections: ID, description, context. Short text fields, not
-dropdowns — the useful values (`|`, ` | `, `_`, `;`, tab) do not enumerate well, and the API
-takes an arbitrary string.
+~~Three inputs: ID, description, context.~~ **Revised during item 2** — only two of the three
+are meaningful in this UI, and one of them is not a delimiter at all:
 
-Leading/trailing spaces are significant and users cannot see them. Render the current value
-with visible markers in the preview legend (e.g. `"·|·"`) or show the delimiter inside the
-live preview — the preview already updates on change, which handles most of it.
+- **Description delimiter.** Real, and the one the bug was about. Needs a control.
+- **"ID delimiter" is a trailing character here.** The ID selector is a single-select
+  (`<select>`, template line 14), so there is never a second ID field to delimit. The server
+  appends it unconditionally after the ID section ("matches legacy format"), so all it
+  controls is whether the header reads `>fig|...peg.9|` or `>fig|...peg.9`. Measured:
+
+  ```
+  id_delimiter='|'   -> >fig|1545742.911.peg.9| MGYG-HGUT-00869
+  id_delimiter=''    -> >fig|1545742.911.peg.9 MGYG-HGUT-00869
+  id_delimiter='_'   -> >fig|1545742.911.peg.9_ MGYG-HGUT-00869
+  ```
+
+  Worth exposing — the trailing pipe is legacy noise some users will want gone — but
+  **labelling it "ID delimiter" would be a lie**. Label it for what it does.
+
+- **No context delimiter.** `DownloadExecutor` hardcodes `http_fasta_context_fields=` empty
+  and the configurator has no context concept, so there are no context fields to separate.
+  The server supports them (`...&http_fasta_context_fields=genome_name,genome_id` →
+  `[... | 1545742.911]`), so this is unexposed capability, not a dead end — but a delimiter
+  control for fields that cannot be chosen would adjust nothing. Revisit if context fields
+  are ever surfaced.
+
+**Dropdown with a Custom escape, not a bare text field.** The plan originally called for text
+inputs on the grounds that useful values do not enumerate. They mostly do — and a text field
+makes `' | '` and `'|'` indistinguishable on screen, which is exactly the invisible-whitespace
+problem flagged below. Named options (`Pipe ( | )`, `Space`, `Comma`) make the whitespace
+legible; `Custom…` reveals a text input for anything else.
 
 ### Preview
 
@@ -133,6 +156,46 @@ by the same rules in both modes:
 (its only consumer, `widget/download/DefinitionLineBuilder.js`, is never instantiated). Reuse
 those examples for the preview, then delete the rest of the module — or fold the examples into
 whatever replaces it. Do not leave two field registries behind.
+
+### Field naming differs between the two modes
+
+**Measured while building item 3, and it constrains seed-from-zones directly.**
+
+Zone mode accepts *either* naming for an enriched field; template mode accepts only the
+bare name:
+
+```
+zone      http_fasta_description_fields=genome_metadata.strain  -> MGYG-HGUT-00869
+zone      http_fasta_description_fields=strain                  -> MGYG-HGUT-00869
+template  {genome_metadata.strain}                              -> (empty)
+template  {strain}                                              -> MGYG-HGUT-00869
+```
+
+The picker's hardcoded list uses the **prefixed** form for five fields
+(`FASTAConfiguratorStep.js:247-251`), so seeding a template straight from the current zone
+selection would produce `{genome_metadata.strain}` — silently empty, the exact failure this
+feature exists to prevent.
+
+**Fix: normalise to the bare name.** Both forms work in zone mode, so stripping
+`genome_metadata.` is safe for the existing path and required for the template path.
+`/fields` lists only bare names, which is also what item 5 will adopt.
+
+### Three offered fields are not joinable at all
+
+`assembly_accession`, `bioproject_accession` and `biosample_accession` are in the picker but
+**absent from `/fields`** on both `genome_feature` and `genome_sequence`, and resolve under
+neither naming in either mode — though the genome record has values:
+
+```
+genome 1545742.911 -> assembly_accession=GCA_902466705.1, bioproject_accession=PRJEB33885
+select(feature_id,assembly_accession)  -> (field absent from the response)
+```
+
+So the picker advertises three fields that always produce nothing. Same bug class as the
+original report, still live in the hardcoded list. Either the API adds them to
+`GENOME_METADATA_FIELDS` or item 5 drops them when it switches to `/fields` — item 5 fixes
+it for free, which is an argument for doing it sooner. `genbank_accessions` *is* enriched and
+may be the intended substitute.
 
 ### Validation
 
@@ -194,9 +257,92 @@ format vanished.
 
 ### Logged out
 
-**Decision: hide the save/load section entirely.** Delimiters and templates still work for
-everyone — only persistence requires an account. `FavoriteFolders._getFilePath()` returns null
-with no `window.App.user.id`, so the guard is the same one-liner. No dead buttons.
+**Decision: hide the *save* controls, not the whole section.** Saving requires an account;
+*loading a preset does not* — see below. So a logged-out user still sees the preset list and
+can apply one, but has no Save/Delete. `FavoriteFolders._getFilePath()` returns null with no
+`window.App.user.id`, so the guard is the same one-liner.
+
+*(Revised from "hide the section entirely" once presets became workspace-hosted and readable
+anonymously.)*
+
+### Built-in presets live in the workspace, not in the code
+
+**Decision: a config option points at a workspace folder holding the standard presets.**
+
+```js
+// config.js
+fastaFormatPresetsPath: '/ARWattam@patricbrc.org/public/FASTA Formats',
+```
+
+surfaced on `window.App` in `app.js` beside the other client options. Precedent:
+`workspaceSelectorExcludeFolders` is already a workspace path configured this way.
+
+Why this beats shipping presets in the JS:
+
+- **Curators can add a format without a release.** The GISAID/NCBI set will grow — H5 clade,
+  flu B lineage, per-organism variants — and each one is data, not code.
+- **Deployments can differ.** Alpha can trial a preset set that production does not have.
+- **Same storage shape as a user's own saved formats**, so one loader handles both.
+
+**Anonymous read works — verified on alpha, no token:**
+
+```
+POST https://alpha.bv-brc.org/services/Workspace
+  {"method":"Workspace.ls", "params":[{"paths":["/ARWattam@patricbrc.org/BV-BRC Workshop"]}]}
+  -> 200, full folder listing
+```
+
+So presets are available to logged-out users, which is why only the *save* half of the UI is
+gated on login.
+
+**A missing path fails silently, not loudly** — `ls` on a nonexistent path returns
+`{"result":[{}]}`, not an error:
+
+```
+ls /nobody@patricbrc.org/NoSuchFolder   ->   {"result":[{}]}
+```
+
+Good for resilience (a typo'd config degrades to "no presets" rather than a broken dialog)
+but it means **a misconfigured path is invisible**. Log a console warning when the configured
+path yields nothing, or the first report will be "the presets disappeared" with no clue why.
+
+#### Layout
+
+One file per preset, so a curator can add one by dropping a file in:
+
+```
+<presetsPath>/
+  ncbi-classic.json
+  ncbi-source-modifiers.json
+  gisaid-influenza-a.json
+  gisaid-influenza-b.json
+```
+
+Each file is the same shape as an entry in the user's `fasta-formats.json`, plus a
+`description` for the tooltip:
+
+```json
+{
+  "name": "GISAID / augur, influenza A",
+  "description": "strain|type|subtype|date|season|country|host|accession",
+  "dataType": "genome_feature",
+  "mode": "template",
+  "template": "{strain}|A|{subtype}|{collection_date}||{isolation_country}|{host_common_name}|{accession}"
+}
+```
+
+The seven verified strings in [`REPORT-fasta-header-presets.md`](REPORT-fasta-header-presets.md)
+are the initial contents.
+
+#### Behaviour
+
+- Presets are **read-only** in the picker, listed above the user's own formats and visually
+  distinguished. "Duplicate and edit" copies one into the user's file.
+- **Filtered by `dataType`**, as saved formats are.
+- **Cache per session.** This is a second workspace round-trip on a dialog that must feel
+  instant; fetch once, reuse.
+- **Unset config means no presets, silently.** Not an error state — a deployment that has
+  not created the folder should see the feature degrade to user-saved formats only.
 
 ---
 
@@ -214,7 +360,9 @@ Small, no API dependency, resolves the complaint. **Land this first.**
 
 ### 2. Delimiter controls in the UI
 
-Three text inputs + preview wiring. Still no API dependency.
+Two controls (see *Delimiters* above — the third would adjust nothing): a description
+delimiter dropdown with a Custom escape, and a checkbox for the trailing ID character.
+Preview wiring comes free, since item 1 made the preview derive from these values.
 
 ### 3. Format-string mode
 
@@ -224,8 +372,23 @@ client-side validation against `/fields`, seed-from-zones on first switch.
 
 ### 4. `util/FastaFormatStore.js` + save/load UI
 
-Independent of item 3 — it can store zone configs before templates exist. Build it after 2,
-ship with whichever of 2/3 is ready.
+Two sources behind one picker:
+
+- **Presets** — read-only, from the workspace folder named by `fastaFormatPresetsPath`
+  (new config option). Readable without a token, so available logged out.
+- **User formats** — read/write, from `/<user>/home/.preferences/fasta-formats.json`.
+
+Both use the same record shape, so one loader and one apply-path serve both. Save/Delete are
+hidden when logged out; the preset list is not.
+
+Sub-steps, each shippable:
+
+1. `FastaFormatStore` — list/save/remove/load against the preferences file
+   (`FavoriteFolders` pattern: ensure-dir, mod-time merge, per-user cache)
+2. `fastaFormatPresetsPath` config + preset loading, cached per session, warn on a
+   configured-but-empty path
+3. Picker UI: presets section, user section, Save / Duplicate and edit / Delete
+4. Seed the preset folder with the seven verified formats from the report
 
 ### 5. Replace the hardcoded field list with `/fields`
 
@@ -257,7 +420,15 @@ consuming `/fields` directly is safe for every FASTA data type.
 - [ ] `{patric_id}` in a `|`-delimited template triggers the pipe warning
 - [ ] Save, reload the page, load the format back
 - [ ] Two tabs saving different formats — neither is lost (mod-time merge)
-- [ ] Logged out: delimiters/templates work, save UI absent, no console error
+- [ ] Logged out: delimiters/templates work, **presets still listed and applicable**, save UI
+      absent, no console error
+- [ ] `fastaFormatPresetsPath` unset — no presets section, no error
+- [ ] `fastaFormatPresetsPath` pointing at a nonexistent folder — degrades to no presets
+      **and logs a warning** (the service returns `{"result":[{}]}`, not an error, so this is
+      otherwise invisible)
+- [ ] A preset applies to the picker in zone mode and to the box in template mode
+- [ ] "Duplicate and edit" copies a preset into the user's own formats, leaving the original
+      untouched
 - [ ] Format saved for `genome_feature` is marked unavailable on a `genome_sequence` download
 - [ ] First-ever save creates `.preferences/` when it does not exist
 - [ ] Both FASTA data types (protein and DNA) and both grid sources
@@ -316,17 +487,22 @@ edit" — the cheapest way to make the template syntax discoverable.
 
 ## Open questions
 
-1. **Should a saved format be shareable?** The preferences file is private by design. If
-   sharing is wanted, add an explicit "Export…" writing a single-format file (the
-   `SavedSearchManager.exportToWorkspace` pattern) rather than moving the primary store.
-2. **Should the NCBI modifier presets enforce their own rules, or just warn?** NCBI requires a
+1. **Which workspace path should hold the presets, and who curates it?** Needs a real folder
+   before item 4 ships. A public path under a team account, matching the Workshop precedent
+   (`/ARWattam@patricbrc.org/...`), seems right — but the owner is a decision, not a default.
+   Alpha and production can point at different folders.
+2. **Should a user's saved format be shareable?** The preferences file is private by design.
+   If sharing is wanted, add an explicit "Export…" writing a single-format file (the
+   `SavedSearchManager.exportToWorkspace` pattern) rather than moving the primary store. Note
+   that the preset mechanism already gives a *curated* sharing path, which may be enough.
+3. **Should the NCBI modifier presets enforce their own rules, or just warn?** NCBI requires a
    SeqID ≤25 chars from a restricted charset, and does not define an empty modifier value —
    we produce `[collection_date=]`. Current plan is to label them "NCBI-shaped"; enforcing
    would mean rejecting templates rather than describing them.
-3. **Report the unknown-field divergence upstream?** It undercuts a decision the API authors
+4. **Report the unknown-field divergence upstream?** It undercuts a decision the API authors
    made deliberately, and our validation only protects users coming through the wizard —
    a direct API caller still gets a silent empty substitution.
-4. **`species` returns the ICTV name** (`Alphainfluenzavirus influenzae`), not
+5. **`species` returns the ICTV name** (`Alphainfluenzavirus influenzae`), not
    `Influenza A virus`. Correct, but surprising inside `[organism=…]`; `{genome_name}` is
    closer to submitter expectation. Decide before preset #3 ships.
 

@@ -5,7 +5,8 @@
     "<rootDir>/public/js/p3/store",
     "<rootDir>/public/js/p3/util",
     "<rootDir>/public/js/p3/widget/copilot",
-    "<rootDir>/public/js/p3/widget/app"
+    "<rootDir>/public/js/p3/widget/app",
+    "<rootDir>/public/js/p3/widget/download"
   ],
   "testMatch": [
     "**/tests/**/*.test.js"
