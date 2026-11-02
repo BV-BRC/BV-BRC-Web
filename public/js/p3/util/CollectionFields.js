@@ -204,10 +204,32 @@ define([
       var def = new Deferred();
       _pending[collection] = def.promise;
 
-      var settle = function (value) {
+      /** A real answer: worth caching. */
+      var succeed = function (value) {
         _cache[collection] = value;
         _pending[collection] = null;
         def.resolve(value);
+      };
+
+      /**
+       * No answer: hand back the caller's list but DO NOT cache it.
+       *
+       * Caching a fallback poisons the collection for the rest of the
+       * session -- one transient failure and every later call returns the
+       * short built-in list without retrying, which presents as "the fields
+       * are missing" with nothing in the console. Leaving the cache empty
+       * means the next dialog tries again.
+       *
+       * Warn, too. The silence here is what made this hard to see: a 404 on
+       * production is expected, but a failure anywhere else should leave a
+       * trace rather than quietly degrading the picker.
+       */
+      var fallBack = function (reason) {
+        console.warn('CollectionFields: could not load ' + collection
+          + '/fields (' + reason + '); using the built-in field list. '
+          + 'The picker will show fewer fields than the collection offers.');
+        _pending[collection] = null;
+        def.resolve(fb);
       };
 
       var req;
@@ -218,20 +240,24 @@ define([
         });
       } catch (e) {
         // A transport that throws rather than rejecting.
-        settle(fb);
+        fallBack('transport error: ' + (e && e.message));
         return def.promise;
       }
 
       when(req,
         function (data) {
           var parsed = self.parse(data);
-          // An empty parse means the shape was not what we expect; prefer a
-          // known-good fallback over an empty picker.
-          settle(parsed.length ? parsed : fb);
+          if (parsed.length) {
+            succeed(parsed);
+          } else {
+            // The shape was not what we expect; prefer a known-good
+            // fallback over an empty picker, and do not cache the guess.
+            fallBack('response had no usable fields');
+          }
         },
-        function () {
-          // 404 on production is the expected case here, not an incident.
-          settle(fb);
+        function (err) {
+          var status = err && err.response && err.response.status;
+          fallBack(status ? 'HTTP ' + status : 'request failed');
         }
       );
 
