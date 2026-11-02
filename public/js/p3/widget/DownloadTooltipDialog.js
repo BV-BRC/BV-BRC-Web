@@ -2,14 +2,14 @@ define([
   'dojo/_base/declare', 'dojo/on', 'dojo/dom-construct',
   'dojo/_base/lang', 'dojo/mouse', 'rql/js-array',
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane',
-  'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog',
-  './AdvancedDownload', 'dojo/dom-class', 'FileSaver', 'dojo/when'
+  'dijit/popup', 'dijit/TooltipDialog',
+  'dojo/dom-class', 'FileSaver', 'dojo/when'
 ], function (
   declare, on, domConstruct,
   lang, Mouse, rql,
   Topic, query, ContentPane,
-  Dialog, popup, TooltipDialog,
-  AdvancedDownload, domClass, saveAs, when
+  popup, TooltipDialog,
+  domClass, saveAs, when
 ) {
 
   return declare([TooltipDialog], {
@@ -213,15 +213,6 @@ define([
       on(this.domNode, '.wsActionTooltip:click', function (evt) {
         // console.log("evt.target: ", evt.target, evt.target.attributes);
         var rel = evt.target.attributes.rel.value;
-        if (rel == 'advancedDownload') {
-
-          // console.log("Selection: ", _self.selection);
-          var d = new Dialog({ title: 'Download' });
-          var ad = new AdvancedDownload({ selection: _self.selection, containerType: _self.containerType });
-          domConstruct.place(ad.domNode, d.containerNode);
-          d.show();
-          return;
-        }
         // var conf = _self.downloadableConfig[_self.containerType];
 
         // var sel = _self.selection.map(function(sel){
@@ -257,15 +248,6 @@ define([
             }, this.otherDownloadNode);
           }, this);
         }
-      } else {
-        tr = domConstruct.create('tr', {}, table);
-        var td = domConstruct.create('td', {colspan: 3, style: 'text-align:right'}, tr);
-        this.advancedDownloadButton = domConstruct.create('span', {
-          'class': 'wsActionTooltip',
-          style: 'padding:4px;',
-          rel: 'advancedDownload',
-          innerHTML: 'More Options'
-        }, td);
       }
 
       this.set('content', dstContent);
@@ -297,8 +279,7 @@ define([
         otherData: ['dna+fasta'],
         secondaryDataType: 'genome_sequence',
         secondartyPK: 'genome_id',
-        secondarySortField: 'sequence_id',
-        advanced: false
+        secondarySortField: 'sequence_id'
       },
       sequence_data: {
         label: 'Sequences',
@@ -478,12 +459,6 @@ define([
             innerHTML: this.downloadableDataTypes[type]
           }, this.otherDownloadNode);
         }, this);
-      }
-
-      if (conf.advanced) {
-        domClass.remove(this.advancedDownloadButton, 'dijitHidden');
-      } else {
-        domClass.add(this.advancedDownloadButton, 'dijitHidden');
       }
 
     }

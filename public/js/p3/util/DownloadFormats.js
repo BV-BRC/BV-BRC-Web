@@ -3,7 +3,7 @@ define([], function () {
    * DownloadFormats - Centralized registry for download format definitions
    *
    * This module consolidates all download format definitions previously scattered
-   * across DownloadTooltipDialog.js, AdvancedDownload.js, and various viewers.
+   * across DownloadTooltipDialog.js and various viewers.
    */
 
   /**
@@ -557,26 +557,6 @@ define([], function () {
     hasSequenceFormats: function (dataType) {
       var config = dataTypeFormats[dataType];
       return config && config.categories && config.categories.sequence;
-    },
-
-    /**
-     * Check if a data type supports bundle downloads
-     * @param {string} dataType - Data type
-     * @returns {boolean}
-     */
-    hasBundleSupport: function (dataType) {
-      var config = dataTypeFormats[dataType];
-      return config && config.bundleSupport;
-    },
-
-    /**
-     * Get bundle types for a data type (for AdvancedDownload-style bundle selection)
-     * @param {string} dataType - Data type
-     * @returns {Array} Array of bundle type definitions
-     */
-    getBundleTypes: function (dataType) {
-      var config = dataTypeFormats[dataType];
-      return (config && config.bundleTypes) || [];
     },
 
     /**
