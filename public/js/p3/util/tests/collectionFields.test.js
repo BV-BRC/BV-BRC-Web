@@ -248,7 +248,7 @@ describe('load', () => {
      */
     test('on a rejected request (the production 404)', () => {
       const M = loadModule({
-        request: { get: () => ({ __reject: { status: 404 } }) }
+        request: { get: () => ({ __reject: { response: { status: 404 } } }) }
       });
 
       let got;
@@ -368,5 +368,94 @@ describe('the fields this replaces', () => {
 
     // Not genome_metadata.strain, which renders empty in a format string.
     expect(out[0].field).toBe('strain');
+  });
+});
+
+describe('a failure must not poison the cache', () => {
+  /**
+   * Reported from alpha: the picker showed the 8-field built-in list with
+   * no group headings, while calling CF.load() by hand in the same page
+   * returned 139 fields -- but only after CF._reset().
+   *
+   * The cause was caching the FALLBACK on failure. One transient failure
+   * and every later call in that session returned the short list without
+   * retrying, with nothing in the console to say why. A failure now leaves
+   * the cache empty so the next dialog tries again.
+   */
+  test('a failed load is not cached, and the next call retries', () => {
+    let attempt = 0;
+    const M = loadModule({
+      request: {
+        get: function () {
+          attempt++;
+          if (attempt === 1) return { __reject: { response: { status: 500 } } };
+          return payload([NATIVE('product', 'Product'), ENRICHED('subtype', 'Subtype')]);
+        }
+      }
+    });
+
+    let first;
+    M.load('genome_feature', FALLBACK).then((f) => { first = f; });
+    expect(first).toBe(FALLBACK);
+
+    // The retry is the point: a second dialog in the same session must not
+    // inherit the first one's bad luck.
+    let second;
+    M.load('genome_feature', FALLBACK).then((f) => { second = f; });
+    expect(second).not.toBe(FALLBACK);
+    expect(second.map((f) => f.field)).toEqual(['product', 'subtype']);
+    expect(attempt).toBe(2);
+  });
+
+  test('a successful load is still cached', () => {
+    let attempt = 0;
+    const M = loadModule({
+      request: {
+        get: function () { attempt++; return payload([NATIVE('product', 'Product')]); }
+      }
+    });
+
+    M.load('genome_feature', FALLBACK);
+    M.load('genome_feature', FALLBACK);
+    expect(attempt).toBe(1);
+  });
+
+  test.each([
+    ['an HTTP error', { __reject: { response: { status: 500 } } }],
+    ['an unrecognised payload', { unexpected: true }],
+    ['a payload whose fields all filter out', null]
+  ])('%s leaves the cache clear', (_name, response) => {
+    let attempt = 0;
+    const M = loadModule({
+      request: {
+        get: function () {
+          attempt++;
+          return response === null
+            ? payload([NATIVE('user_read'), NATIVE('owner')])
+            : response;
+        }
+      }
+    });
+
+    M.load('genome_feature', FALLBACK);
+    M.load('genome_feature', FALLBACK);
+    expect(attempt).toBe(2);
+  });
+
+  test('a failure warns, naming the collection and the reason', () => {
+    // Spy before loading: the module closes over console at call time, so
+    // the spy has to be installed for the duration of the load.
+    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const M = loadModule({ request: { get: () => ({ __reject: { response: { status: 500 } } }) } });
+      M.load('genome_feature', FALLBACK);
+
+      expect(spy).toHaveBeenCalled();
+      const msg = spy.mock.calls[0][0];
+      expect(msg).toContain('genome_feature');
+      expect(msg).toContain('HTTP 500');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
