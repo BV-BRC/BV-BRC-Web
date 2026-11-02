@@ -2376,19 +2376,31 @@ var loadGexfDependencies = function(callback) {
                     var bridgeContigs = {};
                     var bridgeGenomes = {};
                     var scaffoldTargetGenomes = {};
-                    var svEntAttrId = GexfJS._edge_attr_value ? (GexfJS._edge_attr_value['sv_entities'] || GexfJS._edge_attr_value['scaffold_entities']) : undefined;
+                    var scafEntAttrNames = ['scaffold_entities', 'sv_entities'];
                     Object.keys(rawEdges).forEach(function(eid) {
                         if (!c.edgeIds[eid]) return;
                         var e = GexfJS.graph.edgeLookup[eid];
                         if (!e) return;
                         if (e.genomes) Object.keys(e.genomes).forEach(function(g) { bridgeGenomes[g] = true; });
                         if (e.sequences) Object.keys(e.sequences).forEach(function(s) { bridgeContigs[s] = true; });
-                        if (typeof svEntAttrId !== 'undefined' && e.attributes && e.attributes[svEntAttrId]) {
-                            String(e.attributes[svEntAttrId]).split(',').forEach(function(tok) {
-                                var g = tok.trim();
-                                if (g && g !== 'None') scaffoldTargetGenomes[g] = true;
-                            });
-                        }
+                        scafEntAttrNames.forEach(function(attrName) {
+                            var entAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value[attrName] : undefined;
+                            if (typeof entAttrId === 'undefined') return;
+                            if (e.attributes && e.attributes[entAttrId]) {
+                                String(e.attributes[entAttrId]).split(',').forEach(function(tok) {
+                                    var g = tok.trim();
+                                    if (g && g !== 'None') scaffoldTargetGenomes[g] = true;
+                                });
+                            }
+                            if (GexfJS.path_highlights && GexfJS.path_highlights[entAttrId]) {
+                                Object.keys(GexfJS.path_highlights[entAttrId]).forEach(function(tok) {
+                                    if (GexfJS.path_highlights[entAttrId][tok] && GexfJS.path_highlights[entAttrId][tok][eid]) {
+                                        var g = tok.trim();
+                                        if (g && g !== 'None') scaffoldTargetGenomes[g] = true;
+                                    }
+                                });
+                            }
+                        });
                     });
                     var locusContigsByGenome = {};
                     focalIds.concat(anchorIds).forEach(function(nid) {
@@ -2402,6 +2414,17 @@ var loadGexfDependencies = function(callback) {
                             }
                         });
                     });
+                    // 1. Any genome explicitly tagged in scaffold_entities or spanning multiple contigs across the locus (focal + flanking anchors) is Fragmented
+                    Object.keys(locusContigsByGenome).forEach(function(g) {
+                        var gLocusContigCount = Object.keys(locusContigsByGenome[g]).length;
+                        if (scaffoldTargetGenomes[g] || gLocusContigCount > 1) {
+                            eventGenomesSet[g] = true;
+                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) {
+                                eventContigsSet[cs] = true;
+                            });
+                        }
+                    });
+                    // 2. Also check focal nodes for single-contig terminal repeat breaks (assembly_repeat_break=true and not a bridging contig)
                     focalIds.forEach(function(nid) {
                         var n = nodeById[nid];
                         if (!n) return;
@@ -2409,8 +2432,7 @@ var loadGexfDependencies = function(callback) {
                         if (n.sequences) {
                             Object.keys(n.sequences).forEach(function(s) {
                                 var g = contigToGenome[s];
-                                var gLocusContigCount = (g && locusContigsByGenome[g]) ? Object.keys(locusContigsByGenome[g]).length : 0;
-                                if ((g && scaffoldTargetGenomes[g]) || gLocusContigCount > 1 || (!bridgeContigs[s] && isBreakNode)) {
+                                if ((g && scaffoldTargetGenomes[g]) || (!bridgeContigs[s] && isBreakNode)) {
                                     if (g) {
                                         eventGenomesSet[g] = true;
                                         if (locusContigsByGenome[g]) {
@@ -2428,6 +2450,15 @@ var loadGexfDependencies = function(callback) {
                             Object.keys(locusContigsByGenome[g]).forEach(function(cs) { eventContigsSet[cs] = true; });
                         }
                     });
+                    // 3. If no multi-contig or scaffold-target genome was found (e.g., an isolated single-genome break), fallback BEFORE populating refGenomesSet
+                    if (Object.keys(eventContigsSet).length === 0) {
+                        focalIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { eventContigsSet[s] = true; });
+                            if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
+                        });
+                    }
+                    // 4. Populate Bridging Scaffold Reference strictly with locus/bridge genomes & contigs NOT in eventGenomesSet/eventContigsSet
                     Object.keys(locusContigsByGenome).forEach(function(g) {
                         if (!eventGenomesSet[g]) {
                             refGenomesSet[g] = true;
@@ -2446,13 +2477,6 @@ var loadGexfDependencies = function(callback) {
                     Object.keys(bridgeGenomes).forEach(function(g) {
                         if (!eventGenomesSet[g]) refGenomesSet[g] = true;
                     });
-                    if (Object.keys(eventContigsSet).length === 0) {
-                        focalIds.forEach(function(nid) {
-                            var n = nodeById[nid];
-                            if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { eventContigsSet[s] = true; });
-                            if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
-                        });
-                    }
                 } else if (type === 'inversions') {
                     // Recover relative orientation split across undirected inverted_block edges using polarity-normalized sequential feature positions
                     eventRoleTitle = 'Inverted / Minority Orientation (-)';
@@ -3396,6 +3420,292 @@ var loadGexfDependencies = function(callback) {
             }));
         },
 
+        getSpecialtyCategoryMeta: function() {
+            return [
+                {
+                    property: 'Antibiotic Resistance',
+                    label: 'Antibiotic Resistance',
+                    tag: 'AMR',
+                    color: '#d32f2f',
+                    bg: '#ffebee',
+                    border: '#ef9a9a',
+                    desc: 'Antimicrobial resistance determinants, efflux pumps & target modifications (CARD, NDARO, PATRIC)'
+                },
+                {
+                    property: 'Drug Target',
+                    label: 'Drug Target',
+                    tag: 'DT',
+                    color: '#3949ab',
+                    bg: '#e8eaf6',
+                    border: '#9fa8da',
+                    desc: 'Known and potential pharmacological drug targets (DrugBank, TTD)'
+                },
+                {
+                    property: 'Human Homolog',
+                    label: 'Human Homolog',
+                    tag: 'HUM',
+                    color: '#c2185b',
+                    bg: '#fce4ec',
+                    border: '#f48fb1',
+                    desc: 'Bacterial proteins with significant sequence homology to human host proteins'
+                },
+                {
+                    property: 'Metal Resistance',
+                    label: 'Metal Resistance',
+                    tag: 'MTL',
+                    color: '#6d4c41',
+                    bg: '#efebe9',
+                    border: '#bcaaa4',
+                    desc: 'Heavy metal and biocide resistance genes (BacMet)'
+                },
+                {
+                    property: 'Transporter',
+                    label: 'Transporter',
+                    tag: 'TRP',
+                    color: '#00897b',
+                    bg: '#e0f2f1',
+                    border: '#80cbc4',
+                    desc: 'Membrane transport systems and efflux/influx channels (TCDB)'
+                },
+                {
+                    property: 'Virulance factor',
+                    label: 'Virulance factor',
+                    tag: 'VF*',
+                    color: '#e65100',
+                    bg: '#fff3e0',
+                    border: '#ffcc80',
+                    desc: 'Curated virulence factors with legacy Victors property spelling in BV-BRC sp_gene'
+                },
+                {
+                    property: 'Virulence Factor',
+                    label: 'Virulence Factor',
+                    tag: 'VF',
+                    color: '#f57c00',
+                    bg: '#fff8e1',
+                    border: '#ffe082',
+                    desc: 'Pathogenicity determinants, toxins, adhesins & secretion effectors (VFDB, PATRIC_VF, Victors)'
+                }
+            ];
+        },
+
+        fetchSpecialtyGenes: function() {
+            var cats = this.getSpecialtyCategoryMeta();
+            var byCategory = {};
+            var catByProp = {};
+            cats.forEach(function(c) {
+                catByProp[c.property] = c;
+                byCategory[c.property] = {
+                    meta: c,
+                    nodes: {},
+                    nodeIndices: [],
+                    featureCount: 0,
+                    sources: {}
+                };
+            });
+
+            this.specialtyGeneData = {
+                byCategory: byCategory,
+                catByProp: catByProp,
+                byNodeId: {},
+                byPatricId: {},
+                loaded: false
+            };
+
+            if (!window.GexfJS || !GexfJS.graph || !Array.isArray(GexfJS.graph.nodeList)) {
+                this.specialtyGenesLoading = false;
+                return;
+            }
+
+            var featureAttrIndex = GexfJS._node_attr_value ? GexfJS._node_attr_value["features"] : null;
+            var patricToNodes = {};
+            var genomeSet = {};
+
+            if (this.graphSummary && this.graphSummary.contig_map) {
+                Object.keys(this.graphSummary.contig_map).forEach(function(gid) {
+                    if (gid && gid !== 'info') genomeSet[gid] = true;
+                });
+            }
+
+            GexfJS.graph.nodeList.forEach(function(node, nIdx) {
+                var fMap = node.featureMap || null;
+                if (!fMap && featureAttrIndex !== null && typeof featureAttrIndex !== 'undefined' && node.attributes && node.attributes[featureAttrIndex]) {
+                    try {
+                        var rawJson = String(node.attributes[featureAttrIndex]).replace(/""/g, '"');
+                        fMap = JSON.parse(rawJson);
+                        node.featureMap = fMap;
+                    } catch (e) {
+                        fMap = null;
+                    }
+                }
+                if (!fMap || typeof fMap !== 'object') return;
+                Object.keys(fMap).forEach(function(gid) {
+                    if (gid === 'info' || gid === 'md5' || gid === 'start' || gid === 'end') return;
+                    genomeSet[gid] = true;
+                    var cMap = fMap[gid];
+                    if (!cMap || typeof cMap !== 'object') return;
+                    Object.keys(cMap).forEach(function(cid) {
+                        var feats = cMap[cid];
+                        if (!Array.isArray(feats)) return;
+                        feats.forEach(function(fid) {
+                            var cleanFid = String(fid).replace(/"/g, '').trim();
+                            if (!cleanFid) return;
+                            if (!patricToNodes[cleanFid]) patricToNodes[cleanFid] = [];
+                            if (patricToNodes[cleanFid].indexOf(nIdx) === -1) {
+                                patricToNodes[cleanFid].push(nIdx);
+                            }
+                        });
+                    });
+                });
+            });
+
+            var genomeIds = Object.keys(genomeSet);
+            if (genomeIds.length === 0) {
+                this.specialtyGenesLoading = false;
+                this.specialtyGeneData.loaded = true;
+                return;
+            }
+
+            this.specialtyGenesLoading = true;
+            var url = PathJoin(window.App.dataAPI, "sp_gene");
+            var query = "in(genome_id,(" + genomeIds.slice(0, 1000).map(encodeURIComponent).join(",") + "))&select(patric_id,feature_id,genome_id,property,source,source_id,gene,product,evidence,classification,antibiotics)&limit(25000)";
+
+            xhr.post(url, {
+                headers: {
+                    accept: "application/json",
+                    "X-Requested-With": null,
+                    Authorization: (window.App.authorizationToken || "")
+                },
+                handleAs: "json",
+                data: query
+            }).then(lang.hitch(this, function(records) {
+                var seenNodeFeat = {};
+                (records || []).forEach(lang.hitch(this, function(rec) {
+                    if (!rec || !rec.patric_id || !rec.property) return;
+                    var fid = String(rec.patric_id).trim();
+                    var prop = String(rec.property).trim();
+                    if (!byCategory[prop]) {
+                        // Support exact matching or case-insensitive fallback if needed
+                        var matchedKey = null;
+                        Object.keys(byCategory).forEach(function(k) {
+                            if (k === prop) matchedKey = k;
+                        });
+                        if (!matchedKey) return;
+                        prop = matchedKey;
+                    }
+
+                    var matchedNodeIndices = patricToNodes[fid];
+                    if (!matchedNodeIndices || matchedNodeIndices.length === 0) return;
+
+                    if (!this.specialtyGeneData.byPatricId[fid]) {
+                        this.specialtyGeneData.byPatricId[fid] = [];
+                    }
+                    this.specialtyGeneData.byPatricId[fid].push(rec);
+
+                    var catEntry = byCategory[prop];
+                    catEntry.featureCount++;
+                    if (rec.source) {
+                        catEntry.sources[rec.source] = (catEntry.sources[rec.source] || 0) + 1;
+                    }
+
+                    matchedNodeIndices.forEach(lang.hitch(this, function(nIdx) {
+                        var nObj = GexfJS.graph.nodeList[nIdx];
+                        if (!nObj) return;
+                        var nid = String(nObj.id);
+                        if (!catEntry.nodes[nid]) {
+                            catEntry.nodes[nid] = [];
+                            catEntry.nodeIndices.push(nIdx);
+                        }
+                        var dedupKey = prop + '|' + nid + '|' + fid + '|' + (rec.source || '');
+                        if (!seenNodeFeat[dedupKey]) {
+                            seenNodeFeat[dedupKey] = true;
+                            catEntry.nodes[nid].push(rec);
+                        }
+
+                        if (!this.specialtyGeneData.byNodeId[nid]) {
+                            this.specialtyGeneData.byNodeId[nid] = {
+                                nodeIndex: nIdx,
+                                categories: {},
+                                records: []
+                            };
+                        }
+                        if (!this.specialtyGeneData.byNodeId[nid].categories[prop]) {
+                            this.specialtyGeneData.byNodeId[nid].categories[prop] = [];
+                        }
+                        this.specialtyGeneData.byNodeId[nid].categories[prop].push(rec);
+                        this.specialtyGeneData.byNodeId[nid].records.push(rec);
+                    }));
+                }));
+
+                this.specialtyGenesLoading = false;
+                this.specialtyGeneData.loaded = true;
+                this.rebuildSpecialtyNodeMarkers();
+
+                var isSummaryView = Boolean(
+                    window.GexfJS &&
+                    GexfJS.params &&
+                    GexfJS.params.currentNode === -1 &&
+                    (!Array.isArray(this.multiSelectedNodeIndices) || this.multiSelectedNodeIndices.length === 0)
+                );
+                if (isSummaryView && this.itemDetailPanel && this.itemDetailPanel.customDisplayNode) {
+                    this.showDefaultSummary();
+                }
+            }), lang.hitch(this, function(err) {
+                console.error("Failed to fetch specialty genes from sp_gene:", err);
+                this.specialtyGenesLoading = false;
+                this.specialtyGeneData.loaded = true;
+                if (this.itemDetailPanel && this.itemDetailPanel.customDisplayNode && this.itemDetailPanel.customDisplayNode.innerHTML.indexOf("Specialty Genes") !== -1) {
+                    this.showDefaultSummary();
+                }
+            }));
+        },
+
+        rebuildSpecialtyNodeMarkers: function() {
+            if (!window.GexfJS || !GexfJS.params) return;
+            var activeCats = GexfJS.params.activeSpecialtyCategories || {};
+            var activeKeys = Object.keys(activeCats).filter(function(k) { return Boolean(activeCats[k]); });
+            var markers = {};
+
+            if (activeKeys.length > 0 && this.specialtyGeneData && this.specialtyGeneData.byCategory) {
+                var catsMeta = this.getSpecialtyCategoryMeta();
+                catsMeta.forEach(lang.hitch(this, function(cMeta) {
+                    var prop = cMeta.property;
+                    if (!activeCats[prop]) return;
+                    var catEntry = this.specialtyGeneData.byCategory[prop];
+                    if (!catEntry || !catEntry.nodes) return;
+                    Object.keys(catEntry.nodes).forEach(function(nid) {
+                        if (!markers[nid]) {
+                            markers[nid] = {
+                                colors: [],
+                                tags: [],
+                                categories: [],
+                                primaryColor: cMeta.color,
+                                labelTag: ''
+                            };
+                        }
+                        if (markers[nid].colors.indexOf(cMeta.color) === -1) {
+                            markers[nid].colors.push(cMeta.color);
+                        }
+                        if (markers[nid].tags.indexOf(cMeta.tag) === -1) {
+                            markers[nid].tags.push(cMeta.tag);
+                        }
+                        if (markers[nid].categories.indexOf(prop) === -1) {
+                            markers[nid].categories.push(prop);
+                        }
+                    });
+                }));
+
+                Object.keys(markers).forEach(function(nid) {
+                    markers[nid].primaryColor = markers[nid].colors[0] || '#d32f2f';
+                    markers[nid].labelTag = markers[nid].tags.join('/');
+                });
+            }
+
+            GexfJS.params.specialtyNodeMarkers = markers;
+            if (GexfJS.oldParams) {
+                delete GexfJS.oldParams.zoomLevel;
+            }
+        },
+
         showDefaultSummary: function() {
             if (!this.graphSummary || !this.itemDetailPanel || !this.itemDetailPanel.customDisplayNode) {
                 // If no summary exists, default to clearing the panel
@@ -3424,17 +3734,144 @@ var loadGexfDependencies = function(callback) {
             html += '<tr style="border-bottom: 1px solid #eee;"><td><b>Total Nodes:</b></td><td style="text-align:right;">' + (s.total_nodes || 0) + '</td></tr>';
             html += '</table>';
 
-            // Collapsible Biological Phenomena Guide (placed directly between Total counts and Phenomena menu)
-            var guideOpenAttr = this.guideExpanded ? ' open' : '';
-            html += '<details' + guideOpenAttr + ' ontoggle="window.onGuideDetailsToggle(this.open)" style="margin-bottom:12px; font-size:0.84em; background:#f4f8fb; border:1px solid #d9e8f5; border-radius:4px; padding:6px 8px;">';
-            html += '<summary style="cursor:pointer; font-weight:bold; color:#2b5c8f; outline:none;"><i class="fa icon-info-circle"></i> Guide to Biological Phenomena</summary>';
-            html += '<div style="margin-top:6px; line-height:1.38; color:#444;">';
-            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles &amp; Local Islands/Indels):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, strain-specific genomic islands, prophages, or local indels flanked by conserved collinear anchor genes on the same replicon.</div>';
-            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Fragmented Localized Repeats (Fragmented CNV):</i> Localized repeats that are contiguous on reference contigs but split across multiple contigs in incomplete or misassembled genomes.<br>&bull; <i>Remote CNV Clusters (Segmental Paralogs):</i> Multi-gene (&ge;<i>k</i>) paralogous operons, segmental duplications, or mobile cassettes present at two or more spatially disconnected chromosomal loci.</div>';
-            html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Anchor Collisions):</i> Conserved multi-gene anchor sequences where TFS homology signals from different contigs/loci collide.<br>&bull; <i>Rearrangement Junctions (Jump Edges):</i> Direct non-bubble transition edges jumping across inversion or translocation boundaries without intervening bridge genes.<br>&bull; <i>Translocation &amp; Replicon Bridges:</i> Multi-gene bridge paths connecting flanking anchors that reside on different replicons/contigs or distant chromosomal loci in reference genomes.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the polarity-normalized contig walk.</div>';
-            html += '<div><b>4. Assembly &amp; Scaffolding:</b><br>&bull; <i>Repeat Breaks &amp; Scaffolds:</i> Contig ends shattered inside shared repetitive elements paired with candidate reference-guided scaffold bridges.</div>';
+            // =========================================================================
+            // 1. COLLAPSIBLE: SPECIALTY GENES (BV-BRC sp_gene live overlay)
+            // =========================================================================
+            var specMetaList = this.getSpecialtyCategoryMeta();
+            var specData = this.specialtyGeneData || { byCategory: {}, byNodeId: {}, loaded: false };
+            var activeSpecCats = (window.GexfJS && GexfJS.params && GexfJS.params.activeSpecialtyCategories) ? GexfJS.params.activeSpecialtyCategories : {};
+            var activeSpecKeys = specMetaList.map(function(m) { return m.property; }).filter(function(p) { return Boolean(activeSpecCats[p]); });
+            var specMarkers = (window.GexfJS && GexfJS.params && GexfJS.params.specialtyNodeMarkers) ? GexfJS.params.specialtyNodeMarkers : {};
+            var markedNodeIds = Object.keys(specMarkers);
+            var totalSpecNodes = specData.byNodeId ? Object.keys(specData.byNodeId).length : 0;
+            var specOpenAttr = (typeof this.specialtySectionExpanded === 'undefined' || this.specialtySectionExpanded) ? ' open' : '';
+            var specSpinner = this.specialtyGenesLoading
+                ? ' <span style="font-size:0.8em; color:#666; font-weight:normal; margin-left:4px;"><i class="fa fa-spinner fa-spin"></i> querying sp_gene...</span>'
+                : '';
+            var specActiveBadge = activeSpecKeys.length > 0
+                ? ' <span style="display:inline-block; padding:1px 7px; font-size:0.78em; background:#d32f2f; color:#fff; border-radius:10px; margin-left:6px;" title="' + markedNodeIds.length + ' nodes currently marked on canvas">' + markedNodeIds.length + ' marked</span>'
+                : (specData.loaded ? ' <span style="font-size:0.8em; font-weight:normal; color:#666; margin-left:4px;">(' + totalSpecNodes + ' nodes)</span>' : '');
+
+            html += '<details' + specOpenAttr + ' ontoggle="window.onSpecialtyDetailsToggle(this.open)" style="margin-bottom:10px; border:1px solid #d5dfe8; border-radius:5px; background:#fff;">';
+            html += '<summary style="cursor:pointer; font-weight:bold; font-size:0.95em; color:#1f3a52; background:#f2f6fa; padding:6px 8px; border-radius:4px; outline:none; display:flex; align-items:center; justify-content:space-between;">';
+            html += '<span><i class="fa icon-tags" style="color:#d32f2f; margin-right:4px;"></i> Specialty Genes' + specSpinner + specActiveBadge + '</span>';
+            if (activeSpecKeys.length > 0) {
+                html += '<a href="javascript:void(0)" onclick="window.clearSpecialtyMarkers(event); return false;" style="font-size:0.8em; color:#a94442; font-weight:bold; text-decoration:none; margin-left:6px;" title="Clear all specialty gene markers">Clear &#10006;</a>';
+            }
+            html += '</summary>';
+            html += '<div style="padding:6px 8px;">';
+            html += '<div style="font-size:0.78em; color:#666; margin-bottom:6px; line-height:1.3;">Marks nodes with an <b>outer segmented halo + &#9670; diamond badge + [TAG]</b> so Specialty Genes can be layered simultaneously over Graph Annotations, Heatmaps &amp; Syntenic Blocks:</div>';
+
+            specMetaList.forEach(function(cMeta) {
+                var prop = cMeta.property;
+                var catEntry = (specData.byCategory && specData.byCategory[prop]) ? specData.byCategory[prop] : { nodes: {}, featureCount: 0, sources: {} };
+                var nodeCount = Object.keys(catEntry.nodes || {}).length;
+                var featCount = catEntry.featureCount || 0;
+                var srcKeys = Object.keys(catEntry.sources || {});
+                var srcText = srcKeys.length > 0 ? (' | Sources: ' + srcKeys.join(', ')) : '';
+                var isCatActive = Boolean(activeSpecCats[prop]);
+                var safePropJs = prop.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+                var rowStyle = isCatActive
+                    ? ('padding:4px 6px; margin-bottom:3px; background:' + cMeta.bg + '; border:1px solid ' + cMeta.border + '; border-radius:5px;')
+                    : 'padding:3px 6px; margin-bottom:2px; border-bottom:1px solid #f0f0f0;';
+                var pillStyle = isCatActive
+                    ? ('display:inline-block; min-width:28px; text-align:center; padding:1px 9px; background-color:' + cMeta.color + '; border:1px solid ' + cMeta.color + '; border-radius:12px; color:#fff; font-weight:bold; text-decoration:none; cursor:pointer; flex-shrink:0; margin-left:8px; font-size:0.88em;')
+                    : (nodeCount > 0
+                        ? 'display:inline-block; min-width:28px; text-align:center; padding:1px 9px; background-color:#eef5fa; border:1px solid #bce8f1; border-radius:12px; color:#31708f; font-weight:bold; text-decoration:none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor:pointer; flex-shrink:0; margin-left:8px; font-size:0.88em;'
+                        : 'display:inline-block; min-width:28px; text-align:center; padding:1px 9px; background-color:#f5f5f5; border:1px solid #e0e0e0; border-radius:12px; color:#aaa; font-weight:normal; text-decoration:none; cursor:default; flex-shrink:0; margin-left:8px; font-size:0.88em;');
+                var tooltip = nodeCount > 0
+                    ? (cMeta.label + ': ' + nodeCount + ' gene family node(s), ' + featCount + ' feature(s)' + srcText + ' — Click to toggle marker (Shift+Click or click multiple to combine)')
+                    : (cMeta.label + ': 0 matching features in this graph');
+
+                html += '<div style="' + rowStyle + '">';
+                html += '<div style="display:flex; align-items:center; justify-content:space-between;">';
+                html += '<div style="font-size:0.9em; display:flex; align-items:center; gap:5px; padding-right:4px;">';
+                // Orthogonal visual swatch: dashed outer ring + diamond badge
+                html += '<span style="display:inline-flex; align-items:center; justify-content:center; width:13px; height:13px; border:2px dashed ' + cMeta.color + '; border-radius:50%; position:relative; flex-shrink:0;" title="' + cMeta.desc.replace(/"/g, '&quot;') + '">';
+                html += '<span style="position:absolute; top:-3px; right:-3px; width:5px; height:5px; background:' + cMeta.color + '; border:1px solid #fff; transform:rotate(45deg);"></span>';
+                html += '</span>';
+                html += '<b>' + cMeta.label + '</b>';
+                html += '<span style="font-size:0.75em; padding:0px 4px; border-radius:3px; background:' + cMeta.bg + '; color:' + cMeta.color + '; border:1px solid ' + cMeta.border + '; font-weight:bold;">' + cMeta.tag + '</span>';
+                html += '</div>';
+                if (nodeCount > 0 || isCatActive) {
+                    html += '<a href="javascript:void(0)" style="' + pillStyle + '" onclick="window.toggleSpecialtyCategory(\'' + safePropJs + '\', event); return false;" title="' + tooltip.replace(/"/g, '&quot;') + '">' + nodeCount + '</a>';
+                } else {
+                    html += '<span style="' + pillStyle + '" title="' + tooltip.replace(/"/g, '&quot;') + '">0</span>';
+                }
+                html += '</div>';
+                if (isCatActive) {
+                    html += '<div style="font-size:0.77em; color:#555; margin-top:2px; padding-left:18px;">' + featCount + ' annotated feature(s)' + srcText + '</div>';
+                }
+                html += '</div>';
+            });
+
+            // Active Specialty Gene Inspector & Co-Localization Callout
+            var activePhenom = (window.GexfJS && GexfJS.params) ? GexfJS.params.activePhenomenon : null;
+            if (activeSpecKeys.length > 0) {
+                var specFadeOn = (window.GexfJS && GexfJS.params && GexfJS.params.specialtyFadeActive !== false);
+                html += '<div style="margin-top:6px; padding:6px 8px; background:#fffdf9; border:1px solid #f5c6cb; border-left:3px solid #d32f2f; border-radius:4px; font-size:0.82em;">';
+                html += '<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:4px; margin-bottom:4px;">';
+                html += '<b style="color:#b71c1c;">&#9670; Marked Specialty Nodes (' + markedNodeIds.length + ')</b>';
+                html += '<div style="display:flex; align-items:center; gap:8px;">';
+                html += '<label style="cursor:pointer; font-size:0.92em; color:#444; display:inline-flex; align-items:center; gap:3px; margin:0;" title="When no Graph Annotation phenomenon is active, dim unmarked nodes so Specialty Genes stand out">';
+                html += '<input type="checkbox" ' + (specFadeOn ? 'checked ' : '') + 'onchange="window.toggleSpecialtyFade(this.checked);" style="margin:0;"> Dim unmarked';
+                html += '</label>';
+                if (markedNodeIds.length > 0) {
+                    html += '<a href="javascript:void(0)" onclick="window.selectSpecialtyNodesInActionBar(); return false;" style="color:#1565c0; font-weight:bold; text-decoration:underline;" title="Load all ' + markedNodeIds.length + ' marked Specialty Gene nodes into the Multi-Node Selection &amp; Action Bar">Select All (' + markedNodeIds.length + ')</a>';
+                }
+                html += '</div></div>';
+
+                // Check intersection if a Graph Annotation phenomenon is ALSO active
+                if (activePhenom && window.GexfJS && GexfJS.params && GexfJS.params.activeNodes) {
+                    var overlapIds = markedNodeIds.filter(function(nid) {
+                        return Boolean(GexfJS.params.activeNodes[nid] || (GexfJS.params.anchorNodes && GexfJS.params.anchorNodes[nid]));
+                    });
+                    html += '<div style="margin-bottom:5px; padding:4px 6px; background:#f3e5f5; border:1px solid #ce93d8; border-radius:4px; color:#4a148c;">';
+                    html += '<b><i class="fa icon-random"></i> Co-localized with active Graph Annotation:</b> ' + overlapIds.length + ' of ' + markedNodeIds.length + ' specialty node(s) lie inside the highlighted phenomenon/locus.';
+                    html += '</div>';
+                }
+
+                // Render clickable chips for marked Specialty Gene nodes
+                if (markedNodeIds.length > 0 && window.GexfJS && GexfJS.graph && Array.isArray(GexfJS.graph.nodeList)) {
+                    var maxSpecChips = 14;
+                    var sortedSpecNids = markedNodeIds.slice().sort(function(a, b) {
+                        if (activePhenom && GexfJS.params && GexfJS.params.activeNodes) {
+                            var aIn = Boolean(GexfJS.params.activeNodes[a] || (GexfJS.params.anchorNodes && GexfJS.params.anchorNodes[a]));
+                            var bIn = Boolean(GexfJS.params.activeNodes[b] || (GexfJS.params.anchorNodes && GexfJS.params.anchorNodes[b]));
+                            if (aIn !== bIn) return aIn ? -1 : 1;
+                        }
+                        return parseInt(a, 10) - parseInt(b, 10);
+                    });
+                    html += '<div style="margin-top:3px;">';
+                    sortedSpecNids.slice(0, maxSpecChips).forEach(lang.hitch(this, function(nid) {
+                        var nEntry = specData.byNodeId && specData.byNodeId[nid];
+                        if (!nEntry || typeof nEntry.nodeIndex !== 'number') return;
+                        var nObj = GexfJS.graph.nodeList[nEntry.nodeIndex];
+                        if (!nObj) return;
+                        var mInfo = specMarkers[nid];
+                        var rawLbl = String(nObj.label || nid);
+                        var shortLbl = rawLbl.length > 22 ? rawLbl.substr(0, 20) + '...' : rawLbl;
+                        var safeLbl = shortLbl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        var cColor = (mInfo && mInfo.primaryColor) ? mInfo.primaryColor : '#d32f2f';
+                        var cTag = (mInfo && mInfo.labelTag) ? mInfo.labelTag : '';
+                        var inActivePhenom = Boolean(activePhenom && GexfJS.params && ((GexfJS.params.activeNodes && GexfJS.params.activeNodes[nid]) || (GexfJS.params.anchorNodes && GexfJS.params.anchorNodes[nid])));
+                        var extraBorder = inActivePhenom ? 'box-shadow:0 0 0 2px #d500f9;' : '';
+                        var chipTitle = (rawLbl + ' [' + cTag + ']' + (inActivePhenom ? ' (Co-localized in active Graph Annotation!)' : '') + ' — Click to center & inspect node').replace(/"/g, '&quot;');
+                        html += '<a href="javascript:void(0)" onclick="window.inspectNodeFromLocus(' + nEntry.nodeIndex + '); return false;" style="display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#fff; border:1.5px solid ' + cColor + '; ' + extraBorder + ' border-radius:10px; color:' + cColor + '; font-weight:bold; text-decoration:none; font-size:0.86em;" title="' + chipTitle + '">&#9670; ' + safeLbl + (cTag ? ' <span style="opacity:0.85;">[' + cTag + ']</span>' : '') + '</a>';
+                    }));
+                    if (sortedSpecNids.length > maxSpecChips) {
+                        html += '<span style="font-size:0.84em; color:#777;"> +' + (sortedSpecNids.length - maxSpecChips) + ' more</span>';
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
             html += '</div></details>';
 
+            // =========================================================================
+            // 2. COLLAPSIBLE: GRAPH ANNOTATIONS (Synteny & Structural Phenomena)
+            // =========================================================================
             // Map the old/new summary counts safely
             var cnvClass = this.getCnvClassification();
             var countSuperbubbles = s.superbubbles || s.is_superbubble || 0;
@@ -3455,8 +3892,6 @@ var loadGexfDependencies = function(callback) {
                 : this.getPhenomenonData('translocation_bridges').loci.length;
             var countInversions = s.inverted_blocks || s.inversions || 0;
             var countBreaks = s.assembly_breaks || s.scaffolds || 0;
-
-            var activePhenom = (window.GexfJS && GexfJS.params) ? GexfJS.params.activePhenomenon : null;
 
             var phenomenaMeta = {
                 'superbubbles': {
@@ -3558,7 +3993,32 @@ var loadGexfDependencies = function(callback) {
                 { title: '4. Assembly & Scaffolding', keys: ['breaks'] }
             ];
 
-            html += '<div style="margin-bottom:12px;">';
+            var graphAnnotOpenAttr = (typeof this.graphAnnotationsExpanded === 'undefined' || this.graphAnnotationsExpanded) ? ' open' : '';
+            var activePhenomBadge = (activePhenom && phenomenaMeta[activePhenom])
+                ? ' <span style="display:inline-block; padding:1px 7px; font-size:0.78em; background:#9c27b0; color:#fff; border-radius:10px; margin-left:6px;">' + phenomenaMeta[activePhenom].label + '</span>'
+                : '';
+
+            html += '<details' + graphAnnotOpenAttr + ' ontoggle="window.onGraphAnnotationsDetailsToggle(this.open)" style="margin-bottom:14px; border:1px solid #d5dfe8; border-radius:5px; background:#fff;">';
+            html += '<summary style="cursor:pointer; font-weight:bold; font-size:0.95em; color:#1f3a52; background:#f2f6fa; padding:6px 8px; border-radius:4px; outline:none; display:flex; align-items:center; justify-content:space-between;">';
+            html += '<span><i class="fa icon-sitemap" style="color:#6a1b9a; margin-right:4px;"></i> Graph Annotations' + activePhenomBadge + '</span>';
+            if (activePhenom) {
+                html += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="font-size:0.8em; color:#a94442; font-weight:bold; text-decoration:none; margin-left:6px;" title="Clear active Graph Annotation">Clear &#10006;</a>';
+            }
+            html += '</summary>';
+            html += '<div style="padding:6px 8px;">';
+
+            // Collapsible Biological Phenomena Guide inside Graph Annotations
+            var guideOpenAttr = this.guideExpanded ? ' open' : '';
+            html += '<details' + guideOpenAttr + ' ontoggle="window.onGuideDetailsToggle(this.open)" style="margin-bottom:8px; font-size:0.84em; background:#f4f8fb; border:1px solid #d9e8f5; border-radius:4px; padding:6px 8px;">';
+            html += '<summary style="cursor:pointer; font-weight:bold; color:#2b5c8f; outline:none;"><i class="fa icon-info-circle"></i> Guide to Biological Phenomena</summary>';
+            html += '<div style="margin-top:6px; line-height:1.38; color:#444;">';
+            html += '<div style="margin-bottom:5px;"><b>1. Accessory &amp; Allelic Variation:</b><br>&bull; <i>Bounded Variable Loci (Superbubbles &amp; Local Islands/Indels):</i> Cleanly bounded multi-allelic replacements, metabolic cassettes, strain-specific genomic islands, prophages, or local indels flanked by conserved collinear anchor genes on the same replicon.</div>';
+            html += '<div style="margin-bottom:5px;"><b>2. Repeats &amp; Paralog Expansion:</b><br>&bull; <i>Local / Tandem CNVs:</i> Co-localized tandem gene duplications and local paralogous copy-number expansions.<br>&bull; <i>Fragmented Localized Repeats (Fragmented CNV):</i> Localized repeats that are contiguous on reference contigs but split across multiple contigs in incomplete or misassembled genomes.<br>&bull; <i>Remote CNV Clusters (Segmental Paralogs):</i> Multi-gene (&ge;<i>k</i>) paralogous operons, segmental duplications, or mobile cassettes present at two or more spatially disconnected chromosomal loci.</div>';
+            html += '<div style="margin-bottom:5px;"><b>3. Chromosomal Architecture:</b><br>&bull; <i>Synteny Breakpoints (Anchor Collisions):</i> Conserved multi-gene anchor sequences where TFS homology signals from different contigs/loci collide.<br>&bull; <i>Rearrangement Junctions (Jump Edges):</i> Direct non-bubble transition edges jumping across inversion or translocation boundaries without intervening bridge genes.<br>&bull; <i>Translocation &amp; Replicon Bridges:</i> Multi-gene bridge paths connecting flanking anchors that reside on different replicons/contigs or distant chromosomal loci in reference genomes.<br>&bull; <i>Inverted Syntenic Blocks:</i> Contiguous gene chains reversed in orientation relative to the polarity-normalized contig walk.</div>';
+            html += '<div><b>4. Assembly &amp; Scaffolding:</b><br>&bull; <i>Repeat Breaks &amp; Scaffolds:</i> Contig ends shattered inside shared repetitive elements paired with candidate reference-guided scaffold bridges.</div>';
+            html += '</div></details>';
+
+            html += '<div style="margin-bottom:8px;">';
             categories.forEach(function(cat) {
                 html += '<div style="font-size:0.76em; font-weight:bold; text-transform:uppercase; letter-spacing:0.4px; color:#5a738e; background:#eef4f9; padding:3px 6px; border-left:3px solid #31708f; margin:8px 0 4px 0;">' + cat.title + '</div>';
                 cat.keys.forEach(function(key) {
@@ -3594,7 +4054,7 @@ var loadGexfDependencies = function(callback) {
                 var hasDashed = (activePhenom === 'breaks' || activePhenom === 'rearrangements' || activePhenom === 'rearrangement_junctions' || activePhenom === 'translocation_bridges' || activePhenom === 'inversions');
                 var self = this;
 
-                html += '<div style="margin-bottom:14px; padding:8px; background:#fcf4ff; border:1px solid #d580ff; border-radius:5px; font-size:0.83em; line-height:1.35; color:#333;">';
+                html += '<div style="margin-bottom:6px; padding:8px; background:#fcf4ff; border:1px solid #d580ff; border-radius:5px; font-size:0.83em; line-height:1.35; color:#333;">';
                 html += '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">';
                 html += '<b style="color:#6a1b9a;"><i class="fa icon-eye"></i> Viewing: ' + activeMeta.label + '</b>';
                 html += '<a href="javascript:void(0)" onclick="window.displayNode(-1); return false;" style="color:#a94442; font-weight:bold; text-decoration:none; font-size:0.9em;" title="Clear active phenomenon highlight">Clear &#10006;</a>';
@@ -3650,68 +4110,6 @@ var loadGexfDependencies = function(callback) {
                         html += '<option value="off"' + (filterMode === 'off' ? ' selected' : '') + '>Full Graph (No Filter)</option>';
                         html += '</select>';
                         html += '</div>';
-
-                        var renderNodeChips = function(nodeIds, isAnchor) {
-                            var maxChips = 10;
-                            var shown = nodeIds.slice(0, maxChips);
-                            var chipHtml = '';
-                            shown.forEach(function(nid) {
-                                var nObj = curLoc.nodeById[nid];
-                                var nIdx = curLoc.nodeIdxById[nid];
-                                if (!nObj || typeof nIdx === 'undefined') return;
-                                var rawLbl = String(nObj.label || nid);
-                                var shortLbl = rawLbl.length > 28 ? rawLbl.substr(0, 26) + '...' : rawLbl;
-                                var safeLbl = shortLbl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                                var fullTitle = (rawLbl + ' (Click to inspect features)').replace(/"/g, '&quot;');
-                                var cStyle = isAnchor
-                                    ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e8f5e9; border:1px solid #2e7d32; border-radius:10px; color:#1b5e20; font-weight:bold; text-decoration:none; font-size:0.9em;'
-                                    : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#f3e5f5; border:1px solid #ab47bc; border-radius:10px; color:#4a148c; font-weight:bold; text-decoration:none; font-size:0.9em;';
-                                chipHtml += '<a href="javascript:void(0)" style="' + cStyle + '" onclick="window.inspectNodeFromLocus(' + nIdx + '); return false;" title="' + fullTitle + '">' + safeLbl + '</a>';
-                            });
-                            if (nodeIds.length > maxChips) {
-                                chipHtml += '<span style="font-size:0.85em; color:#777;"> +' + (nodeIds.length - maxChips) + ' more</span>';
-                            }
-                            return chipHtml;
-                        };
-
-                        html += '<div style="margin-bottom:4px;"><b>Focal Genes (' + curLoc.focalNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.focalNodeIds, false) + '</div>';
-                        if (curLoc.anchorNodeIds.length > 0) {
-                            html += '<div style="margin-bottom:5px;"><b style="color:#1b5e20;">Flanking Anchors (' + curLoc.anchorNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.anchorNodeIds, true) + '</div>';
-                        }
-                        if (curLoc.remoteSites && curLoc.remoteSites.length > 1) {
-                            var curSiteIdx = (window.GexfJS && GexfJS.params && typeof GexfJS.params.activeRemoteSiteIndex === 'number') ? GexfJS.params.activeRemoteSiteIndex : -1;
-                            html += '<div style="margin-bottom:5px;"><b style="color:#01579b;">Remote Copy Sites (' + curLoc.remoteSites.length + '):</b><br>';
-                            var allSiteStyle = (curSiteIdx === -1)
-                                ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#0277bd; border:1px solid #01579b; border-radius:10px; color:#fff; font-weight:bold; text-decoration:none; font-size:0.86em;'
-                                : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.86em;';
-                            html += '<a href="javascript:void(0)" style="' + allSiteStyle + '" onclick="window.focusRemoteSite(-1); return false;" title="Zoom out to frame all ' + curLoc.remoteSites.length + ' remote copy sites of this cluster">All ' + curLoc.remoteSites.length + ' Sites</a>';
-                            curLoc.remoteSites.slice(0, 10).forEach(function(st, sIdx) {
-                                var isSelSite = (curSiteIdx === sIdx);
-                                var sStyle = isSelSite
-                                    ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#0277bd; border:1px solid #01579b; border-radius:10px; color:#fff; font-weight:bold; text-decoration:none; font-size:0.86em;'
-                                    : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.86em;';
-                                var sLabel = 'Site #' + (sIdx + 1) + ': ' + st.blockLabel + ' (' + st.focalNodeIds.length + ')';
-                                html += '<a href="javascript:void(0)" style="' + sStyle + '" onclick="window.focusRemoteSite(' + sIdx + '); return false;" title="Zoom camera to remote copy Site #' + (sIdx + 1) + ' while keeping all remote copies highlighted">' + sLabel + '</a>';
-                            });
-                            if (curLoc.remoteSites.length > 10) {
-                                html += '<span style="font-size:0.85em; color:#777;"> +' + (curLoc.remoteSites.length - 10) + ' more</span>';
-                            }
-                            html += '</div>';
-                        }
-                        if (curLoc.relatedParalogLoci && curLoc.relatedParalogLoci.length > 0) {
-                            html += '<div style="margin-bottom:5px;"><b style="color:#0277bd;">Distant Paralogous Loci (' + curLoc.relatedParalogLoci.length + '):</b><br>';
-                            var maxRel = 8;
-                            curLoc.relatedParalogLoci.slice(0, maxRel).forEach(function(rel) {
-                                var relNum = rel.index + 1;
-                                var cText = rel.sharedClusters && rel.sharedClusters.length > 0 ? (' [CNV ' + rel.sharedClusters.slice(0, 3).join(',') + ']') : '';
-                                var safeRelLbl = ('Locus #' + relNum + ': ' + rel.shortTitle + cText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                                html += '<a href="javascript:void(0)" style="display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.88em;" onclick="window.selectPhenomenonLocus(' + rel.index + '); return false;" title="Jump to distant paralogous copy at Locus #' + relNum + '">' + safeRelLbl + ' &#8599;</a>';
-                            });
-                            if (curLoc.relatedParalogLoci.length > maxRel) {
-                                html += '<span style="font-size:0.85em; color:#777;"> +' + (curLoc.relatedParalogLoci.length - maxRel) + ' more</span>';
-                            }
-                            html += '</div>';
-                        }
 
                         // Relative Genome & Contig Comparison (Event Carriers vs. Flanking / Backbone Reference)
                         var formatGenomeList = function(gids, cids, isEvent) {
@@ -3770,7 +4168,7 @@ var loadGexfDependencies = function(callback) {
                             return items.join('');
                         };
 
-                        html += '<details open style="margin-top:4px; padding-top:4px; border-top:1px solid #f0e6f5; font-size:0.92em;">';
+                        html += '<details open style="margin-bottom:6px; padding-bottom:6px; border-bottom:1px solid #f0e6f5; font-size:0.92em;">';
                         html += '<summary style="cursor:pointer; font-weight:bold; color:#333; outline:none; display:flex; justify-content:space-between; align-items:center;">';
                         html += '<span>Relative Genomes &amp; Contigs at Locus</span>';
                         if (hasSpot) {
@@ -3785,6 +4183,85 @@ var loadGexfDependencies = function(callback) {
                         }
                         html += '</div></details>';
 
+                        var renderNodeChips = function(nodeIds, isAnchor) {
+                            var maxChips = 10;
+                            var shown = nodeIds.slice(0, maxChips);
+                            var chipHtml = '';
+                            shown.forEach(function(nid) {
+                                var nObj = curLoc.nodeById[nid];
+                                var nIdx = curLoc.nodeIdxById[nid];
+                                if (!nObj || typeof nIdx === 'undefined') return;
+                                var rawLbl = String(nObj.label || nid);
+                                var shortLbl = rawLbl.length > 28 ? rawLbl.substr(0, 26) + '...' : rawLbl;
+                                var safeLbl = shortLbl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                var nSpecEntry = (specData && specData.byNodeId) ? specData.byNodeId[nid] : null;
+                                var specBadgeHtml = '';
+                                var specTooltipSuffix = '';
+                                if (nSpecEntry && nSpecEntry.categories) {
+                                    var sTags = [];
+                                    var sColor = '#d32f2f';
+                                    specMetaList.forEach(function(sm) {
+                                        if (nSpecEntry.categories[sm.property]) {
+                                            if (sTags.length === 0) sColor = sm.color;
+                                            sTags.push(sm.tag);
+                                        }
+                                    });
+                                    if (sTags.length > 0) {
+                                        specBadgeHtml = ' <span style="color:' + sColor + '; font-weight:bold;">&#9670;[' + sTags.join('/') + ']</span>';
+                                        specTooltipSuffix = ' | Specialty Gene: ' + Object.keys(nSpecEntry.categories).join(', ');
+                                    }
+                                }
+                                var fullTitle = (rawLbl + specTooltipSuffix + ' (Click to inspect features)').replace(/"/g, '&quot;');
+                                var cStyle = isAnchor
+                                    ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e8f5e9; border:1px solid #2e7d32; border-radius:10px; color:#1b5e20; font-weight:bold; text-decoration:none; font-size:0.9em;'
+                                    : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#f3e5f5; border:1px solid #ab47bc; border-radius:10px; color:#4a148c; font-weight:bold; text-decoration:none; font-size:0.9em;';
+                                chipHtml += '<a href="javascript:void(0)" style="' + cStyle + '" onclick="window.inspectNodeFromLocus(' + nIdx + '); return false;" title="' + fullTitle + '">' + safeLbl + specBadgeHtml + '</a>';
+                            });
+                            if (nodeIds.length > maxChips) {
+                                chipHtml += '<span style="font-size:0.85em; color:#777;"> +' + (nodeIds.length - maxChips) + ' more</span>';
+                            }
+                            return chipHtml;
+                        };
+
+                        html += '<div style="margin-bottom:4px;"><b>Focal Genes (' + curLoc.focalNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.focalNodeIds, false) + '</div>';
+                        if (curLoc.anchorNodeIds.length > 0) {
+                            html += '<div style="margin-bottom:5px;"><b style="color:#1b5e20;">Flanking Anchors (' + curLoc.anchorNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.anchorNodeIds, true) + '</div>';
+                        }
+                        if (curLoc.remoteSites && curLoc.remoteSites.length > 1) {
+                            var curSiteIdx = (window.GexfJS && GexfJS.params && typeof GexfJS.params.activeRemoteSiteIndex === 'number') ? GexfJS.params.activeRemoteSiteIndex : -1;
+                            html += '<div style="margin-bottom:5px;"><b style="color:#01579b;">Remote Copy Sites (' + curLoc.remoteSites.length + '):</b><br>';
+                            var allSiteStyle = (curSiteIdx === -1)
+                                ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#0277bd; border:1px solid #01579b; border-radius:10px; color:#fff; font-weight:bold; text-decoration:none; font-size:0.86em;'
+                                : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.86em;';
+                            html += '<a href="javascript:void(0)" style="' + allSiteStyle + '" onclick="window.focusRemoteSite(-1); return false;" title="Zoom out to frame all ' + curLoc.remoteSites.length + ' remote copy sites of this cluster">All ' + curLoc.remoteSites.length + ' Sites</a>';
+                            curLoc.remoteSites.slice(0, 10).forEach(function(st, sIdx) {
+                                var isSelSite = (curSiteIdx === sIdx);
+                                var sStyle = isSelSite
+                                    ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#0277bd; border:1px solid #01579b; border-radius:10px; color:#fff; font-weight:bold; text-decoration:none; font-size:0.86em;'
+                                    : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 7px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.86em;';
+                                var sLabel = 'Site #' + (sIdx + 1) + ': ' + st.blockLabel + ' (' + st.focalNodeIds.length + ')';
+                                html += '<a href="javascript:void(0)" style="' + sStyle + '" onclick="window.focusRemoteSite(' + sIdx + '); return false;" title="Zoom camera to remote copy Site #' + (sIdx + 1) + ' while keeping all remote copies highlighted">' + sLabel + '</a>';
+                            });
+                            if (curLoc.remoteSites.length > 10) {
+                                html += '<span style="font-size:0.85em; color:#777;"> +' + (curLoc.remoteSites.length - 10) + ' more</span>';
+                            }
+                            html += '</div>';
+                        }
+                        if (curLoc.relatedParalogLoci && curLoc.relatedParalogLoci.length > 0) {
+                            html += '<div style="margin-bottom:5px;"><b style="color:#0277bd;">Distant Paralogous Loci (' + curLoc.relatedParalogLoci.length + '):</b><br>';
+                            var maxRel = 8;
+                            curLoc.relatedParalogLoci.slice(0, maxRel).forEach(function(rel) {
+                                var relNum = rel.index + 1;
+                                var cText = rel.sharedClusters && rel.sharedClusters.length > 0 ? (' [CNV ' + rel.sharedClusters.slice(0, 3).join(',') + ']') : '';
+                                var safeRelLbl = ('Locus #' + relNum + ': ' + rel.shortTitle + cText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                html += '<a href="javascript:void(0)" style="display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e1f5fe; border:1px solid #0288d1; border-radius:10px; color:#01579b; font-weight:bold; text-decoration:none; font-size:0.88em;" onclick="window.selectPhenomenonLocus(' + rel.index + '); return false;" title="Jump to distant paralogous copy at Locus #' + relNum + '">' + safeRelLbl + ' &#8599;</a>';
+                            });
+                            if (curLoc.relatedParalogLoci.length > maxRel) {
+                                html += '<span style="font-size:0.85em; color:#777;"> +' + (curLoc.relatedParalogLoci.length - maxRel) + ' more</span>';
+                            }
+                            html += '</div>';
+                        }
+
                         html += '</div>';
                     }
                     html += '</div>';
@@ -3795,6 +4272,7 @@ var loadGexfDependencies = function(callback) {
                 html += '<div style="color:#555;"><b>Workspace Report:</b> <code>' + activeMeta.tsvReport + '</code></div>';
                 html += '</div>';
             }
+            html += '</div></details>';
 
             // Parameters
             if (s.parameters) {
@@ -4525,16 +5003,82 @@ var loadGexfDependencies = function(callback) {
             GexfJS.params.activeGenomeFilter = {};
             GexfJS.params.activeContigFilter = {};
             GexfJS.params.activeBlockFilter = {};
+            GexfJS.params.activeSpecialtyCategories = {};
+            GexfJS.params.specialtyNodeMarkers = {};
+            if (typeof GexfJS.params.specialtyFadeActive === 'undefined') GexfJS.params.specialtyFadeActive = true;
             this.expandedGenomes = {};
             this.guideExpanded = false;
+            this.specialtySectionExpanded = true;
+            this.graphAnnotationsExpanded = true;
 
-            // Preserve <details> open state for Guide and Genome Manifest across re-renders
+            // Preserve <details> open state for Specialty Genes, Graph Annotations, Guide, and Genome Manifest across re-renders
+            window.onSpecialtyDetailsToggle = lang.hitch(this, function(isOpen) {
+                this.specialtySectionExpanded = Boolean(isOpen);
+            });
+            window.onGraphAnnotationsDetailsToggle = lang.hitch(this, function(isOpen) {
+                this.graphAnnotationsExpanded = Boolean(isOpen);
+            });
             window.onGuideDetailsToggle = lang.hitch(this, function(isOpen) {
                 this.guideExpanded = Boolean(isOpen);
             });
             window.onGenomeDetailsToggle = lang.hitch(this, function(genomeId, isOpen) {
                 this.expandedGenomes = this.expandedGenomes || {};
                 this.expandedGenomes[genomeId] = Boolean(isOpen);
+            });
+
+            // Specialty Gene Marker Toggles (Orthogonal Outer Ring + Diamond Badge)
+            window.toggleSpecialtyCategory = lang.hitch(this, function(propName, evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (evt && evt.preventDefault) evt.preventDefault();
+                if (!window.GexfJS || !GexfJS.params || !propName) return;
+                if (!GexfJS.params.activeSpecialtyCategories) GexfJS.params.activeSpecialtyCategories = {};
+                if (GexfJS.params.activeSpecialtyCategories[propName]) {
+                    delete GexfJS.params.activeSpecialtyCategories[propName];
+                } else {
+                    GexfJS.params.activeSpecialtyCategories[propName] = true;
+                }
+                this.rebuildSpecialtyNodeMarkers();
+                var isSummaryView = Boolean(
+                    GexfJS.params.currentNode === -1 &&
+                    (!Array.isArray(this.multiSelectedNodeIndices) || this.multiSelectedNodeIndices.length === 0)
+                );
+                if (isSummaryView && this.itemDetailPanel && this.itemDetailPanel.customDisplayNode) {
+                    this.showDefaultSummary();
+                } else if (GexfJS.params.currentNode !== -1 && GexfJS.graph && GexfJS.graph.nodeList[GexfJS.params.currentNode]) {
+                    var curN = GexfJS.graph.nodeList[GexfJS.params.currentNode];
+                    this.updateSelection(this.selection, curN.featureMap, curN, false, false);
+                }
+            });
+
+            window.clearSpecialtyMarkers = lang.hitch(this, function(evt) {
+                if (evt && evt.stopPropagation) evt.stopPropagation();
+                if (evt && evt.preventDefault) evt.preventDefault();
+                if (!window.GexfJS || !GexfJS.params) return;
+                GexfJS.params.activeSpecialtyCategories = {};
+                this.rebuildSpecialtyNodeMarkers();
+                this.showDefaultSummary();
+            });
+
+            window.toggleSpecialtyFade = lang.hitch(this, function(isChecked) {
+                if (!window.GexfJS || !GexfJS.params) return;
+                GexfJS.params.specialtyFadeActive = Boolean(isChecked);
+                if (GexfJS.oldParams) delete GexfJS.oldParams.zoomLevel;
+            });
+
+            window.selectSpecialtyNodesInActionBar = lang.hitch(this, function() {
+                if (!window.GexfJS || !GexfJS.params || !GexfJS.params.specialtyNodeMarkers || !this.specialtyGeneData) return;
+                var nids = Object.keys(GexfJS.params.specialtyNodeMarkers);
+                var indices = [];
+                nids.forEach(lang.hitch(this, function(nid) {
+                    var entry = this.specialtyGeneData.byNodeId && this.specialtyGeneData.byNodeId[nid];
+                    if (entry && typeof entry.nodeIndex === 'number' && indices.indexOf(entry.nodeIndex) === -1) {
+                        indices.push(entry.nodeIndex);
+                    }
+                }));
+                if (indices.length > 0) {
+                    this.multiSelectedNodeIndices = indices;
+                    this.applyMultiNodeSelection();
+                }
             });
 
             // Global Eyeball Filter Toggles for Syntenic Blocks & Genome Manifest
@@ -4674,6 +5218,7 @@ var loadGexfDependencies = function(callback) {
 
             startGraphViewer(gexf_dom);
             this._phenomenonDataCache = {};
+            this.fetchSpecialtyGenes();
 
             // --- START: AUTO-PIN BLOCKS ---
             if (this.graphSummary && this.graphSummary['block_manifest'] && this.graphSummary['block_manifest'].length > 0) {
@@ -5392,6 +5937,29 @@ var loadGexfDependencies = function(callback) {
                 );
             }
 
+            // Add Specialty Gene badges if this node has sp_gene hits
+            var nodeSpecEntry = (this.specialtyGeneData && this.specialtyGeneData.byNodeId) ? this.specialtyGeneData.byNodeId[curNodeId] : null;
+            if (nodeSpecEntry && nodeSpecEntry.categories) {
+                var specCatsMeta = this.getSpecialtyCategoryMeta();
+                var activeSpecMap = (window.GexfJS && GexfJS.params && GexfJS.params.activeSpecialtyCategories) ? GexfJS.params.activeSpecialtyCategories : {};
+                specCatsMeta.forEach(function(sm) {
+                    var recs = nodeSpecEntry.categories[sm.property];
+                    if (!recs || recs.length === 0) return;
+                    var isMarked = Boolean(activeSpecMap[sm.property]);
+                    var srcs = {};
+                    recs.forEach(function(r) { if (r.source) srcs[r.source] = true; });
+                    var srcList = Object.keys(srcs).join(', ');
+                    var safePropJs = sm.property.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                    var bStyle = isMarked
+                        ? (badgeStyle + ' background:' + sm.color + '; color:#fff; border:1px solid ' + sm.color + ';')
+                        : (badgeStyle + ' background:' + sm.bg + '; color:' + sm.color + '; border:1px dashed ' + sm.color + ';');
+                    var bTitle = ('Specialty Gene: ' + sm.label + ' [' + sm.tag + '] (' + recs.length + ' feature' + (recs.length === 1 ? '' : 's') + (srcList ? ' from ' + srcList : '') + ') — Click to toggle ' + sm.label + ' markers on graph').replace(/"/g, '&quot;');
+                    badges.push(
+                        '<a href="javascript:void(0)" onclick="window.toggleSpecialtyCategory(\'' + safePropJs + '\', event); return false;" style="' + bStyle + '" title="' + bTitle + '">&#9670; ' + sm.label + ' [' + sm.tag + ']' + (isMarked ? ' &#10003;' : '') + '</a>'
+                    );
+                });
+            }
+
             var attrHtml = '<div style="margin-bottom:10px; font-size:0.9em; color:#555;">';
             if (badges.length > 0) {
                 attrHtml += '<div style="margin-bottom:6px;">' + badges.join('') + '</div>';
@@ -5432,6 +6000,8 @@ var loadGexfDependencies = function(callback) {
                 });
                 var allSequences = [];
                 var hierarchyHtml = '<div class="graph-links" style="font-size:0.9em;">';
+                var byPatricSpec = (this.specialtyGeneData && this.specialtyGeneData.byPatricId) ? this.specialtyGeneData.byPatricId : {};
+                var catByPropSpec = (this.specialtyGeneData && this.specialtyGeneData.catByProp) ? this.specialtyGeneData.catByProp : {};
                 
                 allGenomes.forEach(lang.hitch(this, function(genomeId) {
                     var contigs = featureMap[genomeId];
@@ -5463,22 +6033,38 @@ var loadGexfDependencies = function(callback) {
                         var feats = contigs[contigId];
                         
                         feats.forEach(function(fid) {
-                            var displayLabel = "[" + fid + "]";
+                            var cleanFid = String(fid).replace(/"/g, '').trim();
+                            var displayLabel = "[" + cleanFid + "]";
                             
-                            if(recordMap[fid]) {
+                            if(recordMap[cleanFid]) {
                                 var extras = [];
-                                if (recordMap[fid].gene) extras.push(recordMap[fid].gene);
-                                if (recordMap[fid].refseq_locus_tag) extras.push(recordMap[fid].refseq_locus_tag);
-                                if (recordMap[fid].product) extras.push(recordMap[fid].product);
+                                if (recordMap[cleanFid].gene) extras.push(recordMap[cleanFid].gene);
+                                if (recordMap[cleanFid].refseq_locus_tag) extras.push(recordMap[cleanFid].refseq_locus_tag);
+                                if (recordMap[cleanFid].product) extras.push(recordMap[cleanFid].product);
                                 
                                 if (extras.length > 0) {
                                     displayLabel += " <span style='color:#666;'>(" + extras.join(" | ") + ")</span>";
                                 }
-                            } 
+                            }
+
+                            var fidSpecs = byPatricSpec[cleanFid];
+                            var fidSpecPills = '';
+                            if (fidSpecs && fidSpecs.length > 0) {
+                                var seenFidProps = {};
+                                fidSpecs.forEach(function(sr) {
+                                    var pKey = sr.property;
+                                    var dKey = pKey + ':' + (sr.source || '');
+                                    if (seenFidProps[dKey]) return;
+                                    seenFidProps[dKey] = true;
+                                    var cm = catByPropSpec[pKey] || { tag: pKey, color: '#d32f2f', bg: '#ffebee', border: '#ef9a9a' };
+                                    var pillText = cm.tag + (sr.source ? ':' + sr.source : '') + (sr.gene ? ' ' + sr.gene : '');
+                                    fidSpecPills += ' <span style="display:inline-block; padding:0px 4px; font-size:0.8em; font-weight:bold; border-radius:3px; background:' + cm.bg + '; color:' + cm.color + '; border:1px solid ' + cm.border + ';" title="' + (pKey + (sr.product ? ' — ' + sr.product : '')).replace(/"/g, '&quot;') + '">&#9670; ' + pillText + '</span>';
+                                });
+                            }
 
                             hierarchyHtml += '<div style="padding-left:10px; margin-bottom: 2px;">';
                             // --- CHANGED: Standard hyperlink opening in a new tab to the Feature page ---
-                            hierarchyHtml += '<a href="/view/Feature/' + encodeURIComponent(fid) + '" target="_blank" title="Open Feature Page in New Tab">' + displayLabel + '</a>';
+                            hierarchyHtml += '<a href="/view/Feature/' + encodeURIComponent(cleanFid) + '" target="_blank" title="Open Feature Page in New Tab">' + displayLabel + '</a>' + fidSpecPills;
                             hierarchyHtml += '</div>';
                         });
                     });

@@ -1288,12 +1288,29 @@ define([
       this.actionPanel.addAction('ViewGEXF', 'fa icon-alignment fa-2x', { // Using 'sitemap' as a graph-like icon
         label: 'VIEW GRAPH',
         multiple: false, // This action works on a single file
-       // validTypes: ['gexf'], // This action only appears when a 'gexf' file is selected
-        validTypes: ['gexf'],
-
+        validTypes: ['gexf', 'graph', 'txt', 'unspecified'],
+        shouldShow: function (selection) {
+          return selection && selection.length === 1 && (
+            selection[0].type === 'gexf' ||
+            selection[0].type === 'graph' ||
+            (selection[0].name && /\.gexf$/i.test(selection[0].name))
+          );
+        },
         tooltip: 'View Synteny Graph'
       }, function (selection) {
           Topic.publish('/navigate', { href: '/view/Gexf/?' + '&path=' + encodePath(selection[0].path) });
+      }, true);
+
+      this.actionPanel.addAction('ViewAlignmentJson', 'fa icon-alignment fa-2x', {
+        label: 'ALIGNMENT',
+        multiple: false,
+        validTypes: ['json', 'txt', 'unspecified'],
+        shouldShow: function (selection) {
+          return selection && selection.length === 1 && selection[0].name && /alignment\.json$/i.test(selection[0].name);
+        },
+        tooltip: 'View Synteny / Genome Alignment'
+      }, function (selection) {
+          Topic.publish('/navigate', { href: '/view/GenomeAlignment' + encodePath(selection[0].path) });
       }, true);
 
       this.browserHeader.addAction('ViewNwkXml', 'fa icon-eye fa-2x', {
