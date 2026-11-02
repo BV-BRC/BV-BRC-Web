@@ -88,7 +88,13 @@
     <div class="fieldSelector">
       <div class="fieldColumn availableColumn">
         <div class="columnHeader">Available Fields</div>
+        <input type="text" class="fieldFilter" data-dojo-attach-point="fieldFilterInput"
+               data-dojo-attach-event="oninput:_onFieldFilter"
+               placeholder="Filter fields…" aria-label="Filter available fields">
         <div class="fieldList" data-dojo-attach-point="availableFieldsList"></div>
+        <div class="fieldListEmpty dijitHidden" data-dojo-attach-point="fieldListEmpty">
+          No field matches that filter.
+        </div>
       </div>
 
       <div class="fieldButtons">
