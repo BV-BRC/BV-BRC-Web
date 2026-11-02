@@ -396,3 +396,36 @@ describe('strict validation of a format string', () => {
     expect(r.captured.posts[0].url).not.toContain('http_fasta_strict=true');
   });
 });
+
+describe('a configured API base with a trailing slash', () => {
+  /**
+   * DownloadExecutor joins DATA_API_URL with '/' + dataType, so a base
+   * ending in a slash produced `/proxyapi//genome_feature/?...` -- a 404,
+   * which loses the download entirely rather than merely degrading it.
+   * Same root cause as the field picker falling back on alpha.
+   */
+  function urlFor(base) {
+    const captured = {};
+    global.window = { App: { dataServiceURL: base } };
+    const Executor = loadExecutor(makeStubs(captured));
+    Executor.execute({
+      format: 'protein+fasta',
+      dataType: 'genome_feature',
+      scope: 'all',
+      rqlQuery: 'eq(genome_id,83332.12)',
+      primaryKey: 'feature_id',
+      fastaConfig: { idFields: ['patric_id'], descriptionFields: [] }
+    }, { forceClientSide: true });
+    return captured.url;
+  }
+
+  test.each([
+    ['/proxyapi/'],
+    ['/proxyapi'],
+    ['/proxyapi//']
+  ])('base %p never doubles the slash', (base) => {
+    const url = urlFor(base);
+    expect(url).toContain('/proxyapi/genome_feature/');
+    expect(url).not.toContain('//genome_feature');
+  });
+});

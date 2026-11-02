@@ -147,9 +147,19 @@ define([
   var _cache = {};
   var _pending = {};
 
+  /**
+   * The Data API base, without a trailing slash.
+   *
+   * Callers join this with '/' + collection, so a configured base that
+   * already ends in one produced `/proxyapi//genome/fields` -- which the
+   * API 404s. That was the request failure behind the field picker falling
+   * back to its built-in list; the cache fix stopped one such failure
+   * sticking for the session, this stops it happening.
+   */
   function apiBase() {
     var app = (typeof window !== 'undefined' && window.App) || {};
-    return app.dataAPI || app.dataServiceURL || '';
+    var base = app.dataAPI || app.dataServiceURL || '';
+    return String(base).replace(/\/+$/, '');
   }
 
   function labelFor(field) {

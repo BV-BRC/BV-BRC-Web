@@ -34,10 +34,15 @@ define([
    * - /Download/error - When download fails
    */
 
-  // Configuration
-  var DATA_API_URL = window.App && window.App.dataServiceURL
+  // Configuration.
+  //
+  // The trailing slash is stripped because every use below joins this with
+  // '/' + dataType. A configured base ending in one yields
+  // `/proxyapi//genome_feature/?...`, which the API 404s -- so a deployment
+  // whose dataServiceURL happens to end in '/' loses downloads entirely.
+  var DATA_API_URL = (window.App && window.App.dataServiceURL
     ? window.App.dataServiceURL
-    : '/api/data';
+    : '/api/data').replace(/\/+$/, '');
 
   var BUNDLER_API_URL = window.App && window.App.dataServiceURL
     ? window.App.dataServiceURL.replace('/data', '/bundle')

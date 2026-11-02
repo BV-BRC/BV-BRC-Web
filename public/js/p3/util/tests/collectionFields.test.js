@@ -459,3 +459,58 @@ describe('a failure must not poison the cache', () => {
     }
   });
 });
+
+describe('a configured base with a trailing slash', () => {
+  /**
+   * Seen on alpha: the network tab showed `/proxyapi//genome/fields` 404ing,
+   * which is what sent the picker to its built-in list in the first place.
+   * The base is joined with '/' + collection, so a configured value ending
+   * in a slash doubles it.
+   */
+  test.each([
+    ['/proxyapi/', '/proxyapi/genome_feature/fields'],
+    ['/proxyapi', '/proxyapi/genome_feature/fields'],
+    ['/proxyapi///', '/proxyapi/genome_feature/fields'],
+    ['https://example.org/api/', 'https://example.org/api/genome_feature/fields']
+  ])('base %p requests %p', (base, expected) => {
+    global.window = { App: { dataServiceURL: base } };
+    let requested;
+    const M = loadModule({
+      request: {
+        get: function (url) {
+          requested = url;
+          return payload([NATIVE('product', 'Product')]);
+        }
+      }
+    });
+
+    M.load('genome_feature', FALLBACK);
+    expect(requested).toBe(expected);
+    expect(requested).not.toContain('//genome_feature');
+  });
+
+  test('dataAPI is normalised the same way', () => {
+    global.window = { App: { dataAPI: '/proxyapi/', dataServiceURL: '/unused' } };
+    let requested;
+    const M = loadModule({
+      request: { get: function (url) { requested = url; return payload([NATIVE('x', 'X')]); } }
+    });
+
+    M.load('genome', FALLBACK);
+    expect(requested).toBe('/proxyapi/genome/fields');
+  });
+
+  test('a base of only slashes is treated as unset', () => {
+    global.window = { App: { dataServiceURL: '/' } };
+    let called = false;
+    const M = loadModule({
+      request: { get: function () { called = true; return payload([]); } }
+    });
+
+    let got;
+    M.load('genome', FALLBACK).then((f) => { got = f; });
+    // Nothing to build a URL from, so fall back without a pointless request.
+    expect(called).toBe(false);
+    expect(got).toBe(FALLBACK);
+  });
+});
