@@ -2028,6 +2028,7 @@ var loadGexfDependencies = function(callback) {
             var brEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['bridge_event_id'] : undefined;
             var cnvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['cnv_cluster_id'] : undefined;
             var breakAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['assembly_repeat_break'] : undefined;
+            var scafEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['scaffold_event_id'] : undefined;
             var unionByCsvNodeAttr = function(attrId) {
                 if (typeof attrId === 'undefined') return;
                 var byTok = {};
@@ -2051,6 +2052,8 @@ var loadGexfDependencies = function(callback) {
                 unionByCsvNodeAttr(altEvAttrId);
             } else if (type === 'translocation_bridges') {
                 unionByCsvNodeAttr(brEvAttrId);
+            } else if (type === 'breaks') {
+                unionByCsvNodeAttr(scafEvAttrId);
             } else if (type === 'remote_cnv') {
                 // Union all copies sharing a cnv_cluster_id across the graph so each Remote CNV Cluster locus
                 // highlights its dispersed paralogous copies together across the genome.
@@ -2144,7 +2147,7 @@ var loadGexfDependencies = function(callback) {
                     }
                 } else {
                     var hasExplicitInComp = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
-                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'translocation_bridges' || type === 'rearrangements' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'remote_cnv' || type === 'inversions')) {
+                    if (hasExplicitInComp && (type === 'alt_paths' || type === 'translocation_bridges' || type === 'rearrangements' || type === 'fragmented_paralogs' || type === 'tandem_repeats' || type === 'remote_cnv' || type === 'inversions' || type === 'breaks')) {
                         c.nodeIds.forEach(function(nid) {
                             if (explicitNodes[nid]) focalIds.push(nid);
                             else boundaryAnchorSet[nid] = true;
