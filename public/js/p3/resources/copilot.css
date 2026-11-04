@@ -271,6 +271,39 @@
   display: block;
 }
 
+/* Floating window: chat list as an overlay when the window is narrow
+   (CopilotFloatingWindow._updateNarrowMode, below 700 px). The sidebar's
+   node lives in .copilotSidebarOverlay whenever it is not in the layout. */
+.copilotSidebarOverlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  max-width: 85%;
+  z-index: 30;
+  background-color: #ffffff;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.copilotSidebarBackdrop {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 29;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.copilotSidebarOverlayOpen .copilotSidebarOverlay,
+.copilotSidebarOverlayOpen .copilotSidebarBackdrop {
+  display: block;
+}
+
 /* ========================================
    CHAT SESSION TITLE STYLES
    ======================================== */
