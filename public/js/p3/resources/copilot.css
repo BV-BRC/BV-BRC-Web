@@ -1509,7 +1509,7 @@
     align-items: stretch;
     width: 100%;
     height: 100%;
-    padding: 4px 150px 0 150px;
+    padding: 4px 0 0 0;
     border: 0;
     overflow: visible;
     box-sizing: border-box;
@@ -1519,6 +1519,9 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    /* Fill a narrow chat column; a centred 800 px bar on a wide one. */
+    max-width: 800px;
+    margin: 0 auto;
     box-sizing: border-box;
     background: #ffffff;
     border: 1.5px solid #c0c4cb;
@@ -1538,6 +1541,24 @@
     align-items: flex-end;
     gap: 2px;
     width: 100%;
+}
+
+/* Narrow composer (CopilotInput.COMPOSER_STACK_BELOW): the text box gets a
+   full-width first row; 📎 on the left and Plan/Execute + send on the right
+   below it. */
+.copilotComposer--stacked .copilotComposerRow {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 2px;
+}
+
+.copilotComposer--stacked .copilotTextAreaWrapper {
+    order: -1;
+    flex: 1 1 100%;
+}
+
+.copilotComposer--stacked .copilotModeToggle {
+    margin-left: auto;
 }
 
 .copilotAttachButtonContainer {
