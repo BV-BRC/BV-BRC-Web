@@ -115,14 +115,18 @@
           <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. A/cattle/Maryland/546/2024'" data-dojo-attach-point="strainNameNode" name="strain_name" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-range">
-          <label>Length</label>
+          <label data-dojo-attach-point="sequenceLengthLabel">Genome length (bp)</label>
           <div class="bvs-range">
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'1600'" data-dojo-attach-point="seqLengthFromNode" name="seq_length_from"></div>
             <span class="bvs-range-sep">to</span>
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'2400'" data-dojo-attach-point="seqLengthToNode" name="seq_length_to"></div>
           </div>
         </div>
-        <div class="bvs-field bvs-field-check">
+        <div class="bvs-field bvs-field-sm" data-dojo-attach-point="sequenceStatusField" style="display:none;">
+          <label>Sequence status</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="sequenceStatusNode" name="sequence_status" style="width:100%"></div>
+        </div>
+        <div class="bvs-field bvs-field-check" data-dojo-attach-point="completeGenomeField">
           <label class="bvs-inline-checks">
             <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="completeGenomeNode" id="${id}_chkCompleteGenome" /> Complete genome only
           </label>

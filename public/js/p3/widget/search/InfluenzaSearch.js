@@ -172,6 +172,12 @@ define([
       this.haSubtypeNode.store = new Memory({ data: HA_SUBTYPES });
       this.naSubtypeNode.store = new Memory({ data: NA_SUBTYPES });
       this.hostGroupNode.store = hostGroupStore;
+      this.sequenceStatusNode.store = new Memory({
+        data: [
+          { id: 'Complete', name: 'Complete' },
+          { id: 'Partial', name: 'Partial' }
+        ]
+      });
 
       // Reference/Representative store
       this.referenceNode.store = new Memory({
@@ -238,15 +244,8 @@ define([
       this.haSubtypeNode.on('change', lang.hitch(this, '_updateCladeVisibility'));
       this.fullSubtypeNode.on('change', lang.hitch(this, '_updateCladeVisibility'));
 
-      // ===== Complete genome disables length fields =====
-      this.completeGenomeNode.on('change', lang.hitch(this, function (checked) {
-        this.seqLengthFromNode.set('disabled', checked);
-        this.seqLengthToNode.set('disabled', checked);
-        if (checked) {
-          this.seqLengthFromNode.set('value', '');
-          this.seqLengthToNode.set('value', '');
-        }
-      }));
+      // Complete-genome filtering does not restrict individual sequence lengths.
+      this.completeGenomeNode.on('change', lang.hitch(this, '_syncLengthInputs'));
 
       // ===== Select all segments =====
       this._segmentNodes = [
@@ -451,16 +450,21 @@ define([
       // Genomes require all selected segments; sequence searches return any
       // selected segment. Protein searches use their own gene/product fields.
       var isGenome = this.selectedDataType === 'genome';
+      var isSegment = this.selectedDataType === 'segment';
+      this.completeGenomeField.style.display = isProtein ? 'none' : '';
+      this.sequenceStatusField.style.display = isSegment ? '' : 'none';
+      this.sequenceLengthLabel.textContent = isGenome ? 'Genome length (bp)' : (isSegment ? 'Sequence length (bp)' : 'Protein length (aa)');
       this.completenessAccordion.style.display = isProtein ? 'none' : '';
       this.segmentFilterLabel.textContent = isGenome ? 'Required Segments' : 'Segments';
       this.segmentFilterHint.textContent = isGenome ? 'Genomes must contain all selected segments.' : 'Return sequences from any selected segment.';
 
-      if (!isGenome) {
-        // Complete-genome filtering applies only to genome searches.
+      if (isProtein) {
+        // Protein searches do not expose a genome-completeness control.
         if (this.completeGenomeNode && this.completeGenomeNode.get('value')) {
           this.completeGenomeNode.set('value', false);
         }
       }
+      this._syncLengthInputs();
       if (isProtein) {
         var segmentNodes = [
           this.segPB2Node, this.segPB1Node, this.segPANode, this.segHANode,
@@ -665,7 +669,7 @@ define([
         this.geographicGroupNode, this.isolationCountryNode, this.stateProvinceNode,
         this.h1CladeGlobalNode, this.h1CladeUsNode, this.h3CladeNode, this.h5CladeNode, this.subcladeNode,
         this.seasonNode, this.isolationSourceNode, this.passageNode, this.vaccineStrainNode,
-        this.geneNode, this.productNode
+        this.geneNode, this.productNode, this.sequenceStatusNode
       ];
       filterSelects.forEach(function (node) {
         if (node && node.set) {
@@ -723,6 +727,16 @@ define([
 
       this._updateCountryOptions();
       this._updateHostOptions();
+    },
+
+    _syncLengthInputs: function () {
+      var disabled = this.selectedDataType === 'genome' && !!this.completeGenomeNode.get('value');
+      this.seqLengthFromNode.set('disabled', disabled);
+      this.seqLengthToNode.set('disabled', disabled);
+      if (disabled) {
+        this.seqLengthFromNode.set('value', '');
+        this.seqLengthToNode.set('value', '');
+      }
     },
 
     // ===== Helpers =====
@@ -888,6 +902,7 @@ define([
         [this.bioprojectNode,       'bioproject_accession'],
         [this.completeGenomeNode,   'genome_status'],
         [this.excludeDeprecatedNode, 'genome_status'],
+        [this.selectedDataType === 'segment' && this.sequenceStatusNode, 'sequence_status'],
         [this.geneNode,             'gene'],
         [this.productNode,          'product']
       ];
@@ -915,6 +930,11 @@ define([
       var subDateSet = (this.submissionDateFromNode && this.submissionDateFromNode.get('value')) ||
                        (this.submissionDateToNode && this.submissionDateToNode.get('value'));
       if (subDateSet) cols.push('completion_date');
+
+      // Show the parent genome's status alongside sequence completeness.
+      if (this.selectedDataType === 'segment' && this.sequenceStatusNode && this.sequenceStatusNode.get('value')) {
+        cols.push('genome_status');
+      }
 
       var lengthField = this.selectedDataType === 'genome' ? 'genome_length'
         : (this.selectedDataType === 'segment' ? 'length' : 'aa_length');
@@ -977,6 +997,14 @@ define([
 
       // Sequence length — applies to the sequence itself (outside genome join)
       var seqFilters = [];
+      var status = this.sequenceStatusNode && this.sequenceStatusNode.get('value');
+      if (status === 'Complete' || status === 'Partial') {
+        // Existing sequence annotations use both title case and lower case.
+        seqFilters.push('in(sequence_status,(' + status + ',' + status.toLowerCase() + '))');
+      }
+      if (this.completeGenomeNode.get('value')) {
+        genomeFilters.push('eq(genome_status,Complete)');
+      }
       var segments = this._getSelectedSegments();
       if (segments.length) {
         var segmentFilter = segments.length === 1 ? 'eq(segment,' + segments[0] + ')' : 'in(segment,(' + segments.join(',') + '))';
