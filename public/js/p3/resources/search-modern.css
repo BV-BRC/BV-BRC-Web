@@ -135,6 +135,12 @@
 }
 
 /* ---------- Row container ---------- */
+.bvs-search .bvs-accessions::placeholder {
+  color: #aaa;
+  font-style: italic;
+  opacity: 1;
+}
+
 .bvs-search .bvs-row {
   display: flex;
   flex-wrap: wrap;

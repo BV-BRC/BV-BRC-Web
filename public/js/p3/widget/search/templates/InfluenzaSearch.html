@@ -133,6 +133,16 @@
         </div>
       </div>
 
+      <div class="bvs-row">
+        <div class="bvs-field bvs-field-lg" style="align-items:start;">
+          <label for="${id}_accessions" style="padding-top:4px;">Accessions</label>
+          <div>
+            <textarea id="${id}_accessions" class="dijitTextBox dijitTextArea bvs-accessions" data-dojo-attach-point="accessionNode" name="accessions" rows="1" placeholder="e.g. CY098641, CY098642" aria-describedby="${id}_accessionHint" title="GenBank sequence accessions, separated by commas, spaces, or newlines. Version suffixes are ignored." style="width:100%; box-sizing:border-box; resize:vertical; font:inherit;"></textarea>
+            <span id="${id}_accessionHint" hidden>GenBank sequence accessions, separated by commas, spaces, or newlines. Version suffixes are ignored.</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Protein accordion (Protein data type only) -->
       <div class="bvs-accordion" style="display:none; margin-top:20px;" data-dojo-attach-point="proteinAccordion">
         <div class="bvs-accordion-header" data-dojo-attach-point="proteinAccordionHeader">

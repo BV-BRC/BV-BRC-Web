@@ -661,6 +661,7 @@ define([
 
     // ===== Reset =====
     _resetForm: function () {
+      if (this.accessionNode) this.accessionNode.value = '';
       // Reset all FilteringSelect widgets
       var filterSelects = [
         this.haSubtypeNode, this.naSubtypeNode, this.fullSubtypeNode,
@@ -727,6 +728,26 @@ define([
 
       this._updateCountryOptions();
       this._updateHostOptions();
+    },
+
+    _getAccessions: function () {
+      var value = this.accessionNode ? this.accessionNode.value : '';
+      return String(value || '').split(/[\s,;]+/).map(function (accession) {
+        // Sequence records store the base accession separately from its version.
+        return accession.toUpperCase().replace(/\.\d+$/, '');
+      }).filter(function (accession, index, accessions) {
+        return accession && accessions.indexOf(accession) === index;
+      });
+    },
+
+    _buildAccessionQuery: function (field) {
+      var accessions = this._getAccessions().map(function (accession) {
+        var escaped = accession.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return TextInputEncoder('"' + escaped + '"');
+      });
+      if (!accessions.length) return null;
+      return accessions.length === 1 ? 'eq(' + field + ',' + accessions[0] + ')'
+        : 'in(' + field + ',(' + accessions.join(',') + '))';
     },
 
     _syncLengthInputs: function () {
@@ -843,6 +864,8 @@ define([
 
       // Strain name + BioProject (free-text, need TextInputEncoder)
       pushEq(q, 'genome_name', this.strainNameNode, true);
+      var accessionQuery = this._buildAccessionQuery('genbank_accessions');
+      if (accessionQuery) q.push(accessionQuery);
       pushEq(q, 'bioproject_accession', this.bioprojectNode, true);
 
       // Submission date (field is completion_date in Solr)
@@ -931,6 +954,10 @@ define([
                        (this.submissionDateToNode && this.submissionDateToNode.get('value'));
       if (subDateSet) cols.push('completion_date');
 
+      if (this._getAccessions().length) {
+        cols.push(this.selectedDataType === 'genome' ? 'genbank_accessions' : 'accession');
+      }
+
       // Show the parent genome's status alongside sequence completeness.
       if (this.selectedDataType === 'segment' && this.sequenceStatusNode && this.sequenceStatusNode.get('value')) {
         cols.push('genome_status');
@@ -997,6 +1024,8 @@ define([
 
       // Sequence length — applies to the sequence itself (outside genome join)
       var seqFilters = [];
+      var accessionQuery = this._buildAccessionQuery('accession');
+      if (accessionQuery) seqFilters.push(accessionQuery);
       var status = this.sequenceStatusNode && this.sequenceStatusNode.get('value');
       if (status === 'Complete' || status === 'Partial') {
         // Existing sequence annotations use both title case and lower case.
@@ -1029,6 +1058,8 @@ define([
     _buildProteinQuery: function () {
       var featureFilters = [];
       featureFilters.push('in(feature_type,(CDS,mat_peptide))');
+      var accessionQuery = this._buildAccessionQuery('accession');
+      if (accessionQuery) featureFilters.push(accessionQuery);
 
       var genomeFilters = this._buildGenomeFilters();
       if (genomeFilters.length > 0) {
