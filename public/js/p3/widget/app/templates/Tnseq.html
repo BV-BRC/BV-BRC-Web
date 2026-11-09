@@ -122,7 +122,7 @@
           <td>
           </td>
         </tr>
-        <tr>
+        <tr class="equalHeightBoxes">
           <td>
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
@@ -158,6 +158,29 @@
                 </select>
               </div>
             </div>
+          </td>
+          <td>
+            <div class="appBox appShadow" style="width:330px">
+              <div class="headerrow">
+                <label class="appBoxLabel">Selected Libraries</label>
+                <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
+                  <i class="fa icon-question-circle fa"></i>
+                </div>
+                <br>
+                <div class="appsublabel">Place read files here using the arrow buttons.</div>
+              </div>
+              <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
+                  style="margin:0 0 0 10px; width:90%;">
+                  <tbody data-dojo-attach-point="libsTableBody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
             <div class="appBox appShadow">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
@@ -181,25 +204,7 @@
               </div>
             </div>
           </td>
-          <td>
-            <div class="appBox appShadow" style="min-height: 320px; height:auto; width:330px">
-              <div class="headerrow">
-                <label class="appBoxLabel">Selected libraries</label>
-                <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
-                  <i class="fa icon-question-circle fa"></i>
-                </div>
-                <br>
-                <div class="appsublabel">Place read files here using the arrow buttons.</div>
-              </div>
-              <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
-                  style="margin:0 0 0 10px; width:90%;">
-                  <tbody data-dojo-attach-point="libsTableBody">
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </td>
+          <td></td>
         </tr>
       </table>
     </div>
