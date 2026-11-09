@@ -175,6 +175,49 @@ table.librarytable td > i {
     text-align: left;
 }
 
+/* Side-by-side boxes in one table row (e.g. Input File and Selected
+   Libraries) stretched to the same height. Put the class on the table when it
+   has one row, or on the row itself. The row is laid out as a flex row so the
+   boxes stretch in every browser (Firefox does not stretch a percentage
+   height inside a table cell). Boxes in the row must not set a fixed height. */
+table.equalHeightBoxes > tbody > tr,
+tr.equalHeightBoxes {
+    display: flex;
+}
+table.equalHeightBoxes > tbody > tr > td,
+tr.equalHeightBoxes > td {
+    display: flex;
+    flex-direction: column;
+}
+table.equalHeightBoxes > tbody > tr > td > .appBox,
+tr.equalHeightBoxes > td > .appBox {
+    flex: 1 1 auto;
+}
+/* A table of one row of boxes is spaced like the boxes around it: no cell
+   spacing (so its boxes line up with the full-width boxes) and a 10px gap
+   below, the same as the gap between the two boxes. The table's bottom
+   margin overlaps the next box's top margin where it has one. */
+table.equalHeightBoxes {
+    border-spacing: 0;
+    margin-bottom: 10px;
+}
+table.equalHeightBoxes > tbody > tr > td > .appBox {
+    margin-bottom: 0;
+}
+/* The library table fills what's left of its box: its rows share the extra
+   height, and the gap below it matches the gaps at its sides (the box pads
+   its right side to match its left). */
+.libraryBox {
+    display: flex;
+    flex-direction: column;
+    padding-right: 10px;
+}
+.libraryBox .libraryTableRow {
+    flex: 1 1 auto;
+    display: flex;
+    margin-bottom: 10px;
+}
+
 .appRowSegment {
     display: inline-block;
     text-align: center;
@@ -350,3 +393,53 @@ div.appsublabel {
 }
 
 
+
+/* Form field widths, as on Comprehensive Genome Analysis: single-field rows
+   are 527px plus the fields' borders. A workspace selector (sort icon, search
+   box, folder icon) has its search box end on that same edge, with the folder
+   icon past it. Two-field rows (.taxFields) span the same width; the first
+   field gives up width, the second stays 120px. */
+.App .standardField {
+    width: 527px;
+    max-width: 100%;
+}
+.App .standardField.WorkspaceObjectSelector {
+    width: 600px;
+}
+.App .standardField.WorkspaceObjectSelector .search-box {
+    width: 510px;
+    max-width: calc(100% - 40px);
+}
+/* A dijit Select is a table; without this its arrow cell takes a share of
+   the added width and the blue button grows. */
+.App .standardField.dijitSelect .dijitButtonContents {
+    width: 100%;
+}
+.taxFields {
+    display: flex;
+    gap: 16px;
+    max-width: 527px;
+}
+.taxNameField {
+    flex: 0 1 527px;
+    min-width: 0;
+}
+.taxIdField {
+    flex: 0 0 120px;
+}
+/* .appBox pads only its left side; pad the right to match on the forms that
+   use this layout. (Functional Classification's base class is Assembly2.) */
+.ComprehensiveSARS2Analysis .appBox,
+.Assembly2 .appBox,
+.Variation .appBox,
+.MetagenomicBinning .appBox,
+.MetagenomicReadMapping .appBox,
+.MobileElementDetection .appBox,
+.TaxonomicClassification .appBox,
+.SARS2Wastewater .appBox {
+    padding-right: 10px;
+}
+/* Start With choices: Read File / Assembled Contigs */
+.App LABEL.startWithOption {
+    font-size: 12px;
+}

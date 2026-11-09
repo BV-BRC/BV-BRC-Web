@@ -25,7 +25,7 @@ define([
     videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_Oat3lYK7hXorV9jPZxgwBw32&si=L0ApfPQlx-65230D',
     libraryData: null,
     defaultPath: '',
-    startingRows: 13,
+    startingRows: 6,
     libCreated: 0,
 
     constructor: function () {

@@ -446,6 +446,41 @@ define([
       return true;
     },
 
+    // The single "Send to Selected Libraries" arrow: adds each read input that
+    // is filled in (read pair, single read, SRA run) and not already in Selected
+    // Libraries, through the form's own add handlers.
+    onAddReads: function () {
+      var value = function (w) {
+        return w ? (w.searchBox || w).get('value') : '';
+      };
+      var makeID = this.makeLibraryID || this.makeStoreID;
+      var isNew = lang.hitch(this, function (type) {
+        return !(makeID.call(this, type) in this.libraryStore.index);
+      });
+      // The single read selector's attach point differs by form; single_end_libs
+      // is also the name of a list some forms keep, so only take a widget.
+      var single = [this.single_end_libsWidget, this.single_end_libs, this.read].filter(function (w) {
+        return w && w.searchBox;
+      })[0];
+      var pair = (value(this.read1) || value(this.read2)) && isNew('paired');
+      var singleNew = value(single) && isNew('single');
+      var srr = value(this.srr_accession) && isNew('srr_accession');
+      if (!pair && !singleNew && !srr) {
+        this.submit_selected_libs_validation_message.innerHTML = ' <br> Nothing new to add.<br>Hint: Fill in a read file or SRA run accession that is not already in Selected Libraries.';
+        return;
+      }
+      this.submit_selected_libs_validation_message.innerHTML = '';
+      if (pair) {
+        this.onAddPair();
+      }
+      if (singleNew) {
+        this.onAddSingle();
+      }
+      if (srr) {
+        this.onAddSRR();
+      }
+    },
+
     onAddSRR: function () {
       var accession = this.srr_accession.get('value');
       if (!accession.match(/^[a-z]{3}[0-9]+$/i)) {
