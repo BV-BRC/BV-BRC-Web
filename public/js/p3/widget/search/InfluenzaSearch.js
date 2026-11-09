@@ -1,7 +1,8 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/popup', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/query',
   'dojo/store/Memory', 'dijit/Calendar', 'dijit/TooltipDialog', './SearchBase', './TextInputEncoder',
-  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser'
+  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser',
+  './MultiValueSelect'
 ], function (
   declare, lang, popup, on, dom, domClass, query,
   Memory, Calendar, TooltipDialog, SearchBase, TextInputEncoder,
@@ -99,6 +100,16 @@ define([
     if (!node) return;
     var v = node.get('value');
     if (v === undefined || v === null || v === '') return;
+    if (Array.isArray(v)) {
+      var terms = v.filter(function (value) { return String(value).trim() !== ''; }).map(function (value) {
+        // Quote full facet values: unquoted spaces become separate Solr terms,
+        // which changes the meaning of an OR filter inside a genome join.
+        var clean = sanitizeInput(String(value)).trim().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return 'eq(' + field + ',' + TextInputEncoder('"' + clean + '"') + ')';
+      });
+      if (terms.length) arr.push(terms.length === 1 ? terms[0] : 'or(' + terms.join(',') + ')');
+      return;
+    }
     if (typeof v === 'string') v = v.trim();
     if (v === '') return;
     var clean = sanitizeInput(String(v));
@@ -216,7 +227,7 @@ define([
       facetBindings.forEach(lang.hitch(this, function (b) {
         var core = b[0], field = b[1], nodeName = b[2], condition = b[3];
         storeBuilder(core, field, condition).then(lang.hitch(this, function (store) {
-          this[nodeName].store = store;
+          this[nodeName].set('store', store);
         }));
       }));
 
@@ -605,8 +616,8 @@ define([
           return !!store.get(host);
         });
         hostNode.set('value', isMulti ? retained : (retained[0] || ''));
-        input.set('placeHolder', isMulti ? 'Add hosts' : 'e.g. Chicken');
-      }), lang.hitch(this, function (error) {
+        input.set('placeHolder', isMulti ? 'Add up to 5 hosts' : 'e.g. Chicken');
+      })).then(null, lang.hitch(this, function (error) {
         if (this._destroyed || requestId !== this._hostRequestId) return;
         input.set('placeHolder', 'Unable to load hosts');
         console.error('Unable to load hosts for the selected host group', error);
@@ -639,7 +650,7 @@ define([
           return !!store.get(country);
         });
         countryNode.set('value', isMulti ? retained : (retained[0] || ''));
-        input.set('placeHolder', isMulti ? 'Add countries' : 'Any');
+        input.set('placeHolder', isMulti ? 'Add up to 5 countries' : 'Any');
         this._updateStateVisibility();
       }), lang.hitch(this, function (error) {
         if (this._destroyed || requestId !== this._countryRequestId) return;
@@ -651,8 +662,11 @@ define([
     // ===== State field: only visible for North America / USA =====
     _updateStateVisibility: function () {
       var region = (this.geographicGroupNode.get('value') || '').toLowerCase();
-      var country = (this.isolationCountryNode.get('value') || '').toLowerCase();
-      var hide = (region && region !== 'north america') || (country && country !== 'usa' && country !== 'united states');
+      var countries = this.isolationCountryNode.get('value') || [];
+      var hasUSA = countries.some(function (country) {
+        return /^(usa|united states)$/i.test(country);
+      });
+      var hide = (region && region !== 'north america') || (countries.length && !hasUSA);
       this.stateField.style.display = hide ? 'none' : '';
       if (hide) {
         this.stateProvinceNode.set('value', '');
@@ -932,7 +946,9 @@ define([
 
       nodeCols.forEach(function (pair) {
         var node = pair[0], col = pair[1];
-        if (node && node.get('value') && cols.indexOf(col) === -1) {
+        var value = node && node.get('value');
+        var hasValue = Array.isArray(value) ? value.length > 0 : !!value;
+        if (hasValue && cols.indexOf(col) === -1) {
           cols.push(col);
         }
       });

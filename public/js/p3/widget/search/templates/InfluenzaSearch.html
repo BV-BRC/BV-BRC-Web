@@ -55,26 +55,26 @@
       <div class="bvs-divider"></div>
 
       <!-- Host: inline label-value -->
-      <div class="bvs-row">
+      <div class="bvs-row bvs-row-multi">
         <div class="bvs-field bvs-field-lg">
           <label>Host Group</label>
           <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Avian, Human'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-narrow bvs-field-lg">
-          <label>Host</label>
-          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Chicken'" data-dojo-attach-point="hostNameNode" name="host_name" style="width:100%"></div>
+          <label class="bvs-multi-label" tabindex="0">Host <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+          <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5 hosts',fieldLabel:'Host (select up to 5)',helpText:'Select up to 5 hosts. If a Host Group is selected, leave Host empty to include all hosts in that group.'" data-dojo-attach-point="hostNameNode" name="host_name" style="width:100%"></div>
         </div>
       </div>
 
       <!-- Location: inline label-value -->
-      <div class="bvs-row" style="margin-top:8px;">
+      <div class="bvs-row bvs-row-multi" style="margin-top:8px;">
         <div class="bvs-field bvs-field-lg">
           <label>Continent</label>
           <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-narrow bvs-field-lg">
-          <label>Country</label>
-          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width:100%"></div>
+          <label class="bvs-multi-label" tabindex="0">Country <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+          <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5 countries',fieldLabel:'Country (select up to 5)',helpText:'Select up to 5 countries. Leave Country empty to include all countries in the selected continent, or all countries when no continent is selected.'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-narrow bvs-field-lg" data-dojo-attach-point="stateField">
           <label style="flex: 0 0 40px">State</label>

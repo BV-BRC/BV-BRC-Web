@@ -200,6 +200,53 @@
   box-shadow: 0 2px 6px rgba(9, 69, 111, 0.18);
 }
 
+/* Keep labels and inputs aligned as multi-select choices grow. */
+.bvs-search .bvs-multi-label-help {
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--bvs-primary);
+}
+.bvs-search .bvs-row-multi {
+  align-items: flex-start;
+}
+.bvs-search .bvs-row-multi .bvs-field {
+  align-items: start;
+}
+.bvs-search .bvs-row-multi .bvs-field > label {
+  padding-top: 2px;
+}
+.bvs-search .bvs-multi-selected {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.bvs-search .bvs-multi-selected:empty {
+  display: none;
+}
+.bvs-search .bvs-multi-selected .bvs-chip {
+  background: var(--bvs-bg-accent);
+  color: var(--bvs-primary-dark);
+  border-color: var(--bvs-border-accent);
+  max-width: 100%;
+  padding: 3px 6px;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  text-align: left;
+  box-shadow: none;
+}
+.bvs-search .bvs-multi-limit {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.bvs-search .bvs-multi-limit:empty {
+  display: none;
+}
+
 /* Multi-select chip group hint label */
 .bvs-search .bvs-multi-hint {
   font-weight: normal;
