@@ -2,11 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/popup', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/query',
   'dojo/store/Memory', 'dijit/Calendar', 'dijit/TooltipDialog', './SearchBase', './TextInputEncoder',
   './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser',
-  './MultiValueSelect'
+  'dojo/request', '../../auth/authHeaders', './MultiValueSelect'
 ], function (
   declare, lang, popup, on, dom, domClass, query,
   Memory, Calendar, TooltipDialog, SearchBase, TextInputEncoder,
-  storeBuilder, hostGroupStore, template, RQLParser
+  storeBuilder, hostGroupStore, template, RQLParser,
+  request, authHeader
 ) {
 
   // Legacy + updated NCBI Taxonomy IDs — both needed for facet store scoping
@@ -599,18 +600,40 @@ define([
       var selected = isMulti ? value.slice() : (value ? [value] : []);
       var input = hostNode.searchBox || hostNode;
       var requestId = this._hostRequestId = (this._hostRequestId || 0) + 1;
-      var condition = '(' + buildTaxonCondition(['A', 'B', 'C', 'D']) + ')';
+      // Match descendants too, as the results query does. Exact taxon IDs
+      // exclude records assigned to individual strains beneath each species.
+      var condition = 'in(taxon_lineage_ids,(' + Object.keys(FLU_TAXON_IDS).map(function (type) {
+        return FLU_TAXON_IDS[type];
+      }).join(',') + '))';
       if (group) {
         var escaped = group.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-        condition += ' AND host_group:"' + escaped + '"';
+        condition += '&eq(host_group,' + TextInputEncoder('"' + escaped + '"') + ')';
       }
 
       // Clear stale options while loading, including any typed search text.
       hostNode.set('value', isMulti ? [] : '');
       hostNode.set('store', new Memory({ data: [] }));
       input.set('placeHolder', 'Loading hosts...');
-      return storeBuilder('genome', 'host_common_name', condition).then(lang.hitch(this, function (store) {
+      var url = window.App.dataServiceURL.replace(/\/$/, '') + '/genome/?' + condition
+        + '&limit(0)&facet((field,host_common_name),(mincount,1),(limit,-1))';
+      return request.get(url, {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'X-Requested-With': null,
+          Authorization: authHeader()
+        }
+      }).then(lang.hitch(this, function (response) {
         if (this._destroyed || requestId !== this._hostRequestId) return;
+        var fields = response && response.facet_counts && response.facet_counts.facet_fields;
+        var counts = fields && fields.host_common_name;
+        if (!counts) throw new Error('Missing host_common_name facet');
+        var hosts = Array.isArray(counts) ? counts.filter(function (value, index) { return index % 2 === 0; }) : Object.keys(counts);
+        var store = new Memory({
+          data: hosts.filter(function (host) { return host !== ''; }).map(function (host) {
+            return { id: host, name: host };
+          })
+        });
         hostNode.set('store', store);
         var retained = selected.filter(function (host) {
           return !!store.get(host);
