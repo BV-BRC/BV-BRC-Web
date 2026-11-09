@@ -26,7 +26,7 @@ define([
     pageTitle: 'Tn-Seq Analysis Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
-    startingRows: 11,
+    startingRows: 4,
     initConditions: 5,
     maxConditions: 10,
     conditionStore: null,
@@ -80,6 +80,8 @@ define([
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
 
+      // One Condition dropdown serves paired and single reads alike.
+      this.condition_paired = this.condition_single = this.condition_reads;
       // create help dialog for infobutton's with infobuttoninfo div's
       this.emptyTable(this.libsTable, this.startingRows);
       // this.emptyTable(this.condTable, this.initConditions);
@@ -188,6 +190,8 @@ define([
       var disable = !this.exp_design.checked;
       this.condition_single.set('disabled', disable);
       this.condition_paired.set('disabled', disable);
+      // The Condition dropdown shows only for strategies that use conditions.
+      this.conditionRow.style.display = disable ? 'none' : '';
       if (disable) {
         // this.block_condition.show();
         this.numCondWidget.set('value', Number(1));

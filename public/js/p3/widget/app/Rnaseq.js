@@ -28,7 +28,7 @@ define([
     pageTitle: 'RNA-Seq Analysis Service | BV-BRC',
     libraryData: null,
     defaultPath: '',
-    startingRows: 18,
+    startingRows: 9,
     initConditions: 5,
     initContrasts: 8,
     maxConditions: 10,
@@ -98,10 +98,22 @@ define([
             (this._isEmpty(value) || this.parse(value, constraints) !== undefined); // Boolean
         });
       }));
-      on(this.group_switch, 'click', lang.hitch(this, function (evt) {
-        this.exp_design.checked = !this.exp_design.checked;
-        this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
-        this.onDesignToggle();
+      // One Condition dropdown serves paired, single and SRA reads alike.
+      this.condition_paired = this.condition_single = this.condition_srr = this.condition_reads;
+      // Likewise one Sample Identifier serves paired and single reads.
+      this.paired_sample_id = this.single_sample_id = this.sample_id_reads;
+      // Conditions Off/On at the top of the form sets exp_design, which the
+      // rest of the code reads.
+      [this.conditionsOff, this.conditionsOn].forEach(lang.hitch(this, function (radio) {
+        radio.on('change', lang.hitch(this, function () {
+          if (this.exp_design.checked === this.conditionsOn.get('checked')) {
+            return;
+          }
+          this.exp_design.checked = this.conditionsOn.get('checked');
+          this.exp_design.value = this.exp_design.checked ? 'on' : 'off';
+          this.onDesignToggle();
+          this.validate();
+        }));
       }));
       this.condition_single.labelFunc = this.showConditionLabels;
       this.condition_srr.labelFunc = this.showConditionLabels;
@@ -177,6 +189,14 @@ define([
 
     onDesignToggle: function () {
       var design_status = this.exp_design.checked;
+      // With conditions off the form is just reads and parameters; on adds
+      // the Groups/Conditions box, the Condition dropdown and Contrasts.
+      var display = design_status ? '' : 'none';
+      this.conditionsBox.style.display = display;
+      this.conditionRow.style.display = display;
+      this.contrastsBox.style.display = display;
+      this.conditionsOn.set('checked', design_status);
+      this.conditionsOff.set('checked', !design_status);
       this.condition.set('disabled', !design_status);
       this.condition_single.set('disabled', !design_status);
       this.condition_srr.set('disabled', !design_status);
@@ -821,6 +841,17 @@ define([
 
     onAddSRR: function () {
       this.validate();
+      this.inherited(arguments);
+    },
+
+    // Paired and single reads share one Sample Identifier, so they are sent
+    // one at a time.
+    onAddReads: function () {
+      var paired = this.read1.searchBox.get('value') || this.read2.searchBox.get('value');
+      if (paired && this.read.searchBox.get('value')) {
+        this.submit_selected_libs_validation_message.innerHTML = ' <br> Send paired and single reads one at a time.<br>Hint: each gets its own Sample Identifier.';
+        return;
+      }
       this.inherited(arguments);
     },
 
