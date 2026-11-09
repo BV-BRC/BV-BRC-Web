@@ -1,0 +1,48 @@
+# Dependabot configuration.
+#
+# Previously absent, so dependabot ran on defaults: it opened PRs against
+# the repository's default branch (master) rather than the branch new work
+# lands on. That inverts the release flow -- alpha -> beta -> master exists
+# so changes soak before reaching production, and a dependency bump is
+# exactly the kind of change that wants that.
+#
+# See https://docs.github.com/code-security/dependabot/dependabot-version-updates
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    target-branch: alpha
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+
+    ignore:
+      # sanitize-html is PINNED to 2.17.5 in package.json, deliberately and
+      # without a caret.
+      #
+      # 2.17.6+ requires htmlparser2 ^12, which is pure ESM ("type":
+      # "module", no `require` export). Production runs Node 22, which
+      # cannot require() an ESM-only module, so the server aborts before
+      # listen(). That took down production once already and was fixed by
+      # this pin in PR #1388; dependabot has proposed undoing it since
+      # (#1471).
+      #
+      # Lift this only when sanitize-html ships a release whose
+      # htmlparser2 dependency has a CJS entry point, or when production
+      # moves to a Node that can require() ESM.
+      - dependency-name: sanitize-html
+
+      # Express 5 is a framework major affecting ~54 route registrations,
+      # and express-formidable (unmaintained) pins formidable ^1 while this
+      # app is on ^2. It needs a planned migration, not an automated bump --
+      # dependabot proposed it as "Bump qs, express and body-parser"
+      # (#1418), where the title gives no hint that Express 4 -> 5 is
+      # involved.
+      - dependency-name: express
+        update-types: [version-update:semver-major]
