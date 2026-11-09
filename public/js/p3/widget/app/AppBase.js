@@ -470,14 +470,62 @@ define([
         return;
       }
       this.submit_selected_libs_validation_message.innerHTML = '';
+      // Each send starts from a clean form: clear what was added (input that
+      // could not be added stays to be fixed) and, where the form has one,
+      // reset the Condition dropdown so the next reads get theirs picked again.
+      var count = lang.hitch(this, function () {
+        return this.libraryStore.data.length;
+      });
+      var clear = function (widgets) {
+        widgets.forEach(function (w) {
+          if (w) {
+            (w.searchBox || w).set('value', '');
+          }
+        });
+      };
+      var start = count();
+      var send = function (add, widgets) {
+        var before = count();
+        add();
+        if (count() > before) {
+          clear(widgets);
+        }
+      };
+      var resetCondition = lang.hitch(this, function () {
+        if (this.condition_reads && count() > start) {
+          this.condition_reads.reset();
+        }
+      });
       if (pair) {
-        this.onAddPair();
+        send(lang.hitch(this, 'onAddPair'), [this.read1, this.read2, this.paired_sample_id]);
       }
       if (singleNew) {
-        this.onAddSingle();
+        send(lang.hitch(this, 'onAddSingle'), [single, this.single_sample_id]);
       }
-      if (srr) {
-        this.onAddSRR();
+      if (!srr) {
+        resetCondition();
+        return;
+      }
+      var beforeSRR = count();
+      this.onAddSRR();
+      var afterSRR = lang.hitch(this, function () {
+        if (count() > beforeSRR) {
+          clear([this.srr_accession, this.srr_sample_id]);
+        }
+        resetCondition();
+      });
+      // A new SRA run is checked online before it is added; the accession box
+      // is re-enabled when that check is done.
+      if (this.srr_accession.get('disabled')) {
+        var handle = this.srr_accession.watch('disabled', function (name, was, now) {
+          if (!now) {
+            handle.unwatch();
+            afterSRR();
+          }
+        });
+      }
+      else {
+        afterSRR();
       }
     },
 

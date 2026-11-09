@@ -204,9 +204,12 @@ table.equalHeightBoxes {
 table.equalHeightBoxes > tbody > tr > td > .appBox {
     margin-bottom: 0;
 }
-/* The library table fills what's left of its box: its rows share the extra
-   height, and the gap below it matches the gaps at its sides (the box pads
-   its right side to match its left). */
+/* The library table's striped area fills what's left of its box, with the
+   gap below it matching the gaps at its sides (the box pads its right side
+   to match its left). Rows keep one height on every form: the table keeps
+   its natural height, and the stripes and border continue behind it to the
+   bottom of the box (::before sits where the table does, 10px in from each
+   side). */
 .libraryBox {
     display: flex;
     flex-direction: column;
@@ -215,7 +218,26 @@ table.equalHeightBoxes > tbody > tr > td > .appBox {
 .libraryBox .libraryTableRow {
     flex: 1 1 auto;
     display: flex;
+    align-items: flex-start;
+    position: relative;
     margin-bottom: 10px;
+}
+.libraryBox .libraryTableRow::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    border: 1px solid rgb(171, 171, 171);
+    background: repeating-linear-gradient(#ffffff 0, #ffffff 25px, #f5f5f5 25px, #f5f5f5 50px);
+}
+.libraryBox table.librarytable {
+    position: relative;
+    border-bottom-color: transparent;
+}
+.libraryBox table.librarytable tr {
+    height: 25px;
 }
 
 .appRowSegment {
@@ -427,8 +449,20 @@ div.appsublabel {
 .taxIdField {
     flex: 0 0 120px;
 }
+/* Two equal fields on one row, spanning the same width as a .standardField. */
+.fieldPair {
+    display: flex;
+    gap: 16px;
+    max-width: 527px;
+}
+.fieldPair > * {
+    flex: 1 1 0;
+    min-width: 0;
+}
 /* .appBox pads only its left side; pad the right to match on the forms that
-   use this layout. (Functional Classification's base class is Assembly2.) */
+   use this layout. (Functional Classification's base class is Assembly2,
+   Fastq Utilities' is Fastq,
+   RNA-Seq's RNASeq and Tn-Seq's TnSeq.) */
 .ComprehensiveSARS2Analysis .appBox,
 .Assembly2 .appBox,
 .Variation .appBox,
@@ -436,8 +470,19 @@ div.appsublabel {
 .MetagenomicReadMapping .appBox,
 .MobileElementDetection .appBox,
 .TaxonomicClassification .appBox,
-.SARS2Wastewater .appBox {
+.SARS2Wastewater .appBox,
+.Fastq .appBox,
+.RNASeq .appBox,
+.TnSeq .appBox {
     padding-right: 10px;
+}
+/* Input File fields that are not workspace pickers (dropdowns, sample IDs,
+   the SRA accession) match the pickers' white search box: the same indent
+   (past the pickers' sort icon) and the same 248px width, a dropdown's arrow
+   included (246px plus the field's border). */
+.App .readField {
+    width: 246px;
+    margin-left: 17px;
 }
 /* Start With choices: Read File / Assembled Contigs */
 .App LABEL.startWithOption {
