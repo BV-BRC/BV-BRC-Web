@@ -653,6 +653,7 @@ define([
         // in the few cases the number of max genomes is 14 or less, adjust the max genome deletions to avoid errors
         return_values.max_genomes_missing = (values.max_genomes_missing < (this.codonGroup.addedNum - 4)) ? values.max_genomes_missing : (codonGenomesFiltered.length - 4);
         return_values.max_allowed_dups = values.max_allowed_dups;
+        return_values.sequence_type = values.sequence_type || 'both';
 
       }
 
@@ -809,6 +810,11 @@ define([
       }
       if (Object.keys(job_data).includes('max_allowed_dups')) {
         this.max_allowed_dups.set('value', job_data['max_allowed_dups']);
+      }
+      var sequence_type = job_data['sequence_type'] || 'both';
+      var radio = this['sequence_type_' + sequence_type];
+      if (radio) {
+        radio.set('checked', true);
       }
     },
 
