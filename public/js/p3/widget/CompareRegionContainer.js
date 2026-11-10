@@ -296,7 +296,7 @@ define([
         }, {
           // Maps to the sog_id field; the compare_regions service groups
           // and colours by it the same way it does the PATRIC families.
-          value: 'sog', label: 'Systems-ortholog groups (SOGs)'
+          value: 'sog', label: 'Strict ortholog groups (SOGs)'
         }]
       });
       domConstruct.place(label_method, filterPanel.containerNode, 'last');
