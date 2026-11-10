@@ -38,7 +38,7 @@
     "flatted": "^3.4.2",
     "form-data": "^4.0.6",
     "formidable": "^2.1.2",
-    "gexf-js": "github:aswarren/gexf-js#fd236e9f5faf190cd8926bca9c0e8ec0f9cd24a9",
+    "gexf-js": "github:aswarren/gexf-js#c3d3ea397edeed88452310dec07a24b852e2768b",
     "helmet": "^7.2.0",
     "html2canvas": "^1.4.1",
     "http-proxy": "^1.18.1",
