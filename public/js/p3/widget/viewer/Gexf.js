@@ -28,7 +28,7 @@ var loadGexfDependencies = function(callback) {
         var stylesToLoad =[
             '/vendor/gexf-js/styles/jquery-ui-1.10.3.custom.min.css',
             '/vendor/gexf-js/styles/gexfjs.css',
-            '/js/p3/widget/viewer/phylotree/phylotree.css'
+            '/js/p3/resources/phylotree.css'
         ];
 
         stylesToLoad.forEach(function(href){
