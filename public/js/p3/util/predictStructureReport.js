@@ -16,8 +16,8 @@
 }(typeof window !== 'undefined' ? window : this, function () {
 
   function shouldShow(selection) {
-    return !!selection && selection.length === 1 &&
-      selection[0].app === 'PredictStructure' && selection[0].status === 'completed';
+    var s = selection && selection.length === 1 ? selection[0] : null;
+    return !!s && s.app === 'PredictStructure' && s.status === 'completed';
   }
 
   // Unencoded workspace path of the report, or null if the job lacks output params.

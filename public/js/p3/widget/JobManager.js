@@ -5,7 +5,7 @@ define([
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
   './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
   'dijit/Dialog', 'dijit/layout/ContentPane', 'dojo/hash', 'dojo/io-query',
-  '../util/predictStructureReport'
+  '../util/predictStructureReport', 'dojo/when', '../WorkspaceManager'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
@@ -13,7 +13,7 @@ define([
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
   CopilotAPI, ChatSessionOptionsBar,
   Dialog, ContentPane, hash, ioQuery,
-  predictStructureReport
+  predictStructureReport, when, WorkspaceManager
 ) {
   return declare([BorderContainer], {
     disabled: false,
@@ -372,7 +372,11 @@ define([
         function (selection) {
           var path = predictStructureReport.reportPath(selection[0]);
           if (path) {
-            window.open('/workspace' + encodePath(path), '_blank');
+            when(WorkspaceManager.getObject(path, true), function () {
+              window.open('/workspace' + encodePath(path), '_blank');
+            }, function () {
+              Topic.publish('/Notification', { message: 'No report.html found for this job', type: 'error' });
+            });
           } else {
             console.log('Error: could not determine report.html path');
           }
