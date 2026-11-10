@@ -5,8 +5,8 @@ define([
     "dojo/query", "dojo/dom-geometry", "dojo/dom-style", "dojo/dom-construct",
     "../ActionBar", "../ItemDetailPanel", "../PerspectiveToolTip", "dojo/dom-class",
     "../SelectionToGroup", "dijit/Dialog",
-    "dijit/TooltipDialog", "dijit/popup"
- 
+    "dijit/TooltipDialog", "dijit/popup",
+    "./phylotree/phylotree_svg"
 
 ], function(
     declare, BorderContainer, ContentPane, 
@@ -15,7 +15,8 @@ define([
     query, domGeom, domStyle, domConstruct,
     ActionBar, ItemDetailPanel, PerspectiveToolTipDialog, domClass,
     SelectionToGroup, Dialog,
-    TooltipDialog, popup
+    TooltipDialog, popup,
+    PhyloTreeModule
 ){
     var scriptsReady = false;
     var pendingCallbacks = [];
@@ -58,9 +59,7 @@ var loadGexfDependencies = function(callback) {
             '/vendor/gexf-js/js/jquery-2.0.2.min.js',
             '/vendor/gexf-js/js/jquery-ui-1.10.4.custom.min.js',
             '/vendor/gexf-js/js/jquery.mousewheel.min.js',
-            '/vendor/gexf-js/js/gexfjs.js',
-            '/js/p3/widget/viewer/phylotree/phylotree_base.js',
-            '/js/p3/widget/viewer/phylotree/phylotree_svg.js'
+            '/vendor/gexf-js/js/gexfjs.js'
         ];
         
         var loadScript = function(index) {
@@ -3886,6 +3885,11 @@ var loadGexfDependencies = function(callback) {
             delete GexfJS.oldParams.zoomLevel;
         },
 
+        getDataAPI: function() {
+            var api = (window.App && window.App.dataAPI) ? String(window.App.dataAPI) : "https://www.bv-brc.org/api/";
+            return api.replace(/https?:\/\/(www\.)?patricbrc\.org\/api/i, "https://www.bv-brc.org/api");
+        },
+
         fetchManifestNames: function(contigMap) {
             this.namesLoading = true;
             this.genomeNameMap = {};
@@ -3909,7 +3913,7 @@ var loadGexfDependencies = function(callback) {
             }
 
             // A single query to 'genome_sequence' returns BOTH the sequence description AND its parent genome name!
-            var url = PathJoin(window.App.dataAPI, "genome_sequence");
+            var url = PathJoin(this.getDataAPI(), "genome_sequence");
             var query = "in(sequence_id,(" + seqIds.map(encodeURIComponent).join(",") + "))&select(sequence_id,description,genome_id,genome_name)&limit(25000)";
 
             xhr.post(url, {
@@ -4121,7 +4125,7 @@ var loadGexfDependencies = function(callback) {
             }
 
             this.specialtyGenesLoading = true;
-            var url = PathJoin(window.App.dataAPI, "sp_gene");
+            var url = PathJoin(this.getDataAPI(), "sp_gene");
             var query = "in(genome_id,(" + genomeIds.slice(0, 1000).map(encodeURIComponent).join(",") + "))&select(patric_id,feature_id,genome_id,property,source,source_id,gene,product,evidence,classification,antibiotics)&limit(25000)";
 
             xhr.post(url, {
@@ -6328,7 +6332,7 @@ var loadGexfDependencies = function(callback) {
 
             if (isFeature) {
                 this.containerType = "feature_data";
-                url = PathJoin(window.App.dataAPI, "genome_feature");
+                url = PathJoin(this.getDataAPI(), "genome_feature");
                 // Include feature_id and genome_id so both Feature Group and Genome Group creation work cleanly
                 query = "in(patric_id,(" + cleanIds.map(encodeURIComponent).join(",") + "))&select(feature_id,patric_id,genome_id,genome_name,product,gene,refseq_locus_tag)&limit(25000)";
                 if (featureMap) {
@@ -6361,7 +6365,7 @@ var loadGexfDependencies = function(callback) {
                 }
             } else {
                 this.containerType = "genome_data";
-                url = PathJoin(window.App.dataAPI, "genome");
+                url = PathJoin(this.getDataAPI(), "genome");
                 query = "in(genome_id,(" + cleanIds.map(encodeURIComponent).join(",") + "))&select(genome_id,genome_name)&limit(25000)";
                 fallbackRecords = cleanIds.map(lang.hitch(this, function(gid) {
                     return {
@@ -7113,7 +7117,8 @@ var loadGexfDependencies = function(callback) {
         },
 
         initPhyloTree: function() {
-            if (!this.treePane || !this.treePane.domNode || !window.PhyloTreeSvg) return;
+            var PhyloTreeSvgClass = (PhyloTreeModule && PhyloTreeModule.PhyloTreeSvg) ? PhyloTreeModule.PhyloTreeSvg : window.PhyloTreeSvg;
+            if (!this.treePane || !this.treePane.domNode || !PhyloTreeSvgClass) return;
             if (this.phyloTree) {
                 try { this.phyloTree.destroy(); } catch (e) {}
                 this.phyloTree = null;
@@ -7214,7 +7219,7 @@ var loadGexfDependencies = function(callback) {
 
             var mObj = this.buildPhyloTreeMetadata();
             try {
-                this.phyloTree = new window.PhyloTreeSvg(mountEl, {
+                this.phyloTree = new PhyloTreeSvgClass(mountEl, {
                     newick: newick,
                     tip_metadata: mObj.metadata,
                     label_field: mObj.hasNames ? "Genome Name" : "ID",
