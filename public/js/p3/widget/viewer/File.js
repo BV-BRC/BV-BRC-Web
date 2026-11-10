@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dijit/layout/BorderContainer', 'dojo/on', "dojo/_base/lang",
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct', 'dojo/dom-style',
-  '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 'dojo/_base/array'
+  '../formatter', '../../WorkspaceManager', 'dojo/_base/Deferred', 'dojo/dom-attr', 'dojo/_base/array', '../../auth/authHeaders'
 ], function (
   declare, BorderContainer, on, lang,
   domClass, ContentPane, domConstruct, domStyle,
-  formatter, WS, Deferred, domAttr, array
-) {
+  formatter, WS, Deferred, domAttr, array,
+  authHeader) {
   return declare([BorderContainer], {
     baseClass: 'FileViewer',
     disabled: false,
@@ -99,7 +99,7 @@ define([
           const res = await fetch(window.App.workspaceDownloadAPI + "/set-cookie-auth", {
             method: "POST",
             headers: {
-              "Authorization": window.App.authorizationToken,
+              "Authorization": authHeader(),
               "Content-Type": "application/json"
             },
             credentials: "include"

@@ -1,18 +1,19 @@
 define([
-  'dojo/_base/declare', 'dojo/_base/lang', '../../util/PathJoin', 'dojo/request',
+  'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
   '../GenomeListOverview', '../StrainGridContainer', '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-
+  '../../util/genomeKingdom'
 ], function (
-  declare, lang, PathJoin, xhr,
+  declare, lang,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
   Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
-  EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer
+  EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
+  genomeKingdom
 ) {
 
   return declare([GenomeList], {
@@ -51,19 +52,16 @@ define([
       const query = this.state.search;
       var _self = this;
 
-      xhr.get(PathJoin(dataAPI, 'data/taxon_category/', `?${query}`), {
-        headers: {
-          Authorization: authToken,
-          Accept: 'application/solr+json',
-        },
-        handleAs: 'json',
-      }).then(function (data) {
-        if (data.superkingdom[0] === 'Bacteria' && data.superkingdom.length === 1) {
-          _self.changeToBacteria();
-        } else if (data.superkingdom[0] === 'Viruses' && data.superkingdom.length === 1) {
-          _self.changeToViruses();
-        }
-      });
+      // forToken: see the note in GenomeList.js -- authToken is a prototype property
+      // captured at module-declare time.
+      genomeKingdom.detect({ apiServer: dataAPI, query: query, authToken: authToken })
+        .then(function (r) {
+          if (r.kingdom === 'Bacteria') {
+            _self.changeToBacteria();
+          } else if (r.kingdom === 'Viruses') {
+            _self.changeToViruses();
+          }
+        });
       this.setActivePanelState()
     },
 

@@ -1,9 +1,11 @@
 define([
   'dojo/_base/Deferred', 'dojo/topic', 'dojo/request/xhr',
-  'dojo/when', 'dojo/_base/lang', 'dojo/store/Memory'
+  'dojo/when', 'dojo/_base/lang', 'dojo/store/Memory',
+  './auth/authHeaders'
 ], function (
   Deferred, Topic, xhr,
-  When, lang, Memory
+  When, lang, Memory,
+  authHeader
 ) {
   var self = this;
   var TIME_OUT = 30000; // 30s
@@ -19,8 +21,15 @@ define([
     data: []
   });
 
+  /**
+   * Unlike every other caller, this one falls back to localStorage when the
+   * ambient token is unset. Kept local rather than pushed into authHeaders:
+   * the two are normally in sync, but they diverge during early boot, and
+   * making the fallback global would start sending tokens on requests that
+   * do not carry one today.
+   */
   function getAuthHeader() {
-    return (window.App && window.App.authorizationToken) || localStorage.getItem('tokenstring') || '';
+    return authHeader('api', authHeader.ambientToken() || localStorage.getItem('tokenstring'));
   }
 
   function getUserId() {

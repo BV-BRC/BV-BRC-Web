@@ -1,5 +1,5 @@
-define(['dojo/request', 'dojo/_base/Deferred'
-], function (xhr, defer) {
+define(['dojo/request', 'dojo/_base/Deferred', './auth/authHeaders'
+], function (xhr, defer, authHeader) {
   var idx = 1;
   return function (url, token) {
 
@@ -8,7 +8,10 @@ define(['dojo/request', 'dojo/_base/Deferred'
       var xhrPromise = xhr.post(url, {
         headers: {
           'content-type': 'application/jsonrpc+json',
-          Authorization: token,
+          // Workspace and app service JSON-RPC: bare token, never a scheme
+          // prefix. forToken, not authHeader: the token is fixed at
+          // construction and must not fall back to the ambient one.
+          Authorization: authHeader.forToken('api', token),
           'X-Requested-With': false
         },
         handleAs: 'json',

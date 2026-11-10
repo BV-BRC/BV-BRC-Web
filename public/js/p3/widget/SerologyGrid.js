@@ -22,34 +22,39 @@ define([
     columns: {
       'Selection Checkboxes': selector({ unhidable: true }),
 
-      project_identifier: { label: 'Project Identifier', field: 'project_identifier', hidden: true },
-      contributing_institution: { label: 'Contributing Institution', field: 'contributing_institution', hidden: true },
-      sample_identifier: { label: 'Sample Identifier', field: 'sample_identifier', hidden: false },
+      // Project & Submission Information
+      project_identifier: { label: 'Project Identifier', field: 'project_identifier', hidden: true, group: 'Project & Submission Information' },
+      contributing_institution: { label: 'Contributing Institution', field: 'contributing_institution', hidden: true, group: 'Project & Submission Information' },
+      date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true, group: 'Project & Submission Information' },
+      date_modified: { label: 'Date Modified', field: 'date_modified', hidden: true, group: 'Project & Submission Information' },
+      comments: { label: 'Comments', field: 'comments', hidden: true, group: 'Project & Submission Information' },
 
-      host_identifier: { label: 'Host Identifier', field: 'host_identifier', hidden: false },
-      host_type: { label: 'Host Type', field: 'host_type', hidden: false },
-      host_species: { label: 'Host Species', field: 'host_species', hidden: false },
-      host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false },
-      host_sex: { label: 'Host Sex', field: 'host_sex', hidden: false },
-      host_age: { label: 'Host Age', field: 'host_age', hidden: false },
-      host_age_group: { label: 'Host Age Group', field: 'host_age_group', hidden: false },
-      host_health: { label: 'Host Health', field: 'host_health', hidden: false },
+      // Sample & Specimen Information
+      sample_identifier: { label: 'Sample Identifier', field: 'sample_identifier', hidden: false, group: 'Sample & Specimen Information' },
 
-      collection_country: { label: 'Collection Country', field: 'collection_country', hidden: true },
-      collection_state: { label: 'Collection State', field: 'collection_state', hidden: true },
-      collection_city: { label: 'Collection City', field: 'collection_city', hidden: true },
-      collection_date: { label: 'Collection Date', field: 'collection_date', hidden: false },
-      collection_year: { label: 'Collection Year', field: 'collection_year', hidden: true },
-      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true },
+      // Collection & Geographic Information
+      collection_country: { label: 'Collection Country', field: 'collection_country', hidden: true, group: 'Collection & Geographic Information' },
+      collection_state: { label: 'Collection State', field: 'collection_state', hidden: true, group: 'Collection & Geographic Information' },
+      collection_city: { label: 'Collection City', field: 'collection_city', hidden: true, group: 'Collection & Geographic Information' },
+      collection_date: { label: 'Collection Date', field: 'collection_date', hidden: false, group: 'Collection & Geographic Information' },
+      collection_year: { label: 'Collection Year', field: 'collection_year', hidden: true, group: 'Collection & Geographic Information' },
+      geographic_group: { label: 'Geographic Group', field: 'geographic_group', hidden: true, group: 'Collection & Geographic Information' },
 
-      test_type: { label: 'Test Type', field: 'test_type', hidden: false },
-      test_result: { label: 'Test Result', field: 'test_result', hidden: false },
-      test_interpretation: { label: 'Test Interpretation', field: 'test_interpretation', hidden: false },
-      serotype: { label: 'Serotype', field: 'serotype', hidden: false },
+      // Pathogen & Laboratory Information
+      test_type: { label: 'Test Type', field: 'test_type', hidden: false, group: 'Pathogen & Laboratory Information' },
+      test_result: { label: 'Test Result', field: 'test_result', hidden: false, group: 'Pathogen & Laboratory Information' },
+      test_interpretation: { label: 'Test Interpretation', field: 'test_interpretation', hidden: false, group: 'Pathogen & Laboratory Information' },
+      serotype: { label: 'Serotype', field: 'serotype', hidden: false, group: 'Pathogen & Laboratory Information' },
 
-      comments: { label: 'Comments', field: 'comments', hidden: true },
-      date_inserted: { label: 'Date Inserted', field: 'date_inserted', hidden: true },
-      date_modified: { label: 'Date Modified', field: 'date_modified', hidden: true },
+      // Host Information
+      host_identifier: { label: 'Host Identifier', field: 'host_identifier', hidden: false, group: 'Host Information' },
+      host_type: { label: 'Host Type', field: 'host_type', hidden: false, group: 'Host Information' },
+      host_species: { label: 'Host Species', field: 'host_species', hidden: false, group: 'Host Information' },
+      host_common_name: { label: 'Host Common Name', field: 'host_common_name', hidden: false, group: 'Host Information' },
+      host_sex: { label: 'Host Sex', field: 'host_sex', hidden: false, group: 'Host Information' },
+      host_age: { label: 'Host Age', field: 'host_age', hidden: false, group: 'Host Information' },
+      host_age_group: { label: 'Host Age Group', field: 'host_age_group', hidden: false, group: 'Host Information' },
+      host_health: { label: 'Host Health', field: 'host_health', hidden: false, group: 'Host Information' },
     },
     startup: function () {
       var _self = this;

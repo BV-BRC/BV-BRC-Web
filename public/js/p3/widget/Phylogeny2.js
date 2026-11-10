@@ -7,7 +7,7 @@ define([
   'dijit/Dialog', './ItemDetailPanel', 'dojo/query', 'FileSaver',
   './ActionBar', './ContainerActionBar', 'dijit/layout/BorderContainer', './PerspectiveToolTip',
   'dijit/layout/ContentPane', 'dojo/dom-class', 'dojo/on', 'dojo/topic',
-  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin'
+  'dojo/text!./templates/Phylogeny2.html', 'dijit/_TemplatedMixin', '../auth/authHeaders'
 ], function (
   declare, Deferred, when,
   WidgetBase, request, domConstruct,
@@ -17,8 +17,8 @@ define([
   SelectionToGroup, Dialog, ItemDetailPanel, query, saveAs,
   ActionBar, ContainerActionBar, BorderContainer, PerspectiveToolTipDialog,
   ContentPane, domClass, on, Topic,
-  Template, Templated
-) {
+  Template, Templated,
+  authHeader) {
 
   var infoMenu = new TooltipDialog({
     content: '<div> Create groups and download sequences by making a selection in the tree on the left.</div>',
@@ -109,8 +109,9 @@ define([
         layoutPriority: 1,
         containerWidget: this
       });
-      this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container' }, this.containerPane.domNode);
-      this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1' }, this.treeDiv);
+      this.treeDiv = domConstruct.create('div', { class: 'size archaeopteryxClass', id: this.id + 'tree-container', style: 'height: 100%; min-height: 400px;' }, this.containerPane.domNode);
+      // Archaeopteryx 3 measures this container instead of the browser window.
+      this.treeDiv1 = domConstruct.create('div', { id: 'phylogram1', style: 'height: 100%; min-height: 400px;' }, this.treeDiv);
       this.treeDiv2 = domConstruct.create('div', { id: 'controls0' }, this.treeDiv);
       // this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv);
 
@@ -185,14 +186,13 @@ define([
       console.log('onNodeSelection this.idType', this.idType);
       console.log('onNodeSelection this.nodeType', this.nodeType);
 
-
       if (cur && cur.length == 1) {
         if (cur[0].feature_id) {
           request.get(PathJoin(this.apiServer, 'genome_feature', cur[0].feature_id), {
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -204,7 +204,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (record) {
@@ -231,7 +231,7 @@ define([
           headers: {
             accept: 'application/json',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (record) {
@@ -264,7 +264,7 @@ define([
         headers: {
           accept: 'application/newick+json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (treeDat) {
@@ -299,7 +299,6 @@ define([
       var isPublic = path.replace(/\/+/g, '/').split('/')[1] == 'public';
 
       console.log('in generatePathLinks() isPublic', isPublic);
-
 
       // if viewing all public workspaces, just create header
       if (path == '/public/') {
@@ -364,11 +363,6 @@ define([
         this.set('options', treeDat.options);
       }
 
-      // If the treeData includes any custom visualizations, save them for later use.
-      if (treeDat.custom && treeDat.custom.nodeVisualizations) {
-         this.set('customVisualization', treeDat.custom);
-      }
-
       this.set('idType', idType);
       this.set('fileType', fileType);
       this.set('newickxml', treeDat.tree);
@@ -378,75 +372,20 @@ define([
       this.containerPane.set('style', 'top: 40px');
 
       var options = {};
-      options.backgroundColorDefault = '#ffffff';
-      options.branchColorDefault = '#909090';
-      options.branchDataFontSize = 12;
-      options.branchWidthDefault = 3;
-      options.collapasedLabelLength = 7;
-      options.defaultFont = ['Arial', 'Helvetica', 'Times'];
-      options.dynahide = true;
-      options.externalNodeFontSize = 12;
-      options.internalNodeFontSize = 12;
-      options.labelColorDefault = '#202020';
-      options.minBranchLengthValueToShow = 0.01;
-      options.minConfidenceValueToShow = 0.5;
-      options.nodeSizeDefault = 2;
-      options.nodeVisualizationsOpacity = 1.0;
-      options.phylogram = true;
-      options.searchIsCaseSensitive = false;
-      options.searchIsPartial = true;
-      options.searchUsesRegex = false;
-      options.showBranchEvents = true;
-      options.showBranchLengthValues = false;
-      options.showConfidenceValues = true;
-      options.showDisributions = true;
-      options.showExternalLabels = true;
-      options.showExternalNodes = false;
-      options.showInternalLabels = true;
-      options.showInternalNodes = false;
-      options.showNodeEvents = true;
-      options.showNodeName = true;
-      options.showSequence = true;
-      options.showSequenceAccession = true;
-      options.showSequenceGeneSymbol = true;
-      options.showSequenceName = true;
-      options.showSequenceSymbol = true;
-      options.showTaxonomy = false;
-      options.showTaxonomyCode = true;
-      options.showTaxonomyCommonName = true;
-      options.showTaxonomyRank = true;
-      options.showTaxonomyScientificName = true;
-      options.showTaxonomySynonyms = true;
-      options.labelColor = '#202020';
 
       var settings = {};
-      settings.border = '1px solid #909090';
-      settings.controls0Top = 10;
-      settings.controls1Top = 10;
       settings.enableAccessToDatabases = true;
-      settings.controlsBackgroundColor = '#e0e0e0';
-      settings.controlsFont = ['Arial', 'Helvetica', 'Times'];
-      settings.controlsFontColor = '#505050';
-      settings.controlsFontSize = 8;
       settings.enableDownloads = true;
-      settings.enableBranchVisualizations = true;
-      settings.enableCollapseByBranchLenghts = false;
-      settings.enableCollapseByFeature = false;
-      settings.enableNodeVisualizations = true;
+      settings.enableVisualizations = true;
       settings.nhExportWriteConfidences = true;
-      settings.rootOffset = 180;
-      settings.allowManualNodeSelection = true;
-      settings.orderTree = true;
+      settings.enableManualNodeSelection = true;
+      settings.ladderizeTree = true;
 
       if (this.options) {
         options = lang.mixin(options, this.options);
       }
 
-      var nodeVisualizations = {};
-      var specialVisualizations = {};
-      var nodeLabels = {};
 
-      var property_name = '';
       if (!this.newickxml) {
         console.log('No Newick or xml File To Render');
         return;
@@ -457,55 +396,7 @@ define([
         if (this.fileType == 'phyloxml') {
           mytree = window.archaeopteryx.parsePhyloXML(this.newickxml);
 
-          var refs_set = forester.collectPropertyRefs(mytree, 'node', true);
-          // console.log('mytree collectPropertyRefs refs_set: ', refs_set);
 
-          if (refs_set.size > 0) {
-            this.treeDiv3 = domConstruct.create('div', { id: 'controls1' }, this.treeDiv); // show control1 panel if there are node properties
-            refs_set.forEach(function (a) {
-              // console.log('refs_set a', a);
-
-              var property_line = a.split(':');
-              // console.log('property_line', property_line);
-              var selected = false;
-
-              if (property_line.length == 1) {
-                property_name = property_line[0];
-              }
-              else if (property_line.length > 1) {
-                property_name = property_line[1];
-              }
-
-              if (property_name.toLowerCase() == 'genome_name') {
-                selected = true;
-                options.showNodeName = false;
-              }
-              nodeVisualizations[property_name] =  {
-                label: property_name,
-                description: property_name,
-                field: null,
-                cladeRef: a,
-                regex: false,
-                shapes: ['square', 'diamond', 'triangle-up', 'triangle-down', 'cross', 'circle'],
-                colors: 'category50',
-                sizes: null
-              };
-              nodeLabels[property_name] = {
-                label: property_name,
-                description: property_name,
-                propertyRef: 'BVBRC:' + property_name,
-                selected: selected,
-                showButton: true
-              };
-            });
-          }
-
-          // Were any custom node visualizations provided in the treeDat? If so, include them here.
-          if (this.customVisualization && this.customVisualization.nodeVisualizations) {
-            for (const key of Object.keys(this.customVisualization.nodeVisualizations)) {
-               nodeVisualizations[key] = this.customVisualization.nodeVisualizations[key];
-            }
-          }
         }
         else {
           mytree = window.archaeopteryx.parseNewHampshire(this.newickxml, true, false);
@@ -519,17 +410,13 @@ define([
       if (mytree) {
         try {
           forester.midpointRoot(mytree);
-          // console.log('before launch mytree nodeVisualizations: ', nodeVisualizations);
           // console.log('processTree this ', this);
           // console.log('processTree before launch mytree ', mytree);
           // console.log('this.options ', this.options);
           // console.log('options ', options);
           // console.log('settings ', settings);
-          // console.log('nodeVisualizations ', nodeVisualizations);
-          // console.log('nodeLabels ', nodeLabels);
-          // console.log('specialVisualizations ', specialVisualizations);
 
-          window.archaeopteryx.launch('#phylogram1', mytree, options, settings, nodeVisualizations, nodeLabels, specialVisualizations);
+          window.archaeopteryx.launch('#phylogram1', mytree, lang.mixin({}, options, settings));
           console.log('processTree this ', this);
           // get node labels
           var nodeList = this.getLeafNodes([mytree]);
@@ -861,7 +748,6 @@ define([
       this.selectionActions.forEach(function (a) {
         var cont = false;
         console.log('setupActions this.nodeType = ', this.nodeType);
-
 
         if (this.selection) {
           console.log('if setupActions this.selection = ', this.selection);

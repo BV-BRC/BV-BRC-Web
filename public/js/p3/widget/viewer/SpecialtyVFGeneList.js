@@ -1,13 +1,13 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on', 'dojo/topic',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  '../PageGrid', '../formatter', '../SpecialtyVFGeneGridContainer', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang'
+  '../PageGrid', '../formatter', '../SpecialtyVFGeneGridContainer', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on, Topic,
   domClass, ContentPane, domConstruct,
   Grid, formatter, SpecialtyVFGeneGridContainer,
-  PathJoin, xhr, lang
-) {
+  PathJoin, xhr, lang,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'SpecialtyVFGeneList',
     disabled: false,
@@ -41,7 +41,7 @@ define([
         headers: {
           accept: 'application/solr+json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(function (res) {

@@ -50,3 +50,91 @@
 	font-size: .65em;
 	text-transform: uppercase;
 }
+
+/* Shared controls for selecting segments from viral genome groups. */
+.PanelForm .genome-group-segment-summary {
+	box-sizing: border-box;
+	color: #444;
+	display: block;
+	font-size: 14px;
+	line-height: 1.45;
+	margin-top: 8px;
+	max-width: 85%;
+	overflow: hidden;
+	text-transform: none;
+	width: 85%;
+}
+
+.PanelForm .genome-group-segment-summary__status {
+	color: #666;
+}
+
+.PanelForm .genome-group-segment-summary__header {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 6px;
+	width: 100%;
+}
+
+.PanelForm .genome-group-segment-summary__title {
+	color: #333;
+	font-weight: 500;
+}
+
+.PanelForm .genome-group-segment-summary__actions {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	max-width: 100%;
+}
+
+.PanelForm .genome-group-segment-summary__action {
+	background: #f7f7f7;
+	border: 1px solid #b8b8b8;
+	border-radius: 2px;
+	color: #333;
+	cursor: pointer;
+	font-size: 12px;
+	line-height: 1.2;
+	padding: 2px 8px;
+}
+
+.PanelForm .genome-group-segment-summary__toggle {
+	color: #444;
+	display: block;
+	font-size: 13px;
+	margin: 4px 0 2px;
+	width: 100%;
+}
+
+.PanelForm .genome-group-segment-summary__options {
+	display: grid;
+	gap: 6px 14px;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin-top: 6px;
+	max-width: 100%;
+	width: 100%;
+}
+
+.PanelForm .genome-group-segment-summary__option {
+	align-items: center;
+	color: #444;
+	display: inline-flex;
+	font-size: 13px;
+	gap: 4px;
+	min-width: 0;
+	white-space: nowrap;
+}
+
+.PanelForm .genome-group-segment-summary__note {
+	color: #666;
+	font-size: 12px;
+	margin-top: 6px;
+}
+
+.PanelForm .genome-group-segment-summary__indicator {
+	color: #9a6b00;
+	font-weight: 700;
+}

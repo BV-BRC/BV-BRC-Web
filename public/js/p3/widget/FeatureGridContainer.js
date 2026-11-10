@@ -38,10 +38,10 @@ define([
         'DownloadTable',
         'fa icon-download fa-2x',
         {
-          label: 'DOWNLOAD',
+          label: 'Metadata',
           multiple: false,
           validTypes: ['*'],
-          tooltip: 'Download Table',
+          tooltip: 'Download metadata for all filtered results',
           tooltipDialog: downloadTT
         },
         function () {

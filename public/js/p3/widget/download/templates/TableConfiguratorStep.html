@@ -1,0 +1,74 @@
+<div class="stepContent tableConfiguratorStep">
+  <div class="stepHeader">
+    <h3>Table Options</h3>
+    <p class="stepDescription">Select and arrange the columns for your download.</p>
+  </div>
+
+  <div class="errorMessage dijitHidden" data-dojo-attach-point="errorNode"></div>
+
+  <!-- Summary Section -->
+  <div class="configSection summarySection">
+    <div class="summaryInfo">
+      <span class="summaryItem">
+        <span class="summaryLabel">Format:</span>
+        <span class="summaryValue" data-dojo-attach-point="formatValueNode">TSV</span>
+      </span>
+      <span class="summaryItem">
+        <span class="summaryLabel">Records:</span>
+        <span class="summaryValue" data-dojo-attach-point="recordsValueNode">All</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Column Selection Section -->
+  <div class="configSection">
+    <h4><i class="icon-columns"></i> Column Selection</h4>
+    <p class="sectionDescription">Choose which columns to include in your download and arrange their order.</p>
+
+    <div class="fieldSelector">
+      <div class="fieldColumn availableColumn">
+        <div class="columnHeader">Available Columns</div>
+        <input type="text" class="fieldSearch" placeholder="Search columns..."
+               data-dojo-attach-point="searchInput"
+               data-dojo-attach-event="oninput:_onSearchInput" />
+        <div class="fieldList" data-dojo-attach-point="availableFieldsList"></div>
+      </div>
+
+      <div class="fieldButtons">
+        <button type="button" class="fieldBtn addBtn" data-dojo-attach-point="addFieldBtn"
+                data-dojo-attach-event="onclick:_onAddField" title="Add to download">
+          <i class="icon-chevron-right"></i>
+        </button>
+        <button type="button" class="fieldBtn removeBtn" data-dojo-attach-point="removeFieldBtn"
+                data-dojo-attach-event="onclick:_onRemoveField" title="Remove from download">
+          <i class="icon-chevron-left"></i>
+        </button>
+        <button type="button" class="fieldBtn moveUpBtn" data-dojo-attach-point="moveUpBtn"
+                data-dojo-attach-event="onclick:_onMoveUp" title="Move up">
+          <i class="icon-chevron-up"></i>
+        </button>
+        <button type="button" class="fieldBtn moveDownBtn" data-dojo-attach-point="moveDownBtn"
+                data-dojo-attach-event="onclick:_onMoveDown" title="Move down">
+          <i class="icon-chevron-down"></i>
+        </button>
+      </div>
+
+      <div class="fieldColumn selectedColumn">
+        <div class="columnHeader">Columns to Download <span class="columnCount" data-dojo-attach-point="columnCountNode"></span></div>
+        <div class="fieldList" data-dojo-attach-point="selectedFieldsList"></div>
+      </div>
+    </div>
+
+    <div class="columnActions">
+      <button type="button" class="actionBtn" data-dojo-attach-event="onclick:_onSelectAll" title="Add all columns">
+        <i class="icon-plus"></i> Add All
+      </button>
+      <button type="button" class="actionBtn" data-dojo-attach-event="onclick:_onClearAll" title="Remove all columns">
+        <i class="icon-times"></i> Clear All
+      </button>
+      <button type="button" class="actionBtn" data-dojo-attach-event="onclick:_onResetDefaults" title="Reset to default columns">
+        <i class="icon-refresh"></i> Reset to Defaults
+      </button>
+    </div>
+  </div>
+</div>

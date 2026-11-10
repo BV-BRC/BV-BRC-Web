@@ -3,14 +3,14 @@ define([
   'dojo/store/JsonRest', 'dojo/dom-construct', 'dijit/TooltipDialog',
   'dojo/on', 'dijit/popup', 'dojo/_base/lang', 'dojo/dom-construct',
   'dijit/form/CheckBox', 'dojo/string', 'dojo/when', 'dijit/form/_AutoCompleterMixin',
-  '../util/PathJoin', 'dojo/request', 'dojo/store/Memory'
+  '../util/PathJoin', 'dojo/request', 'dojo/store/Memory', '../auth/authHeaders'
 ], function (
   FilteringSelect, declare,
   Store, domConstr, TooltipDialog,
   on, popup, lang, domConstr, Checkbox,
   string, when, AutoCompleterMixin,
-  PathJoin, request, Memory
-) {
+  PathJoin, request, Memory,
+  authHeader) {
 
   return declare([FilteringSelect, AutoCompleterMixin], {
     apiServiceUrl: window.App.dataServiceURL,
@@ -34,7 +34,7 @@ define([
       this.apiStore = new Store({
         target: PathJoin(this.apiServiceUrl, 'protein_structure') + '/',
         idProperty: 'pdb_id',
-        headers: { accept: 'application/json', Authorization: (window.App.authorizationToken || '') }
+        headers: { accept: 'application/json', Authorization: authHeader() }
       });
       // Fancy footwork for modified api query
       var api_query = this.apiStore.query;

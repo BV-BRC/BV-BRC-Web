@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic',
-  'dojo/store/util/QueryResults', '../../../../store/ArrangeableMemoryStore'
+  'dojo/store/util/QueryResults', '../../../../store/ArrangeableMemoryStore', '../../../../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic,
-  QueryResults, ArrangeableMemoryStore
-) {
+  QueryResults, ArrangeableMemoryStore,
+  authHeader) {
 
   let tgState = {
     lineage_of_concern: '',
@@ -176,7 +176,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }), function (response) {

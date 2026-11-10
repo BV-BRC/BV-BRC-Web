@@ -3,15 +3,15 @@ define([
   './SubSystemsMemoryGrid', 'dijit/popup', 'dojo/topic', 'dojo/request', 'dojo/when',
   'dijit/TooltipDialog', './FilterContainerActionBar', 'FileSaver', '../util/PathJoin',
   'dojo/_base/lang', 'dojo/dom-construct', './PerspectiveToolTip',
-  './SelectionToGroup', 'dijit/Dialog', './DownloadTooltipDialog'
+  './SelectionToGroup', 'dijit/Dialog', './DownloadTooltipDialog', '../auth/authHeaders'
 
 ], function (
   declare, GridContainer, on,
   SubSystemsGrid, popup, Topic, request, when,
   TooltipDialog, ContainerActionBar, saveAs, PathJoin,
   lang, domConstruct, PerspectiveToolTipDialog,
-  SelectionToGroup, Dialog, DownloadTooltipDialog
-) {
+  SelectionToGroup, Dialog, DownloadTooltipDialog,
+  authHeader) {
 
   var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
   var viewFASTATT = new TooltipDialog({
@@ -349,7 +349,7 @@ define([
                   Accept: 'application/solr+json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }), function (response) {
@@ -426,7 +426,7 @@ define([
                   Accept: 'application/solr+json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }), function (response) {
@@ -531,7 +531,7 @@ define([
                 Accept: 'application/solr+json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: (window.App.authorizationToken || '')
+                Authorization: authHeader()
               },
               data: query
             }), function (response) {
@@ -583,7 +583,7 @@ define([
                   Accept: 'application/solr+json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: (window.App.authorizationToken || '')
+                  Authorization: authHeader()
                 },
                 data: query
               }), function (response) {

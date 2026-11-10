@@ -8,7 +8,8 @@ define([
   'dojo/window', '../widget/Drawer', 'dijit/layout/ContentPane',
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
-  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders'
+  'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders',
+  '../widget/ThrottleBanner'
 
 ], function (
   declare,
@@ -20,8 +21,8 @@ define([
   Router, Window,
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
-  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders
-) {
+  ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
+  authHeader, ThrottleBanner) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -33,6 +34,13 @@ define([
     user: '',
     startup: function () {
       var _self = this;
+
+      // Listen for Data API throttling before anything can issue a query. A
+      // shed request otherwise renders as an empty grid, which the API's
+      // client contract calls the worst possible outcome -- the user reads
+      // zero rows as missing data rather than a busy server.
+      ThrottleBanner.start();
+
       this.checkLogin();
       if (window.App.alreadyLoggedIn) {
         this.refreshUser().then(function (u) {
@@ -55,49 +63,18 @@ define([
           }).placeAt(document.body);
           this.chatButton = chatButton;
 
-          // Create blue rectangle button for showing chat button when hidden
-          var showChatRectButton = domConstruct.create('div', {
-            className: 'ShowChatRectButton',
-            innerHTML: '<span class="show-chat-plus">+</span>',
-            title: 'show copilot button',
-            style: {
-              display: 'none'
-            }
-          });
-          domConstruct.place(showChatRectButton, document.body);
 
-          // Function to get chat button visibility from localStorage
-          function getChatButtonVisibility() {
-            try {
-              if (window && window.localStorage) {
-                var stored = localStorage.getItem('copilot-chat-button-visible');
-                return stored !== null ? (stored === 'true') : true; // default to visible
-              }
-            } catch (e) {
-              console.warn('Unable to read chat button visibility from localStorage', e);
-            }
-            return true; // default to visible
-          }
-
-          // Initialize showChatRectButton visibility based on localStorage
-          var initialChatButtonVisible = getChatButtonVisibility();
-          if (!initialChatButtonVisible) {
-            domStyle.set(showChatRectButton, 'display', 'block');
-          }
-
-          // Add click handler for the rectangle button
-          on(showChatRectButton, 'click', function(evt) {
-            Topic.publish('showChatButton', true);
-          });
-
-          Topic.subscribe('hideChatButton', lang.hitch(this, function(checked) {
-            domStyle.set(showChatRectButton, 'display', 'block');
-          }));
-
-          Topic.subscribe('showChatButton', lang.hitch(this, function(checked) {
-            domStyle.set(showChatRectButton, 'display', 'none');
-          }));
         })
+      } else {
+        // Logged out: the button is shown too; a click asks the visitor to
+        // log in (ChatButton.onClick) instead of opening the chat.
+        this.chatButton = new ChatButton({
+          region: 'center',
+          width: '60px',
+          height: '60px',
+          backgroundColor: '#007bff',
+          borderRadius: '50%'
+        }).placeAt(document.body);
       }
 
       on(document, 'keydown', function (evt) {
@@ -590,7 +567,7 @@ define([
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'Authorization': window.App.authorizationToken
+              'Authorization': authHeader()
             }
           }).then(function () {
             _self._hideQueryLogIndicator();
@@ -684,7 +661,6 @@ define([
           }, false)
           // show the upload and jobs widget
           window.App.uploadJobsWidget('show');
-          window.App.chatButtonWidget('show');
           window.App.checkSU();
           window.App.alreadyLoggedIn = true;
         } else {
@@ -701,7 +677,7 @@ define([
             xhr.get(userServiceURL + '/authenticate/refresh/', {
               headers: {
                 'Accept': 'application/json',
-                'Authorization': window.App.authorizationToken
+                'Authorization': authHeader()
               }
             })
               .then(
@@ -804,7 +780,9 @@ define([
         xhr.get(userServiceURL + '/user/' + userid, {
           headers: {
             'Accept': 'application/json',
-            'Authorization': token
+            // forToken: this runs during login, with the token just issued
+            // and not yet assigned to window.App.authorizationToken.
+            'Authorization': authHeader.forToken('api', token)
           }
         })
           .then(
@@ -864,21 +842,6 @@ define([
         console.log('I should not see the upload and jobs widget');
       }
     },
-    chatButtonWidget: function (action) {
-      if (action === 'show') {
-        var chatButton = new ChatButton({
-          region: 'center',
-          width: '60px',
-          height: '60px',
-          backgroundColor: '#007bff',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-        });
-      } else {
-        console.log('I should not see the chat button');
-      }
-    },
     _showQueryLogIndicator: function () {
       var el = dom.byId('querylog-indicator');
       if (el) { domClass.remove(el, 'dijitHidden'); }
@@ -893,7 +856,7 @@ define([
       return xhr.get(this.userServiceURL + '/user/' + window.localStorage.userid, {
         headers: {
           'Accept': 'application/json',
-          'Authorization': window.App.authorizationToken
+          'Authorization': authHeader()
         }
       })
         .then(
@@ -975,7 +938,7 @@ define([
           headers: {
             'Accept': 'application/solr+json',
             'Content-Type': 'application/rqlquery+x-www-urlencoded',
-            'Authorization': window.App.authorizationToken
+            'Authorization': authHeader()
           },
           handleAs: 'json'
         }).then(function (data) {

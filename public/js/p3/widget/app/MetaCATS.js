@@ -287,26 +287,49 @@ define([
       }
       return ans;
     },
+
+    showAutoGroupDetailsStatus: function (message) {
+      this.autoGroupDetailsStatus.innerHTML = '<i class="fa fa-spinner fa-spin fa-lg"></i>&nbsp;&nbsp;' + message;
+      this.autoGroupDetailsStatus.className = 'messageContainer workingMessage';
+      this.autoGroupDetailsStatus.style.display = 'block';
+    },
+
+    showAutoGroupDetailsError: function (message) {
+      this.autoGroupDetailsStatus.innerHTML = message;
+      this.autoGroupDetailsStatus.className = 'messageContainer errorMessage';
+      this.autoGroupDetailsStatus.style.display = 'block';
+    },
+
+    hideAutoGroupDetailsStatus: function () {
+      this.autoGroupDetailsStatus.style.display = 'none';
+    },
+
     onAddAutoGroup: function () {
       query('.auto_feature_button').style('visibility', 'hidden');
       var self = this;
       var my_group = this.auto_feature_group.value;
       var metadata_value = this.metadata_group.value;
       this.metadata_group.set('disabled', true);
+      this.showAutoGroupDetailsStatus('Loading feature group details...');
       DataAPI.queryGenomeFeatures('in(feature_id,FeatureGroup(' + encodeURIComponent(my_group) + '))', { 'limit' : 1000 })
         .then((result) => {
           const genome_map = new Map();
           result.items.forEach(function (sel) {
+            const feature = {
+              patric_id: sel.patric_id,
+              accession: sel.accession,
+              sequence_id: sel.sequence_id
+            };
             if (genome_map.has(sel.genome_id)) {
-              genome_map.get(sel.genome_id).push(sel.patric_id);
+              genome_map.get(sel.genome_id).push(feature);
             } else {
-              genome_map.set(sel.genome_id, [sel.patric_id]);
+              genome_map.set(sel.genome_id, [feature]);
             }
           });
           return genome_map;
-        }).catch(error => { console.log('Genome feature query failed.'); })
+        })
         .then((genome_map) => {
-          DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`, { 'limit' : 1000 })
+          return DataAPI.queryGenomes(`in(genome_id,(${Array.from(genome_map.keys()).join(',')}))`, { 'limit' : 1000 })
             .then((genome_results) => {
               var group_names = new Set();
               var ranges = [];
@@ -378,15 +401,15 @@ define([
                     group_names.add(m_value.toString());
                   }
                 }
-                var feature_ids = genome_map.get(genome.genome_id);
-                feature_ids.forEach(function (feature_id) {
-                  if (self.grid.store.query({ patric_id: feature_id }).length == 0) {
+                var features = genome_map.get(genome.genome_id);
+                features.forEach(function (feature) {
+                  if (self.grid.store.query({ patric_id: feature.patric_id }).length == 0) {
                     self.grid.store.put({
-                      patric_id: feature_id,
+                      patric_id: feature.patric_id,
                       metadata: m_value.toString(),
                       group: g_value.toString(),
                       genome_id: genome.genome_id,
-                      genbank_accessions: genome.genbank_accessions,
+                      genbank_accessions: feature.accession || feature.sequence_id || genome.genbank_accessions,
                       strain: genome.strain
                     });
                   }
@@ -398,14 +421,19 @@ define([
               self.grid.refresh();
               self.getNumberGroups();
               if (self.grid.store.data.length == 0) {
-                this.metadata_group.set('disabled', false);
+                self.metadata_group.set('disabled', false);
               }
-            }).catch(error => {
-              if (self.grid.store.data.length == 0) {
-                this.metadata_group.set('disabled', false);
-              }
-              console.log('Genome query failed.');
-            })
+            });
+        })
+        .then(() => {
+          self.hideAutoGroupDetailsStatus();
+        })
+        .catch(error => {
+          if (self.grid.store.data.length == 0) {
+            self.metadata_group.set('disabled', false);
+          }
+          self.showAutoGroupDetailsError('Feature group details could not be loaded.');
+          console.error('Feature group details query failed.', error);
         })
         .finally(() => {
           query('.auto_feature_button').style('visibility', 'visible');
@@ -633,6 +661,87 @@ define([
       }, self);
       self.grid.refresh();
       self.getNumberGroups();
+      self.restoreAutoGroupDetails(auto_groups);
+    },
+
+    restoreAutoGroupDetails: function (auto_groups) {
+      var self = this;
+      var feature_ids = auto_groups.map(function (group) {
+        return group['id'];
+      });
+      var genome_ids = Array.from(new Set(auto_groups.map(function (group) {
+        return group['g_id'];
+      }).filter(function (genome_id) {
+        return genome_id;
+      })));
+      var remaining_requests = (feature_ids.length > 0 ? 1 : 0) + (genome_ids.length > 0 ? 1 : 0);
+      var details_failed = false;
+      var finishDetailsRequest = function (failed) {
+        details_failed = details_failed || failed;
+        remaining_requests -= 1;
+        if (remaining_requests === 0) {
+          if (details_failed) {
+            self.showAutoGroupDetailsError('Some accession or strain details could not be loaded.');
+          } else {
+            self.hideAutoGroupDetailsStatus();
+          }
+        }
+      };
+
+      if (remaining_requests > 0) {
+        this.showAutoGroupDetailsStatus('Loading accession and strain details...');
+      }
+
+      if (feature_ids.length > 0) {
+        var feature_query = 'patric_id:(' + feature_ids.map(function (feature_id) {
+          return '"' + feature_id.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+        }).join(' OR ') + ')';
+        DataAPI.queryGenomeFeatures(feature_query, {
+          limit: feature_ids.length,
+          query_lang: 'solr',
+          select: ['patric_id', 'accession', 'sequence_id']
+        }).then(function (result) {
+          result.items.forEach(function (feature) {
+            var rows = self.grid.store.query({ patric_id: feature.patric_id });
+            if (rows.length > 0) {
+              var row = rows[0];
+              row.genbank_accessions = feature.accession || feature.sequence_id || '';
+              self.grid.store.put(row);
+            }
+          });
+          self.grid.refresh();
+          finishDetailsRequest(false);
+        }).catch(function (error) {
+          console.error('Feature details query failed while restoring MetaCATS input.', error);
+          finishDetailsRequest(true);
+        });
+      }
+
+      if (genome_ids.length > 0) {
+        var genome_query = 'in(genome_id,(' + genome_ids.join(',') + '))';
+        DataAPI.queryGenomes(genome_query, {
+          limit: genome_ids.length,
+          select: ['genome_id', 'strain']
+        }).then(function (result) {
+          var strains = new Map();
+          result.items.forEach(function (genome) {
+            strains.set(genome.genome_id, genome.strain || '');
+          });
+          auto_groups.forEach(function (group) {
+            var rows = self.grid.store.query({ patric_id: group['id'] });
+            if (rows.length > 0 && strains.has(group['g_id'])) {
+              var row = rows[0];
+              row.strain = strains.get(group['g_id']);
+              self.grid.store.put(row);
+            }
+          });
+          self.grid.refresh();
+          finishDetailsRequest(false);
+        }).catch(function (error) {
+          console.error('Genome details query failed while restoring MetaCATS input.', error);
+          finishDetailsRequest(true);
+        });
+      }
     },
 
     getGenomeIDs: function (job_data) {

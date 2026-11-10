@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/when', 'dojo/request', 'dojo/dom-construct',
   'dijit/layout/ContentPane',
-  './Base', '../../util/PathJoin', '../PathwayMapContainer'
+  './Base', '../../util/PathJoin', '../PathwayMapContainer', '../../auth/authHeaders'
 ], function (
   declare, lang, when, request, domConstruct,
   ContentPane,
-  ViewerBase, PathJoin, PathwayMapContainer
-) {
+  ViewerBase, PathJoin, PathwayMapContainer,
+  authHeader) {
   return declare([ViewerBase], {
     disabled: false,
     query: null,
@@ -64,7 +64,7 @@ define([
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }), function (response) {
@@ -81,7 +81,7 @@ define([
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }), function (response) {
@@ -98,7 +98,7 @@ define([
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }), function (response) {

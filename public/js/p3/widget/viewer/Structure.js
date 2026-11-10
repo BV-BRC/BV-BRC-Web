@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
-  '../PageGrid', '../formatter', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter'
+  '../PageGrid', '../formatter', '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on,
   domClass, ContentPane, domConstruct,
-  Grid, formatter, PathJoin, xhr, lang, DataItemFormatter
-) {
+  Grid, formatter, PathJoin, xhr, lang, DataItemFormatter,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'ProteinStructure',
     disabled: false,
@@ -121,7 +121,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (experiment) {

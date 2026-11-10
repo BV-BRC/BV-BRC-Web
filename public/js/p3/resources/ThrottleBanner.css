@@ -1,0 +1,70 @@
+/*
+ * ThrottleBanner -- busy state shown while Data API requests back off after a
+ * 429/503. Fixed to the top of the viewport rather than inserted as a
+ * BorderContainer region, so appearing and disappearing never reflows the page
+ * underneath it.
+ *
+ * Deliberately non-blocking: pointer-events pass through so a user can keep
+ * navigating while requests retry behind them.
+ */
+.ThrottleBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  box-sizing: border-box;
+  padding: 8px 16px;
+  font-size: 13px;
+  line-height: 18px;
+  text-align: center;
+  color: #5c4204;
+  background-color: #fdf3d2;
+  border-bottom: 1px solid #e3c14e;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+
+  /* Hidden by default; slide down when shown. */
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+}
+
+.ThrottleBannerVisible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* Retries exhausted: a condition the user has to act on, not just wait out. */
+.ThrottleBannerFailed {
+  color: #7a2a18;
+  background-color: #fbe3dd;
+  border-bottom-color: #d98c79;
+}
+
+.ThrottleBannerText::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background-color: #c9930a;
+  animation: throttle-banner-pulse 1.4s ease-in-out infinite;
+}
+
+.ThrottleBannerFailed .ThrottleBannerText::before {
+  background-color: #b4432a;
+  animation: none;
+}
+
+@keyframes throttle-banner-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ThrottleBanner { transition: none; }
+  .ThrottleBannerText::before { animation: none; }
+}

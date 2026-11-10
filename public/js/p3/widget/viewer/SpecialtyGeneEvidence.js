@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../SpecialtyGeneGridContainer',
-  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer'
+  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter', 'dgrid/Grid', 'dgrid/extensions/ColumnResizer', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on,
   domClass, ContentPane, domConstruct,
   PageGrid, formatter, SpecialtyGeneGridContainer,
-  PathJoin, xhr, lang, DataItemFormatter, Grid, ColumnResizer
-) {
+  PathJoin, xhr, lang, DataItemFormatter, Grid, ColumnResizer,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'SpecialtyGeneEvidence',
     disabled: false,
@@ -84,7 +84,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (feature) {
@@ -116,7 +116,7 @@ define([
           headers: {
             accept: 'application/json',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (reference) {
@@ -147,7 +147,7 @@ define([
             headers: {
               accept: 'application/json',
               'X-Requested-With': null,
-              Authorization: (window.App.authorizationToken || '')
+              Authorization: authHeader()
             },
             handleAs: 'json'
           }).then(lang.hitch(this, function (homolog) {
@@ -177,7 +177,7 @@ define([
               headers: {
                 accept: 'application/json',
                 'X-Requested-With': null,
-                Authorization: (window.App.authorizationToken || '')
+                Authorization: authHeader()
               },
               handleAs: 'json'
             }).then(lang.hitch(this, function (evidence) {

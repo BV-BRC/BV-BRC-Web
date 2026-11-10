@@ -7,7 +7,7 @@ define([
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
-  'dojo/debounce'
+  'dojo/debounce', '../auth/authHeaders', '../util/dateRangeWithinQuery', '../util/joinTooBroad'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -17,8 +17,7 @@ define([
   DropDownButton, DropDownMenu,
   Dialog, Button, CheckBox, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin, constructMetadataName,
-  debounce
-) {
+  debounce, authHeader, dateRangeWithinQuery, joinTooBroad) {
 
   function sortByLabel(firstEl, secondEl) {
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
@@ -365,6 +364,16 @@ define([
         this.rightButtons
       );
 
+      const columnsGrid = this.getSelectColumnsGrid();
+      if (columnsGrid && typeof columnsGrid.toggleColumnHiddenState === 'function') {
+        domClass.add(columnsGrid.domNode, 'hasSelectColumnsAction');
+        this.own({
+          remove: function () {
+            domClass.remove(columnsGrid.domNode, 'hasSelectColumnsAction');
+          }
+        });
+      }
+
       this.addAction('ToggleFilters', 'fa icon-filter fa-2x', {
         style: { 'font-size': '.5em' },
         label: 'FILTERS',
@@ -631,6 +640,7 @@ define([
         if (!facets) {
           return;
         }
+        self._clearFacetUnavailable();
         // Update all facet widgets with the returned data
         Object.keys(facets).forEach(function (category) {
           if (self._ffWidgets[category]) {
@@ -694,6 +704,7 @@ define([
         if (!facets) {
           return;
         }
+        this._clearFacetUnavailable();
         // Update all facet widgets with the returned data
         Object.keys(facets).forEach(function (category) {
           if (this._ffWidgets[category]) {
@@ -924,6 +935,10 @@ define([
       this._Searches[this._SearchesIdx] = _row
       this._SearchesIdx++;
     },
+    getSelectColumnsGrid: function () {
+      const container = this.currentContainerWidget;
+      return container && (container.getSelectColumnsGrid ? container.getSelectColumnsGrid() : container.grid);
+    },
     buildSelectColumnsDialog: function () {
       this.SelectColumnsPanel = domConstruct.create('div', {
         'class': 'SelectColumnsPanel'
@@ -933,10 +948,14 @@ define([
         content: this.SelectColumnsPanel,
         'class': 'SelectColumnsDialog'
       });
+      this.own(this.SelectColumnsDialog);
     },
     refreshSelectColumnsDialog: function () {
+      this.SelectColumnsDialog.getChildren().forEach(function (widget) {
+        widget.destroyRecursive();
+      });
       domConstruct.empty(this.SelectColumnsPanel);
-      const grid = this.currentContainerWidget && this.currentContainerWidget.grid;
+      const grid = this.getSelectColumnsGrid();
       if (!grid || !grid.subRows || !grid.subRows[0]) {
         domConstruct.create('div', { innerHTML: 'No columns available.' }, this.SelectColumnsPanel);
         return;
@@ -983,9 +1002,7 @@ define([
           domConstruct.create('label', {
             innerHTML: labelText,
             'class': 'SelectColumnsLabel',
-            onclick: function () {
-              cb.set('checked', !cb.get('checked'));
-            }
+            'for': cb.id
           }, row);
         }));
       }));
@@ -1150,6 +1167,7 @@ define([
         if (!facets) {
           return;
         }
+        self._clearFacetUnavailable();
 
         Object.keys(facets).forEach(function (cat) {
           if (self._ffWidgets[cat]) {
@@ -1186,7 +1204,7 @@ define([
         return ( typeof (field) === 'string' ) ? `(field,${field})` : `(field,${field.field})`;
       }).join(',') + ',(mincount,1),(limit,100))';
 
-      const url = PathJoin(this.apiServer, this.dataModel, `?${queryStr}&limit(1)&${facets}`)
+      const url = PathJoin(this.apiServer, this.dataModel, `?${dateRangeWithinQuery(queryStr)}&limit(1)&${facets}`)
       const fr = xhr(url, {
         method: 'GET',
         handleAs: 'json',
@@ -1194,7 +1212,7 @@ define([
           accept: 'application/solr+json',
           'content-type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         }
       });
 
@@ -1204,9 +1222,57 @@ define([
         }
         return null;
       }, (err) => {
+        // A taxon page's facet panel issues the same genome(...) join as the grid, so it
+        // is refused by the same guard. Render the panel's empty state from the error
+        // rather than leaving stale facets and a console-only explanation.
+        // See p3_api/Docs/CLIENT-join-too-broad.md.
+        if (joinTooBroad.isJoinTooBroad(err)) {
+          this._showFacetUnavailable(joinTooBroad.parse(err));
+          return null;
+        }
         console.error(`XHR Error with Facet Request. There was an error retreiving facets from: ${url}`)
         return err
       });
+    },
+
+    /**
+     * Replace the facet list with a short note. Deliberately terse: the grid body carries
+     * the full explanation and the drill-down links, and repeating all of that in a narrow
+     * sidebar would crowd out the thing the user needs to click.
+     */
+    _showFacetUnavailable: function (info) {
+      if (!this.fullViewContentNode) { return; }
+
+      Object.keys(this._ffWidgets || {}).forEach(function (cat) {
+        const w = this._ffWidgets[cat];
+        if (w && w.domNode) { domStyle.set(w.domNode, 'display', 'none'); }
+      }, this);
+
+      if (this._facetUnavailableNode) {
+        domConstruct.destroy(this._facetUnavailableNode);
+      }
+      this._facetUnavailableNode = domConstruct.create('div', {
+        className: 'FacetUnavailable'
+      }, this.fullViewContentNode, 'first');
+
+      const count = info && info.genomeCount !== undefined
+        ? joinTooBroad.formatCount(info.genomeCount) + ' genomes'
+        : 'This selection';
+      this._facetUnavailableNode.appendChild(document.createTextNode(
+        'Filters unavailable: ' + count + ' is too many to summarise. Narrow the taxon to use filters.'
+      ));
+    },
+
+    /** Undo _showFacetUnavailable once a query succeeds again. */
+    _clearFacetUnavailable: function () {
+      if (this._facetUnavailableNode) {
+        domConstruct.destroy(this._facetUnavailableNode);
+        this._facetUnavailableNode = null;
+        Object.keys(this._ffWidgets || {}).forEach(function (cat) {
+          const w = this._ffWidgets[cat];
+          if (w && w.domNode) { domStyle.set(w.domNode, 'display', ''); }
+        }, this);
+      }
     },
     startup: function () {
       if (this._started) {

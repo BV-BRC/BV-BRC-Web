@@ -4,15 +4,15 @@ define([
   'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/form/Select', 'dijit/form/Button', './ContainerActionBar',
   './HeatmapContainerNew', './SelectionToGroup', 'FileSaver', '../store/SubsystemMapMemoryStore',
-  'heatmap/dist/hotmap', 'xstyle/css!heatmap/dist/hotmap.css'
+  'heatmap/dist/hotmap', '../auth/authHeaders', 'xstyle/css!heatmap/dist/hotmap.css'
 ], function (
   declare, lang,
   on, Topic, domConstruct, Query, when, request,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   Select, Button, ContainerActionBar,
   HeatmapContainerNew, SelectionToGroup, saveAs, Store,
-  Hotmap
-) {
+  Hotmap,
+  authHeader) {
 
   return declare([BorderContainer, HeatmapContainerNew], {
     gutters: false,
@@ -242,7 +242,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         data: query
       }), function (response) {
@@ -284,7 +284,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: window.App.authorizationToken
+          Authorization: authHeader()
         },
         data: query
       }), function (response) {

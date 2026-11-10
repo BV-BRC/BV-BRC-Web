@@ -3,15 +3,15 @@ define([
   'dojo/on', 'dojo/topic', 'dojo/dom-construct', 'dojo/dom', 'dojo/query', 'dojo/when', 'dojo/request', 'dojo/promise/all',
   'dijit/layout/ContentPane', 'dijit/layout/BorderContainer', 'dijit/TooltipDialog', 'dijit/Dialog', 'dijit/popup',
   'dijit/TitlePane', 'dijit/registry', 'dijit/form/Form', 'dijit/form/RadioButton', 'dijit/form/Select', 'dijit/form/Button',
-  './ContainerActionBar', 'FileSaver', './KeggMapPainter'
+  './ContainerActionBar', 'FileSaver', './KeggMapPainter', '../auth/authHeaders'
 
 ], function (
   declare, lang, Deferred,
   on, Topic, domConstruct, dom, Query, when, request, All,
   ContentPane, BorderContainer, TooltipDialog, Dialog, popup,
   TitlePane, registry, Form, RadioButton, Select, Button,
-  ContainerActionBar, saveAs, KeggMapPainter
-) {
+  ContainerActionBar, saveAs, KeggMapPainter,
+  authHeader) {
 
   var legend = '<div class="kegg-map-legend-color-box white"></div><div class="kegg-map-legend-label">Not Annotated</div><div class="clear"></div>' +
     '<div class="kegg-map-legend-color-box green"></div><div class="kegg-map-legend-label">Annotated</div><div class="clear"></div>' +
@@ -243,7 +243,7 @@ define([
           Accept: 'application/solr+json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+          Authorization: authHeader('api', _self.token)
         },
         data: 'q=genome_id:(' + pmState.genomeIds.join(' OR ') + ') AND pathway_id:(' + pmState.pathway_id + ') AND annotation:(' + pmState.annotation + ')&rows=0&facet=true&json.facet={stat:{field:{field:ec_number,limit:-1,facet:{genome_count:"unique(genome_id)"}}}}'
       }), function (response) {
@@ -264,7 +264,7 @@ define([
             Accept: 'application/json',
             'Content-Type': 'application/solrquery+x-www-form-urlencoded',
             'X-Requested-With': null,
-            Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+            Authorization: authHeader('api', _self.token)
           },
           data: 'q=pathway_id:' + pmState.pathway_id + ' AND map_type:enzyme AND ec_number:(' + ecNumbers.join(' OR ') + ')&fl=ec_number,ec_description,map_location&rows=25000'
         }), function (response) {
@@ -296,7 +296,7 @@ define([
           Accept: 'application/json',
           'Content-Type': 'application/solrquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+          Authorization: authHeader('api', _self.token)
         },
         data: 'q=pathway_id:' + pmState.pathway_id + '&fl=ec_number,ec_description,map_location&rows=25000'
       }), function (response) {
@@ -338,7 +338,7 @@ define([
               'Accept': "application/json",
               'Content-Type': "application/solrquery+x-www-form-urlencoded",
               'X-Requested-With': null,
-              'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+              'Authorization': authHeader('api', _self.token)
             },
             data: 'q=pathway_id:' + pathwayId + ' AND ec_number:' + idValue + '&fl=ec_number,map_location'
           }), function(response){
@@ -367,7 +367,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/solrquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+              Authorization: authHeader('api', _self.token)
             },
             data: 'q=pathway_id:' + pathwayId + ' AND feature_id:(' + idValueStr + ')&fl=ec_number&rows=25000'
           }), function (response) {
@@ -383,7 +383,7 @@ define([
                 'Accept': "application/json",
                 'Content-Type': "application/solrquery+x-www-form-urlencoded",
                 'X-Requested-With': null,
-                'Authorization': _self.token ? _self.token : (window.App.authorizationToken || "")
+                'Authorization': authHeader('api', _self.token)
               },
               data: 'q=pathway_id:' + pathwayId + ' AND ec_number:' + ecNumbers.join(' OR ') + '&fl=ec_number,map_location'
             }), function(response){

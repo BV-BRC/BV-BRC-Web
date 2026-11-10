@@ -6,10 +6,18 @@ define([
   Memory
 ) {
   return declare([Memory], {
+    /** API pagination cursor — shared across all ScrollBar instances. */
+    paginationOffset: 0,
+
+    /** Whether the API has more pages beyond the current offset. */
+    paginationHasMore: true,
+
     constructor: function(options) {
       this.inherited(arguments);
       this.idProperty = 'session_id';
       this.data = [];
+      this.paginationOffset = 0;
+      this.paginationHasMore = true;
       declare.safeMixin(this, options);
     },
 
@@ -22,6 +30,27 @@ define([
         return s;
       });
       this.data = sanitized;
+      this._rebuildIndex();
+    },
+
+    /**
+     * Merge a page of sessions into the store, deduplicating by session_id.
+     * Existing entries (earlier / newer) take precedence — new entries are
+     * only appended if their id is not already present.
+     * @param {Array} newSessions - The page returned by the API
+     */
+    mergeSessions: function(newSessions) {
+      if (!newSessions || !newSessions.length) { return; }
+      var existing = {};
+      this.data.forEach(function(s) { existing[s.session_id] = true; });
+      var toAdd = [];
+      newSessions.forEach(function(s) {
+        if (s && s.messages) { delete s.messages; }
+        if (s && !existing[s.session_id]) {
+          toAdd.push(s);
+        }
+      });
+      this.data = this.data.concat(toAdd);
       this._rebuildIndex();
     },
 

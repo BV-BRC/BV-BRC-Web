@@ -35,6 +35,7 @@ define([], function () {
         'MetagenomicReadMapping': 'MetagenomicReadMapping',
         'MSA': 'MSA',
         'PredictStructure': 'PredictStructure',
+        'StabiliNNator': 'StabiliNNator',
         'CodonTree': 'PhylogeneticTree',
         'PrimerDesign': 'PrimerDesign',
         'RNASeq': 'Rnaseq',

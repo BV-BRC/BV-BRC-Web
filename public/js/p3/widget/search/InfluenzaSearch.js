@@ -1,11 +1,13 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/popup', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/query',
   'dojo/store/Memory', 'dijit/Calendar', 'dijit/TooltipDialog', './SearchBase', './TextInputEncoder',
-  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html'
+  './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser',
+  'dojo/request', '../../auth/authHeaders', './MultiValueSelect'
 ], function (
   declare, lang, popup, on, dom, domClass, query,
   Memory, Calendar, TooltipDialog, SearchBase, TextInputEncoder,
-  storeBuilder, hostGroupStore, template
+  storeBuilder, hostGroupStore, template, RQLParser,
+  request, authHeader
 ) {
 
   // Legacy + updated NCBI Taxonomy IDs — both needed for facet store scoping
@@ -13,7 +15,7 @@ define([
     A: ['11320', '2955291'],
     B: ['11520', '2955465'],
     C: ['11552', '2955935'],
-    D: ['1513237', '2955744']
+    D: ['2955744']
   };
 
   // Updated IDs only — used in search queries (last entry of each list)
@@ -99,6 +101,16 @@ define([
     if (!node) return;
     var v = node.get('value');
     if (v === undefined || v === null || v === '') return;
+    if (Array.isArray(v)) {
+      var terms = v.filter(function (value) { return String(value).trim() !== ''; }).map(function (value) {
+        // Quote full facet values: unquoted spaces become separate Solr terms,
+        // which changes the meaning of an OR filter inside a genome join.
+        var clean = sanitizeInput(String(value)).trim().replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return 'eq(' + field + ',' + TextInputEncoder('"' + clean + '"') + ')';
+      });
+      if (terms.length) arr.push(terms.length === 1 ? terms[0] : 'or(' + terms.join(',') + ')');
+      return;
+    }
     if (typeof v === 'string') v = v.trim();
     if (v === '') return;
     var clean = sanitizeInput(String(v));
@@ -166,11 +178,18 @@ define([
       var fluCondition = buildTaxonCondition(['A', 'B', 'C', 'D']);
       var fluACondition = buildTaxonCondition(['A']);
       var fluBCondition = buildTaxonCondition(['B']);
+      var proteinCondition = '(' + fluCondition + ') AND (feature_type:CDS OR feature_type:mat_peptide)';
 
       // ===== Static stores =====
       this.haSubtypeNode.store = new Memory({ data: HA_SUBTYPES });
       this.naSubtypeNode.store = new Memory({ data: NA_SUBTYPES });
       this.hostGroupNode.store = hostGroupStore;
+      this.sequenceStatusNode.store = new Memory({
+        data: [
+          { id: 'Complete', name: 'Complete' },
+          { id: 'Partial', name: 'Partial' }
+        ]
+      });
 
       // Reference/Representative store
       this.referenceNode.store = new Memory({
@@ -191,9 +210,7 @@ define([
       // ===== Facet-built stores =====
       // [core, facet_field, attach_point_name, condition]
       var facetBindings = [
-        ['genome', 'host_common_name', 'hostNameNode', fluCondition],
         ['genome', 'geographic_group', 'geographicGroupNode', fluCondition],
-        ['genome', 'isolation_country', 'isolationCountryNode', fluCondition],
         ['genome', 'state_province', 'stateProvinceNode', fluCondition],
         ['genome', 'subtype', 'fullSubtypeNode', fluACondition],
         ['genome', 'subtype', 'fluBSubtypeNode', fluBCondition],
@@ -205,13 +222,13 @@ define([
         ['genome', 'season', 'seasonNode', fluCondition],
         ['genome', 'isolation_source', 'isolationSourceNode', fluCondition],
         ['genome', 'passage', 'passageNode', fluCondition],
-        ['genome_feature', 'gene', 'geneNode', fluCondition],
-        ['genome_feature', 'product', 'productNode', fluCondition]
+        ['genome_feature', 'gene', 'geneNode', proteinCondition],
+        ['genome_feature', 'product', 'productNode', proteinCondition]
       ];
       facetBindings.forEach(lang.hitch(this, function (b) {
         var core = b[0], field = b[1], nodeName = b[2], condition = b[3];
         storeBuilder(core, field, condition).then(lang.hitch(this, function (store) {
-          this[nodeName].store = store;
+          this[nodeName].set('store', store);
         }));
       }));
 
@@ -221,23 +238,26 @@ define([
       setupCalendarPopup(this.submissionDateFromCalendarIcon, this.submissionDateFromNode);
       setupCalendarPopup(this.submissionDateToCalendarIcon, this.submissionDateToNode);
 
+      // ===== Hosts follow the selected host group =====
+      this.hostGroupNode.on('change', lang.hitch(this, '_updateHostOptions'));
+      this._updateHostOptions();
+
+      // ===== Countries follow the selected continent =====
+      this.geographicGroupNode.on('change', lang.hitch(this, function () {
+        this._updateStateVisibility();
+        this._updateCountryOptions();
+      }));
+      this._updateCountryOptions();
+
       // ===== State field visibility (US only) =====
-      this.geographicGroupNode.on('change', lang.hitch(this, '_updateStateVisibility'));
       this.isolationCountryNode.on('change', lang.hitch(this, '_updateStateVisibility'));
 
       // ===== Clade visibility based on H subtype =====
       this.haSubtypeNode.on('change', lang.hitch(this, '_updateCladeVisibility'));
       this.fullSubtypeNode.on('change', lang.hitch(this, '_updateCladeVisibility'));
 
-      // ===== Complete genome disables length fields =====
-      this.completeGenomeNode.on('change', lang.hitch(this, function (checked) {
-        this.seqLengthFromNode.set('disabled', checked);
-        this.seqLengthToNode.set('disabled', checked);
-        if (checked) {
-          this.seqLengthFromNode.set('value', '');
-          this.seqLengthToNode.set('value', '');
-        }
-      }));
+      // Complete-genome filtering does not restrict individual sequence lengths.
+      this.completeGenomeNode.on('change', lang.hitch(this, '_syncLengthInputs'));
 
       // ===== Select all segments =====
       this._segmentNodes = [
@@ -439,15 +459,25 @@ define([
       // Protein accordion only for protein data type
       this.proteinAccordion.style.display = isProtein ? '' : 'none';
 
-      // Completeness/Segments accordion only for genome
+      // Genomes require all selected segments; sequence searches return any
+      // selected segment. Protein searches use their own gene/product fields.
       var isGenome = this.selectedDataType === 'genome';
-      this.completenessAccordion.style.display = isGenome ? '' : 'none';
+      var isSegment = this.selectedDataType === 'segment';
+      this.completeGenomeField.style.display = isProtein ? 'none' : '';
+      this.sequenceStatusField.style.display = isSegment ? '' : 'none';
+      this.sequenceLengthLabel.textContent = isGenome ? 'Genome length (bp)' : (isSegment ? 'Sequence length (bp)' : 'Protein length (aa)');
+      this.completenessAccordion.style.display = isProtein ? 'none' : '';
+      this.segmentFilterLabel.textContent = isGenome ? 'Required Segments' : 'Segments';
+      this.segmentFilterHint.textContent = isGenome ? 'Genomes must contain all selected segments.' : 'Return sequences from any selected segment.';
 
-      if (!isGenome) {
-        // Clear all completeness/segment state so it doesn't silently apply
+      if (isProtein) {
+        // Protein searches do not expose a genome-completeness control.
         if (this.completeGenomeNode && this.completeGenomeNode.get('value')) {
           this.completeGenomeNode.set('value', false);
         }
+      }
+      this._syncLengthInputs();
+      if (isProtein) {
         var segmentNodes = [
           this.segPB2Node, this.segPB1Node, this.segPANode, this.segHANode,
           this.segNPNode, this.segNANode, this.segMNode, this.segNSNode,
@@ -562,11 +592,104 @@ define([
       this.subcladeNode.set('value', '');
     },
 
+    _updateHostOptions: function () {
+      var group = this.hostGroupNode.get('value') || '';
+      var hostNode = this.hostNameNode;
+      var value = hostNode.get('value');
+      var isMulti = Array.isArray(value);
+      var selected = isMulti ? value.slice() : (value ? [value] : []);
+      var input = hostNode.searchBox || hostNode;
+      var requestId = this._hostRequestId = (this._hostRequestId || 0) + 1;
+      // Match descendants too, as the results query does. Exact taxon IDs
+      // exclude records assigned to individual strains beneath each species.
+      var condition = 'in(taxon_lineage_ids,(' + Object.keys(FLU_TAXON_IDS).map(function (type) {
+        return FLU_TAXON_IDS[type];
+      }).join(',') + '))';
+      if (group) {
+        var escaped = group.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        condition += '&eq(host_group,' + TextInputEncoder('"' + escaped + '"') + ')';
+      }
+
+      // Clear stale options while loading, including any typed search text.
+      hostNode.set('value', isMulti ? [] : '');
+      hostNode.set('store', new Memory({ data: [] }));
+      input.set('placeHolder', 'Loading hosts...');
+      var url = window.App.dataServiceURL.replace(/\/$/, '') + '/genome/?' + condition
+        + '&limit(0)&facet((field,host_common_name),(mincount,1),(limit,-1))';
+      return request.get(url, {
+        handleAs: 'json',
+        headers: {
+          Accept: 'application/solr+json',
+          'X-Requested-With': null,
+          Authorization: authHeader()
+        }
+      }).then(lang.hitch(this, function (response) {
+        if (this._destroyed || requestId !== this._hostRequestId) return;
+        var fields = response && response.facet_counts && response.facet_counts.facet_fields;
+        var counts = fields && fields.host_common_name;
+        if (!counts) throw new Error('Missing host_common_name facet');
+        var hosts = Array.isArray(counts) ? counts.filter(function (value, index) { return index % 2 === 0; }) : Object.keys(counts);
+        var store = new Memory({
+          data: hosts.filter(function (host) { return host !== ''; }).map(function (host) {
+            return { id: host, name: host };
+          })
+        });
+        hostNode.set('store', store);
+        var retained = selected.filter(function (host) {
+          return !!store.get(host);
+        });
+        hostNode.set('value', isMulti ? retained : (retained[0] || ''));
+        input.set('placeHolder', isMulti ? 'Add up to 5 hosts' : 'e.g. Chicken');
+      })).then(null, lang.hitch(this, function (error) {
+        if (this._destroyed || requestId !== this._hostRequestId) return;
+        input.set('placeHolder', 'Unable to load hosts');
+        console.error('Unable to load hosts for the selected host group', error);
+      }));
+    },
+
+    _updateCountryOptions: function () {
+      var continent = this.geographicGroupNode.get('value') || '';
+      var countryNode = this.isolationCountryNode;
+      var value = countryNode.get('value');
+      var isMulti = Array.isArray(value);
+      var selected = isMulti ? value.slice() : (value ? [value] : []);
+      var input = countryNode.searchBox || countryNode;
+      var requestId = this._countryRequestId = (this._countryRequestId || 0) + 1;
+      var condition = '(' + buildTaxonCondition(['A', 'B', 'C', 'D']) + ')';
+      if (continent) {
+        var escaped = continent.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        condition += ' AND geographic_group:"' + escaped + '"';
+      }
+
+      // Remove stale choices while loading so a new continent cannot be
+      // submitted together with countries from the previous continent.
+      countryNode.set('value', isMulti ? [] : '');
+      countryNode.set('store', new Memory({ data: [] }));
+      input.set('placeHolder', 'Loading countries...');
+      return storeBuilder('genome', 'isolation_country', condition).then(lang.hitch(this, function (store) {
+        if (this._destroyed || requestId !== this._countryRequestId) return;
+        countryNode.set('store', store);
+        var retained = selected.filter(function (country) {
+          return !!store.get(country);
+        });
+        countryNode.set('value', isMulti ? retained : (retained[0] || ''));
+        input.set('placeHolder', isMulti ? 'Add up to 5 countries' : 'Any');
+        this._updateStateVisibility();
+      }), lang.hitch(this, function (error) {
+        if (this._destroyed || requestId !== this._countryRequestId) return;
+        input.set('placeHolder', 'Unable to load countries');
+        console.error('Unable to load countries for the selected continent', error);
+      }));
+    },
+
     // ===== State field: only visible for North America / USA =====
     _updateStateVisibility: function () {
       var region = (this.geographicGroupNode.get('value') || '').toLowerCase();
-      var country = (this.isolationCountryNode.get('value') || '').toLowerCase();
-      var hide = (region && region !== 'north america') || (country && country !== 'usa' && country !== 'united states');
+      var countries = this.isolationCountryNode.get('value') || [];
+      var hasUSA = countries.some(function (country) {
+        return /^(usa|united states)$/i.test(country);
+      });
+      var hide = (region && region !== 'north america') || (countries.length && !hasUSA);
       this.stateField.style.display = hide ? 'none' : '';
       if (hide) {
         this.stateProvinceNode.set('value', '');
@@ -575,6 +698,7 @@ define([
 
     // ===== Reset =====
     _resetForm: function () {
+      if (this.accessionNode) this.accessionNode.value = '';
       // Reset all FilteringSelect widgets
       var filterSelects = [
         this.haSubtypeNode, this.naSubtypeNode, this.fullSubtypeNode,
@@ -583,7 +707,7 @@ define([
         this.geographicGroupNode, this.isolationCountryNode, this.stateProvinceNode,
         this.h1CladeGlobalNode, this.h1CladeUsNode, this.h3CladeNode, this.h5CladeNode, this.subcladeNode,
         this.seasonNode, this.isolationSourceNode, this.passageNode, this.vaccineStrainNode,
-        this.geneNode, this.productNode
+        this.geneNode, this.productNode, this.sequenceStatusNode
       ];
       filterSelects.forEach(function (node) {
         if (node && node.set) {
@@ -638,6 +762,39 @@ define([
       query('.bvs-chip', this.presetChoiceGroup).forEach(function (b) {
         domClass.remove(b, 'is-active');
       });
+
+      this._updateCountryOptions();
+      this._updateHostOptions();
+    },
+
+    _getAccessions: function () {
+      var value = this.accessionNode ? this.accessionNode.value : '';
+      return String(value || '').split(/[\s,;]+/).map(function (accession) {
+        // Sequence records store the base accession separately from its version.
+        return accession.toUpperCase().replace(/\.\d+$/, '');
+      }).filter(function (accession, index, accessions) {
+        return accession && accessions.indexOf(accession) === index;
+      });
+    },
+
+    _buildAccessionQuery: function (field) {
+      var accessions = this._getAccessions().map(function (accession) {
+        var escaped = accession.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        return TextInputEncoder('"' + escaped + '"');
+      });
+      if (!accessions.length) return null;
+      return accessions.length === 1 ? 'eq(' + field + ',' + accessions[0] + ')'
+        : 'in(' + field + ',(' + accessions.join(',') + '))';
+    },
+
+    _syncLengthInputs: function () {
+      var disabled = this.selectedDataType === 'genome' && !!this.completeGenomeNode.get('value');
+      this.seqLengthFromNode.set('disabled', disabled);
+      this.seqLengthToNode.set('disabled', disabled);
+      if (disabled) {
+        this.seqLengthFromNode.set('value', '');
+        this.seqLengthToNode.set('value', '');
+      }
     },
 
     // ===== Helpers =====
@@ -744,6 +901,8 @@ define([
 
       // Strain name + BioProject (free-text, need TextInputEncoder)
       pushEq(q, 'genome_name', this.strainNameNode, true);
+      var accessionQuery = this._buildAccessionQuery('genbank_accessions');
+      if (accessionQuery) q.push(accessionQuery);
       pushEq(q, 'bioproject_accession', this.bioprojectNode, true);
 
       // Submission date (field is completion_date in Solr)
@@ -799,13 +958,20 @@ define([
         [this.passageNode,          'passage'],
         [this.vaccineStrainNode,    'vaccine_strain'],
         [this.referenceNode,        'reference_genome'],
+        [this.strainNameNode,       'strain'],
+        [this.bioprojectNode,       'bioproject_accession'],
+        [this.completeGenomeNode,   'genome_status'],
+        [this.excludeDeprecatedNode, 'genome_status'],
+        [this.selectedDataType === 'segment' && this.sequenceStatusNode, 'sequence_status'],
         [this.geneNode,             'gene'],
         [this.productNode,          'product']
       ];
 
       nodeCols.forEach(function (pair) {
         var node = pair[0], col = pair[1];
-        if (node && node.get('value') && cols.indexOf(col) === -1) {
+        var value = node && node.get('value');
+        var hasValue = Array.isArray(value) ? value.length > 0 : !!value;
+        if (hasValue && cols.indexOf(col) === -1) {
           cols.push(col);
         }
       });
@@ -827,6 +993,34 @@ define([
                        (this.submissionDateToNode && this.submissionDateToNode.get('value'));
       if (subDateSet) cols.push('completion_date');
 
+      if (this._getAccessions().length) {
+        cols.push(this.selectedDataType === 'genome' ? 'genbank_accessions' : 'accession');
+      }
+
+      // Show the parent genome's status alongside sequence completeness.
+      if (this.selectedDataType === 'segment' && this.sequenceStatusNode && this.sequenceStatusNode.get('value')) {
+        cols.push('genome_status');
+      }
+
+      var lengthField = this.selectedDataType === 'genome' ? 'genome_length'
+        : (this.selectedDataType === 'segment' ? 'length' : 'aa_length');
+      if (this.seqLengthFromNode && this.seqLengthToNode
+          && this._buildLengthQuery(lengthField, this.seqLengthFromNode, this.seqLengthToNode)) cols.push(lengthField);
+
+      // Additional Criteria can select any searchable genome field. Use the
+      // generated clauses so empty/incomplete rows do not add columns.
+      function collect(term) {
+        if (!term || !term.args) return;
+        if (['and', 'or', 'not', 'genome'].indexOf(term.name) !== -1) {
+          term.args.forEach(collect);
+        } else if (['eq', 'ne', 'in', 'gt', 'lt', 'ge', 'le', 'between'].indexOf(term.name) !== -1) {
+          var field = term.args[0] === 'collection_date_dr' ? 'collection_date' : term.args[0];
+          if (typeof field === 'string') cols.push(field);
+        }
+      }
+      this._buildAdvancedQuery().forEach(function (clause) { collect(RQLParser.parse(clause)); });
+
+      cols = cols.filter(function (col, index) { return cols.indexOf(col) === index; });
       return cols.length ? cols.join(',') : null;
     },
 
@@ -842,7 +1036,15 @@ define([
         genomeFilters.push('eq(genome_status,Complete)');
       }
 
-      // Required segments — use in(...) for multi-select, eq(...) for single
+      // Each selected segment is required on the same genome record (AND).
+      this._getSelectedSegments().forEach(function (segment) {
+        genomeFilters.push('eq(segment,' + segment + ')');
+      });
+
+      return 'eq(genome_id,*)&genome(' + genomeFilters.join(',') + ')';
+    },
+
+    _getSelectedSegments: function () {
       var segmentNodes = {
         PB2: this.segPB2Node, PB1: this.segPB1Node, PA: this.segPANode, HA: this.segHANode,
         NP: this.segNPNode, NA: this.segNANode, M: this.segMNode, NS: this.segNSNode
@@ -853,13 +1055,7 @@ define([
           segNums.push(SEGMENT_NUMBERS[seg]);
         }
       }
-      if (segNums.length === 1) {
-        genomeFilters.push('eq(segment,' + segNums[0] + ')');
-      } else if (segNums.length > 1) {
-        genomeFilters.push('in(segment,(' + segNums.join(',') + '))');
-      }
-
-      return 'eq(genome_id,*)&genome(' + genomeFilters.join(',') + ')';
+      return segNums;
     },
 
     _buildSegmentQuery: function () {
@@ -867,6 +1063,24 @@ define([
 
       // Sequence length — applies to the sequence itself (outside genome join)
       var seqFilters = [];
+      var accessionQuery = this._buildAccessionQuery('accession');
+      if (accessionQuery) seqFilters.push(accessionQuery);
+      var status = this.sequenceStatusNode && this.sequenceStatusNode.get('value');
+      if (status === 'Complete' || status === 'Partial') {
+        // Existing sequence annotations use both title case and lower case.
+        seqFilters.push('in(sequence_status,(' + status + ',' + status.toLowerCase() + '))');
+      }
+      if (this.completeGenomeNode.get('value')) {
+        genomeFilters.push('eq(genome_status,Complete)');
+      }
+      var segments = this._getSelectedSegments();
+      if (segments.length) {
+        var segmentFilter = segments.length === 1 ? 'eq(segment,' + segments[0] + ')' : 'in(segment,(' + segments.join(',') + '))';
+        // Narrow candidate genomes as well as their individual sequences:
+        // a genome carrying HA and PB2 must return only HA when HA is selected.
+        genomeFilters.push(segmentFilter);
+        seqFilters.push(segmentFilter);
+      }
       var lenQ = this._buildLengthQuery('length', this.seqLengthFromNode, this.seqLengthToNode);
       if (lenQ) seqFilters.push(lenQ);
 
@@ -882,7 +1096,9 @@ define([
 
     _buildProteinQuery: function () {
       var featureFilters = [];
-      featureFilters.push('eq(feature_type,CDS)');
+      featureFilters.push('in(feature_type,(CDS,mat_peptide))');
+      var accessionQuery = this._buildAccessionQuery('accession');
+      if (accessionQuery) featureFilters.push(accessionQuery);
 
       var genomeFilters = this._buildGenomeFilters();
       if (genomeFilters.length > 0) {

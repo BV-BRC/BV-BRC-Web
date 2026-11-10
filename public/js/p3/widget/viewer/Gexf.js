@@ -5,7 +5,7 @@ define([
     "dojo/query", "dojo/dom-geometry", "dojo/dom-style", "dojo/dom-construct",
     "../ActionBar", "../ItemDetailPanel", "../PerspectiveToolTip", "dojo/dom-class",
     "../SelectionToGroup", "dijit/Dialog",
-    "dijit/TooltipDialog", "dijit/popup",
+    "dijit/TooltipDialog", "dijit/popup", "../../auth/authHeaders",
     "./phylotree/phylotree_svg"
 
 ], function(
@@ -15,7 +15,7 @@ define([
     query, domGeom, domStyle, domConstruct,
     ActionBar, ItemDetailPanel, PerspectiveToolTipDialog, domClass,
     SelectionToGroup, Dialog,
-    TooltipDialog, popup,
+    TooltipDialog, popup, authHeader,
     PhyloTreeModule
 ){
     var scriptsReady = false;
@@ -3920,7 +3920,7 @@ var loadGexfDependencies = function(callback) {
                 headers: {
                     accept: "application/json",
                     "X-Requested-With": null,
-                    Authorization: (window.App.authorizationToken || "")
+                    Authorization: authHeader()
                 },
                 handleAs: "json",
                 data: query
@@ -4132,7 +4132,7 @@ var loadGexfDependencies = function(callback) {
                 headers: {
                     accept: "application/json",
                     "X-Requested-With": null,
-                    Authorization: (window.App.authorizationToken || "")
+                    Authorization: authHeader()
                 },
                 handleAs: "json",
                 data: query
@@ -6120,13 +6120,13 @@ var loadGexfDependencies = function(callback) {
                 this.containerType = "feature_data";
                 this.updateMultiNodeSelection(fallbackRecords, indices, true, isTruncated);
 
-                var url = PathJoin(window.App.dataAPI, "genome_feature");
+                var url = PathJoin(this.getDataAPI(), "genome_feature");
                 var queryStr = "in(patric_id,(" + queryIds.map(encodeURIComponent).join(",") + "))&select(feature_id,patric_id,genome_id,genome_name,product,gene,refseq_locus_tag)&limit(25000)";
                 xhr.post(url, {
                     headers: {
                         accept: "application/json",
                         "X-Requested-With": null,
-                        Authorization: (window.App.authorizationToken || "")
+                        Authorization: authHeader()
                     },
                     handleAs: "json",
                     data: queryStr
@@ -6384,7 +6384,7 @@ var loadGexfDependencies = function(callback) {
                 headers: {
                     accept: "application/json",
                     "X-Requested-With": null,
-                    Authorization: (window.App.authorizationToken || "")
+                    Authorization: authHeader()
                 },
                 handleAs: "json",
                 data: query

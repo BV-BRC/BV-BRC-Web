@@ -55,26 +55,26 @@
       <div class="bvs-divider"></div>
 
       <!-- Host: inline label-value -->
-      <div class="bvs-row">
+      <div class="bvs-row bvs-row-multi">
         <div class="bvs-field bvs-field-lg">
           <label>Host Group</label>
           <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Avian, Human'" data-dojo-attach-point="hostGroupNode" name="host_group" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-narrow bvs-field-lg">
-          <label>Host</label>
-          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Chicken'" data-dojo-attach-point="hostNameNode" name="host_name" style="width:100%"></div>
+          <label class="bvs-multi-label" tabindex="0">Host <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+          <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5 hosts',fieldLabel:'Host (select up to 5)',helpText:'Select up to 5 hosts. If a Host Group is selected, leave Host empty to include all hosts in that group.'" data-dojo-attach-point="hostNameNode" name="host_name" style="width:100%"></div>
         </div>
       </div>
 
       <!-- Location: inline label-value -->
-      <div class="bvs-row" style="margin-top:8px;">
+      <div class="bvs-row bvs-row-multi" style="margin-top:8px;">
         <div class="bvs-field bvs-field-lg">
           <label>Continent</label>
           <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="geographicGroupNode" name="geographic_group" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-narrow bvs-field-lg">
-          <label>Country</label>
-          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width:100%"></div>
+          <label class="bvs-multi-label" tabindex="0">Country <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+          <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5 countries',fieldLabel:'Country (select up to 5)',helpText:'Select up to 5 countries. Leave Country empty to include all countries in the selected continent, or all countries when no continent is selected.'" data-dojo-attach-point="isolationCountryNode" name="isolation_country" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-narrow bvs-field-lg" data-dojo-attach-point="stateField">
           <label style="flex: 0 0 40px">State</label>
@@ -115,17 +115,31 @@
           <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. A/cattle/Maryland/546/2024'" data-dojo-attach-point="strainNameNode" name="strain_name" style="width:100%"></div>
         </div>
         <div class="bvs-field bvs-field-range">
-          <label>Length</label>
+          <label data-dojo-attach-point="sequenceLengthLabel">Genome length (bp)</label>
           <div class="bvs-range">
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'1600'" data-dojo-attach-point="seqLengthFromNode" name="seq_length_from"></div>
             <span class="bvs-range-sep">to</span>
             <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'2400'" data-dojo-attach-point="seqLengthToNode" name="seq_length_to"></div>
           </div>
         </div>
-        <div class="bvs-field bvs-field-check">
+        <div class="bvs-field bvs-field-sm" data-dojo-attach-point="sequenceStatusField" style="display:none;">
+          <label>Sequence status</label>
+          <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="sequenceStatusNode" name="sequence_status" style="width:100%"></div>
+        </div>
+        <div class="bvs-field bvs-field-check" data-dojo-attach-point="completeGenomeField">
           <label class="bvs-inline-checks">
             <input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="completeGenomeNode" id="${id}_chkCompleteGenome" /> Complete genome only
           </label>
+        </div>
+      </div>
+
+      <div class="bvs-row">
+        <div class="bvs-field bvs-field-lg" style="align-items:start;">
+          <label for="${id}_accessions" style="padding-top:4px;">Accessions</label>
+          <div>
+            <textarea id="${id}_accessions" class="dijitTextBox dijitTextArea bvs-accessions" data-dojo-attach-point="accessionNode" name="accessions" rows="1" placeholder="e.g. CY098641, CY098642" aria-describedby="${id}_accessionHint" title="GenBank sequence accessions, separated by commas, spaces, or newlines. Version suffixes are ignored." style="width:100%; box-sizing:border-box; resize:vertical; font:inherit;"></textarea>
+            <span id="${id}_accessionHint" hidden>GenBank sequence accessions, separated by commas, spaces, or newlines. Version suffixes are ignored.</span>
+          </div>
         </div>
       </div>
 
@@ -155,8 +169,9 @@
           <span class="bvs-accordion-toggle" data-dojo-attach-point="completenessAccordionIcon">&minus;</span>
         </div>
         <div class="bvs-accordion-body" data-dojo-attach-point="completenessAccordionBody">
+          <p class="bvs-section-intro" data-dojo-attach-point="segmentFilterHint">Genomes must contain all selected segments.</p>
           <div class="bvs-field bvs-field-wide">
-            <label>Required Segments</label>
+            <label data-dojo-attach-point="segmentFilterLabel">Required Segments</label>
             <div class="bvs-inline-checks">
               <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPB2Node" /> PB2 (1)</label>
               <label><input type="checkbox" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="segPB1Node" /> PB1 (2)</label>

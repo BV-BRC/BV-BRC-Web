@@ -1,12 +1,12 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dojo/_base/Deferred',
   'dojo/request', 'dojo/when', 'dojo/Stateful', 'dojo/topic', 'dojo/promise/all',
-  'dojo/store/Memory', 'dojo/store/util/QueryResults'
+  'dojo/store/Memory', 'dojo/store/util/QueryResults', '../auth/authHeaders'
 ], function (
   declare, lang, Deferred,
   request, when, Stateful, Topic, All,
-  Memory, QueryResults
-) {
+  Memory, QueryResults,
+  authHeader) {
 
   return declare([Memory, Stateful], {
     baseQuery: {},
@@ -171,7 +171,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/solrquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+              Authorization: authHeader('api', _self.token)
             },
             data: {
               q: fromId + ':(' + fromIdValue.join(' OR ') + ') AND ' + toId + ':[* TO *]',
@@ -213,7 +213,7 @@ define([
               Accept: 'application/json',
               'Content-Type': 'application/solrquery+x-www-form-urlencoded',
               'X-Requested-With': null,
-              Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+              Authorization: authHeader('api', _self.token)
             },
             data: {
               q: fromId + ':(' + fromIdValue.join(' OR ') + ')',
@@ -241,7 +241,7 @@ define([
                 Accept: 'application/json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                Authorization: authHeader('api', _self.token)
               },
               data: {
                 q: 'id_type:' + joinId.id_ref + ' AND id_value:(' + giNumbers.join(' OR ') + ')',
@@ -263,7 +263,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                  Authorization: authHeader('api', _self.token)
                 },
                 data: {
                   q: 'uniprotkb_accession:(' + Object.keys(accessionGiMap).join(' OR ') + ') AND ' + ((toId === 'UniProtKB-Accession') ? 'id_type:' + joinId.id_ref : 'id_type:(' + toId + ')'),
@@ -343,7 +343,7 @@ define([
                 Accept: 'application/json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                Authorization: authHeader('api', _self.token)
               },
               data: {
                 q: 'uniprotkb_accession:(' + uniprotKBAccession.join(' OR ') + ') AND id_type:' + joinId.id_ref,
@@ -373,7 +373,7 @@ define([
                   Accept: 'application/json',
                   'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                   'X-Requested-With': null,
-                  Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                  Authorization: authHeader('api', _self.token)
                 },
                 data: {
                   q: joinId.genome_feature + ':(' + giNumbers.join(' OR ') + ') AND annotation:PATRIC',
@@ -429,7 +429,7 @@ define([
                 Accept: 'application/json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                Authorization: authHeader('api', _self.token)
               },
               data: {
                 q: 'id_type:' + fromId + ' AND id_value:(' + fromIdValue.join(' OR ') + ')',
@@ -478,7 +478,7 @@ define([
                 Accept: 'application/json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                Authorization: authHeader('api', _self.token)
               },
               data: {
                 q: 'uniprotkb_accession:(' + uniprotKBAccession.join(' OR ') + ') AND id_type:' + toId,
@@ -539,7 +539,7 @@ define([
                 Accept: 'application/json',
                 'Content-Type': 'application/solrquery+x-www-form-urlencoded',
                 'X-Requested-With': null,
-                Authorization: _self.token ? _self.token : (window.App.authorizationToken || '')
+                Authorization: authHeader('api', _self.token)
               },
               data: {
                 q: 'id_type:' + fromId + ' AND id_value:(' + fromIdValue.join(' OR ') + ')',

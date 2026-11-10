@@ -4,14 +4,15 @@ define([
   'dijit/Tooltip', 'dijit/popup', 'dijit/TooltipDialog', 'dijit/Menu', 'dijit/Dialog',
   'dojo/dom', 'dojo/on', 'dojo/dom-style', 'dojo/dom-construct', 'dojo/query', 'dojo/topic', 'dojo/request', 'dojo/Evented',
   './DataItemFormatter', '../util/PathJoin',
+  '../auth/authHeaders',
   'dojo/domReady!'
 ], function (
   declare, lang,
   gfx, gfx_utils,
   Tooltip, popup, TooltipDialog, Menu, Dialog,
   dom, on, domStyle, domConstruct, query, Topic, request, Evented,
-  DataItemFormatter, PathJoin
-) {
+  DataItemFormatter, PathJoin,
+  authHeader) {
 
   return declare([Evented], {
     /**
@@ -545,7 +546,7 @@ define([
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           }
         }).then(function (data) {
           // console.log(data[0]);

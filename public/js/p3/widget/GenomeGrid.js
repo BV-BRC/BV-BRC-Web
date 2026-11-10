@@ -21,12 +21,24 @@ define([
     columns: lang.mixin({
       'Selection Checkboxes': selector({ unhidable: true })
     }, ColumnsGenome),
+    postMixInProperties: function postMixInProperties() {
+      this.inherited(postMixInProperties, arguments);
+      // ColumnHider mutates definitions; keep visibility local to each grid.
+      // Selectors close over their column object, so create a fresh selector
+      // rather than copying its init/render functions onto a different object.
+      var columns = {};
+      Object.keys(this.columns).forEach(function (name) {
+        columns[name] = name === 'Selection Checkboxes'
+          ? selector({ unhidable: true }) : lang.mixin({}, this.columns[name]);
+      }, this);
+      this.columns = columns;
+    },
     constructor: function () {
       this.queryOptions = {
         sort: [{ attribute: 'date_inserted', descending: true }]
       };
     },
-    startup: function () {
+    startup: function startup() {
       var _self = this;
 
       this.on('.dgrid-content .dgrid-row:dblclick', function (evt) {
@@ -59,7 +71,7 @@ define([
         };
         on.emit(_self.domNode, 'deselect', newEvt);
       });
-      this.inherited(arguments);
+      this.inherited(startup, arguments);
     }
   });
 });

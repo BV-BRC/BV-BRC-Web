@@ -3,14 +3,14 @@ define([
   'dijit/popup', 'FileSaver', 'dijit/TooltipDialog', 'dojo/query', 'dojo/store/Memory', 'dijit/form/Button',
   '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', 'dojo/topic', 'dijit/Dialog', 'dijit/ConfirmDialog',
   '../PageGrid', 'dojo/dom-style', 'dgrid/Grid', 'dgrid/extensions/Pagination', 'dgrid/extensions/ColumnResizer',
-  '../ItemDetailPanel'
+  '../ItemDetailPanel', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on, OnDemandGrid, domConstruct, ActionBar,
   popup, saveAs, TooltipDialog, dojoQuery, Memory, Button,
   PathJoin, xhr, lang, Topic, Dialog, ConfirmDialog,
   PageGrid, domStyle, Grid, Pagination, ColumnResizer,
-  ItemDetailPanel
-) {
+  ItemDetailPanel,
+  authHeader) {
 
   const dfc = '<div style="background:#09456f;color:#fff;margin:0px;margin-bottom:4px;padding:4px;text-align:center;">Download Table As...</div>' +
     '<div class="wsActionTooltip" rel="text/tsv">Text</div>' +
@@ -34,7 +34,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         data: 'in(patric_id,(' + patricIds.map(s => encodeURIComponent(s)).join(',') + '))&sort(+patric_id)&select(feature_id)&limit(100000)'
@@ -237,7 +237,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (variantTypes) {
@@ -260,7 +260,7 @@ define([
           headers: {
             accept: 'application/json',
             'X-Requested-With': null,
-            Authorization: (window.App.authorizationToken || '')
+            Authorization: authHeader()
           },
           handleAs: 'json'
         }).then(lang.hitch(this, function (sf) {

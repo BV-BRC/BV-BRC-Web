@@ -5,7 +5,7 @@ define([
   './TabViewerBase',
   '../FeatureListOverview', '../FeatureGridContainer',
   '../CompareRegionContainer',
-  '../../util/PathJoin', '../../util/QueryToEnglish'
+  '../../util/PathJoin', '../../util/QueryToEnglish', '../../auth/authHeaders'
 ], function (
   declare, lang,
   Topic, xhr,
@@ -13,8 +13,8 @@ define([
   TabViewerBase,
   Overview, FeatureGridContainer,
   CompareRegionContainer,
-  PathJoin, QueryToEnglish
-) {
+  PathJoin, QueryToEnglish,
+  authHeader) {
 
   return declare([TabViewerBase], {
     baseClass: 'FeatureList',
@@ -40,7 +40,7 @@ define([
           accept: 'application/solr+json',
           'Content-Type': 'application/rqlquery+x-www-form-urlencoded',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json',
         data: query + '&limit(1)'

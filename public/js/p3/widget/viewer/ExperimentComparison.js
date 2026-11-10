@@ -2,13 +2,13 @@ define([
   'dojo/_base/declare', './TabViewerBase', 'dojo/on',
   'dojo/dom-class', 'dijit/layout/ContentPane', 'dojo/dom-construct',
   '../PageGrid', '../formatter', '../BiosetGridContainer',
-  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter'
+  '../../util/PathJoin', 'dojo/request', 'dojo/_base/lang', '../DataItemFormatter', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on,
   domClass, ContentPane, domConstruct,
   Grid, formatter, BiosetGridContainer,
-  PathJoin, xhr, lang, DataItemFormatter
-) {
+  PathJoin, xhr, lang, DataItemFormatter,
+  authHeader) {
   return declare([TabViewerBase], {
     baseClass: 'ExperimentComparison',
     disabled: false,
@@ -128,7 +128,7 @@ define([
         headers: {
           accept: 'application/json',
           'X-Requested-With': null,
-          Authorization: (window.App.authorizationToken || '')
+          Authorization: authHeader()
         },
         handleAs: 'json'
       }).then(lang.hitch(this, function (experiment) {
