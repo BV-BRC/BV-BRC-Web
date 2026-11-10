@@ -2084,18 +2084,27 @@ var loadGexfDependencies = function(callback) {
                 nodeIdxById[n.id] = idx;
             });
 
-            // Collect all nodes directly touched by either explicitNodes or rawEdges
+            // Collect all nodes directly touched by either explicitNodes or rawEdges.
+            // For CNV phenomena (tandem_repeats, fragmented_paralogs, remote_cnv) where explicitNodes are tagged,
+            // only include explicitNodes in involvedNodes so single-copy flanking anchors (e.g. Node 851 on a
+            // repeat_ambiguity_detour edge) remain 1-hop Flanking Anchors and never chain separate CNV loci together.
             var involvedNodes = {};
+            var isCnvExplicitOnly = (
+                (type === 'tandem_repeats' || type === 'fragmented_paralogs' || type === 'remote_cnv') &&
+                Object.keys(explicitNodes).length > 0
+            );
             Object.keys(explicitNodes).forEach(function(nid) { involvedNodes[nid] = true; });
-            Object.keys(rawEdges).forEach(function(eid) {
-                var e = GexfJS.graph.edgeLookup[eid];
-                if (e) {
-                    var sn = nodeList[e.source];
-                    var tn = nodeList[e.target];
-                    if (sn) involvedNodes[sn.id] = true;
-                    if (tn) involvedNodes[tn.id] = true;
-                }
-            });
+            if (!isCnvExplicitOnly) {
+                Object.keys(rawEdges).forEach(function(eid) {
+                    var e = GexfJS.graph.edgeLookup[eid];
+                    if (e) {
+                        var sn = nodeList[e.source];
+                        var tn = nodeList[e.target];
+                        if (sn) involvedNodes[sn.id] = true;
+                        if (tn) involvedNodes[tn.id] = true;
+                    }
+                });
+            }
 
             var involvedIds = Object.keys(involvedNodes);
             if (involvedIds.length === 0) return [];
@@ -2128,32 +2137,36 @@ var loadGexfDependencies = function(callback) {
                 if (ra !== rb) parent[ra] = rb;
             };
 
-            // 1. Union endpoints of rawEdges
-            Object.keys(rawEdges).forEach(function(eid) {
-                var e = GexfJS.graph.edgeLookup[eid];
-                if (e) {
-                    var sn = nodeList[e.source];
-                    var tn = nodeList[e.target];
-                    if (sn && tn) union(sn.id, tn.id);
-                }
-            });
-
-            // 2. Union adjacent involved nodes
-            edgeList.forEach(function(e) {
-                var sn = nodeList[e.source];
-                var tn = nodeList[e.target];
-                if (sn && tn && involvedNodes[sn.id] && involvedNodes[tn.id]) {
-                    union(sn.id, tn.id);
-                }
-            });
-
-            // 3. Union by shared superbubble_id, alt_path_event_id, bridge_event_id, or cnv_cluster_id when applicable
             var sbAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['superbubble_id'] : undefined;
             var altEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['alt_path_event_id'] : undefined;
             var brEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['bridge_event_id'] : undefined;
             var cnvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['cnv_cluster_id'] : undefined;
             var breakAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['assembly_repeat_break'] : undefined;
             var scafEvAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['scaffold_event_id'] : undefined;
+            var edgeScafEvAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value['scaffold_event_id'] : undefined;
+
+            if (type !== 'breaks') {
+                // 1. Union endpoints of rawEdges
+                Object.keys(rawEdges).forEach(function(eid) {
+                    var e = GexfJS.graph.edgeLookup[eid];
+                    if (e) {
+                        var sn = nodeList[e.source];
+                        var tn = nodeList[e.target];
+                        if (sn && tn) union(sn.id, tn.id);
+                    }
+                });
+
+                // 2. Union adjacent involved nodes
+                edgeList.forEach(function(e) {
+                    var sn = nodeList[e.source];
+                    var tn = nodeList[e.target];
+                    if (sn && tn && involvedNodes[sn.id] && involvedNodes[tn.id]) {
+                        union(sn.id, tn.id);
+                    }
+                });
+            }
+
+            // 3. Union by shared superbubble_id, alt_path_event_id, bridge_event_id, or cnv_cluster_id when applicable
             var unionByCsvNodeAttr = function(attrId) {
                 if (typeof attrId === 'undefined') return;
                 var byTok = {};
@@ -2177,8 +2190,6 @@ var loadGexfDependencies = function(callback) {
                 unionByCsvNodeAttr(altEvAttrId);
             } else if (type === 'translocation_bridges') {
                 unionByCsvNodeAttr(brEvAttrId);
-            } else if (type === 'breaks') {
-                unionByCsvNodeAttr(scafEvAttrId);
             } else if (type === 'remote_cnv') {
                 // Union all copies sharing a cnv_cluster_id across the graph so each Remote CNV Cluster locus
                 // highlights its dispersed paralogous copies together across the genome.
@@ -2222,19 +2233,94 @@ var loadGexfDependencies = function(callback) {
 
             // Group nodes and edges into connected components
             var compMap = {};
-            involvedIds.forEach(function(nid) {
-                var r = find(nid);
-                if (!compMap[r]) compMap[r] = { nodeIds: [], edgeIds: {} };
-                compMap[r].nodeIds.push(nid);
-            });
-
-            Object.keys(rawEdges).forEach(function(eid) {
-                var e = GexfJS.graph.edgeLookup[eid];
-                if (e && nodeList[e.source]) {
-                    var r = find(nodeList[e.source].id);
-                    if (compMap[r]) compMap[r].edgeIds[eid] = true;
+            if (type === 'breaks') {
+                // Partition Repeat Breaks & Scaffolds by discrete scaffold_event_id (1-to-1 with *_scaffold_recommendations.tsv)
+                // so overlapping scaffold events for different draft genomes are not merged into a single ambiguous locus.
+                var nodeHasScafEv = {};
+                var scafCompNodeSets = {};
+                var addScafNode = function(evTok, nid) {
+                    var k = 'scaf_' + evTok;
+                    if (!compMap[k]) {
+                        compMap[k] = { nodeIds: [], edgeIds: {}, scaffoldEventId: evTok };
+                        scafCompNodeSets[k] = {};
+                    }
+                    if (!scafCompNodeSets[k][nid]) {
+                        scafCompNodeSets[k][nid] = true;
+                        compMap[k].nodeIds.push(nid);
+                    }
+                    nodeHasScafEv[nid] = true;
+                };
+                if (typeof scafEvAttrId !== 'undefined') {
+                    involvedIds.forEach(function(nid) {
+                        var n = nodeById[nid];
+                        var val = (n && n.attributes && n.attributes[scafEvAttrId] != null) ? String(n.attributes[scafEvAttrId]).trim() : '';
+                        if (val && val !== 'None' && val !== '0') {
+                            val.split(',').forEach(function(tok) {
+                                var t = tok.trim();
+                                if (t && t !== 'None' && t !== '0') addScafNode(t, nid);
+                            });
+                        }
+                    });
                 }
-            });
+                Object.keys(rawEdges).forEach(function(eid) {
+                    var e = GexfJS.graph.edgeLookup[eid];
+                    if (!e) return;
+                    var sn = nodeList[e.source];
+                    var tn = nodeList[e.target];
+                    var evVal = (typeof edgeScafEvAttrId !== 'undefined' && e.attributes && e.attributes[edgeScafEvAttrId] != null)
+                        ? String(e.attributes[edgeScafEvAttrId]).trim()
+                        : '';
+                    if (evVal && evVal !== 'None' && evVal !== '0') {
+                        evVal.split(',').forEach(function(tok) {
+                            var t = tok.trim();
+                            if (!t || t === 'None' || t === '0') return;
+                            var k = 'scaf_' + t;
+                            if (sn) addScafNode(t, sn.id);
+                            if (tn) addScafNode(t, tn.id);
+                            if (compMap[k]) compMap[k].edgeIds[eid] = true;
+                        });
+                    }
+                });
+                // Any standalone assembly_repeat_break nodes not covered by a scaffold_event_id form separate break loci
+                var ungroupedBreakIds = involvedIds.filter(function(nid) { return !nodeHasScafEv[nid]; });
+                if (ungroupedBreakIds.length > 0) {
+                    var ugSet = {};
+                    ungroupedBreakIds.forEach(function(nid) { ugSet[nid] = true; });
+                    edgeList.forEach(function(e) {
+                        var sn = nodeList[e.source];
+                        var tn = nodeList[e.target];
+                        if (sn && tn && ugSet[sn.id] && ugSet[tn.id]) {
+                            union(sn.id, tn.id);
+                        }
+                    });
+                    ungroupedBreakIds.forEach(function(nid) {
+                        var r = 'brk_' + find(nid);
+                        if (!compMap[r]) compMap[r] = { nodeIds: [], edgeIds: {} };
+                        compMap[r].nodeIds.push(nid);
+                    });
+                }
+            } else {
+                involvedIds.forEach(function(nid) {
+                    var r = find(nid);
+                    if (!compMap[r]) compMap[r] = { nodeIds: [], edgeIds: {} };
+                    compMap[r].nodeIds.push(nid);
+                });
+
+                Object.keys(rawEdges).forEach(function(eid) {
+                    var e = GexfJS.graph.edgeLookup[eid];
+                    if (!e) return;
+                    var sn = nodeList[e.source];
+                    var tn = nodeList[e.target];
+                    if (sn && (sn.id in parent)) {
+                        var rs = find(sn.id);
+                        if (compMap[rs]) compMap[rs].edgeIds[eid] = true;
+                    }
+                    if (tn && (tn.id in parent)) {
+                        var rt = find(tn.id);
+                        if (compMap[rt]) compMap[rt].edgeIds[eid] = true;
+                    }
+                });
+            }
 
             var loci = [];
             Object.keys(compMap).forEach(function(rootId) {
@@ -2243,8 +2329,39 @@ var loadGexfDependencies = function(callback) {
                 // Distinguish Focal Variant Nodes from Boundary Conserved Anchor Nodes
                 var focalIds = [];
                 var boundaryAnchorSet = {};
+                var scaffoldEndpointIds = [];
+                var scaffoldGapIds = [];
 
-                if (type === 'superbubbles') {
+                if (type === 'breaks' && c.scaffoldEventId) {
+                    // Identify Contig Break Endpoints (C1, C2: degree-1 endpoints of the scaffold path) vs. Bridged Gap Nodes (interior degree >= 2)
+                    var scafDeg = {};
+                    c.nodeIds.forEach(function(nid) { scafDeg[nid] = 0; });
+                    Object.keys(c.edgeIds).forEach(function(eid) {
+                        var e = GexfJS.graph.edgeLookup[eid];
+                        if (!e) return;
+                        var sn = nodeList[e.source];
+                        var tn = nodeList[e.target];
+                        if (sn && (sn.id in scafDeg)) scafDeg[sn.id]++;
+                        if (tn && (tn.id in scafDeg)) scafDeg[tn.id]++;
+                    });
+                    if (c.nodeIds.length <= 2) {
+                        scaffoldEndpointIds = c.nodeIds.slice();
+                    } else {
+                        c.nodeIds.forEach(function(nid) {
+                            if (scafDeg[nid] === 1) scaffoldEndpointIds.push(nid);
+                            else scaffoldGapIds.push(nid);
+                        });
+                        if (scaffoldEndpointIds.length === 0) {
+                            scaffoldEndpointIds = [c.nodeIds[0], c.nodeIds[c.nodeIds.length - 1]];
+                        }
+                    }
+                    scaffoldEndpointIds.sort(function(a, b) {
+                        var na = parseInt(a, 10), nb = parseInt(b, 10);
+                        if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+                        return String(a).localeCompare(String(b));
+                    });
+                    focalIds = scaffoldEndpointIds.concat(scaffoldGapIds);
+                } else if (type === 'superbubbles') {
                     var hasExplicitSb = c.nodeIds.some(function(nid) { return Boolean(explicitNodes[nid]); });
                     var allExplicitSb = c.nodeIds.every(function(nid) { return Boolean(explicitNodes[nid]); });
                     if (hasExplicitSb && !allExplicitSb) {
@@ -2286,14 +2403,19 @@ var loadGexfDependencies = function(callback) {
                 focalIds.forEach(function(nid) { focalSet[nid] = true; });
 
                 // Discover 1-hop flanking conserved anchor nodes connected to focal nodes
-                focalIds.forEach(function(nid) {
+                // (For scaffold events in 'breaks', only expand outward from the contig break endpoints C1/C2 so multi-replicon repeat nodes inside a bridged gap do not pull in other chromosomes)
+                var anchorSeedIds = (type === 'breaks' && scaffoldEndpointIds.length > 0) ? scaffoldEndpointIds : focalIds;
+                anchorSeedIds.forEach(function(nid) {
                     var inc = adjEdgesByNodeId[nid] || [];
                     var hasFocalNeighbor = inc.some(function(item) { return Boolean(focalSet[item.neighborId]); });
                     inc.forEach(function(item) {
                         if (!focalSet[item.neighborId]) {
                             boundaryAnchorSet[item.neighborId] = true;
                         }
-                        if ((type !== 'rearrangement_junctions' && (focalSet[item.neighborId] || !hasFocalNeighbor)) || Object.keys(c.edgeIds).length === 0) {
+                        if (type === 'breaks' && c.scaffoldEventId) {
+                            // Add approaching/departing edges incident to the C1/C2 break endpoints so the arriving broken contigs are visible
+                            c.edgeIds[item.edge.id] = true;
+                        } else if ((type !== 'rearrangement_junctions' && (focalSet[item.neighborId] || !hasFocalNeighbor)) || Object.keys(c.edgeIds).length === 0) {
                             c.edgeIds[item.edge.id] = true;
                         }
                     });
@@ -2386,15 +2508,7 @@ var loadGexfDependencies = function(callback) {
                     refRoleTitle = (type === 'fragmented_paralogs')
                         ? 'Contiguous Reference Carriers'
                         : 'Single-Copy / Collinear Reference';
-                    var detourGenomes = {};
-                    var detourContigs = {};
-                    Object.keys(rawEdges).forEach(function(eid) {
-                        if (!c.edgeIds[eid]) return;
-                        var e = GexfJS.graph.edgeLookup[eid];
-                        if (e && e.genomes) Object.keys(e.genomes).forEach(function(g) { detourGenomes[g] = true; });
-                        if (e && e.sequences) Object.keys(e.sequences).forEach(function(s) { detourContigs[s] = true; });
-                    });
-                    // Also check cluster-wide contigs/copies across all involved nodes sharing this locus's cnv_cluster_id(s)
+                    // Check cluster-wide contigs/copies across all involved nodes sharing this locus's cnv_cluster_id(s)
                     var locusCnvIds = {};
                     if (typeof cnvAttrId !== 'undefined') {
                         focalIds.forEach(function(nid) {
@@ -2441,7 +2555,7 @@ var loadGexfDependencies = function(callback) {
                             ? (numContigs > 1)
                             : (type === 'remote_cnv'
                                 ? (maxGlobalCopies > 1 || globalNumContigs > 1)
-                                : (genomeCopies[gid] > 1 || Boolean(detourGenomes[gid])));
+                                : (genomeCopies[gid] > 1 || maxGlobalCopies > 1));
                         if (isEvent) {
                             eventGenomesSet[gid] = true;
                             Object.keys(cSet).forEach(function(s) { eventContigsSet[s] = true; });
@@ -2450,9 +2564,6 @@ var loadGexfDependencies = function(callback) {
                             Object.keys(cSet).forEach(function(s) { refContigsSet[s] = true; });
                         }
                     });
-                    if (type !== 'fragmented_paralogs') {
-                        Object.keys(detourContigs).forEach(function(s) { eventContigsSet[s] = true; });
-                    }
                     // If all genomes had 1 copy per node (e.g., 2 separate paralog nodes), fallback to showing all focal as event
                     if (Object.keys(eventGenomesSet).length === 0) {
                         Object.keys(genomeCopies).forEach(function(gid) {
@@ -2498,107 +2609,133 @@ var loadGexfDependencies = function(callback) {
                 } else if (type === 'breaks') {
                     eventRoleTitle = 'Fragmented / Repeat-Broken Contigs';
                     refRoleTitle = 'Bridging Scaffold Reference';
-                    var bridgeContigs = {};
+                    var scafEntAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value['scaffold_entities'] : undefined;
+                    var scafPathEdges = [];
+                    var bridgeContigEdgeCount = {};
                     var bridgeGenomes = {};
-                    var scaffoldTargetGenomes = {};
-                    var scafEntAttrNames = ['scaffold_entities', 'sv_entities'];
+                    var commonTargetGenomes = null;
+                    var unionTargetGenomes = {};
+
                     Object.keys(rawEdges).forEach(function(eid) {
                         if (!c.edgeIds[eid]) return;
                         var e = GexfJS.graph.edgeLookup[eid];
                         if (!e) return;
+                        // If this is a specific scaffold_event_id locus, only count rawEdges that belong to this scaffold_event_id
+                        if (c.scaffoldEventId && typeof edgeScafEvAttrId !== 'undefined' && e.attributes && e.attributes[edgeScafEvAttrId] != null) {
+                            var eEvs = String(e.attributes[edgeScafEvAttrId]).split(',').map(function(x) { return x.trim(); });
+                            if (eEvs.indexOf(String(c.scaffoldEventId)) === -1) return;
+                        }
+                        scafPathEdges.push(eid);
                         if (e.genomes) Object.keys(e.genomes).forEach(function(g) { bridgeGenomes[g] = true; });
-                        if (e.sequences) Object.keys(e.sequences).forEach(function(s) { bridgeContigs[s] = true; });
-                        scafEntAttrNames.forEach(function(attrName) {
-                            var entAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value[attrName] : undefined;
-                            if (typeof entAttrId === 'undefined') return;
-                            if (e.attributes && e.attributes[entAttrId]) {
-                                String(e.attributes[entAttrId]).split(',').forEach(function(tok) {
-                                    var g = tok.trim();
-                                    if (g && g !== 'None') scaffoldTargetGenomes[g] = true;
+                        if (e.sequences) {
+                            Object.keys(e.sequences).forEach(function(s) {
+                                bridgeContigEdgeCount[s] = (bridgeContigEdgeCount[s] || 0) + 1;
+                            });
+                        }
+                        var edgeTargets = {};
+                        if (typeof scafEntAttrId !== 'undefined' && e.attributes && e.attributes[scafEntAttrId]) {
+                            String(e.attributes[scafEntAttrId]).split(',').forEach(function(tok) {
+                                var g = tok.trim();
+                                if (g && g !== 'None') {
+                                    edgeTargets[g] = true;
+                                    unionTargetGenomes[g] = true;
+                                }
+                            });
+                        }
+                        if (Object.keys(edgeTargets).length > 0) {
+                            if (commonTargetGenomes === null) {
+                                commonTargetGenomes = edgeTargets;
+                            } else {
+                                var nextCommon = {};
+                                Object.keys(commonTargetGenomes).forEach(function(g) {
+                                    if (edgeTargets[g]) nextCommon[g] = true;
                                 });
+                                commonTargetGenomes = nextCommon;
                             }
-                            if (GexfJS.path_highlights && GexfJS.path_highlights[entAttrId]) {
-                                Object.keys(GexfJS.path_highlights[entAttrId]).forEach(function(tok) {
-                                    if (GexfJS.path_highlights[entAttrId][tok] && GexfJS.path_highlights[entAttrId][tok][eid]) {
-                                        var g = tok.trim();
-                                        if (g && g !== 'None') scaffoldTargetGenomes[g] = true;
-                                    }
-                                });
-                            }
-                        });
+                        }
                     });
-                    var locusContigsByGenome = {};
-                    focalIds.concat(anchorIds).forEach(function(nid) {
+
+                    var epList = (scaffoldEndpointIds && scaffoldEndpointIds.length > 0) ? scaffoldEndpointIds : focalIds;
+                    var epContigsByGenome = {};
+                    epList.forEach(function(nid) {
                         var n = nodeById[nid];
                         if (!n || !n.sequences) return;
                         Object.keys(n.sequences).forEach(function(s) {
                             var g = contigToGenome[s];
                             if (g) {
-                                if (!locusContigsByGenome[g]) locusContigsByGenome[g] = {};
-                                locusContigsByGenome[g][s] = true;
+                                if (!epContigsByGenome[g]) epContigsByGenome[g] = {};
+                                epContigsByGenome[g][s] = true;
                             }
                         });
                     });
-                    // 1. Any genome explicitly tagged in scaffold_entities or spanning multiple contigs across the locus (focal + flanking anchors) is Fragmented
-                    Object.keys(locusContigsByGenome).forEach(function(g) {
-                        var gLocusContigCount = Object.keys(locusContigsByGenome[g]).length;
-                        if (scaffoldTargetGenomes[g] || gLocusContigCount > 1) {
-                            eventGenomesSet[g] = true;
-                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) {
-                                eventContigsSet[cs] = true;
-                            });
+
+                    var candidateTargets = (commonTargetGenomes && Object.keys(commonTargetGenomes).length > 0)
+                        ? Object.keys(commonTargetGenomes)
+                        : Object.keys(unionTargetGenomes);
+
+                    // Filter candidate scaffold targets to genomes that actually have broken contigs at the C1/C2 endpoints
+                    var verifiedTargets = candidateTargets.filter(function(g) {
+                        var epContigs = epContigsByGenome[g] ? Object.keys(epContigsByGenome[g]) : [];
+                        var presentOnAllEndpoints = epList.every(function(nid) {
+                            var n = nodeById[nid];
+                            return Boolean(n && n.genomes && n.genomes[g]);
+                        });
+                        if (epList.length >= 2) {
+                            return presentOnAllEndpoints && epContigs.length >= 2;
                         }
+                        return presentOnAllEndpoints && epContigs.length >= 1;
                     });
-                    // 2. Also check focal nodes for single-contig terminal repeat breaks (assembly_repeat_break=true and not a bridging contig)
-                    focalIds.forEach(function(nid) {
-                        var n = nodeById[nid];
-                        if (!n) return;
-                        var isBreakNode = (typeof breakAttrId !== 'undefined' && n.attributes && String(n.attributes[breakAttrId]).toLowerCase() === 'true');
-                        if (n.sequences) {
+                    if (verifiedTargets.length === 0) verifiedTargets = candidateTargets;
+
+                    verifiedTargets.forEach(function(g) {
+                        eventGenomesSet[g] = true;
+                        var epContigs = epContigsByGenome[g] ? Object.keys(epContigsByGenome[g]) : [];
+                        epContigs.forEach(function(cs) { eventContigsSet[cs] = true; });
+                    });
+
+                    // For standalone repeat breaks without a scaffold_event_id, check assembly_repeat_break nodes
+                    if (Object.keys(eventGenomesSet).length === 0) {
+                        focalIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            if (!n || !n.sequences) return;
+                            var isBreakNode = (typeof breakAttrId !== 'undefined' && n.attributes && String(n.attributes[breakAttrId]).toLowerCase() === 'true');
                             Object.keys(n.sequences).forEach(function(s) {
                                 var g = contigToGenome[s];
-                                if ((g && scaffoldTargetGenomes[g]) || (!bridgeContigs[s] && isBreakNode)) {
-                                    if (g) {
-                                        eventGenomesSet[g] = true;
-                                        if (locusContigsByGenome[g]) {
-                                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) { eventContigsSet[cs] = true; });
-                                        }
-                                    }
+                                if (!bridgeContigEdgeCount[s] && isBreakNode) {
+                                    if (g) eventGenomesSet[g] = true;
                                     eventContigsSet[s] = true;
                                 }
                             });
-                        }
-                    });
-                    Object.keys(scaffoldTargetGenomes).forEach(function(g) {
-                        eventGenomesSet[g] = true;
-                        if (locusContigsByGenome[g]) {
-                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) { eventContigsSet[cs] = true; });
-                        }
-                    });
-                    // 3. If no multi-contig or scaffold-target genome was found (e.g., an isolated single-genome break), fallback BEFORE populating refGenomesSet
+                        });
+                    }
                     if (Object.keys(eventContigsSet).length === 0) {
-                        focalIds.forEach(function(nid) {
+                        epList.forEach(function(nid) {
                             var n = nodeById[nid];
                             if (n && n.sequences) Object.keys(n.sequences).forEach(function(s) { eventContigsSet[s] = true; });
                             if (n && n.genomes) Object.keys(n.genomes).forEach(function(g) { eventGenomesSet[g] = true; });
                         });
                     }
-                    // 4. Populate Bridging Scaffold Reference strictly with locus/bridge genomes & contigs NOT in eventGenomesSet/eventContigsSet
-                    Object.keys(locusContigsByGenome).forEach(function(g) {
-                        if (!eventGenomesSet[g]) {
-                            refGenomesSet[g] = true;
-                            Object.keys(locusContigsByGenome[g]).forEach(function(cs) {
-                                if (!eventContigsSet[cs]) refContigsSet[cs] = true;
-                            });
-                        }
-                    });
-                    Object.keys(bridgeContigs).forEach(function(s) {
+
+                    // Populate Bridging Scaffold Reference with genomes & contigs that traverse the scaffold bridge edges (excluding target broken genomes/contigs)
+                    var minBridgeEdges = scafPathEdges.length > 0 ? scafPathEdges.length : 1;
+                    Object.keys(bridgeContigEdgeCount).forEach(function(s) {
                         var g = contigToGenome[s];
-                        if (!eventContigsSet[s] && (!g || !eventGenomesSet[g])) {
+                        if (eventContigsSet[s] || (g && eventGenomesSet[g])) return;
+                        if (bridgeContigEdgeCount[s] >= minBridgeEdges) {
                             refContigsSet[s] = true;
                             if (g) refGenomesSet[g] = true;
                         }
                     });
+                    // Fallback if no single reference contig spanned every edge of the bridge
+                    if (Object.keys(refContigsSet).length === 0) {
+                        Object.keys(bridgeContigEdgeCount).forEach(function(s) {
+                            var g = contigToGenome[s];
+                            if (!eventContigsSet[s] && (!g || !eventGenomesSet[g])) {
+                                refContigsSet[s] = true;
+                                if (g) refGenomesSet[g] = true;
+                            }
+                        });
+                    }
                     Object.keys(bridgeGenomes).forEach(function(g) {
                         if (!eventGenomesSet[g]) refGenomesSet[g] = true;
                     });
@@ -2945,18 +3082,21 @@ var loadGexfDependencies = function(callback) {
 
                 // Any genome/contig on the flanking anchors not already in eventGenomesSet/eventContigsSet is part of the flanking reference context;
                 // anchor contigs belonging to an event-only genome stay in eventContigsSet so all locus contigs of that genome remain grouped together.
-                Object.keys(allAnchorGenomes).forEach(function(g) {
-                    if (!eventGenomesSet[g]) refGenomesSet[g] = true;
-                });
-                Object.keys(allAnchorContigs).forEach(function(s) {
-                    if (eventContigsSet[s] || refContigsSet[s]) return;
-                    var g = contigToGenome[s];
-                    if (g && eventGenomesSet[g] && !refGenomesSet[g]) {
-                        eventContigsSet[s] = true;
-                    } else {
-                        refContigsSet[s] = true;
-                    }
-                });
+                // (Skip for scaffold_event_id loci in 'breaks' where target broken contigs and bridging reference contigs are already strictly determined.)
+                if (!(type === 'breaks' && c.scaffoldEventId)) {
+                    Object.keys(allAnchorGenomes).forEach(function(g) {
+                        if (!eventGenomesSet[g]) refGenomesSet[g] = true;
+                    });
+                    Object.keys(allAnchorContigs).forEach(function(s) {
+                        if (eventContigsSet[s] || refContigsSet[s]) return;
+                        var g = contigToGenome[s];
+                        if (g && eventGenomesSet[g] && !refGenomesSet[g]) {
+                            eventContigsSet[s] = true;
+                        } else {
+                            refContigsSet[s] = true;
+                        }
+                    });
+                }
 
                 // Union of all genomes and contigs involved in this locus (Event + Flanking Anchor Reference)
                 var allLocusGenomes = {};
@@ -2983,7 +3123,8 @@ var loadGexfDependencies = function(callback) {
                     return named.length > 0 ? named : fallback;
                 };
 
-                var repLabels = pickLabels(focalIds);
+                var labelSourceIds = (type === 'breaks' && scaffoldEndpointIds.length > 0) ? scaffoldEndpointIds.concat(scaffoldGapIds) : focalIds;
+                var repLabels = pickLabels(labelSourceIds);
                 if (repLabels.length === 0 || (repLabels.length === 1 && repLabels[0].toLowerCase().indexOf('hypothetical') !== -1 && anchorIds.length > 0)) {
                     var anchorLabels = pickLabels(anchorIds);
                     if (anchorLabels.length > 0) repLabels = anchorLabels;
@@ -2995,12 +3136,243 @@ var loadGexfDependencies = function(callback) {
 
                 var evGenCount = Object.keys(eventGenomesSet).length;
                 var totGenCount = Object.keys(allLocusGenomes).length;
-                var cnvSet = {};
-                if (typeof cnvAttrId !== 'undefined') {
+
+                // Collect backend annotation IDs across focal nodes and active edges
+                var famAttrId = GexfJS._node_attr_value ? GexfJS._node_attr_value['family'] : undefined;
+                var edgeSbAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value['superbubble_id'] : undefined;
+                var edgeAltAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value['alt_path_event_id'] : undefined;
+                var edgeBrAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value['bridge_event_id'] : undefined;
+                var edgeScafAttrId = GexfJS._edge_attr_value ? GexfJS._edge_attr_value['scaffold_event_id'] : undefined;
+
+                var collectCsvIds = function(nodeAttr, edgeAttr) {
+                    var idSet = {};
+                    if (typeof nodeAttr !== 'undefined') {
+                        focalIds.forEach(function(nid) {
+                            var n = nodeById[nid];
+                            var val = (n && n.attributes && n.attributes[nodeAttr] != null) ? String(n.attributes[nodeAttr]).trim() : '';
+                            if (val && val !== 'None' && val !== '0') {
+                                val.split(',').forEach(function(tok) {
+                                    var t = tok.trim();
+                                    if (t && t !== 'None' && t !== '0') idSet[t] = true;
+                                });
+                            }
+                        });
+                    }
+                    if (typeof edgeAttr !== 'undefined') {
+                        activeEdgeIds.forEach(function(eid) {
+                            var e = GexfJS.graph.edgeLookup ? GexfJS.graph.edgeLookup[eid] : null;
+                            var val = (e && e.attributes && e.attributes[edgeAttr] != null) ? String(e.attributes[edgeAttr]).trim() : '';
+                            if (val && val !== 'None' && val !== '0') {
+                                val.split(',').forEach(function(tok) {
+                                    var t = tok.trim();
+                                    if (t && t !== 'None' && t !== '0') idSet[t] = true;
+                                });
+                            }
+                        });
+                    }
+                    return Object.keys(idSet).sort(function(a, b) {
+                        var na = parseInt(a, 10), nb = parseInt(b, 10);
+                        if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+                        return String(a).localeCompare(String(b));
+                    });
+                };
+
+                var cnvClusters = collectCsvIds(cnvAttrId, undefined);
+                var superbubbleIds = collectCsvIds(sbAttrId, edgeSbAttrId);
+                var altPathIds = collectCsvIds(altEvAttrId, edgeAltAttrId);
+                var bridgeEventIds = collectCsvIds(brEvAttrId, edgeBrAttrId);
+                var scaffoldEventIds = (type === 'breaks' && c.scaffoldEventId)
+                    ? [String(c.scaffoldEventId)]
+                    : collectCsvIds(scafEvAttrId, edgeScafAttrId);
+
+                var formatIdList = function(prefix, arr, maxShow) {
+                    if (!arr || arr.length === 0) return '';
+                    var limit = maxShow || 3;
+                    var shown = arr.slice(0, limit).map(function(x) { return '#' + x; }).join(', ');
+                    if (arr.length > limit) shown += ' +' + (arr.length - limit);
+                    return prefix + ' ' + shown;
+                };
+
+                var backendIdBadge = '';
+                var backendIdSummary = '';
+                if (type === 'tandem_repeats' || type === 'fragmented_paralogs' || type === 'remote_cnv') {
+                    if (cnvClusters.length > 0) {
+                        backendIdBadge = formatIdList('CNV', cnvClusters, 3);
+                        backendIdSummary = 'cnv_cluster_id = ' + cnvClusters.join(', ') + ' (CNV_Cluster_ID in *_mobilized_gene_families.tsv)';
+                    }
+                } else if (type === 'superbubbles') {
+                    if (superbubbleIds.length > 0) {
+                        backendIdBadge = formatIdList('SB', superbubbleIds, 3);
+                        backendIdSummary = 'superbubble_id = ' + superbubbleIds.join(', ') + ' (Superbubble_ID in *_superbubbles.tsv)';
+                    } else if (altPathIds.length > 0) {
+                        backendIdBadge = formatIdList('AltPath', altPathIds, 3);
+                        backendIdSummary = 'alt_path_event_id = ' + altPathIds.join(', ');
+                    }
+                } else if (type === 'alt_paths') {
+                    if (altPathIds.length > 0) {
+                        backendIdBadge = formatIdList('AltPath', altPathIds, 3);
+                        backendIdSummary = 'alt_path_event_id = ' + altPathIds.join(', ');
+                    }
+                } else if (type === 'translocation_bridges') {
+                    if (bridgeEventIds.length > 0) {
+                        backendIdBadge = formatIdList('Bridge', bridgeEventIds, 3);
+                        backendIdSummary = 'bridge_event_id = ' + bridgeEventIds.join(', ');
+                    }
+                } else if (type === 'breaks') {
+                    if (scaffoldEventIds.length > 0) {
+                        backendIdBadge = formatIdList('Scaffold', scaffoldEventIds, 3);
+                        backendIdSummary = 'scaffold_event_id = ' + scaffoldEventIds.join(', ') + ' (Scaffold_Event_ID in *_scaffold_recommendations.tsv)';
+                    } else if (focalIds.length > 0) {
+                        backendIdBadge = formatIdList('Break Node', focalIds, 2);
+                        backendIdSummary = 'assembly_repeat_break = true on Node ID(s): ' + focalIds.map(function(x) { return '#' + x; }).join(', ');
+                    }
+                }
+                if (!backendIdBadge) {
+                    if (cnvClusters.length > 0) {
+                        backendIdBadge = formatIdList('CNV', cnvClusters, 2);
+                        backendIdSummary = 'cnv_cluster_id = ' + cnvClusters.join(', ');
+                    } else if (superbubbleIds.length > 0) {
+                        backendIdBadge = formatIdList('SB', superbubbleIds, 2);
+                        backendIdSummary = 'superbubble_id = ' + superbubbleIds.join(', ');
+                    } else if (altPathIds.length > 0) {
+                        backendIdBadge = formatIdList('AltPath', altPathIds, 2);
+                        backendIdSummary = 'alt_path_event_id = ' + altPathIds.join(', ');
+                    } else if (bridgeEventIds.length > 0) {
+                        backendIdBadge = formatIdList('Bridge', bridgeEventIds, 2);
+                        backendIdSummary = 'bridge_event_id = ' + bridgeEventIds.join(', ');
+                    } else if (scaffoldEventIds.length > 0) {
+                        backendIdBadge = formatIdList('Scaffold', scaffoldEventIds, 2);
+                        backendIdSummary = 'scaffold_event_id = ' + scaffoldEventIds.join(', ');
+                    } else if (focalIds.length > 0) {
+                        backendIdBadge = formatIdList('Node', focalIds, 2);
+                        backendIdSummary = 'Node IDs: ' + focalIds.slice(0, 8).map(function(x) { return '#' + x; }).join(', ') + (focalIds.length > 8 ? ' ...' : '');
+                    }
+                }
+
+                // Group focal nodes into Paralog / CNV Groups (by cnv_cluster_id or protein family) and assign A1/A2, B1/B2 badges for CNV views,
+                // or assign C1/C2 Contig Break Endpoint badges for Repeat Breaks & Scaffolds ('breaks').
+                var paralogGroups = [];
+                var nodeBadges = {};
+                var nodeParalogInfo = {};
+                var isCnvPhenom = (type === 'tandem_repeats' || type === 'fragmented_paralogs' || type === 'remote_cnv');
+
+                if (type === 'breaks') {
+                    if (scaffoldEndpointIds.length === 1) {
+                        nodeBadges[scaffoldEndpointIds[0]] = 'C1/2';
+                    } else if (scaffoldEndpointIds.length >= 2) {
+                        scaffoldEndpointIds.forEach(function(nid, idx) {
+                            nodeBadges[nid] = 'C' + (idx + 1);
+                        });
+                    } else {
+                        focalIds.forEach(function(nid, idx) {
+                            nodeBadges[nid] = 'B' + (idx + 1);
+                        });
+                    }
+                } else if (isCnvPhenom) {
+                    var rawGroupsByKey = {};
                     focalIds.forEach(function(nid) {
                         var n = nodeById[nid];
-                        var val = (n && n.attributes && n.attributes[cnvAttrId]) ? String(n.attributes[cnvAttrId]).trim() : '';
-                        if (val && val !== 'None' && val !== '0') cnvSet[val] = true;
+                        if (!n) return;
+                        var cnvVal = (typeof cnvAttrId !== 'undefined' && n.attributes && n.attributes[cnvAttrId] != null)
+                            ? String(n.attributes[cnvAttrId]).trim()
+                            : '';
+                        if (cnvVal === '0' || cnvVal === 'None') cnvVal = '';
+                        var famVal = (typeof famAttrId !== 'undefined' && n.attributes && n.attributes[famAttrId] != null)
+                            ? String(n.attributes[famAttrId]).trim()
+                            : '';
+                        if (famVal === 'None') famVal = '';
+                        var gKey = cnvVal ? ('cnv_' + cnvVal) : (famVal ? ('fam_' + famVal) : ('node_' + nid));
+                        if (!rawGroupsByKey[gKey]) {
+                            rawGroupsByKey[gKey] = {
+                                key: gKey,
+                                cnvClusterId: cnvVal || null,
+                                familyId: famVal || null,
+                                label: String(n.label || famVal || ('Node ' + nid)),
+                                nodeIds: []
+                            };
+                        }
+                        rawGroupsByKey[gKey].nodeIds.push(nid);
+                    });
+
+                    Object.keys(rawGroupsByKey).forEach(function(gk) {
+                        var grp = rawGroupsByKey[gk];
+                        grp.nodeIds.sort(function(a, b) {
+                            var na = nodeById[a], nb = nodeById[b];
+                            var ga = (na && na.genomes) ? Object.keys(na.genomes).length : 0;
+                            var gb = (nb && nb.genomes) ? Object.keys(nb.genomes).length : 0;
+                            if (gb !== ga) return gb - ga;
+                            var ia = parseInt(a, 10), ib = parseInt(b, 10);
+                            if (!isNaN(ia) && !isNaN(ib) && ia !== ib) return ia - ib;
+                            return String(a).localeCompare(String(b));
+                        });
+                        var maxGrpCopies = 1;
+                        var cKey = grp.cnvClusterId ? ('cnv_' + grp.cnvClusterId) : null;
+                        if (cKey) {
+                            Object.keys(clusterCopiesByGenome).forEach(function(gid) {
+                                var cCnt = clusterCopiesByGenome[gid] && clusterCopiesByGenome[gid][cKey];
+                                if (cCnt && cCnt > maxGrpCopies) maxGrpCopies = cCnt;
+                            });
+                        } else {
+                            var perG = {};
+                            grp.nodeIds.forEach(function(nid) {
+                                var n = nodeById[nid];
+                                if (n && n.featureMap) {
+                                    for (var gid in n.featureMap) {
+                                        if (gid === 'info') continue;
+                                        var cMap = n.featureMap[gid];
+                                        for (var sid in cMap) {
+                                            var fArr = cMap[sid];
+                                            perG[gid] = (perG[gid] || 0) + (Array.isArray(fArr) ? fArr.length : 1);
+                                        }
+                                    }
+                                }
+                            });
+                            Object.keys(perG).forEach(function(gid) {
+                                if (perG[gid] > maxGrpCopies) maxGrpCopies = perG[gid];
+                            });
+                        }
+                        grp.maxCopies = maxGrpCopies;
+                        grp.isDuplicated = Boolean(grp.nodeIds.length > 1 || maxGrpCopies > 1 || grp.cnvClusterId);
+                        paralogGroups.push(grp);
+                    });
+
+                    paralogGroups.sort(function(a, b) {
+                        if (b.nodeIds.length !== a.nodeIds.length) return b.nodeIds.length - a.nodeIds.length;
+                        if (b.maxCopies !== a.maxCopies) return b.maxCopies - a.maxCopies;
+                        var ca = parseInt(a.cnvClusterId || '999999', 10);
+                        var cb = parseInt(b.cnvClusterId || '999999', 10);
+                        if (!isNaN(ca) && !isNaN(cb) && ca !== cb) return ca - cb;
+                        return String(a.key).localeCompare(String(b.key));
+                    });
+
+                    var toGroupLetters = function(idx) {
+                        var s = '';
+                        var n = idx;
+                        while (n >= 0) {
+                            s = String.fromCharCode(65 + (n % 26)) + s;
+                            n = Math.floor(n / 26) - 1;
+                        }
+                        return s;
+                    };
+
+                    paralogGroups.forEach(function(grp, gIdx) {
+                        var letter = toGroupLetters(gIdx);
+                        grp.groupLetter = letter;
+                        grp.nodeBadges = {};
+                        grp.nodeIds.forEach(function(nid, nIdx) {
+                            var badge = letter + (nIdx + 1);
+                            nodeBadges[nid] = badge;
+                            grp.nodeBadges[nid] = badge;
+                            nodeParalogInfo[nid] = {
+                                badge: badge,
+                                groupLetter: letter,
+                                copyIndex: nIdx + 1,
+                                groupSize: grp.nodeIds.length,
+                                cnvClusterId: grp.cnvClusterId,
+                                familyId: grp.familyId,
+                                maxCopies: grp.maxCopies
+                            };
+                        });
                     });
                 }
 
@@ -3072,6 +3444,8 @@ var loadGexfDependencies = function(callback) {
                 loci.push({
                     focalNodeIds: focalIds,
                     anchorNodeIds: anchorIds,
+                    scaffoldEndpointIds: scaffoldEndpointIds,
+                    scaffoldGapIds: scaffoldGapIds,
                     activeEdgeIds: activeEdgeIds,
                     referenceEdgeIds: Object.keys(referenceEdgeSet),
                     eventGenomes: Object.keys(eventGenomesSet),
@@ -3090,7 +3464,16 @@ var loadGexfDependencies = function(callback) {
                     contigCount: Object.keys(eventContigsSet).length || Object.keys(allLocusContigs).length,
                     totalLocusContigs: Object.keys(allLocusContigs).length,
                     shortTitle: shortTitle,
-                    cnvClusters: Object.keys(cnvSet),
+                    cnvClusters: cnvClusters,
+                    superbubbleIds: superbubbleIds,
+                    altPathIds: altPathIds,
+                    bridgeEventIds: bridgeEventIds,
+                    scaffoldEventIds: scaffoldEventIds,
+                    backendIdBadge: backendIdBadge,
+                    backendIdSummary: backendIdSummary,
+                    paralogGroups: paralogGroups,
+                    nodeBadges: nodeBadges,
+                    nodeParalogInfo: nodeParalogInfo,
                     remoteSites: remoteSites,
                     relatedParalogLoci: [],
                     nodeIdxById: nodeIdxById,
@@ -3109,7 +3492,8 @@ var loadGexfDependencies = function(callback) {
             loci.forEach(function(loc, idx) {
                 loc.index = idx;
                 var siteTag = (loc.remoteSites && loc.remoteSites.length > 1) ? (loc.remoteSites.length + ' sites, ') : '';
-                loc.dropdownLabel = '#' + (idx + 1) + ': ' + loc.shortTitle + ' (' + siteTag + loc.focalNodeIds.length + (loc.focalNodeIds.length === 1 ? ' gene, ' : ' genes, ') + loc.genomeCount + ' gen)';
+                var idTag = loc.backendIdBadge ? (' [' + loc.backendIdBadge + ']') : '';
+                loc.dropdownLabel = '#' + (idx + 1) + idTag + ': ' + loc.shortTitle + ' (' + siteTag + loc.focalNodeIds.length + (loc.focalNodeIds.length === 1 ? ' gene, ' : ' genes, ') + loc.genomeCount + ' gen)';
             });
 
             // Cross-reference spatially separated loci that share any cnv_cluster_id
@@ -3171,6 +3555,9 @@ var loadGexfDependencies = function(callback) {
                 isEvent && (phenomType === 'fragmented_paralogs' || phenomType === 'breaks' || phenomType === 'rearrangements') &&
                 gKeys.some(function(g) { return (byGenome[g] || []).length >= 2; })
             );
+            var preferHighCopyEvent = Boolean(
+                isEvent && (phenomType === 'tandem_repeats' || phenomType === 'remote_cnv') && loc.genomeCopies
+            );
             var totalAssemblyContigs = function(gid) {
                 if (window.GexfJS && GexfJS.graph && GexfJS.graph.contig_map && GexfJS.graph.contig_map[gid]) {
                     return GexfJS.graph.contig_map[gid].length;
@@ -3182,6 +3569,11 @@ var loadGexfDependencies = function(callback) {
                 var lenA = (byGenome[a] || []).length;
                 var lenB = (byGenome[b] || []).length;
                 if ((lenA === 0) !== (lenB === 0)) return lenA === 0 ? 1 : -1;
+                if (preferHighCopyEvent) {
+                    var copA = (loc.genomeCopies && loc.genomeCopies[a]) ? loc.genomeCopies[a] : 0;
+                    var copB = (loc.genomeCopies && loc.genomeCopies[b]) ? loc.genomeCopies[b] : 0;
+                    if (copB !== copA) return copB - copA;
+                }
                 if (preferMultiContigEvent) {
                     var multiA = lenA >= 2 ? 0 : 1;
                     var multiB = lenB >= 2 ? 0 : 1;
@@ -3198,9 +3590,11 @@ var loadGexfDependencies = function(callback) {
         },
 
         getDefaultLocusSpotlightContigs: function(loc, phenomType) {
+            // Note: For CNV phenomena (tandem_repeats, fragmented_paralogs, remote_cnv), do NOT auto-spotlight
+            // a single contig on locus selection, because spotlighting a single genome dims out paralog copies
+            // carried by other genomes in the locus. Instead, show all paralog copies (A1, A2, B1, B2...) in purple
+            // by default and let the user click any genome/contig in the panel to spotlight its specific walk.
             var exemplarTypes = {
-                'tandem_repeats': true,
-                'fragmented_paralogs': true,
                 'rearrangements': true,
                 'rearrangement_junctions': true,
                 'translocation_bridges': true,
@@ -3258,10 +3652,13 @@ var loadGexfDependencies = function(callback) {
             var idx = (typeof GexfJS.params.activeLocusIndex === 'number') ? GexfJS.params.activeLocusIndex : -1;
             var hlColor = GexfJS.params.highlightColorOverride || '#d500f9';
             var filterMode = GexfJS.params.locusFilterMode || 'locus'; // 'locus' (Event + Ref), 'event' (Event only), 'subgraph', or 'off'
+            var activePhenom = GexfJS.params.activePhenomenon;
+            var isCnvPhenom = (activePhenom === 'tandem_repeats' || activePhenom === 'fragmented_paralogs' || activePhenom === 'remote_cnv');
 
             GexfJS.params.activeEdges = {};
             GexfJS.params.activeNodes = {};
             GexfJS.params.anchorNodes = {};
+            GexfJS.params.cnvNodeBadges = {};
             GexfJS.params.dashedEdges = {};
             GexfJS.params.referenceEdges = {};
             GexfJS.params.locusContigFilter = {};
@@ -3280,6 +3677,9 @@ var loadGexfDependencies = function(callback) {
                 loc.focalNodeIds.forEach(function(nid) {
                     GexfJS.params.activeNodes[nid] = true;
                     GexfJS.params.pinnedElements['n_' + nid] = hlColor;
+                    if ((isSingleLocus || isCnvPhenom) && loc.nodeBadges && loc.nodeBadges[nid]) {
+                        GexfJS.params.cnvNodeBadges[nid] = loc.nodeBadges[nid];
+                    }
                 });
                 loc.anchorNodeIds.forEach(function(aid) {
                     if (!GexfJS.params.activeNodes[aid]) {
@@ -3402,7 +3802,8 @@ var loadGexfDependencies = function(callback) {
                         var vInfo = (inLocus || onEdge) ? extractFeatInfo(vNode, cid) : null;
                         // Also highlight edge if both endpoint locus nodes contain this contig and the edge is an active/reference locus edge
                         if (!onEdge && inLocus && uInfo && vInfo && (GexfJS.params.activeEdges[e.id] || GexfJS.params.referenceEdges[e.id])) {
-                            if (uInfo.pos !== null && vInfo.pos !== null && Math.abs(vInfo.pos - uInfo.pos) <= 15) {
+                            if ((uInfo.peg !== null && vInfo.peg !== null && Math.abs(vInfo.peg - uInfo.peg) <= 15) ||
+                                (uInfo.pos !== null && vInfo.pos !== null && Math.abs(vInfo.pos - uInfo.pos) <= 15)) {
                                 onEdge = true;
                             }
                         }
@@ -3551,6 +3952,7 @@ var loadGexfDependencies = function(callback) {
             return [
                 {
                     property: 'Antibiotic Resistance',
+                    aliases: ['Antibiotic Resistance', 'Antibiotic resistance', 'AMR'],
                     label: 'Antibiotic Resistance',
                     tag: 'AMR',
                     color: '#d32f2f',
@@ -3560,6 +3962,7 @@ var loadGexfDependencies = function(callback) {
                 },
                 {
                     property: 'Drug Target',
+                    aliases: ['Drug Target', 'Drug target'],
                     label: 'Drug Target',
                     tag: 'DT',
                     color: '#3949ab',
@@ -3569,6 +3972,7 @@ var loadGexfDependencies = function(callback) {
                 },
                 {
                     property: 'Human Homolog',
+                    aliases: ['Human Homolog', 'Human homolog'],
                     label: 'Human Homolog',
                     tag: 'HUM',
                     color: '#c2185b',
@@ -3578,6 +3982,7 @@ var loadGexfDependencies = function(callback) {
                 },
                 {
                     property: 'Metal Resistance',
+                    aliases: ['Metal Resistance', 'Metal resistance'],
                     label: 'Metal Resistance',
                     tag: 'MTL',
                     color: '#6d4c41',
@@ -3587,6 +3992,7 @@ var loadGexfDependencies = function(callback) {
                 },
                 {
                     property: 'Transporter',
+                    aliases: ['Transporter', 'transporter'],
                     label: 'Transporter',
                     tag: 'TRP',
                     color: '#00897b',
@@ -3595,24 +4001,41 @@ var loadGexfDependencies = function(callback) {
                     desc: 'Membrane transport systems and efflux/influx channels (TCDB)'
                 },
                 {
-                    property: 'Virulance factor',
-                    label: 'Virulance factor',
-                    tag: 'VF*',
+                    property: 'Virulence Factor',
+                    aliases: ['Virulence Factor', 'Virulence factor', 'Virulance factor', 'Virulance Factor', 'Virulence Factors', 'Virulance factors'],
+                    label: 'Virulence Factor',
+                    tag: 'VF',
                     color: '#e65100',
                     bg: '#fff3e0',
                     border: '#ffcc80',
-                    desc: 'Curated virulence factors with legacy Victors property spelling in BV-BRC sp_gene'
-                },
-                {
-                    property: 'Virulence Factor',
-                    label: 'Virulence Factor',
-                    tag: 'VF',
-                    color: '#f57c00',
-                    bg: '#fff8e1',
-                    border: '#ffe082',
                     desc: 'Pathogenicity determinants, toxins, adhesins & secretion effectors (VFDB, PATRIC_VF, Victors)'
                 }
             ];
+        },
+
+        normalizeSpecialtyProperty: function(rawProp) {
+            if (!rawProp) return null;
+            var p = String(rawProp).trim();
+            if (!p) return null;
+            var norm = p.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+            if (/^virul[ae]nce\s*factors?$/.test(norm)) {
+                return 'Virulence Factor';
+            }
+            var cats = this.getSpecialtyCategoryMeta();
+            for (var i = 0; i < cats.length; i++) {
+                var c = cats[i];
+                if (c.property.toLowerCase() === norm) {
+                    return c.property;
+                }
+                if (Array.isArray(c.aliases)) {
+                    for (var j = 0; j < c.aliases.length; j++) {
+                        if (String(c.aliases[j]).toLowerCase() === norm) {
+                            return c.property;
+                        }
+                    }
+                }
+            }
+            return null;
         },
 
         fetchSpecialtyGenes: function() {
@@ -3621,6 +4044,11 @@ var loadGexfDependencies = function(callback) {
             var catByProp = {};
             cats.forEach(function(c) {
                 catByProp[c.property] = c;
+                if (Array.isArray(c.aliases)) {
+                    c.aliases.forEach(function(al) {
+                        catByProp[al] = c;
+                    });
+                }
                 byCategory[c.property] = {
                     meta: c,
                     nodes: {},
@@ -3706,30 +4134,36 @@ var loadGexfDependencies = function(callback) {
                 data: query
             }).then(lang.hitch(this, function(records) {
                 var seenNodeFeat = {};
+                var seenCatFeat = {};
+                var seenPatricRec = {};
                 (records || []).forEach(lang.hitch(this, function(rec) {
                     if (!rec || !rec.patric_id || !rec.property) return;
                     var fid = String(rec.patric_id).trim();
-                    var prop = String(rec.property).trim();
-                    if (!byCategory[prop]) {
-                        // Support exact matching or case-insensitive fallback if needed
-                        var matchedKey = null;
-                        Object.keys(byCategory).forEach(function(k) {
-                            if (k === prop) matchedKey = k;
-                        });
-                        if (!matchedKey) return;
-                        prop = matchedKey;
-                    }
+                    var prop = this.normalizeSpecialtyProperty(rec.property);
+                    if (!prop || !byCategory[prop]) return;
 
                     var matchedNodeIndices = patricToNodes[fid];
                     if (!matchedNodeIndices || matchedNodeIndices.length === 0) return;
 
-                    if (!this.specialtyGeneData.byPatricId[fid]) {
-                        this.specialtyGeneData.byPatricId[fid] = [];
+                    // Store canonical property on the record so all downstream badges/pills use the unified category
+                    rec.raw_property = rec.property;
+                    rec.property = prop;
+
+                    var patricDedupKey = fid + '|' + prop + '|' + (rec.source || '') + '|' + (rec.source_id || '') + '|' + (rec.gene || '');
+                    if (!seenPatricRec[patricDedupKey]) {
+                        seenPatricRec[patricDedupKey] = true;
+                        if (!this.specialtyGeneData.byPatricId[fid]) {
+                            this.specialtyGeneData.byPatricId[fid] = [];
+                        }
+                        this.specialtyGeneData.byPatricId[fid].push(rec);
                     }
-                    this.specialtyGeneData.byPatricId[fid].push(rec);
 
                     var catEntry = byCategory[prop];
-                    catEntry.featureCount++;
+                    var catFeatKey = prop + '|' + fid;
+                    if (!seenCatFeat[catFeatKey]) {
+                        seenCatFeat[catFeatKey] = true;
+                        catEntry.featureCount++;
+                    }
                     if (rec.source) {
                         catEntry.sources[rec.source] = (catEntry.sources[rec.source] || 0) + 1;
                     }
@@ -3742,12 +4176,6 @@ var loadGexfDependencies = function(callback) {
                             catEntry.nodes[nid] = [];
                             catEntry.nodeIndices.push(nIdx);
                         }
-                        var dedupKey = prop + '|' + nid + '|' + fid + '|' + (rec.source || '');
-                        if (!seenNodeFeat[dedupKey]) {
-                            seenNodeFeat[dedupKey] = true;
-                            catEntry.nodes[nid].push(rec);
-                        }
-
                         if (!this.specialtyGeneData.byNodeId[nid]) {
                             this.specialtyGeneData.byNodeId[nid] = {
                                 nodeIndex: nIdx,
@@ -3758,8 +4186,13 @@ var loadGexfDependencies = function(callback) {
                         if (!this.specialtyGeneData.byNodeId[nid].categories[prop]) {
                             this.specialtyGeneData.byNodeId[nid].categories[prop] = [];
                         }
-                        this.specialtyGeneData.byNodeId[nid].categories[prop].push(rec);
-                        this.specialtyGeneData.byNodeId[nid].records.push(rec);
+                        var dedupKey = prop + '|' + nid + '|' + fid + '|' + (rec.source || '');
+                        if (!seenNodeFeat[dedupKey]) {
+                            seenNodeFeat[dedupKey] = true;
+                            catEntry.nodes[nid].push(rec);
+                            this.specialtyGeneData.byNodeId[nid].categories[prop].push(rec);
+                            this.specialtyGeneData.byNodeId[nid].records.push(rec);
+                        }
                     }));
                 }));
 
@@ -4227,6 +4660,23 @@ var loadGexfDependencies = function(callback) {
                         var hasSpot = Object.keys(spotContigs).length > 0;
                         html += '<div style="margin-top:6px; padding:6px; background:#fff; border:1px solid #e1bee7; border-radius:4px;">';
 
+                        // Compact collapsible Backend Annotation ID Reference Bar (minimized by default, click to expand full TSV/attribute details)
+                        if (curLoc.backendIdSummary) {
+                            var safeBackId = String(curLoc.backendIdSummary).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            var shortBackLabel = curLoc.backendIdBadge
+                                ? String(curLoc.backendIdBadge)
+                                : String(curLoc.backendIdSummary).replace(/\s*\(.*$/, '');
+                            if (shortBackLabel.length > 34) shortBackLabel = shortBackLabel.substr(0, 32) + '...';
+                            var safeShortBack = shortBackLabel.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                            html += '<details style="margin-bottom:4px; padding:1px 6px; background:#f8f1fb; border:1px solid #d1b3e0; border-radius:3px; font-size:0.84em; line-height:1.35; color:#4a148c;">';
+                            html += '<summary style="cursor:pointer; outline:none; display:flex; align-items:center; justify-content:space-between; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Click to expand full backend attribute &amp; TSV report reference">';
+                            html += '<span><b>Backend ID:</b> <code style="color:#311b92; font-weight:bold;">' + safeShortBack + '</code></span>';
+                            html += '<span style="font-size:0.86em; color:#7b1fa2; margin-left:6px; flex-shrink:0;">[expand &#9662;]</span>';
+                            html += '</summary>';
+                            html += '<div style="margin-top:2px; padding-top:2px; border-top:1px dashed #d1b3e0; white-space:normal; word-break:break-word;"><code style="color:#311b92; font-weight:bold;">' + safeBackId + '</code></div>';
+                            html += '</details>';
+                        }
+
                         // Dynamic Graph Canvas Filter Selector
                         html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #f0e6f5;">';
                         html += '<span style="font-weight:bold; color:#4a148c;" title="Controls which nodes and contigs remain visible on the main graph canvas while inspecting this locus"><i class="fa icon-filter"></i> Canvas Filter:</span>';
@@ -4251,7 +4701,7 @@ var loadGexfDependencies = function(callback) {
                                 var shortG = gName.length > 26 ? gName.substr(0, 24) + '...' : gName;
                                 var safeShortG = shortG.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                                 var copies = curLoc.genomeCopies[gid] || 0;
-                                var copyBadge = (copies > 1 && (activePhenom === 'tandem_repeats' || activePhenom === 'fragmented_paralogs'))
+                                var copyBadge = (copies > 1 && (activePhenom === 'tandem_repeats' || activePhenom === 'fragmented_paralogs' || activePhenom === 'remote_cnv'))
                                     ? ' <span style="color:#6a1b9a; font-weight:bold;">[' + copies + 'x]</span>'
                                     : '';
                                 var roleKey = isEvent ? 'event' : 'reference';
@@ -4310,7 +4760,7 @@ var loadGexfDependencies = function(callback) {
                         }
                         html += '</div></details>';
 
-                        var renderNodeChips = function(nodeIds, isAnchor) {
+                        var renderNodeChips = function(nodeIds, isAnchor, compactCopyMode) {
                             var maxChips = 10;
                             var shown = nodeIds.slice(0, maxChips);
                             var chipHtml = '';
@@ -4319,8 +4769,10 @@ var loadGexfDependencies = function(callback) {
                                 var nIdx = curLoc.nodeIdxById[nid];
                                 if (!nObj || typeof nIdx === 'undefined') return;
                                 var rawLbl = String(nObj.label || nid);
-                                var shortLbl = rawLbl.length > 28 ? rawLbl.substr(0, 26) + '...' : rawLbl;
+                                var shortLbl = rawLbl.length > 26 ? rawLbl.substr(0, 24) + '...' : rawLbl;
                                 var safeLbl = shortLbl.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                var copyBadge = (!isAnchor && curLoc.nodeBadges && curLoc.nodeBadges[nid]) ? curLoc.nodeBadges[nid] : '';
+                                var gCount = (nObj.genomes) ? Object.keys(nObj.genomes).length : 0;
                                 var nSpecEntry = (specData && specData.byNodeId) ? specData.byNodeId[nid] : null;
                                 var specBadgeHtml = '';
                                 var specTooltipSuffix = '';
@@ -4338,11 +4790,17 @@ var loadGexfDependencies = function(callback) {
                                         specTooltipSuffix = ' | Specialty Gene: ' + Object.keys(nSpecEntry.categories).join(', ');
                                     }
                                 }
-                                var fullTitle = (rawLbl + specTooltipSuffix + ' (Click to inspect features)').replace(/"/g, '&quot;');
+                                var fullTitle = ('Node #' + nid + (copyBadge ? ' [' + copyBadge + ']' : '') + ': ' + rawLbl + ' (' + gCount + ' genomes)' + specTooltipSuffix + ' — Click to inspect features').replace(/"/g, '&quot;');
                                 var cStyle = isAnchor
                                     ? 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#e8f5e9; border:1px solid #2e7d32; border-radius:10px; color:#1b5e20; font-weight:bold; text-decoration:none; font-size:0.9em;'
                                     : 'display:inline-block; margin:2px 3px 2px 0; padding:1px 6px; background:#f3e5f5; border:1px solid #ab47bc; border-radius:10px; color:#4a148c; font-weight:bold; text-decoration:none; font-size:0.9em;';
-                                chipHtml += '<a href="javascript:void(0)" style="' + cStyle + '" onclick="window.inspectNodeFromLocus(' + nIdx + '); return false;" title="' + fullTitle + '">' + safeLbl + specBadgeHtml + '</a>';
+                                var badgeSpan = copyBadge
+                                    ? '<span style="display:inline-block; padding:0px 4px; margin-right:3px; background:#4a148c; color:#fff; border-radius:6px; font-size:0.88em;">' + copyBadge + '</span>'
+                                    : '';
+                                var chipText = compactCopyMode
+                                    ? (badgeSpan + '#' + nid + ' <span style="font-weight:normal; color:#6a1b9a;">(' + gCount + 'g)</span>')
+                                    : (badgeSpan + '<span style="opacity:0.85;">#' + nid + '</span> ' + safeLbl);
+                                chipHtml += '<a href="javascript:void(0)" style="' + cStyle + '" onclick="window.inspectNodeFromLocus(' + nIdx + '); return false;" title="' + fullTitle + '">' + chipText + specBadgeHtml + '</a>';
                             });
                             if (nodeIds.length > maxChips) {
                                 chipHtml += '<span style="font-size:0.85em; color:#777;"> +' + (nodeIds.length - maxChips) + ' more</span>';
@@ -4350,9 +4808,35 @@ var loadGexfDependencies = function(callback) {
                             return chipHtml;
                         };
 
-                        html += '<div style="margin-bottom:4px;"><b>Focal Genes (' + curLoc.focalNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.focalNodeIds, false) + '</div>';
+                        if (activePhenom === 'breaks' && curLoc.scaffoldEndpointIds && curLoc.scaffoldEndpointIds.length > 0) {
+                            html += '<div style="margin-bottom:4px;"><b>Contig Break Endpoints (' + curLoc.scaffoldEndpointIds.length + ' — canvas badges C1, C2):</b><br>' + renderNodeChips(curLoc.scaffoldEndpointIds, false, false) + '</div>';
+                            if (curLoc.scaffoldGapIds && curLoc.scaffoldGapIds.length > 0) {
+                                html += '<div style="margin-bottom:4px;"><b style="color:#01579b;">Bridged Scaffold Gap Nodes (' + curLoc.scaffoldGapIds.length + ' — spanned by Blue reference):</b><br>' + renderNodeChips(curLoc.scaffoldGapIds, false, false) + '</div>';
+                            }
+                        } else if (curLoc.paralogGroups && curLoc.paralogGroups.length > 0 && (activePhenom === 'tandem_repeats' || activePhenom === 'fragmented_paralogs' || activePhenom === 'remote_cnv')) {
+                            html += '<div style="margin-bottom:5px;"><b>Focal Duplicated / Paralog Families (' + curLoc.paralogGroups.length + (curLoc.paralogGroups.length === 1 ? ' group, ' : ' groups, ') + curLoc.focalNodeIds.length + ' nodes — canvas badges A1, A2...):</b>';
+                            curLoc.paralogGroups.slice(0, 8).forEach(function(grp) {
+                                var safeGrpLbl = String(grp.label || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                                if (safeGrpLbl.length > 38) safeGrpLbl = safeGrpLbl.substr(0, 36) + '...';
+                                var metaParts = [];
+                                if (grp.cnvClusterId) metaParts.push('CNV #' + grp.cnvClusterId);
+                                if (grp.familyId) metaParts.push(grp.familyId);
+                                if (grp.maxCopies > 1) metaParts.push('up to ' + grp.maxCopies + 'x/gen');
+                                var metaStr = metaParts.length > 0 ? (' <span style="color:#6a1b9a; font-weight:normal; font-size:0.88em;">[' + metaParts.join(' &middot; ') + ']</span>') : '';
+                                html += '<div style="margin:3px 0; padding:3px 5px; background:#faf4fc; border-left:3px solid #8e24aa; border-radius:2px;">';
+                                html += '<div style="font-size:0.9em;"><b>Group ' + grp.groupLetter + ':</b> ' + safeGrpLbl + metaStr + '</div>';
+                                html += '<div>' + renderNodeChips(grp.nodeIds, false, true) + '</div>';
+                                html += '</div>';
+                            });
+                            if (curLoc.paralogGroups.length > 8) {
+                                html += '<div style="font-size:0.85em; color:#777;">+ ' + (curLoc.paralogGroups.length - 8) + ' more paralog groups</div>';
+                            }
+                            html += '</div>';
+                        } else {
+                            html += '<div style="margin-bottom:4px;"><b>Focal Genes (' + curLoc.focalNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.focalNodeIds, false, false) + '</div>';
+                        }
                         if (curLoc.anchorNodeIds.length > 0) {
-                            html += '<div style="margin-bottom:5px;"><b style="color:#1b5e20;">Flanking Anchors (' + curLoc.anchorNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.anchorNodeIds, true) + '</div>';
+                            html += '<div style="margin-bottom:5px;"><b style="color:#1b5e20;">Flanking Anchors (' + curLoc.anchorNodeIds.length + '):</b><br>' + renderNodeChips(curLoc.anchorNodeIds, true, false) + '</div>';
                         }
                         if (curLoc.remoteSites && curLoc.remoteSites.length > 1) {
                             var curSiteIdx = (window.GexfJS && GexfJS.params && typeof GexfJS.params.activeRemoteSiteIndex === 'number') ? GexfJS.params.activeRemoteSiteIndex : -1;
@@ -4679,6 +5163,7 @@ var loadGexfDependencies = function(callback) {
                 GexfJS.params.currentNode = -1;
                 GexfJS.params.activeNodes = {};
                 GexfJS.params.anchorNodes = {};
+                GexfJS.params.cnvNodeBadges = {};
                 GexfJS.params.dashedEdges = {};
                 GexfJS.params.focusLocusActive = false;
                 
@@ -4941,6 +5426,7 @@ var loadGexfDependencies = function(callback) {
                         GexfJS.params.locusEdgeSpotlight = {};
                         GexfJS.params.activeNodes = {};
                         GexfJS.params.anchorNodes = {};
+                        GexfJS.params.cnvNodeBadges = {};
                         GexfJS.params.dashedEdges = {};
                         GexfJS.params.focusLocusActive = false;
                         GexfJS.params.path_active = false;
@@ -4972,6 +5458,7 @@ var loadGexfDependencies = function(callback) {
 
                 GexfJS.params.activePhenomenon = null;
                 GexfJS.params.focusLocusActive = false;
+                GexfJS.params.cnvNodeBadges = {};
                 GexfJS.params.referenceEdges = {};
                 GexfJS.params.locusContigFilter = {};
                 GexfJS.params.locusSpotlightContigs = {};
@@ -5139,6 +5626,7 @@ var loadGexfDependencies = function(callback) {
             GexfJS.params.activeLocusIndex = -1;
             GexfJS.params.phenomenonLoci = [];
             GexfJS.params.anchorNodes = {};
+            GexfJS.params.cnvNodeBadges = {};
             GexfJS.params.dashedEdges = {};
             GexfJS.params.referenceEdges = {};
             GexfJS.params.locusContigFilter = {};
@@ -5534,6 +6022,7 @@ var loadGexfDependencies = function(callback) {
             GexfJS.params.locusNodeSpotlight = {};
             GexfJS.params.locusEdgeSpotlight = {};
             GexfJS.params.anchorNodes = {};
+            GexfJS.params.cnvNodeBadges = {};
             GexfJS.params.dashedEdges = {};
 
             var activeNodes = {};
@@ -6065,7 +6554,9 @@ var loadGexfDependencies = function(callback) {
                         return;
                     }
 
-                    var lbl = (isFocal ? cfg.focalLabel : cfg.anchorLabel) + ' &middot; Locus #' + locNum;
+                    var copyTag = (isFocal && loc.nodeBadges && loc.nodeBadges[curNodeId]) ? (' [Copy ' + loc.nodeBadges[curNodeId] + ']') : '';
+                    var backTag = loc.backendIdBadge ? (' &middot; ' + loc.backendIdBadge) : '';
+                    var lbl = (isFocal ? cfg.focalLabel : cfg.anchorLabel) + copyTag + ' &middot; Locus #' + locNum + backTag;
                     var bdrStyle = isAnchor ? '1px dashed ' + cfg.border : '1px solid ' + cfg.border;
                     var roleNote = isAnchor ? ' (Flanking / Boundary Anchor)' : '';
                     badges.push(
@@ -6150,13 +6641,18 @@ var loadGexfDependencies = function(callback) {
                     if (!recs || recs.length === 0) return;
                     var isMarked = Boolean(activeSpecMap[sm.property]);
                     var srcs = {};
-                    recs.forEach(function(r) { if (r.source) srcs[r.source] = true; });
+                    var uniqFeats = {};
+                    recs.forEach(function(r) {
+                        if (r.source) srcs[r.source] = true;
+                        if (r.patric_id) uniqFeats[r.patric_id] = true;
+                    });
+                    var featTotal = Object.keys(uniqFeats).length || recs.length;
                     var srcList = Object.keys(srcs).join(', ');
                     var safePropJs = sm.property.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                     var bStyle = isMarked
                         ? (badgeStyle + ' background:' + sm.color + '; color:#fff; border:1px solid ' + sm.color + ';')
                         : (badgeStyle + ' background:' + sm.bg + '; color:' + sm.color + '; border:1px dashed ' + sm.color + ';');
-                    var bTitle = ('Specialty Gene: ' + sm.label + ' [' + sm.tag + '] (' + recs.length + ' feature' + (recs.length === 1 ? '' : 's') + (srcList ? ' from ' + srcList : '') + ') — Click to toggle ' + sm.label + ' markers on graph').replace(/"/g, '&quot;');
+                    var bTitle = ('Specialty Gene: ' + sm.label + ' [' + sm.tag + '] (' + featTotal + ' feature' + (featTotal === 1 ? '' : 's') + (srcList ? ' from ' + srcList : '') + ') — Click to toggle ' + sm.label + ' markers on graph').replace(/"/g, '&quot;');
                     badges.push(
                         '<a href="javascript:void(0)" onclick="window.toggleSpecialtyCategory(\'' + safePropJs + '\', event); return false;" style="' + bStyle + '" title="' + bTitle + '">&#9670; ' + sm.label + ' [' + sm.tag + ']' + (isMarked ? ' &#10003;' : '') + '</a>'
                     );
