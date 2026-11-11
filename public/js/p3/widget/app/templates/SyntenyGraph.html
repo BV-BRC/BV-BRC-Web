@@ -3,10 +3,13 @@
         <div class="appTemplate">
             <div class="appTitle">
                 <span class="breadcrumb">Services</span>
-                <h3>Synteny Graphs</h3>
-                <p>Create a syteny graph from selected genomes or groups. <br>WARNING: This is an approximate whole genome multiple sequence alignment.
-                <br>Dissimilar genomes will produce large graphs e.g. 10 unrelated genomes x ~ 4,000 genes = 40,000 seperate nodes (will probably break your browser).
-                <br>The more closely related the genomes the more you can put in. e.g. 400 well conserved Brucella.
+                <h3>Synteny Graph (Panaconda)</h3>
+                <p>Construct a pan-genome synteny graph from selected genomes or genome groups using context-guided protein family collinearity.
+                Panaconda resolves repetitive gene families into syntenic contexts to uncover discrete comparative genomic and assembly phenomena:
+                <b>Superbubbles</b> (bounded allelic/accessory cassettes), <b>Copy Number Variants</b> (tandem expansions &amp; dispersed paralogs),
+                <b>Alternative Paths</b> (genomic islands &amp; HGT insertions), <b>Structural Rearrangements</b> (translocations &amp; inversions),
+                and <b>Repeat-Induced Assembly Breaks &amp; Candidate Scaffolds</b>.
+                <br><i>Tip: Select closely related genomes (e.g., within the same species or genus, up to ~400 well-conserved strains) for optimal syntenic resolution and interactive visualization. Job results include an interactive <code>.gexf</code> graph and 5 companion <code>.tsv</code> phenomenon reports.</i>
                 </p>
             </div>
         <div class="formFieldsContainer">
@@ -21,7 +24,7 @@
             <div style="margin-top:10px" class="appBox appShadow">
                 <div class="headerrow">
                     <div style="width:90%;display:inline-block;">
-                        <label class="appBoxLabel">Comparison Genomes</label>
+                        <label class="appBoxLabel">Comparison Genomes &amp; Graph Parameters</label>
                         <div name="comparisoninfo" class="infobox iconbox infobutton dialoginfo">
                             <i class="fa icon-info-circle fa"></i>
                         </div>
@@ -37,46 +40,46 @@
               </div>
                 <div class="appRow">
                     <div class="appRowSegment" style="text-align:left;margin:0 0 0 0">
-                            <label class="paramlabel">Color by</label><br>
+                            <label class="paramlabel" title="Taxonomic level used to calculate and color node neighborhood diversity">Node Diversity Metric</label><br>
                             <select data-dojo-type="dijit/form/Select" name="diversity" data-dojo-attach-point="diversity"
                             style="width:300px" required="false"
-                            data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                            data-dojo-props="intermediateChanges:true,trim:true">
                                 <option value="species">Species</option>
                                 <option value="genus">Genus</option>
                         </select>
                     </div>
                     <div class="appRowSegment" style="text-align:left;margin:0 0 0 0">
-                        <label class="paramlabel">Family Type</label><br>
+                        <label class="paramlabel" title="Protein homology family vocabulary used to group orthologous/paralogous genes">Homology Family Type</label><br>
                             <select data-dojo-type="dijit/form/Select" name="alpha" data-dojo-attach-point="alpha"
                             style="width:300px" required="false"
-                            data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
-                                <option value="pgfam_id">PG-Fam</option>
-                                <option value="plfam_id">PL-Fam</option>
-                                <option value="figfam_id">FigFam</option>
+                            data-dojo-props="intermediateChanges:true,trim:true">
+                                <option value="pgfam_id">PG-Fam (Cross-Genus Global Family)</option>
+                                <option value="plfam_id">PL-Fam (Genus-Specific Local Family)</option>
+                                <option value="figfam_id">FIGfam (Isofunctional Protein Family)</option>
                         </select>
                     </div>
                 </div>
                 <div class="appRow" style="margin:0 0 0 0">
                     <div class="appRowSegment" style="text-align:left;margin:0 0 0 0">
-                        <label class="paramlabel">k-length</label><br>
+                        <label class="paramlabel" title="Collinear gene k-mer window size (k=3..9) used to split paralogs by flanking syntenic context">Synteny Window (k-length)</label><br>
                         <div class="insertspinner" name="ksize"
                                 data-dojo-type="dijit/form/NumberSpinner"
                                 data-dojo-attach-point="ksize"
                                 data-dojo-props="value:3, smallDelta:1, constraints:{min:3,max:9,places:0}"></div>
                     </div>
                     <div class="appRowSegment" style="text-align:left;margin:10px 0 0 0">
-                        <label  class="paramlabel">Context</label><br>
+                        <label class="paramlabel" title="Scope over which paralogous gene occurrences are separated into distinct syntenic nodes">Paralog Resolution Context</label><br>
                         <select data-dojo-type="dijit/form/Select" name="context" data-dojo-attach-point="context"
-                                style="width:100px" required="false"
-                                data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+                                style="width:160px" required="false"
+                                data-dojo-props="intermediateChanges:true,trim:true">
                             <option value="genome">Genome</option>
-                            <option value="contig">Sequence</option>
-                            <option value="feature">Feature</option>
+                            <option value="contig">Sequence (Contig)</option>
+                            <option value="feature">Feature (Local)</option>
                         </select>
                     </div>
                 </div>
                 <div class="appRow">
-                    <label>Add Genomes To Compare</label></br>
+                    <label>Add Genomes To Compare</label><br>
                     <div style="width:85%;display:inline-block;"
                             data-dojo-type="p3/widget/GenomeNameSelector" name="comp_genome_id" maxHeight=200
                             required="false" data-dojo-attach-point="comp_genome_id"
@@ -84,20 +87,20 @@
                     <div style="width:10%;display:inline-block;"><i
                             data-dojo-attach-event="click:onAddGenome"
                             class="fa icon-plus-circle fa-lg"></i></div>
-                    </br>
-                    <label>Select genome group</label></br>
+                    <br>
+                    <label>Select Genome Group</label><br>
                     <div style="width:85%;display:inline-block;"
                             data-dojo-type="p3/widget/WorkspaceObjectSelector" name="user_genome_group"
                             required="false" data-dojo-attach-point="user_genome_group"
-                            data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a feature group from your workspace for Comparison',missingMessage:'Feature group is optional.', placeHolder:'Optional'"></div>
+                            data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace for comparison',missingMessage:'Genome group is optional.', placeHolder:'Optional'"></div>
                     <div style="width:10%;display:inline-block;"><i
                             data-dojo-attach-event="click:onAddGenomeGroup"
                             class="fa icon-plus-circle fa-lg"></i></div>
-                    </br>
+                    <br>
                 </div>
 
                 <div class="appRow">
-                    <label> Selected genome table</label>
+                    <label>Selected Genomes &amp; Groups</label>
                 </div>
 
                 <div class="appRow" style="width:90%; margin-top:10px; text-align: center;">
