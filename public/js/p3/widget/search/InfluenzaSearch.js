@@ -96,6 +96,13 @@ define([
   }
 
   // Push an eq(field,value) clause if the dijit node has a non-empty value.
+  function selectedValues(node) {
+    var value = node && node.get('value');
+    return (Array.isArray(value) ? value : [value]).filter(function (item) {
+      return item !== '' && item !== undefined && item !== null;
+    });
+  }
+
   // useEncoder=true wraps the value in TextInputEncoder (for free-text fields).
   function pushEq(arr, field, node, useEncoder) {
     if (!node) return;
@@ -181,8 +188,8 @@ define([
       var proteinCondition = '(' + fluCondition + ') AND (feature_type:CDS OR feature_type:mat_peptide)';
 
       // ===== Static stores =====
-      this.haSubtypeNode.store = new Memory({ data: HA_SUBTYPES });
-      this.naSubtypeNode.store = new Memory({ data: NA_SUBTYPES });
+      this.haSubtypeNode.set('store', new Memory({ data: HA_SUBTYPES }));
+      this.naSubtypeNode.set('store', new Memory({ data: NA_SUBTYPES }));
       this.hostGroupNode.store = hostGroupStore;
       this.sequenceStatusNode.store = new Memory({
         data: [
@@ -550,22 +557,18 @@ define([
 
     // ===== Clade field visibility based on H subtype =====
     _updateCladeVisibility: function () {
-      // Determine active H number from full subtype (e.g. "H5N1" → 5) or H subtype dropdown
-      var fullVal = (this.fullSubtypeNode.get('value') || '').toUpperCase();
-      var haVal = this.haSubtypeNode.get('value') || '';
-      var hNum = null;
+      // Full subtypes take precedence over separate H/N selections.
+      var fullValues = selectedValues(this.fullSubtypeNode);
+      var hNumbers = fullValues.length ? fullValues.map(function (value) {
+        var match = String(value).match(/^H(\d+)/i);
+        return match ? parseInt(match[1], 10) : null;
+      }) : selectedValues(this.haSubtypeNode).map(function (value) { return parseInt(value, 10); });
+      hNumbers = hNumbers.filter(function (value) { return value !== null && !isNaN(value); });
 
-      if (fullVal) {
-        var m = fullVal.match(/^H(\d+)/);
-        if (m) hNum = parseInt(m[1]);
-      } else if (haVal) {
-        hNum = parseInt(haVal);
-      }
-
-      // No filter → show all; specific H → show only matching
-      var showH1 = !hNum || hNum === 1;
-      var showH3 = !hNum || hNum === 3;
-      var showH5 = !hNum || hNum === 5;
+      // Show each relevant clade family; no H restriction shows all families.
+      var showH1 = !hNumbers.length || hNumbers.indexOf(1) !== -1;
+      var showH3 = !hNumbers.length || hNumbers.indexOf(3) !== -1;
+      var showH5 = !hNumbers.length || hNumbers.indexOf(5) !== -1;
 
       this.h1CladeGlobalField.style.display = showH1 ? '' : 'none';
       this.h1CladeUsField.style.display = showH1 ? '' : 'none';
@@ -844,9 +847,10 @@ define([
       var hasB = types.indexOf('B') !== -1;
       var aSubtypeClause = null;
       if (hasA) {
-        var fullVal = this.fullSubtypeNode.get('value');
-        if (fullVal) {
-          aSubtypeClause = 'eq(subtype,' + encodeURIComponent(fullVal) + ')';
+        if (selectedValues(this.fullSubtypeNode).length) {
+          var aTerms = [];
+          pushEq(aTerms, 'subtype', this.fullSubtypeNode);
+          aSubtypeClause = aTerms[0];
         } else {
           pushEq(q, 'h_type', this.haSubtypeNode);
           pushEq(q, 'n_type', this.naSubtypeNode);
@@ -860,10 +864,9 @@ define([
       }
       var bSubtypeClause = null;
       if (hasB) {
-        var bVal = this.fluBSubtypeNode.get('value');
-        if (bVal) {
-          bSubtypeClause = 'eq(subtype,' + encodeURIComponent(bVal) + ')';
-        }
+        var bTerms = [];
+        pushEq(bTerms, 'subtype', this.fluBSubtypeNode);
+        bSubtypeClause = bTerms[0] || null;
       }
       if (aSubtypeClause && bSubtypeClause) {
         q.push('or(' + aSubtypeClause + ',' + bSubtypeClause + ')');
