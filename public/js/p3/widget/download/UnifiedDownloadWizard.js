@@ -708,10 +708,35 @@ define([
     },
 
     /**
-     * Override hide to cleanup
+     * Destroy once hidden.
+     *
+     * show() constructs a fresh WizardDialog every time and no caller
+     * keeps the returned instance, but dijit/Dialog hides rather than
+     * destroys -- so each open left a whole dialog behind. Three opens in
+     * a session left three live option steps in the DOM with zero
+     * wizards, each still holding a queryDescriptor and its column
+     * arrays.
+     *
+     * Beyond the leak, the orphans are actively misleading:
+     * document.querySelector('.tableConfiguratorStep') returns the oldest
+     * one, so anything reading the dialog by selector -- a test, a
+     * console check -- silently inspects a stale step.
+     *
+     * onHide is the right hook rather than hide(): dijit routes onCancel
+     * through hide() (Dialog.js:129) and fires onHide after the fade-out
+     * resolves (Dialog.js:366), so this covers the Cancel button, the X,
+     * and Escape alike. Destroying inside hide() would run mid-animation.
      */
-    hide: function () {
+    onHide: function () {
       this.inherited(arguments);
+      // Defer past the fade so the node is not pulled out from under the
+      // animation that just finished resolving.
+      var self = this;
+      setTimeout(function () {
+        if (!self._destroyed) {
+          self.destroyRecursive();
+        }
+      }, 0);
     },
 
     /**
@@ -720,7 +745,9 @@ define([
     destroy: function () {
       // Destroy all steps
       this.steps.forEach(function (step) {
-        step.destroy();
+        if (step && !step._destroyed) {
+          step.destroy();
+        }
       });
       this.steps = [];
       this.inherited(arguments);
