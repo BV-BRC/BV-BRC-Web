@@ -624,6 +624,12 @@ define([
         rqlQuery: search.rqlQuery,
         displayQuery: search.displayQuery,
         source: 'saved_search',
+        // Carrying primaryKey matters: DownloadExecutor.buildQuery falls
+        // back to 'id' without it and emits sort(+feature_id,+id). The
+        // http_download path answers an invalid sort field with 200 and
+        // an EMPTY body, so dropping this produced a zero-byte download
+        // with no error anywhere.
+        primaryKey: search.primaryKey,
         visibleColumns: search.visibleColumns,
         availableColumns: search.availableColumns,
         downloadConfig: search.downloadConfig

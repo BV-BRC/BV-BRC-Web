@@ -61,10 +61,18 @@ define([
    */
   function buildQuery(spec) {
     var query = '';
-    var pk = spec.primaryKey || 'id';
+    var dataTypeConfig = DownloadFormats.getDataTypeConfig(spec.dataType);
+
+    // Fall back to the collection's own primary key, not a bare 'id'.
+    // Most collections have no `id` field, and it ends up in the sort
+    // below -- where an unknown field makes the http_download path answer
+    // 200 with an EMPTY body rather than an error. A caller that omits
+    // primaryKey (saved searches did) then gets a zero-byte file and no
+    // clue why.
+    var pk = spec.primaryKey || dataTypeConfig.pk
+      || DownloadFormats.getUniqueKey(spec.dataType);
 
     // Get the sort field — explicit override takes priority, then data type config
-    var dataTypeConfig = DownloadFormats.getDataTypeConfig(spec.dataType);
     var sortField = spec.sortFieldOverride || dataTypeConfig.sortField || pk;
 
     // Handle record scope
