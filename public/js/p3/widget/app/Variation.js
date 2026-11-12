@@ -474,6 +474,10 @@ define([
     },
 
     checkBaseParameters: function (values, submit_values) {
+      // Start from fresh per-instance arrays; AppBase declares these on the shared prototype.
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
       var pairedList = this.libraryStore.query({ _type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
       var singleAttrs = ['read'];
