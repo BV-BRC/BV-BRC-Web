@@ -323,6 +323,76 @@ define([
     return def;
   }
 
+  /** Single-quote a value for a POSIX shell. */
+  function shellQuote(value) {
+    return "'" + String(value).replace(/'/g, "'\\''") + "'";
+  }
+
+  /**
+   * A curl command equivalent to the download this spec describes.
+   *
+   * Deliberately mirrors submitDownloadForm() below rather than
+   * describing the data another way: same URL, same http_download and
+   * http_accept, same http_fasta_* parameters, same url-encoded `rql`
+   * body. So it produces the same FILE a user would get from the
+   * dialog, which is the point -- it is for scripting a download, not
+   * for querying the API.
+   *
+   * The auth token is deliberately NOT included. It is a credential with
+   * a real expiry, and putting it on a clipboard invites it into chat
+   * logs and shell history. Public data needs no token; for private
+   * data the comment says what to add.
+   *
+   * @param {Object} spec - the same spec execute() takes
+   * @returns {string} a multi-line, pasteable command
+   */
+  function buildCurlCommand(spec) {
+    var format = DownloadFormats.getFormat(spec.format);
+    var acceptType = (format && format.mimeType) || 'text/tsv';
+
+    var query = buildQuery(spec);
+    var selectClause = buildSelectClause(spec);
+    if (selectClause) {
+      query = query ? query + '&' + selectClause : selectClause;
+    }
+
+    var url = DATA_API_URL + '/' + spec.dataType + '/'
+      + '?http_download=true&http_accept=' + acceptType;
+    if (spec.genbankMerged) {
+      url += '&http_genbank_merged=true';
+    }
+    url += buildFastaParams(spec);
+
+    // Relative bases are useless outside the browser, so resolve against
+    // the current origin when the config gives a path rather than a host.
+    if (url.charAt(0) === '/' && typeof window !== 'undefined' && window.location) {
+      url = window.location.origin + url;
+    }
+
+    var filename = generateFilename(spec);
+
+    // Send the query as a raw RQL body rather than reproducing the
+    // browser form's `rql=<urlencoded>` field.
+    //
+    // The form relies on the browser encoding the field value a second
+    // time, so copying its wire bytes into --data gives the server a
+    // doubly-encoded query: a %22 in the stored RQL arrives as %2522 and
+    // the API answers 400 "Illegal character in query string". Rather
+    // than reason about how many layers curl will add, use the
+    // rqlquery+x-www-form-urlencoded content type the rest of the
+    // codebase posts with, which takes the query verbatim.
+    var lines = [
+      'curl ' + shellQuote(url) + ' \\',
+      "  -H 'Content-Type: application/rqlquery+x-www-form-urlencoded' \\",
+      '  --data ' + shellQuote(query) + ' \\',
+      '  -o ' + shellQuote(filename)
+    ];
+
+    return '# Downloads the same file as the dialog.\n'
+      + '# For private data add:  -H "Authorization: <your BV-BRC token>"\n'
+      + lines.join('\n');
+  }
+
   /**
    * Execute server-side download via form POST
    * @param {Object} spec - Download specification
@@ -937,6 +1007,15 @@ define([
       }
 
       return executeClientSideDownload(spec, options.progressCallback);
+    },
+
+    /**
+     * A curl command equivalent to this download.
+     * @param {Object} spec - the same spec execute() takes
+     * @returns {string}
+     */
+    buildCurlCommand: function (spec) {
+      return buildCurlCommand(spec);
     },
 
     /**

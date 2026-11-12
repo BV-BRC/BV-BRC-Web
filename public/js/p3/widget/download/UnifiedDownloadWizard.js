@@ -6,6 +6,7 @@ define([
   'dojo/dom-construct',
   'dojo/topic',
   'dojo/when',
+  'dojo/Deferred',
   'dijit/Dialog',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
@@ -28,6 +29,7 @@ define([
   domConstruct,
   Topic,
   when,
+  Deferred,
   Dialog,
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
@@ -171,6 +173,16 @@ define([
       }, buttons);
       on(this.downloadButton, 'click', lang.hitch(this, 'onDownload'));
 
+      // Copy-as-curl. Shown alongside Download on the final step, since
+      // it needs the same fully-configured spec.
+      this.curlButton = domConstruct.create('button', {
+        type: 'button',
+        'class': 'downloadWizardButton curlButton dijitHidden',
+        title: 'Copy a curl command that produces this same download',
+        innerHTML: '<span class="fa icon-clipboard2"></span> Copy curl'
+      }, buttons);
+      on(this.curlButton, 'click', lang.hitch(this, 'onCopyCurl'));
+
       // Cancel button
       this.cancelButton = domConstruct.create('button', {
         type: 'button',
@@ -178,6 +190,75 @@ define([
         innerHTML: 'Cancel'
       }, buttons);
       on(this.cancelButton, 'click', lang.hitch(this, 'onCancel'));
+    },
+
+    /**
+     * Copy a curl command for the configured download to the clipboard.
+     *
+     * Built from the same spec the Download button submits, so the two
+     * cannot describe different requests.
+     */
+    onCopyCurl: function () {
+      var self = this;
+      require(['p3/util/DownloadExecutor'], function (DownloadExecutor) {
+        var command;
+        try {
+          command = DownloadExecutor.buildCurlCommand(self._buildDownloadSpec());
+        } catch (e) {
+          console.error('Could not build curl command:', e);
+          Topic.publish('/Notification', {
+            message: 'Could not build the curl command',
+            type: 'error'
+          });
+          return;
+        }
+
+        self._copyToClipboard(command).then(function (ok) {
+          Topic.publish('/Notification', {
+            message: ok ? 'curl command copied to the clipboard'
+              : 'Could not copy — the command is in the browser console',
+            type: ok ? 'message' : 'error'
+          });
+          if (!ok) console.log(command);
+        });
+      });
+    },
+
+    /**
+     * Clipboard write with a fallback.
+     *
+     * navigator.clipboard needs a secure context and is not available on
+     * every deployment, so fall back to the execCommand approach rather
+     * than leaving the button inert. Resolves to a boolean; never rejects.
+     */
+    _copyToClipboard: function (text) {
+      var def = new Deferred();
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { def.resolve(true); },
+          function () { def.resolve(this._copyFallback(text)); }.bind(this)
+        );
+      } else {
+        def.resolve(this._copyFallback(text));
+      }
+
+      return def.promise;
+    },
+
+    _copyFallback: function (text) {
+      try {
+        var ta = domConstruct.create('textarea', {
+          value: text,
+          style: 'position:fixed;top:-1000px;left:-1000px;opacity:0'
+        }, document.body);
+        ta.select();
+        var ok = document.execCommand('copy');
+        domConstruct.destroy(ta);
+        return ok;
+      } catch (e) {
+        return false;
+      }
     },
 
     /**
@@ -415,13 +496,16 @@ define([
         domClass.remove(this.backButton, 'dijitHidden');
       }
 
-      // Next/Download button
+      // Next/Download button. Copy curl rides with Download: both need
+      // the fully-configured spec that only exists on the last step.
       if (isLastStep) {
         domClass.add(this.nextButton, 'dijitHidden');
         domClass.remove(this.downloadButton, 'dijitHidden');
+        domClass.remove(this.curlButton, 'dijitHidden');
       } else {
         domClass.remove(this.nextButton, 'dijitHidden');
         domClass.add(this.downloadButton, 'dijitHidden');
+        domClass.add(this.curlButton, 'dijitHidden');
       }
     },
 
