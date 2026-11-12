@@ -136,12 +136,20 @@ define([
     },
 
     /**
-     * Refresh the list from storage
+     * Refresh the list from storage.
+     *
+     * load() fetches from the workspace and fills the manager's cache;
+     * list() is the synchronous read over that cache. Without the load
+     * the first open would show an empty list and only populate after
+     * some later save.
      */
     refresh: function () {
-      this.searches = SavedSearchManager.list() || [];
-      this._updateDataTypeFilter();
-      this._applyFilters();
+      var self = this;
+      when(SavedSearchManager.load(), function () {
+        self.searches = SavedSearchManager.list() || [];
+        self._updateDataTypeFilter();
+        self._applyFilters();
+      });
     },
 
     /**

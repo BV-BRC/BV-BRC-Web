@@ -233,6 +233,17 @@ define([
     setQueryDescriptor: function (descriptor) {
       this.queryDescriptor = descriptor;
       this._updateDisplay();
+
+      // Warm the manager's cache so the duplicate-name check has
+      // something to compare against. That check runs on every keystroke
+      // and so has to stay synchronous; re-validate once the load lands,
+      // in case the user typed a clashing name before it arrived.
+      var self = this;
+      when(SavedSearchManager.load(), function () {
+        if (!self._destroyed) {
+          self._validateName();
+        }
+      });
     },
 
     /**
