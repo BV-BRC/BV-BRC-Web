@@ -48,6 +48,7 @@ define([
         this.state.hashParams = {};
       }
 
+      var influenzaSearch = this.state.hashParams.influenzaSearch;
       if (evt.hashParams) {
         // console.log("EVT.hashParams: ", evt.hashParams);
         this.state.hashParams = evt.hashParams;
@@ -59,6 +60,7 @@ define([
       if (evt.hashProperty) {
         this.state.hashParams[evt.hashProperty] = evt.value;
       }
+      if (influenzaSearch) this.state.hashParams.influenzaSearch = influenzaSearch;
 
       var l = window.location.pathname + window.location.search + '#' + Object.keys(this.state.hashParams).map(function (key) {
         if (key && this.state.hashParams[key]) {

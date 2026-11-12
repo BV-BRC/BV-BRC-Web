@@ -446,6 +446,7 @@ define([
       var url = new URL(window.location.href);
       if (!/\/searches\/InfluenzaSearch\/?$/.test(url.pathname)) return;
       var hash = new URLSearchParams(url.hash.slice(1));
+      hash.delete('fluReturn');
       var state = clear ? null : JSON.stringify(this._captureFormState());
       if (clear || state === this._defaultFormState) hash.delete('fluSearch');
       else hash.set('fluSearch', state);
@@ -523,6 +524,12 @@ define([
         else {
           saved = window.history.state && window.history.state.influenzaSearchForm;
           storedInHistory = !!saved;
+          var returnId = new URLSearchParams(url.hash.slice(1)).get('fluReturn');
+          if (!saved && returnId && /^[a-z0-9-]+$/.test(returnId)) {
+            var returnSearch = JSON.parse(window.sessionStorage.getItem('bvbrc:influenza-search:' + returnId));
+            saved = returnSearch && returnSearch.form;
+            storedInHistory = !!saved;
+          }
         }
       } catch (error) {
         // A malformed or old bookmark should still open a usable search form.
@@ -583,6 +590,26 @@ define([
       }
     },
 
+    _saveResultReturnSearch: function () {
+      var id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      var url = new URL(window.location.href);
+      var form = this._captureFormState();
+      // Large forms use the same per-tab record on return instead of a long URL.
+      if (window.history.state && window.history.state.influenzaSearchForm) {
+        url.hash = 'fluReturn=' + id;
+      }
+      try {
+        window.sessionStorage.setItem('bvbrc:influenza-search:' + id, JSON.stringify({
+          url: url.pathname + url.search + url.hash,
+          form: form
+        }));
+        return id;
+      } catch (error) {
+        // Browser Back remains available when session storage is unavailable.
+        return null;
+      }
+    },
+
     onSubmit: function onSubmit(evt) {
       if (this._restoringForm) {
         evt.preventDefault();
@@ -590,6 +617,9 @@ define([
       }
       if (this._formUrlTimer) this._formUrlTimer.remove();
       this._writeFormUrl();
+      var returnId = this._saveResultReturnSearch();
+      this.resultUrlHash = this.resultUrlHash.split('&influenzaSearch=')[0];
+      if (returnId) this.resultUrlHash += '&influenzaSearch=' + returnId;
       return this.inherited(onSubmit, arguments);
     },
 
