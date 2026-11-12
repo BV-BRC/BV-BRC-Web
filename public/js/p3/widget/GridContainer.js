@@ -243,6 +243,9 @@ define([
       if (!state) {
         return;
       }
+      if (this.selectionActionBar) {
+        this.selectionActionBar.set('selection', this.selectionActionBar.get('selection') || []);
+      }
       var q = [];
 
       if (state.search) {
@@ -2256,6 +2259,21 @@ define([
       }));
     },
 
+    _getInfluenzaSearchReturnUrl: function () {
+      if (!/^\/view\/(GenomeList|SequenceList|FeatureList)\//.test(window.location.pathname)) return null;
+      var id = this.state && this.state.hashParams && this.state.hashParams.influenzaSearch;
+      if (!id || !/^[a-z0-9-]+$/.test(id)) return null;
+      try {
+        var saved = JSON.parse(window.sessionStorage.getItem('bvbrc:influenza-search:' + id));
+        if (!saved || !saved.form || saved.form.version !== 1 || typeof saved.url !== 'string') return null;
+        var url = new URL(saved.url, window.location.origin);
+        if (url.origin !== window.location.origin || !/^\/searches\/InfluenzaSearch\/?$/.test(url.pathname)) return null;
+        return url.pathname + url.search + url.hash;
+      } catch (error) {
+        return null;
+      }
+    },
+
     setupActions: function () {
       if (this.containerActionBar) {
         this.containerActions.forEach(function (a) {
@@ -2266,6 +2284,19 @@ define([
       this.selectionActions.forEach(function (a) {
         this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
       }, this);
+
+      this.selectionActionBar.addAction('EditInfluenzaSearch', 'fa icon-arrow-left fa-2x', {
+        label: 'EDIT SEARCH',
+        tooltip: 'Return to Influenza Search with your original selections',
+        persistent: true,
+        validTypes: ['*'],
+        ignoreDataType: true,
+        shouldShow: lang.hitch(this, function () { return !!this._getInfluenzaSearchReturnUrl(); })
+      }, lang.hitch(this, function () {
+        var href = this._getInfluenzaSearchReturnUrl();
+        if (href) Topic.publish('/navigate', { href: href });
+      }), !!this._getInfluenzaSearchReturnUrl());
+      domConstruct.place(this.selectionActionBar._actions.EditInfluenzaSearch.button, this.selectionActionBar.containerNode, 'first');
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.selectionActionBar) {

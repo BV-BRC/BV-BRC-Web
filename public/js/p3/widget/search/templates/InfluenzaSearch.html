@@ -196,27 +196,27 @@
         <div class="bvs-accordion-body" data-dojo-attach-point="subtypeAccordionBody">
           <!-- Subtypes (Flu A) row -->
           <div data-dojo-attach-point="subtypeSection">
-            <div class="bvs-row">
+            <div class="bvs-row bvs-row-multi">
               <div class="bvs-field bvs-field-narrow bvs-field-sm">
-                <label>H Subtype</label>
-                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="haSubtypeNode" name="ha_subtype" style="width:100%"></div>
+                <label class="bvs-multi-label" tabindex="0">H Subtype <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+                <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5',fieldLabel:'H subtype (select up to 5)',helpText:'Select up to 5 H subtypes. Selected H values match any one value; H and N filters combine. Full Subtype selections take precedence.'" data-dojo-attach-point="haSubtypeNode" name="ha_subtype" style="width:100%"></div>
               </div>
               <div class="bvs-field bvs-field-narrow bvs-field-sm">
-                <label>N Subtype</label>
-                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="naSubtypeNode" name="na_subtype" style="width:100%"></div>
+                <label class="bvs-multi-label" tabindex="0">N Subtype <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+                <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5',fieldLabel:'N subtype (select up to 5)',helpText:'Select up to 5 N subtypes. Selected N values match any one value; H and N filters combine. Full Subtype selections take precedence.'" data-dojo-attach-point="naSubtypeNode" name="na_subtype" style="width:100%"></div>
               </div>
-              <div class="bvs-field bvs-field-sm">
-                <label>Full Subtype</label>
-                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. H5N1'" data-dojo-attach-point="fullSubtypeNode" name="subtype" style="width:100%"></div>
+              <div class="bvs-field bvs-field-date">
+                <label class="bvs-multi-label" tabindex="0">Full Subtype <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+                <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5',fieldLabel:'Full subtype (select up to 5)',helpText:'Select up to 5 full subtypes. Return records matching any selected subtype. These selections take precedence over separate H and N filters.'" data-dojo-attach-point="fullSubtypeNode" name="subtype" style="width:100%"></div>
               </div>
             </div>
           </div>
           <!-- Subtype (Flu B) row -->
           <div data-dojo-attach-point="fluBSubtypeSection" style="display:none;">
-            <div class="bvs-row">
-              <div class="bvs-field bvs-field-narrow bvs-field-sm">
-                <label>Subtype</label>
-                <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'e.g. Victoria'" data-dojo-attach-point="fluBSubtypeNode" name="flu_b_subtype" style="width:100%"></div>
+            <div class="bvs-row bvs-row-multi">
+              <div class="bvs-field bvs-field-narrow bvs-field-date">
+                <label class="bvs-multi-label" tabindex="0">Subtype <span class="bvs-multi-label-help" aria-hidden="true">ⓘ</span></label>
+                <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5',fieldLabel:'Influenza B subtype (select up to 5)',helpText:'Select up to 5 influenza B subtype values. Return records matching any selected value.'" data-dojo-attach-point="fluBSubtypeNode" name="flu_b_subtype" style="width:100%"></div>
               </div>
             </div>
           </div>
@@ -317,6 +317,7 @@
     </div>
 
     <!-- ==================== ACTIONS ==================== -->
+    <p data-dojo-attach-point="formUrlNotice" role="status" hidden></p>
     <div class="bvs-actions">
       <button type="button" data-dojo-attach-point="resetButton" class="bvs-btn-secondary">Reset</button>
       <button type="submit" data-dojo-attach-point="submitButton" class="bvs-btn-primary">Search</button>
