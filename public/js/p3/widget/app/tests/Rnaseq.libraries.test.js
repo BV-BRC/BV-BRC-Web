@@ -13,6 +13,7 @@
 //    up in the same tab resubmitted everything still in the store.
 //
 // This loads the REAL methods out of Rnaseq.js rather than reimplementing them.
+// doSubmit (clearing after submit) is covered for all read-based apps in AppLibraries.test.js.
 //
 const fs = require('fs');
 const path = require('path');
@@ -46,7 +47,6 @@ function load(name) {
 }
 
 const checkBaseParameters = load('checkBaseParameters');
-const doSubmit = load('doSubmit');
 
 function lib(type, file) {
   if (type === 'paired') {
@@ -116,40 +116,5 @@ describe('Rnaseq checkBaseParameters', function () {
     const params = checkBaseParameters.call(form, VALUES, {});
 
     expect(submittedFiles(params)).toEqual(['a_R1.fq', 'b.fq']);
-  });
-});
-
-describe('Rnaseq doSubmit', function () {
-  function makeSubmitter(inheritedResult) {
-    const form = { cleared: 0 };
-    form.clearLibraries = function () { this.cleared += 1; };
-    form.inherited = function () { return inheritedResult; };
-    form.doSubmit = doSubmit;
-    return form;
-  }
-
-  test('clears the library list after the job is accepted and passes results through', function () {
-    const form = makeSubmitter(Promise.resolve([{ id: '123' }]));
-    return form.doSubmit({}, {}).then(function (results) {
-      expect(results).toEqual([{ id: '123' }]);
-      expect(form.cleared).toBe(1);
-    });
-  });
-
-  test('keeps the library list when submission fails, so the user can retry', function () {
-    const form = makeSubmitter(Promise.reject(new Error('rejected')));
-    return form.doSubmit({}, {}).then(
-      function () { throw new Error('expected rejection'); },
-      function (err) {
-        expect(err.message).toBe('rejected');
-        expect(form.cleared).toBe(0);
-      }
-    );
-  });
-
-  test('does nothing when AppBase returns no promise (developer no-submit mode)', function () {
-    const form = makeSubmitter(undefined);
-    expect(form.doSubmit({}, {})).toBeUndefined();
-    expect(form.cleared).toBe(0);
   });
 });

@@ -311,6 +311,11 @@ define([
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
       domClass.remove(this.domNode, 'Submitted');
+      this.clearLibraries();
+    },
+
+    // Remove every library from the store and the library table.
+    clearLibraries: function () {
       var toDestroy = [];
       this.libraryStore.data.forEach(lang.hitch(this, function (lrec) {
         toDestroy.push(lrec._id);
@@ -319,6 +324,19 @@ define([
       toDestroy.forEach(lang.hitch(this, function (id) {
         this.destroyLibRow(id, '_id');
       }));
+    },
+
+    // After a job is accepted, clear the library list so it is not silently
+    // resubmitted with the next job set up in this tab.
+    doSubmit: function (values, start_params) {
+      var def = this.inherited(arguments);
+      if (def && typeof def.then === 'function') {
+        return def.then(lang.hitch(this, function (results) {
+          this.clearLibraries();
+          return results;
+        }));
+      }
+      return def;
     },
 
 
