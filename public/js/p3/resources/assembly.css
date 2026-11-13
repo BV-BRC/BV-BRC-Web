@@ -506,11 +506,33 @@ div.appsublabel {
 .App LABEL.startWithOption {
     font-size: 12px;
 }
-/* MSA wraps its fields in layout tables; without cell spacing the fields
+/* MSA and Meta-CATS wrap their fields in layout tables; without cell spacing the fields
    start on the same left edge as the rest of the box. */
-.MSA .appBox table {
+.MSA .appBox table,
+.MetaCATS .appBox table {
     border-spacing: 0;
 }
-.MSA .appBox table td {
+.MSA .appBox table td,
+.MetaCATS .appBox table td {
     padding: 0;
+}
+/* A standard field with a button after it (Add, plus icon). The button
+   sits where a workspace picker's row ends, past its folder icon, so the
+   buttons line up whether they follow a picker or a plain dropdown. */
+.App .fieldWithAction {
+    display: flex;
+    align-items: center;
+}
+.App .fieldWithAction > .standardField {
+    flex: 0 0 auto;
+}
+/* The picker row ends at its folder icon instead of running on to 600px. */
+.App .fieldWithAction > .standardField.WorkspaceObjectSelector {
+    width: auto;
+}
+.App .fieldWithAction > .standardField:not(.WorkspaceObjectSelector) {
+    margin-right: 19px; /* where a picker row ends (sort-icon indent plus folder icon), less the field width */
+}
+.App .fieldWithAction > .fieldAction {
+    margin-left: 6px;
 }

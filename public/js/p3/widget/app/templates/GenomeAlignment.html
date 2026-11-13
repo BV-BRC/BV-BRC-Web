@@ -22,7 +22,7 @@
     </div>
     <br>
 
-    <div style="width: 600px; margin:auto" class="formFieldsContainer">
+    <div class="formFieldsContainer">
       <div class="appBox appShadow">
         <div class="headerrow">
           <label class="appBoxLabel">Select Genomes</label>
@@ -35,33 +35,28 @@
           <small>Add at least 2 (up to 20) genomes. Note the first genome selected will be the reference (anchor)
             genome.</small><br>
           <label>Select genome</label><br>
-          <div style="width:490px;" data-dojo-type="p3/widget/GenomeNameSelector" name="genomeSelector" maxHeight="200"
-            required="false" data-dojo-attach-point="genomeSelector"
+          <div class="fieldWithAction">
+          <div data-dojo-type="p3/widget/GenomeNameSelector" name="genomeSelector" maxHeight="200"
+            required="false" class="standardField" data-dojo-attach-point="genomeSelector"
             data-dojo-props="placeHolder:'e.g. M. tuberculosis CDC1551', excludeLength:true">
           </div>
 
-          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenome" class="app-btn">
+          <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenome" class="app-btn fieldAction">
             <i class="icon-plus"></i> Add
           </button>
-
-          <br>
-
-          <!-- floating since the width on object selector is odd -->
-          <div class="left">
-            <label>And/or select genome group</label><br>
-            <div style="width: 495px;" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genomeGroupSelector"
-              required="false" data-dojo-attach-point="genomeGroupSelector"
-              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
-            </div>
           </div>
 
-          <div class="left" style="margin-top: 13px;">
-            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn"
+          <label>And/or select genome group</label><br>
+          <div class="fieldWithAction">
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genomeGroupSelector"
+              required="false" class="standardField" data-dojo-attach-point="genomeGroupSelector"
+              data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is optional.', placeHolder:'Optional'">
+            </div>
+            <button data-dojo-type="dijit/form/Button" data-dojo-attach-event="click:onAddGenomeGroup" class="app-btn fieldAction"
               data-dojo-attach-point="genomeGroupButton">
               <i class="icon-plus"></i> Add
             </button>
           </div>
-          <div class="clear"></div>
         </div>
 
 
@@ -87,7 +82,7 @@
         <div class="appRow">
           <label>Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-            data-dojo-attach-point="output_path" required="true"
+            class="standardField" data-dojo-attach-point="output_path" required="true"
             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
             data-dojo-attach-event="onChange:onOutputPathChange">
           </div>
@@ -97,8 +92,7 @@
           <label>Output Name</label><span class="charError"
             style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
           <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
-            data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file"
-            style="width:85%" required="true"
+            data-dojo-attach-event="onChange:checkOutputName" name="output_file" class="standardField" data-dojo-attach-point="output_file" required="true"
             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
           </div>
         </div>
@@ -106,7 +100,7 @@
         <!--
           <div class="appRow">
             <label class="paramlabel">Method</label><br>
-            <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="false" data-dojo-props="intermediateChanges:true,trim:true">
+            <select data-dojo-type="dijit/form/Select" name="recipe" class="standardField" data-dojo-attach-point="recipe" required="false" data-dojo-props="intermediateChanges:true,trim:true">
               <option value="progressiveMauve">progressiveMauve (recommended)</option>
               <option value="mauveAligner">mauveAligner (legacy)</option>
             </select>

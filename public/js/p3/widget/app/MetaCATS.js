@@ -263,11 +263,11 @@ define([
     controlYear: function () {
       this.validate();
       if (this.metadata_group.value == 'collection_year') {
-        query('.year_range_div').style('visibility', 'visible');
+        query('.year_range_div').style('display', 'block');
         this.year_ranges.set('value', this.yearRangeStore);
         this.yearRangeStore = '';
       } else {
-        query('.year_range_div').style('visibility', 'hidden');
+        query('.year_range_div').style('display', 'none');
         if (this.yearRangeStore == '') {
           this.yearRangeStore = this.year_ranges.value;
         }
