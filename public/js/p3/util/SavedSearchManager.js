@@ -16,19 +16,107 @@ define([
   WorkspaceManager
 ) {
   /**
-   * SavedSearchManager - Manages saved searches with LocalStorage and Workspace backends
+   * SavedSearchManager - Manages saved searches.
+   *
+   * STORAGE: the workspace, at /<user>/home/.preferences/saved-searches.json,
+   * matching util/FastaFormatStore and util/ColumnSetStore. Searches were
+   * previously localStorage-only, which made them per-browser and lost on a
+   * cache clear. localStorage remains the store for signed-out users, where
+   * there is no workspace to write to.
+   *
+   * Existing localStorage entries are NOT migrated -- the feature was never
+   * reachable (no route to the browser UI), so there is nothing in the wild
+   * to carry over.
+   *
+   * ASYNC UNDER A SYNC SURFACE: every caller treats list()/save()/delete()
+   * as synchronous, and workspace I/O is not. Rather than rewrite seven
+   * call sites into promise chains, reads come from an in-memory cache that
+   * load() populates, and writes update the cache immediately then persist
+   * in the background. A write that fails to reach the workspace publishes
+   * /SavedSearch/error; the UI is already correct by then, and the next
+   * load() will show the truth.
    *
    * Features:
-   * - LocalStorage for quick access and recent searches
-   * - Workspace export/import for persistence and sharing
+   * - Workspace persistence, localStorage fallback when signed out
+   * - Export/import of individual .search files
    * - Event publishing for UI updates
-   * - Auto-cleanup of old searches
    */
 
   var STORAGE_PREFIX = 'bvbrc_saved_searches_';
   var INDEX_KEY = 'bvbrc_saved_searches_index';
   var MAX_LOCAL_SEARCHES = 50; // Maximum searches to keep in LocalStorage
   var WORKSPACE_FILE_TYPE = 'json'; // File type for workspace files (using json until server supports 'search' type)
+  var PREFS_FILE = 'saved-searches.json';
+
+  // Workspace-backed state. _cache is the read path for every sync caller.
+  var _cache = null;
+  var _cacheUserId = null;
+  var _loading = null;
+
+  function currentUserId() {
+    return (window.App && window.App.user && window.App.user.id) || null;
+  }
+
+  function prefsFilePath() {
+    var id = currentUserId();
+    return id ? '/' + id + '/home/.preferences/' + PREFS_FILE : null;
+  }
+
+  function prefsDirPath() {
+    var id = currentUserId();
+    return id ? '/' + id + '/home/.preferences' : null;
+  }
+
+  function ensurePrefsDir() {
+    var def = new Deferred();
+    var dir = prefsDirPath();
+    if (!dir) {
+      def.reject('Not authenticated');
+      return def.promise;
+    }
+    when(
+      WorkspaceManager.getObject(dir, true),
+      function () { def.resolve(); },
+      function () {
+        when(
+          WorkspaceManager.createFolder([dir]),
+          function () { def.resolve(); },
+          function (err) { def.reject(err); }
+        );
+      }
+    );
+    return def.promise;
+  }
+
+  /**
+   * Write the cache to the workspace. Fire-and-forget from the caller's
+   * point of view; failures are reported on /SavedSearch/error rather than
+   * thrown, since the sync API has nowhere to put a rejection.
+   */
+  function persist() {
+    var path = prefsFilePath();
+    if (!path) return;
+
+    var payload = JSON.stringify({ searches: _cache || [] }, null, 2);
+
+    when(ensurePrefsDir(), function () {
+      when(
+        WorkspaceManager.saveFile(path, payload, WORKSPACE_FILE_TYPE),
+        function () {
+          // Written; nothing to reconcile -- this module has a single
+          // in-memory cache per session, so there is no second copy to
+          // compare a mod time against.
+        },
+        function (err) {
+          console.error('SavedSearchManager: could not write ' + path, err);
+          Topic.publish('/SavedSearch/error', { action: 'persist', error: err });
+        }
+      );
+    }, function (err) {
+      console.error('SavedSearchManager: could not create .preferences', err);
+      Topic.publish('/SavedSearch/error', { action: 'persist', error: err });
+    });
+  }
 
   /**
    * Check if LocalStorage is available
@@ -73,14 +161,104 @@ define([
   }
 
   return {
+
     /**
-     * Save a search to LocalStorage
+     * Load saved searches from the workspace into the cache.
+     *
+     * Call before reading when freshness matters -- the browser UI does
+     * this on open. Resolves to the list; never rejects, because an absent
+     * file simply means nothing has been saved yet.
+     *
+     * Signed out, this resolves from localStorage instead.
+     */
+    load: function () {
+      var id = currentUserId();
+
+      if (!id) {
+        _cache = this._listFromLocalStorage();
+        _cacheUserId = null;
+        var localDef = new Deferred();
+        localDef.resolve(_cache);
+        return localDef.promise;
+      }
+
+      if (_cache && _cacheUserId === id) {
+        var cachedDef = new Deferred();
+        cachedDef.resolve(_cache);
+        return cachedDef.promise;
+      }
+      if (_loading) return _loading;
+
+      var def = new Deferred();
+      _loading = def.promise;
+
+      when(
+        WorkspaceManager.getObject(prefsFilePath()),
+        function (result) {
+          var searches = [];
+          try {
+            var data = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+            searches = (data && data.searches ? data.searches : [])
+              .filter(function (s) { return s && s.name; });
+          } catch (e) {
+            console.warn('SavedSearchManager: could not parse saved searches: ' + e.message);
+          }
+          _cache = searches;
+          _cacheUserId = id;
+          _loading = null;
+          def.resolve(searches);
+        },
+        function () {
+          // No file yet -- the normal state before the first save.
+          _cache = [];
+          _cacheUserId = id;
+          _loading = null;
+          def.resolve(_cache);
+        }
+      );
+
+      return def.promise;
+    },
+
+    /** Whether saves will reach the workspace. */
+    canPersist: function () {
+      return !!currentUserId();
+    },
+
+    /** Drop cached state — for tests, and on sign-out. */
+    _reset: function () {
+      _cache = null;
+      _cacheUserId = null;
+      _loading = null;
+    },
+
+    /**
+     * Save a search.
+     *
+     * Updates the cache synchronously, so the caller and any immediate
+     * list() see it at once, then persists in the background. Falls back
+     * to localStorage when signed out.
+     *
      * @param {Object} descriptor - QueryDescriptor to save
      * @returns {Object} The saved descriptor
      */
     save: function (descriptor) {
       if (!QueryDescriptor.validate(descriptor)) {
         throw new Error('SavedSearchManager.save: Invalid descriptor');
+      }
+
+      if (currentUserId()) {
+        descriptor.lastUsed = Date.now();
+
+        if (!_cache) _cache = [];
+        _cache = _cache.filter(function (s) { return s.id !== descriptor.id; });
+        _cache.unshift(descriptor);
+        _cacheUserId = currentUserId();
+
+        persist();
+
+        Topic.publish('/SavedSearch/changed', { action: 'save', descriptor: descriptor });
+        return descriptor;
       }
 
       if (!isLocalStorageAvailable()) {
@@ -131,6 +309,10 @@ define([
      * @returns {Object|null} The QueryDescriptor or null if not found
      */
     get: function (id) {
+      if (currentUserId()) {
+        return (_cache || []).filter(function (s) { return s.id === id; })[0] || null;
+      }
+
       if (!isLocalStorageAvailable()) return null;
 
       try {
@@ -152,22 +334,49 @@ define([
      * @param {string} [options.sortBy] - Sort field ('lastUsed', 'created', 'name')
      * @returns {Array} Array of QueryDescriptors
      */
+    /**
+     * Read from localStorage. Used when signed out, and as the body of
+     * the legacy path that list() keeps for that case.
+     */
+    _listFromLocalStorage: function () {
+      if (!isLocalStorageAvailable()) return [];
+      var index = getIndex();
+      var out = [];
+      for (var i = 0; i < index.length; i++) {
+        var d = this.get(index[i]);
+        if (d) out.push(d);
+      }
+      return out;
+    },
+
     list: function (options) {
       options = options || {};
 
-      if (!isLocalStorageAvailable()) return [];
+      // Signed in: the cache is the truth. It may be empty until load()
+      // has run, which the browser UI does on open.
+      var searches;
+      if (currentUserId()) {
+        searches = (_cache || []).slice();
+        if (options.dataType) {
+          searches = searches.filter(function (s) {
+            return s.dataType === options.dataType;
+          });
+        }
+      } else {
+        if (!isLocalStorageAvailable()) return [];
 
-      var index = getIndex();
-      var searches = [];
+        var index = getIndex();
+        searches = [];
 
-      for (var i = 0; i < index.length; i++) {
-        var descriptor = this.get(index[i]);
-        if (descriptor) {
-          // Apply dataType filter
-          if (options.dataType && descriptor.dataType !== options.dataType) {
-            continue;
+        for (var i = 0; i < index.length; i++) {
+          var descriptor = this.get(index[i]);
+          if (descriptor) {
+            // Apply dataType filter
+            if (options.dataType && descriptor.dataType !== options.dataType) {
+              continue;
+            }
+            searches.push(descriptor);
           }
-          searches.push(descriptor);
         }
       }
 
@@ -198,6 +407,13 @@ define([
      * @returns {boolean} True if deleted
      */
     delete: function (id) {
+      if (currentUserId()) {
+        _cache = (_cache || []).filter(function (s) { return s.id !== id; });
+        persist();
+        Topic.publish('/SavedSearch/changed', { action: 'delete', id: id });
+        return true;
+      }
+
       if (!isLocalStorageAvailable()) return false;
 
       try {

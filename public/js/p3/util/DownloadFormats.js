@@ -194,7 +194,7 @@ define([], function () {
       order: 2
     },
     'table': {
-      label: 'Results table',
+      label: 'Tabular data',
       description: 'Download tabular data',
       icon: 'fa-table',
       order: 3

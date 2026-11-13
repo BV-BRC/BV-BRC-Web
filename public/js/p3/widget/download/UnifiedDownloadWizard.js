@@ -12,6 +12,8 @@ define([
   'dojo/text!./templates/UnifiedDownloadWizard.html',
   '../../util/QueryDescriptor',
   '../../util/DownloadFormats',
+  '../../util/DownloadExecutor',
+  '../../util/copyToClipboard',
   './DataTypeSelectorStep',
   './RecordSelectorStep',
   './FASTAConfiguratorStep',
@@ -34,6 +36,8 @@ define([
   template,
   QueryDescriptor,
   DownloadFormats,
+  DownloadExecutor,
+  copyToClipboard,
   DataTypeSelectorStep,
   RecordSelectorStep,
   FASTAConfiguratorStep,
@@ -171,6 +175,16 @@ define([
       }, buttons);
       on(this.downloadButton, 'click', lang.hitch(this, 'onDownload'));
 
+      // Copy-as-curl. Shown alongside Download on the final step, since
+      // it needs the same fully-configured spec.
+      this.curlButton = domConstruct.create('button', {
+        type: 'button',
+        'class': 'downloadWizardButton curlButton dijitHidden',
+        title: 'Copy a curl command that produces this same download',
+        innerHTML: '<span class="fa icon-clipboard2"></span> Copy curl'
+      }, buttons);
+      on(this.curlButton, 'click', lang.hitch(this, 'onCopyCurl'));
+
       // Cancel button
       this.cancelButton = domConstruct.create('button', {
         type: 'button',
@@ -178,6 +192,39 @@ define([
         innerHTML: 'Cancel'
       }, buttons);
       on(this.cancelButton, 'click', lang.hitch(this, 'onCancel'));
+    },
+
+    /**
+     * Copy a curl command for the configured download to the clipboard.
+     *
+     * Built from the same spec the Download button submits, so the two
+     * cannot describe different requests.
+     *
+     * Everything up to the clipboard write stays synchronous so the
+     * execCommand fallback still sees the user gesture -- an inline
+     * require() here would end it.
+     */
+    onCopyCurl: function () {
+      var command;
+      try {
+        command = DownloadExecutor.buildCurlCommand(this._buildDownloadSpec());
+      } catch (e) {
+        console.error('Could not build curl command:', e);
+        Topic.publish('/Notification', {
+          message: 'Could not build the curl command',
+          type: 'error'
+        });
+        return;
+      }
+
+      copyToClipboard(command).then(function (ok) {
+        Topic.publish('/Notification', {
+          message: ok ? 'curl command copied to the clipboard'
+            : 'Could not copy — the command is in the browser console',
+          type: ok ? 'message' : 'error'
+        });
+        if (!ok) console.log(command);
+      });
     },
 
     /**
@@ -415,13 +462,16 @@ define([
         domClass.remove(this.backButton, 'dijitHidden');
       }
 
-      // Next/Download button
+      // Next/Download button. Copy curl rides with Download: both need
+      // the fully-configured spec that only exists on the last step.
       if (isLastStep) {
         domClass.add(this.nextButton, 'dijitHidden');
         domClass.remove(this.downloadButton, 'dijitHidden');
+        domClass.remove(this.curlButton, 'dijitHidden');
       } else {
         domClass.remove(this.nextButton, 'dijitHidden');
         domClass.add(this.downloadButton, 'dijitHidden');
+        domClass.add(this.curlButton, 'dijitHidden');
       }
     },
 
@@ -708,10 +758,35 @@ define([
     },
 
     /**
-     * Override hide to cleanup
+     * Destroy once hidden.
+     *
+     * show() constructs a fresh WizardDialog every time and no caller
+     * keeps the returned instance, but dijit/Dialog hides rather than
+     * destroys -- so each open left a whole dialog behind. Three opens in
+     * a session left three live option steps in the DOM with zero
+     * wizards, each still holding a queryDescriptor and its column
+     * arrays.
+     *
+     * Beyond the leak, the orphans are actively misleading:
+     * document.querySelector('.tableConfiguratorStep') returns the oldest
+     * one, so anything reading the dialog by selector -- a test, a
+     * console check -- silently inspects a stale step.
+     *
+     * onHide is the right hook rather than hide(): dijit routes onCancel
+     * through hide() (Dialog.js:129) and fires onHide after the fade-out
+     * resolves (Dialog.js:366), so this covers the Cancel button, the X,
+     * and Escape alike. Destroying inside hide() would run mid-animation.
      */
-    hide: function () {
+    onHide: function () {
       this.inherited(arguments);
+      // Defer past the fade so the node is not pulled out from under the
+      // animation that just finished resolving.
+      var self = this;
+      setTimeout(function () {
+        if (!self._destroyed) {
+          self.destroyRecursive();
+        }
+      }, 0);
     },
 
     /**
@@ -720,7 +795,9 @@ define([
     destroy: function () {
       // Destroy all steps
       this.steps.forEach(function (step) {
-        step.destroy();
+        if (step && !step._destroyed) {
+          step.destroy();
+        }
       });
       this.steps = [];
       this.inherited(arguments);
