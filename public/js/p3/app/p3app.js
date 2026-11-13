@@ -9,7 +9,7 @@ define([
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
   'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders',
-  '../widget/ThrottleBanner'
+  '../widget/ThrottleBanner', '../util/SavedSearchManager', '../util/savedSearchUrl'
 
 ], function (
   declare,
@@ -22,7 +22,7 @@ define([
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
   ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
-  authHeader, ThrottleBanner) {
+  authHeader, ThrottleBanner, SavedSearchManager, savedSearchUrl) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -522,6 +522,9 @@ define([
 
         // Initialize favorite folders list on startup
         this.updateFavoriteFoldersList();
+
+        // Initialize saved searches list on startup
+        this.updateSavedSearchesList();
       }
 
       Topic.subscribe('/userWorkspaces', lang.hitch(this, 'updateUserWorkspaceList'));
@@ -533,19 +536,32 @@ define([
         this.updateRecentFoldersList();
         FavoriteFolders.clearCache();
         this.updateFavoriteFoldersList();
+        // Drop the previous user's searches, same reason as favorites.
+        SavedSearchManager._reset();
+        this.updateSavedSearchesList();
       }));
 
       // Refresh recent folders list on login
       Topic.subscribe('/login', lang.hitch(this, function () {
         // Clear favorites cache on login to handle sudo login correctly
         FavoriteFolders.clearCache();
+        SavedSearchManager._reset();
         this.updateRecentFoldersList();
         this.updateFavoriteFoldersList();
+        this.updateSavedSearchesList();
       }));
 
       // Refresh favorites list when favorites change
       Topic.subscribe('/FavoriteFolders/changed', lang.hitch(this, function () {
         this.updateFavoriteFoldersList();
+      }));
+
+      // Keep the menu in step with saves, deletes and imports
+      Topic.subscribe('/SavedSearch/changed', lang.hitch(this, function () {
+        this.updateSavedSearchesList();
+      }));
+      Topic.subscribe('/SavedSearch/imported', lang.hitch(this, function () {
+        this.updateSavedSearchesList();
       }));
 
       // Query logging indicator
@@ -1133,6 +1149,72 @@ define([
             }, mobileNode);
           }
         });
+      });
+    },
+
+    /**
+     * Populate the Saved Searches list in the Workspaces menu.
+     *
+     * Mirrors updateFavoriteFoldersList: hide the section when there is
+     * nothing to show, and cap the list height so a long one scrolls
+     * rather than running off the menu.
+     *
+     * The hrefs carry a raw RQL query, which can contain `&gt(`/`&lt(` --
+     * legacy HTML entities the parser decodes even without a semicolon.
+     * They are therefore set as DOM attributes via domConstruct.create,
+     * never concatenated into innerHTML, or the query silently corrupts
+     * (CLAUDE.md, "RQL Queries in HTML Attributes").
+     */
+    updateSavedSearchesList: function () {
+      var desktopNode = dom.byId('SavedSearchesList');
+      var mobileNode = dom.byId('SavedSearchesList-mobile');
+      var desktopSection = dom.byId('SavedSearchesSection');
+      var mobileSection = dom.byId('SavedSearchesSection-mobile');
+
+      if (!desktopNode && !mobileNode) return;
+
+      Deferred.when(SavedSearchManager.load(), function (searches) {
+        searches = searches || [];
+
+        if (searches.length === 0) {
+          if (desktopSection) domStyle.set(desktopSection, 'display', 'none');
+          if (mobileSection) domStyle.set(mobileSection, 'display', 'none');
+          return;
+        }
+
+        if (desktopSection) domStyle.set(desktopSection, 'display', 'block');
+        if (mobileSection) domStyle.set(mobileSection, 'display', 'block');
+
+        if (desktopNode) domConstruct.empty(desktopNode);
+        if (mobileNode) domConstruct.empty(mobileNode);
+
+        searches.forEach(function (search) {
+          var href = savedSearchUrl(search);
+          if (!href) return;
+          var title = search.name + ' (' + (search.dataType || 'unknown') + ')';
+
+          if (desktopNode) {
+            domConstruct.create('a', {
+              'class': 'navigationLink',
+              href: href,
+              textContent: search.name,
+              title: title
+            }, desktopNode);
+            domConstruct.create('br', {}, desktopNode);
+          }
+
+          if (mobileNode) {
+            domConstruct.create('a', {
+              href: href,
+              textContent: search.name,
+              title: title
+            }, mobileNode);
+          }
+        });
+      }, function (err) {
+        console.error('Could not load saved searches for the menu', err);
+        if (desktopSection) domStyle.set(desktopSection, 'display', 'none');
+        if (mobileSection) domStyle.set(mobileSection, 'display', 'none');
       });
     }
   });
