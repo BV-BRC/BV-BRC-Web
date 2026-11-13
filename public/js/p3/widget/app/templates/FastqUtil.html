@@ -90,6 +90,67 @@
                       data-dojo-props="disabled: true"></div>
                   </div>
                 </div>
+                <div data-dojo-attach-point="hostRemovalBlock" style="display:none;">
+                  <div class="appRow">
+                    <div class="appField">
+                      <label>Aligner</label><br>
+                      <select data-dojo-type="dijit/form/Select" name="aligner"
+                        data-dojo-attach-point="aligner" style="width:200px" required="true"
+                        data-dojo-props="intermediateChanges:true">
+                        <option value="bowtie2" selected="selected">Bowtie2</option>
+                        <option value="minimap2">Minimap2</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="appRow">
+                    <div class="appField">
+                      <label>Supported Host Species</label><br>
+                      <select data-dojo-type="dijit/form/Select" name="species_common_name"
+                        data-dojo-attach-point="species_common_name" style="width:200px" required="true"
+                        data-dojo-props="intermediateChanges:true,maxHeight:250">
+                        <option value="Mouse">Mouse</option>
+                        <option value="Rat">Rat</option>
+                        <option value="Pig">Pig</option>
+                        <option value="Cow">Cow</option>
+                        <option value="Chicken">Chicken</option>
+                        <option value="Dog">Dog</option>
+                        <option value="Cat">Cat</option>
+                        <option value="Zebrafish">Zebrafish</option>
+                        <option value="Fruit fly">Fruit fly</option>
+                        <option value="C. elegans">C. elegans</option>
+                        <option value="Rhesus macaque">Rhesus macaque</option>
+                        <option value="Crab-eating macaque">Crab-eating macaque</option>
+                        <option value="Olive baboon">Olive baboon</option>
+                        <option value="Vervet">Vervet</option>
+                        <option value="Marmoset">Marmoset</option>
+                        <option value="Chimpanzee">Chimpanzee</option>
+                        <option value="Bonobo">Bonobo</option>
+                        <option value="Western lowland gorilla">Western lowland gorilla</option>
+                        <option value="Sumatran orangutan">Sumatran orangutan</option>
+                        <option value="Bornean orangutan">Bornean orangutan</option>
+                        <option value="Sheep">Sheep</option>
+                        <option value="Goat">Goat</option>
+                        <option value="Horse">Horse</option>
+                        <option value="Water buffalo">Water buffalo</option>
+                        <option value="Turkey">Turkey</option>
+                        <option value="Duck">Duck</option>
+                        <option value="Rabbit">Rabbit</option>
+                        <option value="Little brown bat">Little brown bat</option>
+                        <option value="Big brown bat">Big brown bat</option>
+                        <option value="Egyptian fruit bat">Egyptian fruit bat</option>
+                        <option value="Black flying fox">Black flying fox</option>
+                        <option value="Common vampire bat">Common vampire bat</option>
+                        <option value="Pale spear-nosed bat">Pale spear-nosed bat</option>
+                        <option value="Pallas's mastiff bat">Pallas's mastiff bat</option>
+                        <option value="Greater horseshoe bat">Greater horseshoe bat</option>
+                        <option value="Natal long-fingered bat">Natal long-fingered bat</option>
+                        <option value="Red fox">Red fox</option>
+                        <option value="Ferret">Ferret</option>
+                        <option value="Human" selected="selected">Human</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
               <!-- <div data-dojo-attach-point="block_condition" data-dojo-type="dojox.widget.Standby" data-dojo-props="opacity:'0.5',color:'rgb(231,231,231)', text:'Disabled',centerIndicator:'text',target:'conditionbox'"></div> -->
           </td>
