@@ -392,27 +392,51 @@ define([
      */
     openDownloadWizard: function (selection, container) {
       try {
-        var dataType = this.dataModel || 'genome_feature';
-        var primaryKey = this.primaryKey || 'id';
-        var grid = (container && container.grid) || this.grid;
-
-        var queryDescriptor = QueryDescriptor.createFromGrid(grid, this.containerType, {
-          selection: selection || [],
-          primaryKey: primaryKey
-        });
-
-        // The GridContainer's dataModel is more reliable than whatever the
-        // descriptor inferred from the container type.
-        queryDescriptor.dataType = dataType;
-        queryDescriptor.primaryKey = primaryKey;
-        queryDescriptor.rqlQuery = (grid && grid.get('query')) || '';
-
         UnifiedDownloadWizard.show({
-          queryDescriptor: queryDescriptor
+          queryDescriptor: this.buildQueryDescriptor(selection, container)
         });
       } catch (e) {
         console.error('Download wizard error:', e);
       }
+    },
+
+    /**
+     * Describe what the grid is currently showing.
+     *
+     * Both DOWNLOAD and SAVE need the same answer to "what query is this
+     * grid displaying, and against which collection?", so they share this
+     * rather than each assembling a descriptor.
+     *
+     * SAVE used to call createFromGrid() bare, leaving dataType and
+     * primaryKey to be inferred from the container type alone. That
+     * inference happens to agree with the container's own dataModel and
+     * primaryKey for the grids checked, so this is not a bug fix -- but
+     * the container's values are the authoritative ones, and a saved
+     * search whose primaryKey disagrees with the download path's
+     * produces a zero-byte file rather than an error (CLAUDE.md,
+     * Pitfall 1a). One builder means they cannot disagree.
+     *
+     * `selection` may be empty; the descriptor then describes the whole
+     * result set, which is what lets both buttons work with nothing
+     * selected.
+     */
+    buildQueryDescriptor: function (selection, container) {
+      var dataType = this.dataModel || 'genome_feature';
+      var primaryKey = this.primaryKey || 'id';
+      var grid = (container && container.grid) || this.grid;
+
+      var descriptor = QueryDescriptor.createFromGrid(grid, this.containerType, {
+        selection: selection || [],
+        primaryKey: primaryKey
+      });
+
+      // The GridContainer's dataModel is more reliable than whatever the
+      // descriptor inferred from the container type.
+      descriptor.dataType = dataType;
+      descriptor.primaryKey = primaryKey;
+      descriptor.rqlQuery = (grid && grid.get('query')) || '';
+
+      return descriptor;
     },
 
     visible: false,
@@ -629,29 +653,32 @@ define([
         'fa icon-bookmark fa-2x',
         {
           label: 'SAVE',
-          multiple: false,
+          // Always visible, like DOWNLOAD: what gets saved is the grid's
+          // query, which exists whether or not any rows are selected. The
+          // old `multiple: false` with no `persistent` meant the button
+          // appeared only when exactly one row was selected -- the one
+          // case where saving a search is least useful.
+          persistent: true,
+          multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
           tooltip: 'Save Current Search',
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
-          console.log('SaveSearch button clicked', selection, this.query);
           try {
-            // Create descriptor from grid to capture column visibility
-            var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
-            console.log('Created descriptor:', descriptor);
+            // Same descriptor the download path builds, so a saved search
+            // downloads identically to the grid it was saved from.
+            var descriptor = this.buildQueryDescriptor(selection, container);
 
-            if (this.state) {
+            if (this.state && selection && selection.length > 0) {
               descriptor.metadata = descriptor.metadata || {};
-              if (selection && selection.length > 0) {
-                descriptor.metadata.selectionCount = selection.length;
-              }
+              descriptor.metadata.selectionCount = selection.length;
             }
+
             SaveSearchDialog.show({
               queryDescriptor: descriptor,
               onSave: lang.hitch(this, function (saved) {
-                console.log('Search saved:', saved);
                 if (window.App && window.App.showMessage) {
                   window.App.showMessage('Search saved: ' + saved.name);
                 }
