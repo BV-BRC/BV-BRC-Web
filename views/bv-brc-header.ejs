@@ -164,8 +164,6 @@
                     <span>SEARCHES</span>
 
                     <div data-dojo-type="p3/widget/TooltipDialog">
-                        <div class="menuHeader" style="padding-right: 20px;">My Searches</div>
-                        <div><a class="navigationLink" href="/view/SavedSearches">Saved Searches</a></div>
                         <div class="menuHeader" style="padding-right: 20px;">Feature Search</div>
                         <div><a class="navigationLink" href="/searches/InfluenzaSearch">Influenza (BETA)</a></div>
                         <div class="menuHeader" style="padding-right: 20px;">Advanced Search</div>
@@ -302,6 +300,13 @@
                             </div><div style="vertical-align:top;width:200px;display:inline-block">
                                 <div class="menuHeader">Data</div>
                                 <div class="menuItems" id="DataMenuLinks"></div>
+                                <div id="SavedSearchesSection" style="display:none;width:100%;">
+                                    <div class="menuHeader">Saved Searches <i class="fa icon-bookmark" style="color:#f0ad4e;"></i></div>
+                                    <div class="menuItems">
+                                        <div id="SavedSearchesList" style="max-height:200px;overflow-y:auto;"></div>
+                                        <div><a class="navigationLink" href="/view/SavedSearches">Manage saved searches&hellip;</a></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -583,6 +588,13 @@
                                     Favorite Folders <i class="fa icon-star" style="color:#f0ad4e;"></i>
                                 </div>
                                 <div id="FavoriteFoldersList-mobile" style="padding-left:16px;"></div>
+                            </div>
+                            <div id="SavedSearchesSection-mobile" class="ShowWithAuth" style="display:none;margin-top:8px;border-top:1px solid #ccc;padding-top:8px;">
+                                <div style="font-weight:bold;font-size:0.9em;color:#666;">
+                                    Saved Searches <i class="fa icon-bookmark" style="color:#f0ad4e;"></i>
+                                </div>
+                                <div id="SavedSearchesList-mobile" style="padding-left:16px;"></div>
+                                <div style="padding-left:16px;"><a href="/view/SavedSearches">Manage saved searches&hellip;</a></div>
                             </div>
                             <div><a href="/job/">My Jobs</a></div>
                             <div><a href="/view/GenomeList/?eq(public,false)">My Genomes</a></div>
