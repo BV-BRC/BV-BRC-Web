@@ -60,30 +60,45 @@ describe('savedSearchUrl', () => {
     });
 
     /**
-     * Pins pre-existing behaviour rather than endorsing it.
+     * A `genome(...)` join now survives the round trip.
      *
-     * Stripping the wildcard can leave `genome(...)` as the whole query,
-     * which the unwrap rule below then strips too -- so a cross-collection
-     * join on a feature view degrades into its inner clause against the
-     * features collection. On `genome_feature` that happens to work for
-     * fields the collection shares (species), and would 400 on one it
-     * does not have (genome_status, per CLAUDE.md).
+     * This previously degraded to the inner clause (the old test here
+     * pinned that, while noting it would 400 on any field the target
+     * collection lacks). Two things turned out to depend on the wrapper:
      *
-     * This logic moved verbatim out of SavedSearchBrowser._runSearch when
-     * it was shared with the Workspaces menu; changing it is a separate
-     * question from where the menu lives, so it is recorded as-is here.
+     *  - GenomeList.onSetQuery builds the results header from the clauses
+     *    INSIDE `genome(...)`, so without it a reloaded saved search shows
+     *    a bare "( 382 Genomes )" with none of the criteria. That is what
+     *    was reported.
+     *  - The join is what makes the non-genome tabs work at all
+     *    (util/genomeContextQuery.js).
+     *
+     * Both forms return the same rows -- verified on alpha, 382 either
+     * way for the influenza search below -- which is why this went
+     * unnoticed: the grid looked correct.
      */
-    test('a stripped wildcard can expose the join to the unwrap rule', () => {
+    test('THE REGRESSION: a genome() join is preserved, not unwrapped', () => {
       expect(savedSearchUrl({
         dataType: 'genome_feature',
         rqlQuery: 'eq(feature_id,*)&genome(eq(species,Escherichia coli))'
-      })).toBe('/view/FeatureList/?eq(species,Escherichia coli)');
+      })).toBe('/view/FeatureList/?eq(feature_id,*)&genome(eq(species,Escherichia coli))');
     });
 
-    test('unwraps a query that is itself a collection wrapper', () => {
+    test('the influenza search round-trips verbatim', () => {
+      // Saved from grid.get('query') -- exactly what the view was running.
+      const rql = 'eq(genome_id,*)&genome(eq(taxon_lineage_ids,2955291),'
+        + 'eq(h5_clade,2.3.2.1e),eq(subtype,%22H5N1%22),eq(host_group,Avian),'
+        + 'ne(genome_status,Deprecated))';
+      expect(savedSearchUrl({ dataType: 'genome', rqlQuery: rql }))
+        .toBe('/view/GenomeList/?' + rql);
+    });
+
+    test('a bare collection wrapper is still unwrapped', () => {
+      // No top-level clause beside it, so there is no join to preserve --
+      // this is the old shape and keeps the old handling.
       expect(savedSearchUrl({
         dataType: 'genome',
-        rqlQuery: 'genome(and(eq(species,Ecoli),ne(genome_status,Deprecated)))'
+        rqlQuery: 'subsystem(and(eq(species,Ecoli),ne(genome_status,Deprecated)))'
       })).toBe('/view/GenomeList/?and(eq(species,Ecoli),ne(genome_status,Deprecated))');
     });
 
@@ -125,13 +140,35 @@ describe('savedSearchUrl', () => {
       expect(url).toBe('/view/FeatureList/?keyword(x)#savedSearch=search_123');
     });
 
-    test('no hash when there is no selection', () => {
+    test('no hash when there is nothing to resolve', () => {
       expect(savedSearchUrl({
         id: 'search_123', dataType: 'genome', rqlQuery: 'keyword(x)'
       })).toBe('/view/GenomeList/?keyword(x)');
       expect(savedSearchUrl({
         id: 'search_123', dataType: 'genome', rqlQuery: 'keyword(x)', selectedIds: []
       })).toBe('/view/GenomeList/?keyword(x)');
+    });
+
+    /**
+     * EDIT SEARCH looks its form URL up by the saved search's id, so the
+     * id has to be in the URL even when no rows were selected. Keying the
+     * hash on selectedIds alone left the button hidden for every saved
+     * search without a selection.
+     */
+    test('a form URL alone is enough to need the hash', () => {
+      expect(savedSearchUrl({
+        id: 'search_123', dataType: 'genome', rqlQuery: 'keyword(x)',
+        searchFormUrl: '/searches/InfluenzaSearch/#fluSearch=%7B%7D'
+      })).toBe('/view/GenomeList/?keyword(x)#savedSearch=search_123');
+    });
+
+    test('a selection and a form URL still produce one hash', () => {
+      const url = savedSearchUrl({
+        id: 's1', dataType: 'genome', rqlQuery: 'keyword(x)',
+        selectedIds: ['a'], searchFormUrl: '/searches/InfluenzaSearch/#fluSearch=%7B%7D'
+      });
+      expect(url).toBe('/view/GenomeList/?keyword(x)#savedSearch=s1');
+      expect(url.match(/#/g).length).toBe(1);
     });
 
     test('no hash when the search has no id to resolve', () => {
