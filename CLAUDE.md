@@ -708,6 +708,45 @@ focus: function () {
 }
 ```
 
+### Copying to the clipboard: use `util/copyToClipboard.js`, never hand-roll it
+
+A modal `dijit/Dialog` **contains focus** — focus landing on a node outside the dialog is
+pulled straight back. That turns the standard "append a hidden textarea, select it,
+`execCommand('copy')`" recipe into a **silent false success**:
+
+```javascript
+var ta = domConstruct.create('textarea', { value: text, … }, document.body);
+ta.select();
+document.execCommand('copy');   // returns TRUE, copied an EMPTY selection
+```
+
+`.select()` never moves focus (measured: `activeElement` stayed on the dialog's `<select>`),
+so the copy event fires over an empty selection and `execCommand` **still returns `true`**.
+The button reports "copied", the clipboard keeps its previous contents. Two separate
+hand-rolled helpers in `widget/download/` hit this.
+
+Three rules the shared module encodes, all of which were got wrong at least once:
+
+- **Host the textarea inside the open dialog**, not on `document.body`, or focus containment
+  defeats the selection.
+- **Don't trust `execCommand`'s return value.** Verify `document.activeElement` is the
+  textarea and the selection is non-empty before believing it.
+- **Synchronous first, async as the fallback — not the reverse.** `execCommand` only works
+  inside the user gesture, and `await`ing a promise *ends* that gesture, so an
+  `await navigator.clipboard.writeText(...)`-then-fall-back helper cannot recover in Safari.
+  For the same reason, **no inline `require()` in a copy click handler** — an async module
+  load ends the gesture too. Put the dependency in the `define` array.
+
+A rejected `navigator.clipboard.writeText` is a **real failure** (insecure context, denied
+permission, unfocused window). Report it so the caller can log the text as a fallback;
+swallowing it with an empty handler and returning `true` is how the original bug shipped.
+
+**Verify a copy against the real clipboard.** Stubbing `navigator.clipboard.writeText` to
+capture the string proves the text was *built*, not *copied* — that is precisely what hid
+this bug through a round of testing. Prime the clipboard with a sentinel, click the real
+button, then read it back (`pbpaste` on macOS). Avoid `navigator.clipboard.readText()` in an
+automated check: it blocks on a permission prompt that may never resolve.
+
 ### Making Custom Widgets Participate in Form Validation
 To make a custom widget participate in dijit form validation:
 1. Add `dijit/form/_FormValueMixin` to the widget's declare chain
