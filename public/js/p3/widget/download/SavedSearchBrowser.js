@@ -13,6 +13,8 @@ define([
   'dojo/text!./templates/SavedSearchBrowser.html',
   '../../util/SavedSearchManager',
   '../../util/QueryToEnglish',
+  '../../util/DownloadExecutor',
+  '../../util/copyToClipboard',
   './UnifiedDownloadWizard'
 ], function (
   declare,
@@ -29,6 +31,8 @@ define([
   template,
   SavedSearchManager,
   QueryToEnglish,
+  DownloadExecutor,
+  copyToClipboard,
   UnifiedDownloadWizard
 ) {
   /**
@@ -546,9 +550,6 @@ define([
     },
 
     /**
-     * Download search results
-     */
-    /**
      * Copy a curl command that downloads this saved search.
      *
      * A saved search records a query and a column selection but no
@@ -556,33 +557,36 @@ define([
      * saved columns, and the copied text says so: the alternative is
      * making the user walk the whole wizard just to get a command.
      * Swapping the format is a one-token edit in the result.
+     *
+     * Everything up to the clipboard write must stay synchronous: the
+     * execCommand fallback only works inside the user gesture, and an
+     * async module load would end it. Hence the static dependencies
+     * rather than an inline require().
      */
     _copyCurl: function (search) {
-      var self = this;
-      require(['p3/util/DownloadExecutor'], function (DownloadExecutor) {
-        var command;
-        try {
-          command = DownloadExecutor.buildCurlCommand({
-            format: 'tsv',
-            dataType: search.dataType,
-            scope: 'all',
-            rqlQuery: search.rqlQuery,
-            columns: (search.visibleColumns || []).map(function (c) {
-              return c.field || c;
-            })
-          });
-          command = '# Saved search: ' + search.name + '\n'
-            + '# Format assumed TSV; change http_accept for another.\n'
-            + command;
-        } catch (e) {
-          console.error('Could not build curl command:', e);
-          topic.publish('/Notification', {
-            message: 'Could not build the curl command', type: 'error'
-          });
-          return;
-        }
+      var command;
+      try {
+        command = DownloadExecutor.buildCurlCommand({
+          format: 'tsv',
+          dataType: search.dataType,
+          scope: 'all',
+          rqlQuery: search.rqlQuery,
+          columns: (search.visibleColumns || []).map(function (c) {
+            return c.field || c;
+          })
+        });
+        command = '# Saved search: ' + search.name + '\n'
+          + '# Format assumed TSV; change http_accept for another.\n'
+          + command;
+      } catch (e) {
+        console.error('Could not build curl command:', e);
+        topic.publish('/Notification', {
+          message: 'Could not build the curl command', type: 'error'
+        });
+        return;
+      }
 
-        var ok = self._copyText(command);
+      copyToClipboard(command).then(function (ok) {
         topic.publish('/Notification', {
           message: ok ? 'curl command copied to the clipboard'
             : 'Could not copy — the command is in the browser console',
@@ -590,29 +594,6 @@ define([
         });
         if (!ok) console.log(command);
       });
-    },
-
-    /** Clipboard write with the execCommand fallback. */
-    _copyText: function (text) {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        // Fire the async write, but still report via the sync fallback
-        // result so the notification is not delayed on a permission
-        // prompt that may never resolve.
-        navigator.clipboard.writeText(text).then(null, function () {});
-        return true;
-      }
-      try {
-        var ta = domConstruct.create('textarea', {
-          value: text,
-          style: 'position:fixed;top:-1000px;left:-1000px;opacity:0'
-        }, document.body);
-        ta.select();
-        var ok = document.execCommand('copy');
-        domConstruct.destroy(ta);
-        return ok;
-      } catch (e) {
-        return false;
-      }
     },
 
     _downloadSearch: function (search) {

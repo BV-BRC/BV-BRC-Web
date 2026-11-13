@@ -6,13 +6,14 @@ define([
   'dojo/dom-construct',
   'dojo/topic',
   'dojo/when',
-  'dojo/Deferred',
   'dijit/Dialog',
   'dijit/_TemplatedMixin',
   'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/UnifiedDownloadWizard.html',
   '../../util/QueryDescriptor',
   '../../util/DownloadFormats',
+  '../../util/DownloadExecutor',
+  '../../util/copyToClipboard',
   './DataTypeSelectorStep',
   './RecordSelectorStep',
   './FASTAConfiguratorStep',
@@ -29,13 +30,14 @@ define([
   domConstruct,
   Topic,
   when,
-  Deferred,
   Dialog,
   _TemplatedMixin,
   _WidgetsInTemplateMixin,
   template,
   QueryDescriptor,
   DownloadFormats,
+  DownloadExecutor,
+  copyToClipboard,
   DataTypeSelectorStep,
   RecordSelectorStep,
   FASTAConfiguratorStep,
@@ -197,68 +199,32 @@ define([
      *
      * Built from the same spec the Download button submits, so the two
      * cannot describe different requests.
+     *
+     * Everything up to the clipboard write stays synchronous so the
+     * execCommand fallback still sees the user gesture -- an inline
+     * require() here would end it.
      */
     onCopyCurl: function () {
-      var self = this;
-      require(['p3/util/DownloadExecutor'], function (DownloadExecutor) {
-        var command;
-        try {
-          command = DownloadExecutor.buildCurlCommand(self._buildDownloadSpec());
-        } catch (e) {
-          console.error('Could not build curl command:', e);
-          Topic.publish('/Notification', {
-            message: 'Could not build the curl command',
-            type: 'error'
-          });
-          return;
-        }
-
-        self._copyToClipboard(command).then(function (ok) {
-          Topic.publish('/Notification', {
-            message: ok ? 'curl command copied to the clipboard'
-              : 'Could not copy — the command is in the browser console',
-            type: ok ? 'message' : 'error'
-          });
-          if (!ok) console.log(command);
-        });
-      });
-    },
-
-    /**
-     * Clipboard write with a fallback.
-     *
-     * navigator.clipboard needs a secure context and is not available on
-     * every deployment, so fall back to the execCommand approach rather
-     * than leaving the button inert. Resolves to a boolean; never rejects.
-     */
-    _copyToClipboard: function (text) {
-      var def = new Deferred();
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(
-          function () { def.resolve(true); },
-          function () { def.resolve(this._copyFallback(text)); }.bind(this)
-        );
-      } else {
-        def.resolve(this._copyFallback(text));
-      }
-
-      return def.promise;
-    },
-
-    _copyFallback: function (text) {
+      var command;
       try {
-        var ta = domConstruct.create('textarea', {
-          value: text,
-          style: 'position:fixed;top:-1000px;left:-1000px;opacity:0'
-        }, document.body);
-        ta.select();
-        var ok = document.execCommand('copy');
-        domConstruct.destroy(ta);
-        return ok;
+        command = DownloadExecutor.buildCurlCommand(this._buildDownloadSpec());
       } catch (e) {
-        return false;
+        console.error('Could not build curl command:', e);
+        Topic.publish('/Notification', {
+          message: 'Could not build the curl command',
+          type: 'error'
+        });
+        return;
       }
+
+      copyToClipboard(command).then(function (ok) {
+        Topic.publish('/Notification', {
+          message: ok ? 'curl command copied to the clipboard'
+            : 'Could not copy — the command is in the browser console',
+          type: ok ? 'message' : 'error'
+        });
+        if (!ok) console.log(command);
+      });
     },
 
     /**
