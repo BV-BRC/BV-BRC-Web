@@ -590,14 +590,16 @@ div.appsublabel {
 .App LABEL.startWithOption {
     font-size: 12px;
 }
-/* MSA and Meta-CATS wrap their fields in layout tables; without cell spacing the fields
+/* MSA, Meta-CATS and Primer Design wrap their fields in layout tables; without cell spacing the fields
    start on the same left edge as the rest of the box. */
 .MSA .appBox table,
-.MetaCATS .appBox table {
+.MetaCATS .appBox table,
+.PrimerDesign .appBox table {
     border-spacing: 0;
 }
 .MSA .appBox table td,
-.MetaCATS .appBox table td {
+.MetaCATS .appBox table td,
+.PrimerDesign .appBox table td {
     padding: 0;
 }
 /* A standard field with a button after it (Add, plus icon). The button
@@ -619,4 +621,24 @@ div.appsublabel {
 }
 .App .fieldWithAction > .fieldAction {
     margin-left: 6px;
+}
+/* A text box with a symbol on each side (Primer Design's region rows:
+   < >, [ ], { }), laid out like a workspace picker: the opening symbol
+   where the sort icon sits, the box ending on the standard edge, the
+   closing symbol where the folder icon goes. */
+.App .bracketField {
+    display: flex;
+    align-items: center;
+}
+.App .bracketField > .bracketMark:first-child {
+    flex: 0 0 17px;
+    text-align: center;
+}
+.App .bracketField > .bracketBox {
+    flex: 0 0 auto;
+    width: 510px;
+    max-width: calc(100% - 40px);
+}
+.App .bracketField > .bracketMark:last-child {
+    margin-left: 4px;
 }

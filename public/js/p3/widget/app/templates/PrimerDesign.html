@@ -47,7 +47,7 @@
                                     <td colspan="0">
                                         <div class="appRow">
                                             <label class="paramlabel">FASTA File</label><br>
-                                            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequence_workspace" data-dojo-attach-point="sequence_workspace" data-dojo-attach-event="onChange:displayNote" style="width:100%" required="false" data-dojo-props="type:['feature_dna_fasta'],multi:false,promptMessage:'Select or Upload Fasta to your workspace for Primer Design'">
+                                            <div class="standardField" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="sequence_workspace" data-dojo-attach-point="sequence_workspace" data-dojo-attach-event="onChange:displayNote" required="false" data-dojo-props="type:['feature_dna_fasta'],multi:false,promptMessage:'Select or Upload Fasta to your workspace for Primer Design'">
                                             </div>
                                             <div class="warning" data-dojo-attach-point="workspace_input_message"></div>
                                         </div>
@@ -59,11 +59,10 @@
                                     <td colspan="0">
                                         <div class="appRow">
                                             <label class="paramlabel">Sequence Identifier</label><br>
-                                            <input  name="input_sequence_identifier"
-                                                    style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                            <input class="standardField"  name="input_sequence_identifier"
                                                     data-dojo-attach-point="input_sequence_identifier"
                                                     data-dojo-type="dijit/form/ValidationTextBox"
-                                                    data-dojo-props="trim:true,placeholder:'Identifier for input sequence', intermediateChanges:true"
+                                                    data-dojo-props="trim:true,placeHolder:'Identifier for input sequence', intermediateChanges:true"
                                                     required="false"/>
                                         </div>
                                     </td>
@@ -73,7 +72,7 @@
                                         <div class="appRow">
                                             <label class="paramlabel">Paste Sequence</label><br>
                                             <textarea name="sequence_template"
-                                                    style="width:85%; height:50px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                    class="standardField" style="width:529px; height:50px; font-family: monospace; font-size:12px"
                                                     data-dojo-attach-point="sequence_template"
                                                     data-dojo-type="dijit/form/Textarea"
                                                     data-dojo-attach-event="onChange:onChangeSequence,onMouseUp:getSelectedText"
@@ -97,11 +96,10 @@
                                     <td colspan="0">
                                         <div class="appRow">
                                             <label class="paramlabel">BVBRC Identifier</label><br>
-                                            <input  name="input_bvbrc_identifier"
-                                                    style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                            <input class="standardField"  name="input_bvbrc_identifier"
                                                     data-dojo-attach-point="input_bvbrc_identifier"
                                                     data-dojo-type="dijit/form/ValidationTextBox"
-                                                    data-dojo-props="trim:true,placeholder:'BVBRC Identifier', intermediateChanges:true"
+                                                    data-dojo-props="trim:true,placeHolder:'BVBRC Identifier', intermediateChanges:true"
                                                     required="false"/>
                                         </div>
                                     </td>
@@ -117,11 +115,10 @@
                                     <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
-                                <input  name="primer_product_size_range" value="50-500"
-                                        style="width:60%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                <input class="standardField"  name="primer_product_size_range" value="50-500"
                                         data-dojo-attach-point="primer_product_size_range"
                                         data-dojo-type="dijit/form/ValidationTextBox"
-                                        data-dojo-props="trim:true,regExp:'([0-9]+-[0-9]+)((\\s[0-9]+-[0-9]+)*)', placeholder:'Space-separated list of Min-Max size ranges (100-300)', intermediateChanges:true"
+                                        data-dojo-props="trim:true,regExp:'([0-9]+-[0-9]+)((\\s[0-9]+-[0-9]+)*)', placeHolder:'Space-separated list of Min-Max size ranges (100-300)', intermediateChanges:true"
                                         required="false"/>
                             </div>
                             <!-- Primer size settings -->
@@ -137,7 +134,7 @@
                                     <td>
                                         <label class="paramlabel">Min:</label>
                                         <input  name="primer_min_size" value=18
-                                            style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                            style="width:50%; margin-left:10px;"
                                             data-dojo-attach-point="primer_min_size"
                                             data-dojo-type="dijit/form/ValidationTextBox"
                                             data-dojo-props="trim:true,regExp:'(([0-9])+)', intermediateChanges:true"
@@ -146,7 +143,7 @@
                                     <td>
                                         <label class="paramlabel">Opt:</label>
                                         <input  name="primer_opt_size" value=20
-                                            style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                            style="width:50%; margin-left:10px;"
                                             data-dojo-attach-point="primer_opt_size"
                                             data-dojo-type="dijit/form/ValidationTextBox"
                                             data-dojo-props="trim:true,regExp:'([0-9]+)', intermediateChanges:true"
@@ -155,12 +152,15 @@
                                     <td>
                                         <label class="paramlabel">Max:</label>
                                         <input  name="primer_max_size" value=27
-                                            style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                            style="width:50%; margin-left:10px;"
                                             data-dojo-attach-point="primer_max_size"
                                             data-dojo-type="dijit/form/ValidationTextBox"
                                             data-dojo-props="trim:true,regExp:'(([0-9])+)', intermediateChanges:true"
                                             required="false"/>
                                     </td>
+                                    <!-- Empty, the width of Primer Tm's Max Tm Difference column, so
+                                         Min / Opt / Max line up with the Primer Tm and GC% rows. -->
+                                    <td style="width:32.5%"></td>
                                 </tr>
                             </table>
                             <!-- Primer Sequence Regions -->
@@ -170,12 +170,11 @@
                                     <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
-                                &nbsp;&#60;<input  name="sequence_excluded_region"
-                                          style="width:85%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                <div class="bracketField"><span class="bracketMark">&#60;</span><input class="bracketBox"  name="sequence_excluded_region"
                                           data-dojo-attach-point="sequence_excluded_region"
                                           data-dojo-type="dijit/form/ValidationTextBox"
-                                          data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)((\\s[0-9]+,[0-9]+)*)', placeholder:'401,7 68,3 forbids primers in the 7 bases starting at 401 and the 3 bases at 68.', intermediateChanges:true"
-                                          required="false"/>&nbsp;&#62;
+                                          data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)((\\s[0-9]+,[0-9]+)*)', placeHolder:'401,7 68,3 forbids primers in the 7 bases starting at 401 and the 3 bases at 68.', intermediateChanges:true"
+                                          required="false"/><span class="bracketMark">&#62;</span></div>
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Target Region</label>
@@ -183,12 +182,11 @@
                                     <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
-                                &nbsp;[<input  name="sequence_target"
-                                          style="width:85%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                <div class="bracketField"><span class="bracketMark">[</span><input class="bracketBox"  name="sequence_target"
                                           data-dojo-attach-point="sequence_target"
                                           data-dojo-type="dijit/form/ValidationTextBox"
-                                          data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)((\\s[0-9]+,[0-9]+)*)', placeholder:'50,2 requires primers to surround the 2 bases at positions 50 and 51.', intermediateChanges:true"
-                                          required="false"/>&nbsp;&nbsp;]
+                                          data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)((\\s[0-9]+,[0-9]+)*)', placeHolder:'50,2 requires primers to surround the 2 bases at positions 50 and 51.', intermediateChanges:true"
+                                          required="false"/><span class="bracketMark">]</span></div>
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Included Regions</label>
@@ -196,21 +194,19 @@
                                     <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
-                                &nbsp;{<input  name="sequence_included_region"
-                                          style="width:85%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                <div class="bracketField"><span class="bracketMark">{</span><input class="bracketBox"  name="sequence_included_region"
                                           data-dojo-attach-point="sequence_included_region"
                                           data-dojo-type="dijit/form/ValidationTextBox"
-                                          data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)', placeholder:'20,400: only pick primers in the 400 base region starting at position 20.', intermediateChanges:true"
-                                          required="false"/>&nbsp;&nbsp;}
+                                          data-dojo-props="trim:true,regExp:'([0-9]+,[0-9]+)', placeHolder:'20,400: only pick primers in the 400 base region starting at position 20.', intermediateChanges:true"
+                                          required="false"/><span class="bracketMark">}</span></div>
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Primer Overlap Positions</label><br>
-                                &nbsp;-&nbsp;<input  name="sequence_overlap_junction_list"
-                                          style="width:85%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                <div class="bracketField"><span class="bracketMark">-</span><input class="bracketBox"  name="sequence_overlap_junction_list"
                                           data-dojo-attach-point="sequence_overlap_junction_list"
                                           data-dojo-type="dijit/form/ValidationTextBox"
-                                          data-dojo-props="trim:true,regExp:'([0-9]+)((\\s[0-9]+)*)', placeholder:'Space-separated list of positions. The forward OR reverse primer will overlap one.', intermediateChanges:true"
-                                          required="false"/>
+                                          data-dojo-props="trim:true,regExp:'([0-9]+)((\\s[0-9]+)*)', placeHolder:'Space-separated list of positions. The forward OR reverse primer will overlap.', intermediateChanges:true"
+                                          required="false"/><span class="bracketMark"></span></div>
                             </div>
                         </div>
                     </td>
@@ -243,11 +239,10 @@
                                     <i class="fa icon-question-circle fa"></i>
                                 </div>
                                 <br>
-                                <input  name="primer_num_return"
-                                        style="width:41%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                <input class="standardField"  name="primer_num_return"
                                         data-dojo-attach-point="primer_num_return"
                                         data-dojo-type="dijit/form/ValidationTextBox"
-                                        data-dojo-props="trim:true,placeholder:'Max number of primer pairs to report (5)',regExp:'(([0-9])*)', intermediateChanges:true"
+                                        data-dojo-props="trim:true,placeHolder:'Max number of primer pairs to report (5)',regExp:'(([0-9])*)', intermediateChanges:true"
                                         required="false"/>
                             </div>
                             <div class="appRow">
@@ -264,7 +259,7 @@
                                         <td>
                                             <label class="paramlabel">Min:</label>
                                             <input  name="primer_min_tm" value=57.0
-                                                style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:50%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_min_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -273,7 +268,7 @@
                                         <td>
                                             <label class="paramlabel">Opt:</label>
                                             <input  name="primer_opt_tm" value=60.0
-                                                style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:50%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_opt_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -282,7 +277,7 @@
                                         <td>
                                             <label class="paramlabel">Max:</label>
                                             <input  name="primer_max_tm" value=63.0
-                                                style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:50%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_max_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -291,7 +286,7 @@
                                         <td>
                                             <label class="paramlabel">Max Tm Difference:</label>
                                             <input  name="primer_pair_max_diff_tm" value=100.0
-                                                style="width:40%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:40%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_pair_max_diff_tm"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -310,7 +305,7 @@
                                         <td>
                                             <label class="paramlabel">Min:</label>
                                             <input  name="primer_min_gc" value=20.0
-                                                style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:50%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_min_gc"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -319,7 +314,7 @@
                                         <td>
                                             <label class="paramlabel">Opt:</label>
                                             <input  name="primer_opt_gc_percent" value=50.0
-                                                style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:50%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_opt_gc"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -328,7 +323,7 @@
                                         <td>
                                             <label class="paramlabel">Max:</label>
                                             <input  name="primer_max_gc" value=80.0
-                                                style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                style="width:50%; margin-left:10px;"
                                                 data-dojo-attach-point="primer_max_gc"
                                                 data-dojo-type="dijit/form/ValidationTextBox"
                                                 data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))',intermediateChanges:true"
@@ -344,7 +339,7 @@
                                         <td><label class="paramlabel" style="white-space:nowrap;overflow:hidden">Concentration of monovalent cations (mM):</label></td>
                                         <td>
                                             <input  name="primer_salt_monovalent" value=50.0
-                                                      style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                      style="width:50%; margin-left:10px;"
                                                       data-dojo-attach-point="primer_salt_monovalent"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
                                                       data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -353,7 +348,7 @@
                                         <td><label class="paramlabel" style="white-space:nowrap;overflow:hidden">Annealing Oligo Concentration (nM):</label></td>
                                         <td>
                                             <input  name="primer_dna_conc" value=50.0
-                                                      style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                      style="width:50%; margin-left:10px;"
                                                       data-dojo-attach-point="primer_dna_conc"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
                                                       data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -364,7 +359,7 @@
                                         <td><label class="paramlabel">Concentration of divalent cations (mM):</label></td>
                                         <td>
                                             <input  name="primer_salt_divalent" value=1.5
-                                                      style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                      style="width:50%; margin-left:10px;"
                                                       data-dojo-attach-point="primer_salt_divalent"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
                                                       data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -373,7 +368,7 @@
                                         <td><label class="paramlabel">Concentration of dNTPs (mM):</label></td>
                                         <td>
                                             <input  name="primer_dntp_conc" value=0.6
-                                                      style="width:50%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
+                                                      style="width:50%; margin-left:10px;"
                                                       data-dojo-attach-point="primer_dntp_conc"
                                                       data-dojo-type="dijit/form/ValidationTextBox"
                                                       data-dojo-props="trim:true,regExp:'([0-9]+((\.[0-9]+)?))', intermediateChanges:true"
@@ -397,13 +392,13 @@
                             </div>
                             <div class="appRow">
                                 <label class="paramlabel">Output Folder</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" data-dojo-attach-event="onChange:onOutputPathChange" style="width:100%" required="true" data-dojo-props="type:['folder'],autoSelectCurrent:true,selectionText:'Destination',multi:false,title:'Select an Output Folder'">
+                                <div class="standardField" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" data-dojo-attach-event="onChange:onOutputPathChange" required="true" data-dojo-props="type:['folder'],autoSelectCurrent:true,selectionText:'Destination',multi:false,title:'Select an Output Folder'">
                                 </div>
                             </div>
                             <div class="appRow">
                                 <div class="appFieldLong" style="width:85%">
                                     <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                                    <div data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName" style="width:100%; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Primer Design results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
+                                    <div class="standardField" data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="intermediateChanges:true,promptMessage:'The output name for your Primer Design results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Output Name'"></div>
 
                                 </div>
                             </div>
