@@ -232,6 +232,18 @@ table.equalHeightBoxes > tbody > tr > td > .appBox {
     border: 1px solid rgb(171, 171, 171);
     background: repeating-linear-gradient(#ffffff 0, #ffffff 25px, #f5f5f5 25px, #f5f5f5 50px);
 }
+/* The frame again, above the table, so its bottom edge shows even when the
+   table fills the whole area. */
+.libraryBox .libraryTableRow::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    border: 1px solid rgb(171, 171, 171);
+    pointer-events: none;
+}
 .libraryBox table.librarytable {
     position: relative;
     border-bottom-color: transparent;
@@ -517,7 +529,10 @@ div.appsublabel {
 .SARS2Wastewater .appBox,
 .Fastq .appBox,
 .RNASeq .appBox,
-.TnSeq .appBox {
+.TnSeq .appBox,
+.ComparativeSystems .appBox,
+.ProteomeComparison .appBox,
+.App table.equalHeightBoxes .appBox {
     padding-right: 10px;
 }
 /* Input File fields that are not workspace pickers (dropdowns, sample IDs,

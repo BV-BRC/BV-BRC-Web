@@ -26,91 +26,52 @@
                 <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true"
                     data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:500}," />
             </div>
-            <table class="assemblyblocks">
+            <table class="equalHeightBoxes" style="width:100%">
                 <tr>
-                    <td>
+                    <td style="width:50%; vertical-align:top">
                         <div class="appBox appShadow">
                             <div class="headerrow">
                                 <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel"> Select Genome</label>
-                                        <div name="select-genome" class="infobox iconbox infobutton dialoginfo">
+                                    <label class="appBoxLabel">Select Genomes</label>
+                                    <div name="select-genome" class="infobox iconbox infobutton dialoginfo">
                                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                        </div>
+                                    </div>
                                 </div>
-                                <div style="width:10%;display:inline-block;">
-                                    <i data-dojo-attach-event="click:onAddGenome"
-                                        class="fa icon-arrow-circle-o-right fa-lg"></i>
+                                <div class="appRow">
+                                    <div style="width:100%;display:inline-block;">
+                                        <div class="appsublabel" style="display:inline-block;">Send to Selected Genomes</div>  <i data-dojo-attach-point="submit_selected_libs_validation_message"></i>
+                                        <div style="width:40%; display:inline-block;"></div>
+                                        <i data-dojo-attach-event="click:onAddGenomes" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                                    </div>
                                 </div>
                             </div>
                             <div class="appRow">
-                                <label class="paramlabel">Genome</label><br>
-                                <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome"
-                                    data-dojo-attach-point="genome" style="width: 300px" required="false"></div>
-                            </div>
-                        </div>
-                        <div class="appBox appShadow">
-                            <div class="headerrow">
-                                <div style="width:85%;display:inline-block;">
-                                    <label class="appBoxLabel"> Select Genome Group</label>
-                                        <div name="select-genome-group" class="infobox iconbox infobutton dialoginfo">
-                                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                        </div>
-                                </div>
-                                <div style="width:10%;display:inline-block;">
-                                    <i data-dojo-attach-event="click:onAddGenomeGroup"
-                                        class="fa icon-arrow-circle-o-right fa-lg"></i>
-                                </div>
+                                <label class="paramlabel" style="font-weight: bold;">Genome</label><br>
+                                <div data-dojo-type="p3/widget/GenomeNameSelector" name="genome" class="readField"
+                                    data-dojo-attach-point="genome" required="false"></div>
                             </div>
                             <div class="appRow">
-                                <label class="paramlabel">Genome Group</label><br>
-                                <div name="genome_group" style="width:300px">
+                                <label class="paramlabel" style="font-weight: bold;">Genome Group</label><br>
+                                <div name="genome_group">
                                     Disabled: please login to enable genome group selection
                                 </div>
                             </div>
                         </div>
-
-                        <div class="appBox appShadow">
-                            <div class="headerrow">
-                                <label class="appBoxLabel">Parameters</label>
-                                    <div name="parameters" class="infobox iconbox infobutton dialoginfo">
-                                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                                    </div>
-                            </div>
-                            <div class="appRow">
-                                <label class="paramlabel">Output Folder</label><br>
-                                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                                    data-dojo-attach-point="output_path" style="width:300px" required="true"
-                                    data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
-                                    data-dojo-attach-event="onChange:onOutputPathChange"></div>
-                            </div>
-                            <div class="appRow">
-                                <label class="paramlabel">Output Name</label><span class="charError"
-                                    style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
-                                    data-dojo-attach-event="onChange:checkOutputName" name="output_file"
-                                    data-dojo-attach-point="output_file" style="width:300px" required="true"
-                                    data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
-                                </div>
-                            </div>
-
-
-                        </div>
                     </td>
-                    <td>
-                        <div class="appBox appShadow" style="height:251px; width:330px">
+                    <td style="width:50%; vertical-align:top">
+                        <div class="appBox appShadow libraryBox">
                             <div class="headerrow">
-                                <label class="appBoxLabel">Selected genomes</label>
-                                   <div name="selected-genomes" class="infobox iconbox infobutton tooltipinfo">
-                                   <i class="fa icon-question-circle fa"></i>
-                                   </div>
+                                <label class="appBoxLabel">Selected Genomes</label>
+                                <div name="selected-genomes" class="infobox iconbox infobutton tooltipinfo">
+                                    <i class="fa icon-question-circle fa"></i>
+                                </div>
                                 <br>
-                                <div class="appsublabel">Place genome(s) here using the arrow buttons.</div>
+                                <div class="appsublabel">Place genomes here using the arrow button.</div>
                             </div>
-                            <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+                            <div class="appRow libraryTableRow" style="width:100%; margin-top:10px; text-align: center;">
                                 <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
-                                    style='margin:0 0 0 10px; width:90%;'>
+                                    style="margin:0 10px; width:calc(100% - 20px);">
                                     <tbody data-dojo-attach-point="libsTableBody">
-
                                     </tbody>
                                 </table>
                             </div>
@@ -118,6 +79,31 @@
                     </td>
                 </tr>
             </table>
+
+            <div class="appBox appShadow">
+                <div class="headerrow">
+                    <label class="appBoxLabel">Parameters</label>
+                    <div name="parameters" class="infobox iconbox infobutton dialoginfo">
+                        <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+                    </div>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Output Folder</label><br>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" class="standardField"
+                        data-dojo-attach-point="output_path" required="true"
+                        data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"
+                        data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                </div>
+                <div class="appRow">
+                    <label class="paramlabel">Output Name</label><span class="charError"
+                        style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                    <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
+                        data-dojo-attach-event="onChange:checkOutputName" name="output_file" class="standardField"
+                        data-dojo-attach-point="output_file" required="true"
+                        data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="appSubmissionArea">

@@ -25,7 +25,7 @@ define([
     videoLink: 'https://youtu.be/UJak-ifQ9FE',
     pageTitle: 'Proteome Comparison Service | BV-BRC',
     defaultPath: '',
-    startingRows: 9,
+    startingRows: 7,
     maxGenomes: 9,
 
     constructor: function () {
@@ -284,6 +284,48 @@ define([
       // console.log("decrease this.userGenomeList = " + this.userGenomeList);
     },
 
+    // The Send to Selected Genomes arrow: adds each of the genome, protein
+    // FASTA file, feature group and genome group that is filled in and not
+    // already in Selected Genomes, up to maxGenomes.
+    onAddGenomes: function () {
+      if (this.addedGenomes >= this.maxGenomes) {
+        this.submit_selected_libs_validation_message.innerHTML = ' <br> Selected Genomes is full.<br>Hint: up to ' + this.maxGenomes + ' genomes can be compared; remove one to add another.';
+        return;
+      }
+      var picker = lang.hitch(this, function (attach, add) {
+        var box = this[attach].searchBox;
+        return {
+          value: function () {
+            return box.get('value');
+          },
+          isNew: lang.hitch(this, function () {
+            return this.checkDuplicate(box.get('value'), attach);
+          }),
+          add: lang.hitch(this, add),
+          clear: function () {
+            box.set('value', '');
+          }
+        };
+      });
+      this.sendToSelected([
+        {
+          value: lang.hitch(this, function () {
+            return this.comp_genome_id.get('value');
+          }),
+          isNew: lang.hitch(this, function () {
+            return this.checkDuplicate(this.comp_genome_id.get('value'), 'comp_genome_id');
+          }),
+          add: lang.hitch(this, 'onAddGenome'),
+          clear: lang.hitch(this, function () {
+            this.comp_genome_id.set('value', '');
+          })
+        },
+        picker('user_genomes_fasta', 'onAddFasta'),
+        picker('user_genomes_featuregroup', 'onAddFeatureGroup'),
+        picker('user_genomes_genomegroup', 'onAddGenomeGroup')
+      ], 'Choose a genome, protein FASTA file, feature group or genome group that is not already in Selected Genomes.');
+    },
+
     onAddGenome: function () {
       // console.log("Create New Row", domConstruct);
       var lrec = {};
@@ -314,8 +356,9 @@ define([
           handle.remove();
         }));
         this.increaseGenome('genome', newGenomeIds);
+        return true;
       }
-      // console.log(lrec);
+      return false;
     },
 
     onAddFasta: function () {
@@ -348,8 +391,9 @@ define([
           handle.remove();
         }));
         this.increaseGenome('fasta', newGenomeIds);
+        return true;
       }
-      // console.log(lrec);
+      return false;
     },
 
     onAddFeatureGroup: function () {
@@ -382,8 +426,9 @@ define([
           handle.remove();
         }));
         this.increaseGenome('feature_group', newGenomeIds);
+        return true;
       }
-      // console.log(lrec);
+      return false;
     },
 
     // implement adding a genome group
@@ -394,7 +439,7 @@ define([
       // console.log("chkPassed = " + chkPassed + " lrec = " + lrec);
       var path = lrec[this.genomeGroupToAttachPt];
       var newGenomeIds = [];
-      when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
+      return when(WorkspaceManager.getObject(path), lang.hitch(this, function (res) {
         if (typeof res.data == 'string') {
           res.data = JSON.parse(res.data);
         }
@@ -438,7 +483,9 @@ define([
             handle.remove();
           }));
           this.increaseGenome('genome_group', newGenomeIds);
+          return true;
         }
+        return false;
       }));
 
       // console.log(lrec);

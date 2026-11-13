@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin', 'dojox/xml/parser',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom',
-  '../../JobManager', '../../util/loading'
+  '../../JobManager', '../../util/loading', 'dojo/when'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom,
-  JobManager, Loading
+  JobManager, Loading, when
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
@@ -444,6 +444,39 @@ define([
       this.srr_accession_validation_message.innerHTML = '';
       this.srr_accession.set('disabled', false);
       return true;
+    },
+
+    // Genome forms (Comparative Systems, Comparative Pathway, Proteome
+    // Comparison): the one "Send to Selected Genomes" arrow adds each filled-in
+    // input that isn't already in Selected Genomes, as onAddReads does for
+    // reads. Each input gives:
+    //   value()  its current value ('' when empty)
+    //   isNew()  false when it is already in Selected Genomes
+    //   add()    the form's add handler; returns, or resolves to, false when
+    //            nothing was added (limit reached, empty group)
+    //   clear()  empties the input
+    // An input is cleared only once its row is in the table, so one that
+    // could not be added stays to be fixed.
+    sendToSelected: function (inputs, hint) {
+      var message = this.submit_selected_libs_validation_message;
+      var filled = inputs.filter(function (input) {
+        return input.value();
+      });
+      var fresh = filled.filter(function (input) {
+        return input.isNew();
+      });
+      if (!fresh.length) {
+        message.innerHTML = ' <br> ' + (filled.length ? 'Nothing new to add.' : 'Nothing to add.') + '<br>Hint: ' + hint;
+        return;
+      }
+      message.innerHTML = '';
+      fresh.forEach(function (input) {
+        when(input.add(), function (added) {
+          if (added !== false) {
+            input.clear();
+          }
+        });
+      });
     },
 
     // Forms with one Sample Identifier box at the top of Input File fill it
