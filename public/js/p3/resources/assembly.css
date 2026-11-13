@@ -433,11 +433,11 @@ div.appsublabel {
    box, folder icon) has its search box end on that same edge, with the folder
    icon past it. Two-field rows (.taxFields) span the same width; the first
    field gives up width, the second stays 120px. */
-.App .standardField {
+:is(.App, .PanelForm) .standardField {
     width: 527px;
     max-width: 100%;
 }
-.App .standardField.WorkspaceObjectSelector {
+:is(.App, .PanelForm) .standardField.WorkspaceObjectSelector {
     width: 600px;
     /* Flex, not inline flow: the space between the sort icon and the search
        box would otherwise be a text space whose width follows the font, and
@@ -445,7 +445,7 @@ div.appsublabel {
     display: flex;
     align-items: center;
 }
-.App .standardField.WorkspaceObjectSelector > .icon-sort-alpha-asc {
+:is(.App, .PanelForm) .standardField.WorkspaceObjectSelector > .icon-sort-alpha-asc {
     flex: 0 0 17px;
 }
 /* The same rules at the 300px width of .medInput fields (Bacterial Genome
@@ -480,20 +480,20 @@ div.appsublabel {
 .App .equalHeightBoxes .WorkspaceObjectSelector > .icon-sort-alpha-asc {
     flex: 0 0 17px;
 }
-.App .standardField.WorkspaceObjectSelector .search-box {
+:is(.App, .PanelForm) .standardField.WorkspaceObjectSelector .search-box {
     flex: 0 0 auto;
     width: 510px;
     max-width: calc(100% - 40px);
 }
 /* A dijit Select is a table; without this its arrow cell takes a share of
    the added width and the blue button grows. */
-.App .standardField.dijitSelect .dijitButtonContents {
+:is(.App, .PanelForm) .standardField.dijitSelect .dijitButtonContents {
     width: 100%;
 }
 /* Every dropdown's gray arrow keeps the standard 16px (18px with its
    borders), however wide the dropdown is set; the text cell takes the rest. */
 .App .dijitSelect .dijitArrowButton,
-.BLAST .dijitSelect .dijitArrowButton {
+.PanelForm .dijitSelect .dijitArrowButton {
     width: 16px;
 }
 .taxFields {
@@ -524,6 +524,7 @@ div.appsublabel {
    such a row (BLAST's Database Source / Type) use the same gap. */
 .fieldPair.fieldPairWithPicker {
     gap: 24px;
+    max-width: 529px; /* fields here are sized border-box, so 529 ends on the standard 540 edge */
 }
 /* (Scoped to .fieldPair rather than .App: BLAST's form has no App class.) */
 .fieldPair .pairField {
