@@ -9,6 +9,8 @@ define([
   './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
   '../auth/authHeaders',
   '../util/QueryDescriptor',
+  '../util/savedSelection',
+  '../util/SavedSearchManager',
   './download/UnifiedDownloadWizard',
   './download/SaveSearchDialog',
   '../util/joinTooBroad', './JoinTooBroadMessage',
@@ -23,7 +25,8 @@ define([
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
   CopilotAPI, ChatSessionOptionsBar,
   authHeader,
-  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog,
+  QueryDescriptor, savedSelection, SavedSearchManager,
+  UnifiedDownloadWizard, SaveSearchDialog,
   joinTooBroad, JoinTooBroadMessage,
   ColumnsGenome, AdvancedSearchFields, constructMetadataName, GenomeMetadataStore
 ) {
@@ -439,6 +442,50 @@ define([
       return descriptor;
     },
 
+    /**
+     * Re-select the rows a saved search was saved with.
+     *
+     * Reached via `#savedSearch=<id>`, which savedSearchUrl adds when the
+     * search carries a selection. The ids live in the saved search rather
+     * than the URL because a large selection is tens of kilobytes.
+     *
+     * Only rows that actually resolve are selected -- dgrid will happily
+     * accept an id that is not in the result set, producing a selection
+     * the DOM and the action bar disagree with. When rows are missing the
+     * user is told, because a silently smaller selection looks like the
+     * save lost data.
+     */
+    _restoreSavedSelection: function () {
+      var hashParams = this.state && this.state.hashParams;
+      var searchId = hashParams && hashParams.savedSearch;
+      if (!searchId || !this.grid) return;
+
+      try {
+        searchId = decodeURIComponent(searchId);
+      } catch (e) {
+        // leave it as-is; a malformed id simply will not resolve
+      }
+
+      var self = this;
+      when(SavedSearchManager.load(), function () {
+        var search = SavedSearchManager.get(searchId);
+        if (!search || !search.selectedIds || !search.selectedIds.length) {
+          return;
+        }
+
+        var result = savedSelection.applySelection(self.grid, search.selectedIds);
+        var message = savedSelection.describeRestore(
+          result,
+          search.metadata && search.metadata.selectionCount
+        );
+        if (message) {
+          Topic.publish('/Notification', { message: message, type: 'message' });
+        }
+      }, function (err) {
+        console.error('Could not load saved searches to restore selection', err);
+      });
+    },
+
     visible: false,
     _setVisibleAttr: function (visible) {
       this.visible = visible;
@@ -671,9 +718,19 @@ define([
             // downloads identically to the grid it was saved from.
             var descriptor = this.buildQueryDescriptor(selection, container);
 
-            if (this.state && selection && selection.length > 0) {
+            // Persist the row selection, capped. selectedRows is transient
+            // (the download path uses it for cross-collection linkFields)
+            // and must not reach the preferences file.
+            var capped = savedSelection.capSelection(descriptor.selectedIds);
+            descriptor.selectedIds = capped.ids;
+            delete descriptor.selectedRows;
+
+            if (capped.total > 0) {
               descriptor.metadata = descriptor.metadata || {};
-              descriptor.metadata.selectionCount = selection.length;
+              descriptor.metadata.selectionCount = capped.total;
+              if (capped.truncated) {
+                descriptor.metadata.selectionTruncated = true;
+              }
             }
 
             SaveSearchDialog.show({
@@ -2194,6 +2251,17 @@ define([
       // p3_api/Docs/CLIENT-join-too-broad.md.
       this.grid.on('dgrid-error', lang.hitch(this, function (evt) {
         this._onGridQueryError(evt && evt.error);
+      }));
+
+      // Re-apply a saved search's row selection once the rows exist.
+      // Selecting before render matches nothing, so this waits for
+      // dgrid-refresh-complete, and only for the first one -- a later
+      // refresh is the user changing the query, where re-imposing an old
+      // selection would be wrong.
+      this.grid.on('dgrid-refresh-complete', lang.hitch(this, function () {
+        if (this._savedSelectionRestored) return;
+        this._savedSelectionRestored = true;
+        this._restoreSavedSelection();
       }));
 
       this.grid.on('select', lang.hitch(this, function (evt) {
