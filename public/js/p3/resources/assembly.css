@@ -492,7 +492,8 @@ div.appsublabel {
 }
 /* Every dropdown's gray arrow keeps the standard 16px (18px with its
    borders), however wide the dropdown is set; the text cell takes the rest. */
-.App .dijitSelect .dijitArrowButton {
+.App .dijitSelect .dijitArrowButton,
+.BLAST .dijitSelect .dijitArrowButton {
     width: 16px;
 }
 .taxFields {
@@ -516,6 +517,46 @@ div.appsublabel {
 .fieldPair > * {
     flex: 1 1 0;
     min-width: 0;
+}
+/* A pair whose left field is a workspace picker (BLAST's Output Folder):
+   the gap holds the picker's folder icon, so the picker's search box can
+   end on its column's edge like the field above it. Rows that line up with
+   such a row (BLAST's Database Source / Type) use the same gap. */
+.fieldPair.fieldPairWithPicker {
+    gap: 24px;
+}
+/* (Scoped to .fieldPair rather than .App: BLAST's form has no App class.) */
+.fieldPair .pairField {
+    width: calc(100% - 2px); /* the field's own 1px borders */
+}
+/* A dropdown keeps to its half however long its options are: the label
+   cell takes the slack and cuts long text off with an ellipsis. */
+.fieldPair .pairField.dijitSelect {
+    table-layout: fixed;
+}
+.fieldPair .pairField.dijitSelect .dijitButtonContents {
+    width: 100%;
+    max-width: 0; /* lets the cell shrink below its text so it can clip */
+    overflow: hidden;
+}
+.fieldPair .pairField.dijitSelect .dijitButtonText,
+.fieldPair .pairField.dijitSelect .dijitSelectLabel {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.fieldPair .pairPicker {
+    display: flex;
+    align-items: center;
+    width: calc(100% + 24px); /* runs into the gap for its folder icon */
+}
+.fieldPair .pairPicker > .icon-sort-alpha-asc {
+    flex: 0 0 17px;
+}
+.fieldPair .pairPicker .search-box {
+    flex: 0 0 auto;
+    width: calc(100% - 17px - 24px - 2px);
 }
 /* .appBox pads only its left side; pad the right to match on the forms that
    use this layout. (Functional Classification's base class is Assembly2,

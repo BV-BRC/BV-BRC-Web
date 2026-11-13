@@ -41,7 +41,8 @@ define([
 
         var fastaDom = query('div[name="fasta"]')[0];
 
-        this.fasta = new WorkspaceObjectSelector();
+        // The standard Genome Assembly width, like the genome box above it.
+        this.fasta = new WorkspaceObjectSelector({ 'class': 'standardField' });
         // console.log("default path: ", this.defaultPath);
         // this.fasta.set('path', this.defaultPath);
         this.fasta.set('type', ['contigs', 'reads']);
@@ -88,11 +89,11 @@ define([
     toggleAdvanced: function (flag) {
       if (flag) {
         this.advancedOptions.style.display = 'block';
-        this.advancedOptionIcon.className = 'fa icon-caret-left fa-1';
+        this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
       }
       else {
         this.advancedOptions.style.display = 'none';
-        this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
+        this.advancedOptionIcon.className = 'fa icon-caret-left fa-1';
       }
     },
 

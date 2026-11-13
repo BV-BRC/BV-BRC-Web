@@ -184,11 +184,11 @@ define([
     toggleAdvanced: function (flag) {
       if (flag) {
         this.advancedOptions.style.display = 'block';
-        this.advancedOptionIcon.className = 'fa icon-caret-left fa-1';
+        this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
       }
       else {
         this.advancedOptions.style.display = 'none';
-        this.advancedOptionIcon.className = 'fa icon-caret-down fa-1';
+        this.advancedOptionIcon.className = 'fa icon-caret-left fa-1';
       }
     },
 
