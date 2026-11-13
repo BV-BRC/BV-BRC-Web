@@ -61,6 +61,16 @@ define([
    * answer when it is available. This table remains the fallback, because
    * /fields still 404s on production (see util/CollectionFields.js).
    *
+   * REMOVE THIS TABLE once /fields serves on production. That 404 is the
+   * only thing keeping it, and a schema-derived list is strictly more
+   * complete than one built by probing clauses: #287 turned up
+   * `sp_gene.assertion` (unstored but with docValues, so filterable),
+   * which probing had no reason to try. Deleting it is not just dropping
+   * the constant -- `refreshFilterableFields()` is fire-and-forget
+   * because setActivePanelState is synchronous, so making the live answer
+   * authoritative means solving that ordering too. Check prod's field
+   * sets directly first; alpha and production are not the same API.
+   *
    * Checked field-for-field against that endpoint's `filterable` set: the
    * two agree everywhere, with one difference -- `text`, Solr's catch-all
    * copy field, which is filterable but is not a `genome` field any query
