@@ -122,6 +122,21 @@ define([], function () {
     ppi: { lead: 'id', via: 'genome_id_a' }
   };
 
+  /**
+   * Used to render "this tab cannot answer that search" as zero rows.
+   *
+   * An empty query means *everything*, so when no clause survives we ask
+   * for a primary key that cannot exist instead. Each of these was checked
+   * to return `found=0` rather than an error.
+   */
+  var MATCH_NOTHING = '__BVBRC_NO_MATCH__';
+  var MATCH_NOTHING_FIELD = {
+    epitope: 'epitope_id',
+    serology: 'id',
+    strain: 'id',
+    ppi: 'id'
+  };
+
   // Operators that take a field name as their first argument. `keyword` is
   // absent on purpose: it is a full-text term with no field.
   var FIELD_OP_RE = /\b(?:eq|ne|gt|lt|ge|le|in|all|any|between)\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,/g;
@@ -182,13 +197,15 @@ define([], function () {
   /**
    * @param {string} query - RQL built against the `genome` collection
    * @param {string} dataType - the target collection, e.g. 'genome_feature'
-   * @returns {Object} `{ query, joined, dropped }` -- `joined` is true when
-   *   a `genome(...)` join was added; `dropped` lists clauses discarded
-   *   because the collection can neither answer nor join them (empty for
-   *   every joinable collection).
+   * @returns {Object} `{ query, joined, dropped, unfiltered }` -- `joined`
+   *   is true when a `genome(...)` join was added; `dropped` lists clauses
+   *   discarded because the collection can neither answer nor join them
+   *   (empty for every joinable collection); `unfiltered` is true when
+   *   *nothing* survived, meaning the query would match the entire
+   *   collection and the caller must not run it.
    */
   function genomeContextQuery(query, dataType) {
-    var result = { query: query || '', joined: false, dropped: [] };
+    var result = { query: query || '', joined: false, dropped: [], unfiltered: false };
     if (!result.query || !dataType || dataType === 'genome') {
       return result;
     }
@@ -205,8 +222,9 @@ define([], function () {
       if (!join) {
         // Cannot join, and the whole filter lives inside a join we cannot
         // re-target. Everything is dropped.
-        result.query = '';
         result.dropped = ['genome(' + existing.inner + ')'].concat(existing.others);
+        result.unfiltered = true;
+        result.query = 'eq(' + (MATCH_NOTHING_FIELD[dataType] || 'id') + ',' + MATCH_NOTHING + ')';
         return result;
       }
       var reled = ['eq(' + join.lead + ',*)',
@@ -238,6 +256,17 @@ define([], function () {
           result.dropped.push(c);
         }
       });
+      // Nothing survived. An empty RQL query is not "no results" -- it is
+      // *every* row (measured: an unfiltered /epitope/ returns all 301,723),
+      // so running it would present the whole collection as though it were
+      // this search's result. That is worse than the 400 it replaces.
+      // Substitute a clause that matches nothing, so the grid honestly
+      // shows no rows while the banner explains why.
+      if (!kept.length) {
+        result.unfiltered = true;
+        result.query = 'eq(' + (MATCH_NOTHING_FIELD[dataType] || 'id') + ',' + MATCH_NOTHING + ')';
+        return result;
+      }
       result.query = kept.join('&');
       return result;
     }

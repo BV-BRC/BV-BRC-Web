@@ -133,9 +133,16 @@ define([
             });
           });
           if (droppedFields.length) {
-            activeQueryState.autoFilterMessage = activeTab.title
-              + ' cannot be filtered by ' + droppedFields.join(', ')
-              + ', so those criteria are not applied here.';
+            activeQueryState.autoFilterMessage = retargeted.unfiltered
+              // Nothing survived, so the grid is showing a deliberate
+              // zero rather than the whole collection. Say that, instead
+              // of implying a partially-filtered result.
+              ? (activeTab.title + ' cannot be filtered by '
+                 + droppedFields.join(', ') + ', so this search cannot be '
+                 + 'applied here. Showing no results rather than every record.')
+              : (activeTab.title + ' cannot be filtered by '
+                 + droppedFields.join(', ') + ', so those criteria are not '
+                 + 'applied here.');
           }
         }
       }

@@ -152,8 +152,47 @@ describe('collections that cannot join to genome', () => {
 
   test('drops an un-retargetable join whole', () => {
     const r = gcq('eq(genome_id,*)&genome(eq(segment,4))', 'serology');
-    expect(r.query).toBe('');
     expect(r.dropped).toEqual(['genome(eq(segment,4))']);
+    expect(r.unfiltered).toBe(true);
+  });
+
+  /**
+   * An empty RQL query is not "no results" -- it is EVERY row. Measured on
+   * alpha: an unfiltered /epitope/ returns all 301,723 records. Emitting
+   * one here would show the entire collection as though it were the user's
+   * search result, which is a worse failure than the 400 being fixed.
+   */
+  describe('THE EMPTY-QUERY TRAP: never emit a query that matches everything', () => {
+    test('a fully-dropped filter becomes a match-nothing clause', () => {
+      const r = gcq('eq(genome_status,Complete)', 'epitope');
+      expect(r.unfiltered).toBe(true);
+      expect(r.query).not.toBe('');
+      expect(r.query).toBe('eq(epitope_id,__BVBRC_NO_MATCH__)');
+    });
+
+    test('same for a dropped join', () => {
+      const r = gcq('eq(genome_id,*)&genome(eq(segment,4))', 'serology');
+      expect(r.query).toBe('eq(id,__BVBRC_NO_MATCH__)');
+    });
+
+    test('the match-nothing field is one the collection actually has', () => {
+      // eq(genome_id,...) on epitope is itself a 400, so the sentinel has
+      // to use the collection's own primary key.
+      expect(gcq('eq(genome_status,X)', 'epitope').query).toContain('epitope_id');
+      expect(gcq('eq(genome_status,X)', 'serology').query).toContain('eq(id,');
+    });
+
+    test('unfiltered is FALSE whenever something survived', () => {
+      const r = gcq('eq(taxon_lineage_ids,2955291)&eq(genome_status,Complete)', 'epitope');
+      expect(r.unfiltered).toBe(false);
+      expect(r.query).toBe('eq(taxon_lineage_ids,2955291)');
+    });
+
+    test('and false on every normal path', () => {
+      expect(gcq('eq(public,false)', 'genome_feature').unfiltered).toBe(false);
+      expect(gcq(SAVED_SEARCH, 'genome_sequence').unfiltered).toBe(false);
+      expect(gcq('', 'genome_feature').unfiltered).toBe(false);
+    });
   });
 });
 
