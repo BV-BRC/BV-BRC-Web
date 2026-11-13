@@ -60,12 +60,12 @@ define([
         if (!this.submitterrow.turnedOn) {
           this.submitterrow.turnedOn = true;
           this.submitterrow.style.display = 'block';
-          this.submittericon.className = 'fa icon-caret-left fa-1';
+          this.submittericon.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.submitterrow.turnedOn = false;
           this.submitterrow.style.display = 'none';
-          this.submittericon.className = 'fa icon-caret-down fa-1';
+          this.submittericon.className = 'fa icon-caret-left fa-1';
         }
       }));
 

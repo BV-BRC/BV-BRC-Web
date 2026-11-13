@@ -65,12 +65,12 @@ define([
         if (!this.advrow.turnedOn) {
           this.advrow.turnedOn = true;
           this.advrow.style.display = 'block';
-          this.advicon.className = 'fa icon-caret-left fa-1';
+          this.advicon.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.advrow.turnedOn = false;
           this.advrow.style.display = 'none';
-          this.advicon.className = 'fa icon-caret-down fa-1';
+          this.advicon.className = 'fa icon-caret-left fa-1';
         }
       }));
 
