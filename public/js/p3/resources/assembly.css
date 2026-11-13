@@ -457,7 +457,9 @@ div.appsublabel {
     max-width: 100%;
 }
 .App .medField.WorkspaceObjectSelector {
-    width: 373px;
+    /* Sized to its contents (sort icon, search box, folder icon) so it
+       doesn't widen a narrow column beside another box. */
+    width: auto;
     display: flex;
     align-items: center;
 }
