@@ -198,7 +198,8 @@ define([
      * Copy a curl command for the configured download to the clipboard.
      *
      * Built from the same spec the Download button submits, so the two
-     * cannot describe different requests.
+     * cannot describe different requests -- which requires capturing the
+     * on-screen step first, exactly as Download does.
      *
      * Everything up to the clipboard write stays synchronous so the
      * execCommand fallback still sees the user gesture -- an inline
@@ -207,6 +208,7 @@ define([
     onCopyCurl: function () {
       var command;
       try {
+        this._captureCurrentStep();
         command = DownloadExecutor.buildCurlCommand(this._buildDownloadSpec());
       } catch (e) {
         console.error('Could not build curl command:', e);
@@ -567,13 +569,29 @@ define([
       currentStep.clearError();
 
       // Collect all step data
-      this.stepData[currentStep.stepId] = currentStep.getData();
+      this._captureCurrentStep();
 
       // Build download specification
       var downloadSpec = this._buildDownloadSpec();
 
       // Execute download
       this._executeDownload(downloadSpec);
+    },
+
+    /**
+     * Harvest the step the user is looking at into stepData.
+     *
+     * stepData is only written when a step is left (Next) or when
+     * Download is pressed, so the step currently on screen holds edits
+     * that stepData has not seen yet. Anything building a spec from the
+     * live dialog has to capture it first -- Copy curl skipped this and
+     * so emitted the previous column selection rather than the one shown.
+     */
+    _captureCurrentStep: function () {
+      var currentStep = this.steps && this.steps[this.currentStepIndex];
+      if (currentStep && typeof currentStep.getData === 'function') {
+        this.stepData[currentStep.stepId] = currentStep.getData();
+      }
     },
 
     /**
