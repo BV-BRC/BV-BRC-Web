@@ -67,7 +67,7 @@
                 <table data-dojo-attach-point="fasta_table" style="width:100%; display:none">
                     <tr>
                         <td>
-                            <div style="width:85%;display:inline-block;"
+                            <div class="standardField"
                                  data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
                                  data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
                                  data-dojo-props="type:['feature_protein_fasta', 'contigs'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
@@ -78,7 +78,7 @@
                 <table data-dojo-attach-point="feature_group_table" style="width:100%; display:none">
                     <tr>
                         <td>
-                            <div style="width:85%;display:inline-block;"
+                            <div class="standardField"
                                  data-dojo-type="p3/widget/WorkspaceObjectSelector" name="feature_group" required="false"
                                  data-dojo-attach-point="feature_group"
                                  data-dojo-props="type:['feature_group'], disabled:false,allowUpload:false,multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
@@ -93,9 +93,9 @@
                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                     </div>
             </div>
-            <div class="appRowSegment" style="text-align:left; width:30%">
+            <div style="text-align:left">
                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="conversionScheme" data-dojo-props="disabled:false"
-                     required="true" data-dojo-attach-point="conversionScheme" multiple style="width: 100%"></select>
+                     required="true" data-dojo-attach-point="conversionScheme" multiple class="standardField checkboxGrid"></select>
 
             </div>
             <!-- Output Folder and Output Name split one standard-width row, as on BLAST -->

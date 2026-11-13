@@ -643,3 +643,27 @@ div.appsublabel {
 .App .bracketField > .bracketMark:last-child {
     margin-left: 4px;
 }
+/* A checkbox list (dojox CheckedMultiSelect) shown as an open grid of
+   checkboxes at the standard width instead of a scrolling box (HA Subtype's
+   numbering schemes): four columns, no scroll, no inner border. With 24
+   influenza A schemes the three B lineages start their own row; the space
+   above them sets them apart. */
+:is(.App, .PanelForm) .standardField.dojoxCheckedMultiSelect {
+    width: 529px;
+}
+:is(.App, .PanelForm) .checkboxGrid .dojoxCheckedMultiSelectWrapper {
+    height: auto;
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+}
+:is(.App, .PanelForm) .checkboxGrid [data-dojo-attach-point="wrapperDiv"] {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: 4px;
+}
+:is(.App, .PanelForm) .checkboxGrid .dojoxMultiSelectItem:nth-child(n+25) {
+    margin-top: 8px;
+}
