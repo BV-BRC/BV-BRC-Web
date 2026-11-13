@@ -465,6 +465,11 @@ define([
       domClass.remove(this.domNode, 'Working');
       domClass.remove(this.domNode, 'Error');
       domClass.remove(this.domNode, 'Submitted');
+      this.clearLibraries();
+    },
+
+    // Remove every library from the store and the library table.
+    clearLibraries: function () {
       var toDestroy = [];
       this.libraryStore.data.forEach(lang.hitch(this, function (lrec) {
         toDestroy.push(lrec.id);
@@ -473,6 +478,19 @@ define([
       toDestroy.forEach(lang.hitch(this, function (id) {
         this.destroyLib({}, id, 'id');
       }));
+    },
+
+    // After a job is accepted, clear the library list. Otherwise the libraries stay in
+    // the form and are silently submitted again with the next job set up in this tab.
+    doSubmit: function (values, start_params) {
+      var def = this.inherited(arguments);
+      if (def && typeof def.then === 'function') {
+        return def.then(lang.hitch(this, function (results) {
+          this.clearLibraries();
+          return results;
+        }));
+      }
+      return def;
     },
 
     makeConditionName: function (conditionName) {
@@ -959,6 +977,12 @@ define([
     },
 
     checkBaseParameters: function (values, assembly_values) {
+      // Start from fresh per-instance arrays. AppBase declares these on the prototype,
+      // where they are shared by every app widget, so pushing onto them before they are
+      // reassigned leaks libraries into later submissions.
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
 
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2', 'sample_id'];

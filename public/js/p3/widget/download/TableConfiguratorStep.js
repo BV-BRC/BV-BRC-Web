@@ -7,7 +7,8 @@ define([
   'dojo/query',
   './WizardStepBase',
   'dojo/text!./templates/TableConfiguratorStep.html',
-  '../../util/DownloadFormats'
+  '../../util/DownloadFormats',
+  '../../util/ColumnSetStore'
 ], function (
   declare,
   lang,
@@ -17,7 +18,8 @@ define([
   query,
   WizardStepBase,
   template,
-  DownloadFormats
+  DownloadFormats,
+  ColumnSetStore
 ) {
   /**
    * TableConfiguratorStep - Step 3 configurator for tabular formats (TSV, CSV, Excel)
@@ -26,6 +28,7 @@ define([
    * - Select which columns to include in the download
    * - Reorder columns
    * - Search available columns
+   * - Save and reapply named column sets
    */
 
   return declare([WizardStepBase], {
@@ -126,6 +129,169 @@ define([
 
       // Populate the lists
       this._populateFieldLists();
+
+      // Saved column sets
+      this._loadColumnSets();
+    },
+
+    // ---------------------------------------------------------- column sets
+
+    /** Sentinel <option> value for "no set applied". */
+    NO_SET: '',
+
+    _savedColumnSets: null,
+    _pendingSetSelection: null,
+
+    /**
+     * Fetch the user's saved sets for this data type and build the
+     * dropdown. Failure is silent by design -- the store resolves to an
+     * empty list rather than rejecting, and with nothing to offer and no
+     * way to save, the whole section stays hidden.
+     */
+    _loadColumnSets: function () {
+      var self = this;
+      var dataType = this.context ? this.context.dataType : null;
+
+      ColumnSetStore.list(dataType).then(function (sets) {
+        self._savedColumnSets = sets || [];
+        self._renderColumnSets();
+      });
+    },
+
+    _renderColumnSets: function () {
+      if (!this.columnSetsSection) return;
+
+      var self = this;
+      var sets = this._savedColumnSets || [];
+      var canSave = ColumnSetStore.canSave();
+
+      if (sets.length === 0 && !canSave) {
+        domClass.add(this.columnSetsSection, 'dijitHidden');
+        return;
+      }
+      domClass.remove(this.columnSetsSection, 'dijitHidden');
+
+      domConstruct.empty(this.columnSetSelect);
+      domConstruct.create('option', {
+        value: this.NO_SET,
+        innerHTML: sets.length ? '— choose a column set —' : '— no saved column sets —'
+      }, this.columnSetSelect);
+
+      sets.forEach(function (s) {
+        domConstruct.create('option', {
+          value: s.name,
+          innerHTML: self._escapeHtml(s.name)
+        }, self.columnSetSelect);
+      });
+
+      domClass.toggle(this.saveColumnSetBtn, 'dijitHidden', !canSave);
+
+      // Reselect after a save so the user sees the result rather than the
+      // list resetting. Set before the reload; the store may resolve
+      // synchronously from cache.
+      if (this._pendingSetSelection) {
+        this.columnSetSelect.value = this._pendingSetSelection;
+        this._pendingSetSelection = null;
+      }
+
+      this._syncColumnSetButtons();
+    },
+
+    _syncColumnSetButtons: function () {
+      if (!this.deleteColumnSetBtn) return;
+      var selected = this._findColumnSet(this.columnSetSelect.value);
+      var deletable = !!selected && ColumnSetStore.canSave();
+      domClass.toggle(this.deleteColumnSetBtn, 'dijitHidden', !deletable);
+    },
+
+    _findColumnSet: function (name) {
+      if (!name) return null;
+      return (this._savedColumnSets || []).filter(function (s) {
+        return s.name === name;
+      })[0] || null;
+    },
+
+    _onColumnSetChange: function () {
+      var set = this._findColumnSet(this.columnSetSelect.value);
+      this._syncColumnSetButtons();
+      if (set) this._applyColumnSet(set);
+    },
+
+    /**
+     * Replace the current selection with a saved set.
+     *
+     * Columns the grid does not offer are kept rather than dropped: a set
+     * saved against a richer column list should not quietly lose entries
+     * when reapplied somewhere narrower.
+     */
+    _applyColumnSet: function (set) {
+      var available = this.availableColumns || [];
+
+      this.selectedColumns = set.columns.map(function (field) {
+        return available.filter(function (c) { return c.field === field; })[0]
+          || { field: field, label: field };
+      });
+
+      this._populateFieldLists();
+      this.notifyDataChanged();
+    },
+
+    _onSaveColumnSet: function () {
+      var self = this;
+
+      if (!this.selectedColumns.length) {
+        this.showError('Select at least one column before saving.');
+        return;
+      }
+
+      // eslint-disable-next-line no-alert
+      var name = window.prompt('Save this column set as:', this.columnSetSelect.value || '');
+      if (name === null) return;
+      name = name.trim();
+      if (!name) return;
+
+      // eslint-disable-next-line no-alert
+      if (this._findColumnSet(name) && !window.confirm('Replace your saved set "' + name + '"?')) {
+        return;
+      }
+
+      ColumnSetStore.save({
+        name: name,
+        dataType: this.context ? this.context.dataType : undefined,
+        columns: this.selectedColumns.map(function (c) { return c.field; })
+      }).then(
+        function () {
+          self._pendingSetSelection = name;
+          self._loadColumnSets();
+        },
+        function (err) {
+          self.showError('Could not save: ' + (err && err.message ? err.message : err));
+        }
+      );
+    },
+
+    _onDeleteColumnSet: function () {
+      var self = this;
+      var name = this.columnSetSelect.value;
+      if (!this._findColumnSet(name)) return;
+
+      // eslint-disable-next-line no-alert
+      if (!window.confirm('Delete your saved column set "' + name + '"?')) return;
+
+      ColumnSetStore.remove(name, this.context ? this.context.dataType : undefined).then(
+        function () { self._loadColumnSets(); },
+        function (err) {
+          self.showError('Could not delete: ' + (err && err.message ? err.message : err));
+        }
+      );
+    },
+
+    /** Set names are user-supplied and land in innerHTML. */
+    _escapeHtml: function (s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
     },
 
     /**
@@ -515,6 +681,10 @@ define([
       this.searchFilter = '';
       if (this.searchInput) {
         this.searchInput.value = '';
+      }
+      this._pendingSetSelection = null;
+      if (this.columnSetSelect) {
+        this.columnSetSelect.value = this.NO_SET;
       }
       this._initializeColumns();
     },

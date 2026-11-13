@@ -144,6 +144,9 @@ define([
       }
 
       hp.filter = 'false';
+      if (this.state.hashParams && this.state.hashParams.influenzaSearch) {
+        hp.influenzaSearch = this.state.hashParams.influenzaSearch;
+      }
 
       var l = window.location.pathname + q + '#' + Object.keys(hp).map(function (key) {
         return key + '=' + hp[key];

@@ -119,10 +119,40 @@ define([
   };
 
 
-  return function (query) {
+  var queryToEnglish = function (query) {
     var q = parseQuery(query);
     // q = q.substr(1, q.length-2);
     return q;
   };
+
+  /**
+   * The same description with the markup removed.
+   *
+   * The main function emits HTML -- <span class="searchField"> and friends
+   * -- which suits the list viewers that drop it straight into innerHTML.
+   * Anywhere the text goes into a title attribute, a dialog label, or a
+   * saved record it has to be plain, and three call sites were already
+   * written against a `toPlainText` that did not exist (SaveSearchDialog,
+   * SavedSearchBrowser, and a guarded one in QueryDescriptor). This adds
+   * it rather than scattering strip-tag calls at each.
+   *
+   * Entities are decoded after stripping, so a query containing `>` comes
+   * back as `>` rather than `&gt;`.
+   */
+  queryToEnglish.toPlainText = function (query) {
+    var html = queryToEnglish(query);
+    if (!html) return '';
+    return String(html)
+      .replace(/<[^>]*>/g, '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  return queryToEnglish;
 
 });

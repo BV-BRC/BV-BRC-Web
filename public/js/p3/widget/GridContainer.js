@@ -243,6 +243,9 @@ define([
       if (!state) {
         return;
       }
+      if (this.selectionActionBar) {
+        this.selectionActionBar.set('selection', this.selectionActionBar.get('selection') || []);
+      }
       var q = [];
 
       if (state.search) {
@@ -370,6 +373,45 @@ define([
       this._set('apiServer', server);
       if (this.grid) {
         this.grid.set('apiServer', server);
+      }
+    },
+
+    /**
+     * Open the download wizard for this grid.
+     *
+     * Shared by both download entry points -- the blue button above the
+     * table and the DOWNLOAD action in the green bar -- so the two cannot
+     * drift apart. Previously the blue button opened a small tooltip
+     * dialog with a short format list while only ADV DWNLD reached the
+     * wizard, which meant the obvious button was the less capable one.
+     *
+     * `selection` may be empty. QueryDescriptor.createFromGrid falls back
+     * to the grid's own query in that case, so the wizard opens scoped to
+     * the whole result set rather than refusing -- which is what makes the
+     * green-bar button useful with nothing selected.
+     */
+    openDownloadWizard: function (selection, container) {
+      try {
+        var dataType = this.dataModel || 'genome_feature';
+        var primaryKey = this.primaryKey || 'id';
+        var grid = (container && container.grid) || this.grid;
+
+        var queryDescriptor = QueryDescriptor.createFromGrid(grid, this.containerType, {
+          selection: selection || [],
+          primaryKey: primaryKey
+        });
+
+        // The GridContainer's dataModel is more reliable than whatever the
+        // descriptor inferred from the container type.
+        queryDescriptor.dataType = dataType;
+        queryDescriptor.primaryKey = primaryKey;
+        queryDescriptor.rqlQuery = (grid && grid.get('query')) || '';
+
+        UnifiedDownloadWizard.show({
+          queryDescriptor: queryDescriptor
+        });
+      } catch (e) {
+        console.error('Download wizard error:', e);
       }
     },
 
@@ -542,27 +584,12 @@ define([
           ignoreDataType: true,
           tooltip: 'Download selected rows',
           max: 10000,
-          tooltipDialog: downloadSelectionTT,
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
-
-          this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set('selection', selection);
-          this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set('containerType', this.containerType);
-          if (container && container.grid) {
-            this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set('grid', container.grid);
-          }
-
-          this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
-
-          setTimeout(lang.hitch(this, function () {
-            popup.open({
-              popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
-              around: this.selectionActionBar._actions.DownloadSelection.button,
-              orient: ['below']
-            });
-          }), 10);
-
+          // Both download entry points now open the same wizard, so the
+          // old tooltip-dialog popup is gone from this path.
+          this.openDownloadWizard(selection, container);
         },
         false
       ], [
@@ -636,49 +663,23 @@ define([
         },
         true
       ], [
-        'AdvancedDownload',
+        'Download',
         'fa icon-download fa-2x',
         {
-          label: 'ADV DWNLD',
+          label: 'DOWNLOAD',
+          // Always visible: with nothing selected the wizard opens on the
+          // whole result set, which is the common case and used to require
+          // finding a different button.
           persistent: true,
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
-          tooltip: 'Advanced Download Options',
+          tooltip: 'Download this data',
           max: 100000,
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
-          console.log('AdvancedDownload button clicked', selection, this.containerType);
-          try {
-            // Get the data model and primary key from the container
-            var dataType = this.dataModel || 'genome_feature';
-            var primaryKey = this.primaryKey || 'id';
-            console.log('Data Type:', dataType, 'Primary Key:', primaryKey);
-
-            // Create a QueryDescriptor with selection - this is the standard interface for downloads
-            var queryDescriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType, {
-              selection: selection,
-              primaryKey: primaryKey
-            });
-
-            // Override dataType with the GridContainer's dataModel (more reliable)
-            queryDescriptor.dataType = dataType;
-            queryDescriptor.primaryKey = primaryKey;
-
-            // Get the RQL query from the grid
-            var rqlQuery = this.grid.get('query') || '';
-            queryDescriptor.rqlQuery = rqlQuery;
-
-            console.log('QueryDescriptor:', queryDescriptor);
-
-            // Open the wizard with the query descriptor
-            UnifiedDownloadWizard.show({
-              queryDescriptor: queryDescriptor
-            });
-          } catch (e) {
-            console.error('AdvancedDownload error:', e);
-          }
+          this.openDownloadWizard(selection, container);
         },
         true
       ], [
@@ -2256,6 +2257,21 @@ define([
       }));
     },
 
+    _getInfluenzaSearchReturnUrl: function () {
+      if (!/^\/view\/(GenomeList|SequenceList|FeatureList)\//.test(window.location.pathname)) return null;
+      var id = this.state && this.state.hashParams && this.state.hashParams.influenzaSearch;
+      if (!id || !/^[a-z0-9-]+$/.test(id)) return null;
+      try {
+        var saved = JSON.parse(window.sessionStorage.getItem('bvbrc:influenza-search:' + id));
+        if (!saved || !saved.form || saved.form.version !== 1 || typeof saved.url !== 'string') return null;
+        var url = new URL(saved.url, window.location.origin);
+        if (url.origin !== window.location.origin || !/^\/searches\/InfluenzaSearch\/?$/.test(url.pathname)) return null;
+        return url.pathname + url.search + url.hash;
+      } catch (error) {
+        return null;
+      }
+    },
+
     setupActions: function () {
       if (this.containerActionBar) {
         this.containerActions.forEach(function (a) {
@@ -2266,6 +2282,19 @@ define([
       this.selectionActions.forEach(function (a) {
         this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
       }, this);
+
+      this.selectionActionBar.addAction('EditInfluenzaSearch', 'fa icon-arrow-left fa-2x', {
+        label: 'EDIT SEARCH',
+        tooltip: 'Return to Influenza Search with your original selections',
+        persistent: true,
+        validTypes: ['*'],
+        ignoreDataType: true,
+        shouldShow: lang.hitch(this, function () { return !!this._getInfluenzaSearchReturnUrl(); })
+      }, lang.hitch(this, function () {
+        var href = this._getInfluenzaSearchReturnUrl();
+        if (href) Topic.publish('/navigate', { href: href });
+      }), !!this._getInfluenzaSearchReturnUrl());
+      domConstruct.place(this.selectionActionBar._actions.EditInfluenzaSearch.button, this.selectionActionBar.containerNode, 'first');
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.selectionActionBar) {

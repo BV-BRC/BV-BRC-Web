@@ -845,6 +845,10 @@ define([
             );
         })));
 
+        // Keep the input area as tall as the composer, and stack the text box
+        // above the buttons when the composer is narrow (see _fitToComposer).
+        this._watchComposerSize();
+
         // Maximum height for textarea before scrolling
         const maxHeight = 160;
 
@@ -2182,7 +2186,79 @@ define([
       );
     },
 
+    // Composer width below which the text box gets its own row above the
+    // buttons (📎, Plan/Execute and send take about 200 px on one row).
+    COMPOSER_STACK_BELOW: 420,
+
+    /**
+     * Fit the input area to the composer.  The area used to be a fixed 15%
+     * of the chat height with a splitter: on a short window that was shorter
+     * than the composer (which then covered the last message), on a tall one
+     * it left empty space.  Now its height follows the composer as it grows
+     * (multi-line text, attachment chips, the stacked layout).
+     */
+    _watchComposerSize: function() {
+      var fit = lang.hitch(this, '_fitToComposer');
+      if (window.ResizeObserver && this._composerNode) {
+        this._composerObserver = new window.ResizeObserver(function() {
+          fit();
+        });
+        this._composerObserver.observe(this._composerNode);
+      } else {
+        // No ResizeObserver: refit on the events that change the composer.
+        this.own(on(this.textArea, 'input', fit));
+        this.own(on(window, 'resize', fit));
+      }
+      setTimeout(fit, 0);
+    },
+
+    _fitToComposer: function() {
+      var composer = this._composerNode;
+      if (!composer || this._beingDestroyed) {
+        return;
+      }
+      var width = composer.offsetWidth;
+      if (!width) {
+        return; // hidden (minimized window, inactive viewer)
+      }
+      var stacked = width < this.COMPOSER_STACK_BELOW;
+      if (stacked !== this._composerStacked) {
+        this._composerStacked = stacked;
+        composer.classList.toggle('copilotComposer--stacked', stacked);
+      }
+      // Content height of this pane: the composer plus the wrapper's 4 px top padding.
+      var height = composer.offsetHeight + 4;
+
+      // Never more than 60% of the chat: past that the text box scrolls
+      // instead of growing (a short window with a long message).
+      var parent = this.getParent && this.getParent();
+      var parentHeight = parent && parent.domNode ? parent.domNode.clientHeight : 0;
+      var cap = parentHeight ? Math.floor(parentHeight * 0.6) - 20 : 0; // 20: this pane's padding
+      var textNode = this.textArea && (this.textArea.textbox || this.textArea.domNode);
+      if (cap > 0 && height > cap && textNode) {
+        var textHeight = textNode.offsetHeight;
+        var shrunk = Math.max(24, textHeight - (height - cap));
+        if (shrunk < textHeight) {
+          textNode.style.height = shrunk + 'px';
+          textNode.style.overflowY = 'auto';
+          return; // the composer shrinks; the observer calls back with the new size
+        }
+      }
+
+      if (height !== this._fittedHeight) {
+        this._fittedHeight = height;
+        this.domNode.style.height = height + 'px';
+        if (parent && parent._started && parent.layout) {
+          parent.layout();
+        }
+      }
+    },
+
     destroy: function() {
+      if (this._composerObserver) {
+        this._composerObserver.disconnect();
+        this._composerObserver = null;
+      }
       this._closeAttachMenu();
       this._topicHandles.forEach(function(h) { h.remove(); });
       this._topicHandles = [];

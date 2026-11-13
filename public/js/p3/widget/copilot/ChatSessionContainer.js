@@ -556,8 +556,9 @@ define([
         _createInputWidget: function() {
             this.inputWidget = new CopilotInput({
                 region: 'bottom',
-                splitter: true,
-                style: 'height: 15%; padding: 8px 12px 12px 12px; border: 0; overflow: visible; z-index: 20;',
+                // Height follows the composer (CopilotInput._fitToComposer); no splitter.
+                splitter: false,
+                style: 'height: 64px; padding: 8px 12px 12px 12px; border: 0; overflow: visible; z-index: 20;',
                 copilotApi: this.copilotApi,
                 chatStore: this.chatStore,
                 displayWidget: this.displayWidget,
