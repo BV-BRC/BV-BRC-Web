@@ -349,7 +349,11 @@ define([
         .replace(/^accn\|/, '')
         .replace(/^sid\|\d+\|accn\|/, '') // handle legacy PATRIC format
         .replace(/^.+\|accn\|/, '') // handle crazy rockhopper id requirements
-        .replace(/\|$/g, ''); // handle crazy rockhopper id requirements
+        .replace(/\|$/g, '') // handle crazy rockhopper id requirements
+        // Drop the version from NCBI-style accessions (NC_000067.6 -> nc_000067). Host-genome
+        // BAMs from the RNA-Seq service use versioned names from the NCBI FASTA, but BV-BRC
+        // genome_sequence names are unversioned, so without this BAM tracks show nothing.
+        .replace(/^([a-z]{1,6}_?[a-z]{0,4}\d{5,})\.\d+$/, '$1');
       // not sure what this was for but it was causing problems when loweringCase with ID like "JEZL01000001" turning to jezl1000001
       //              .replace(/^([a-z]*)0+/, '$1')
 
