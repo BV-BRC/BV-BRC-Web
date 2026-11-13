@@ -506,3 +506,11 @@ div.appsublabel {
 .App LABEL.startWithOption {
     font-size: 12px;
 }
+/* MSA wraps its fields in layout tables; without cell spacing the fields
+   start on the same left edge as the rest of the box. */
+.MSA .appBox table {
+    border-spacing: 0;
+}
+.MSA .appBox table td {
+    padding: 0;
+}
