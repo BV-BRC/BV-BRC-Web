@@ -64,6 +64,14 @@ define([], function () {
       url += '?' + rqlQuery;
     }
 
+    // Carry the saved search's id, not its selection, when there are rows
+    // to re-select. The ids themselves can run to tens of kilobytes, which
+    // no URL should hold; the view resolves them from SavedSearchManager
+    // instead. A short id also survives bookmarking.
+    if (search.id && search.selectedIds && search.selectedIds.length) {
+      url += '#savedSearch=' + encodeURIComponent(search.id);
+    }
+
     return url;
   };
 });
