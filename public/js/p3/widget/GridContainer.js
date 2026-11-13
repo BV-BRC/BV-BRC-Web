@@ -645,25 +645,18 @@ define([
       //   },
       //   true
       // ],
+      // There is no 'Selected' download action here. It opened the same
+      // wizard with the same arguments as DOWNLOAD below -- two buttons,
+      // one behaviour -- once both entry points were routed through
+      // openDownloadWizard(). DOWNLOAD is persistent and already scopes
+      // itself to the selection when there is one.
+      //
+      // Subclasses that concat their own 'DownloadSelection' (the 'DWNLD'
+      // tooltip-dialog flow in ProteinFamilies*, SubSystems*,
+      // IDMappingAppResult, InteractionGraph) are unaffected: each array
+      // entry gets its own addAction call and _actions is keyed by name,
+      // so theirs was already the one that won.
       [
-        'DownloadSelection',
-        'fa icon-download fa-2x',
-        {
-          label: 'Selected',
-          multiple: true,
-          validTypes: ['*'],
-          ignoreDataType: true,
-          tooltip: 'Download selected rows',
-          max: 10000,
-          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
-        },
-        function (selection, container) {
-          // Both download entry points now open the same wizard, so the
-          // old tooltip-dialog popup is gone from this path.
-          this.openDownloadWizard(selection, container);
-        },
-        false
-      ], [
         'CopySelection',
         'fa icon-clipboard2 fa-2x',
         {
