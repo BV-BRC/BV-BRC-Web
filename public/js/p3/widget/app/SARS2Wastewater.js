@@ -261,8 +261,7 @@ define([
     },
 
     setSrrId: function () {
-      var srr_user_input = this.srr_accession.get('displayedValue');
-      this.input_sample_id.set('value', this.replaceInvalidChars(srr_user_input.split('.')[0]));
+      this.fillSampleId(this.input_sample_id, this.srr_accession.get('displayedValue'));
     },
 
     // from SARS CGA
@@ -307,16 +306,9 @@ define([
                         sample_level_date: {label: 'Date', value: 1}
                       };
                       lrec.title = title
-                      // check if user changed the sample id
-                      if (typeof this.input_sample_id._lastInputEventValue === 'undefined') {
-                        // user did not change the sample id - use default
-                        lrec.sample_id = this.input_sample_id.getValue()
-                      } else {
-                        // user changes sample id - update to user input
-                        lrec.sample_id = this.input_sample_id._lastInputEventValue
-                      }
-                      // clear the sample id for nex input
-                      // this.input_sample_id.reset()
+                      lrec.sample_id = this.input_sample_id.getValue();
+                      // clear the sample id for the next input
+                      this.input_sample_id.reset()
                       lrec.primers = this.primers.value
                       lrec.primer_version = this.primer_version.value
                       if (this.sample_level_date) {
@@ -385,8 +377,7 @@ define([
     },
 
     setSingleId: function () {
-      var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
-      this.input_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.fillSampleId(this.input_sample_id, this.single_end_libsWidget.searchBox.get('displayedValue'));
     },
 
     onAddSingle: function () {
@@ -404,14 +395,7 @@ define([
           primer_version: {label: 'Primer Version', value: 1},
           sample_level_date: {label: 'Date', value: 1}
         };
-        // check if user changed the sample id
-        if (typeof this.input_sample_id._lastInputEventValue === 'undefined') {
-          // user did not change the sample id - use default
-          lrec.sample_id = this.input_sample_id.getValue()
-        } else {
-          // user changes sample id - update to user input
-          lrec.sample_id = this.input_sample_id._lastInputEventValue
-        }
+        lrec.sample_id = this.input_sample_id.getValue();
         // clear the sample id for next input
         this.input_sample_id.reset()
         lrec.primers = this.primers.value
@@ -448,8 +432,7 @@ define([
     },
 
     setPairedId: function () {
-      var read_name = this.read1.searchBox.get('displayedValue');
-      this.input_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.fillSampleId(this.input_sample_id, this.read1.searchBox.get('displayedValue'));
     },
 
     onAddPair: function () {
@@ -474,14 +457,7 @@ define([
           primer_version: {label: 'Primer Version', value: 1},
           sample_level_date: {label: 'Date', value: 1}
         };
-        // check if user changed the sample id
-        if (typeof this.input_sample_id._lastInputEventValue === 'undefined') {
-          // user did not change the sample id - use default
-          lrec.sample_id = this.input_sample_id.getValue()
-        } else {
-          // user changes sample id - update to user input
-          lrec.sample_id = this.input_sample_id._lastInputEventValue
-        }
+        lrec.sample_id = this.input_sample_id.getValue();
         // clear the sample id for nex input
         this.input_sample_id.reset()
         lrec.primers = this.primers.value

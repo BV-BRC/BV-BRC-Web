@@ -47,6 +47,19 @@
                   </div>
                 </div>
               </div>
+              <!-- One sample ID for the reads being sent; the code's
+                   paired_sample_id, single_sample_id and srr_sample_id all
+                   point at this box. It clears after each send. -->
+              <div class="appRow">
+                <label class="paramlabel" style="font-weight: bold;">Sample Identifier</label>
+                <div class="appsublabel">Filled in from the read file name.</div>
+                <input name="sample_id_reads" class="readField"
+                        data-dojo-attach-point="sample_id_reads"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
+                        required="false"/>
+              </div>
+
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
@@ -74,15 +87,6 @@
                 </div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">Sample Identifier</label><br>
-                <input  name="paired_sample_id"
-                        style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
-                        data-dojo-attach-point="paired_sample_id"
-                        data-dojo-type="dijit/form/ValidationTextBox"
-                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
-                        required="false"/>
-              </div>
-              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                 </div>
@@ -97,15 +101,6 @@
                       ></div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">Sample Identifier</label><br>
-                <input  name="single_sample_id"
-                        style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
-                        data-dojo-attach-point="single_sample_id"
-                        data-dojo-type="dijit/form/ValidationTextBox"
-                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
-                        required="false"/>
-              </div>
-              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
                   <label class="paramlabel" style="font-weight: bold;">SRA run accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
@@ -113,20 +108,11 @@
               <div class="appRow">
                 <div data-dojo-type="dijit/form/ValidationTextBox"
                     data-dojo-attach-point="srr_accession"
-                    style="width: 260px"
+                    class="readField"
                     required="false"
                     data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"
                     data-dojo-attach-event="change:setSrrId"
                     ></div>
-                <div class="appRow">
-                  <label class="paramlabel">Sample Identifier</label><br>
-                  <input  name="srr_sample_id"
-                          style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
-                          data-dojo-attach-point="srr_sample_id"
-                          data-dojo-type="dijit/form/ValidationTextBox"
-                          data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
-                          required="false"/>
-                </div>
               </div>
             </div>
           </td>

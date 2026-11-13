@@ -427,8 +427,26 @@ div.appsublabel {
 }
 .App .standardField.WorkspaceObjectSelector {
     width: 600px;
+    /* Flex, not inline flow: the space between the sort icon and the search
+       box would otherwise be a text space whose width follows the font, and
+       the search box would drift a pixel off the fields above and below. */
+    display: flex;
+    align-items: center;
+}
+.App .standardField.WorkspaceObjectSelector > .icon-sort-alpha-asc {
+    flex: 0 0 17px;
+}
+/* The read pickers in Input File get the same treatment, so their search
+   boxes start exactly where the Sample ID and SRR boxes (.readField) do. */
+.App .equalHeightBoxes .WorkspaceObjectSelector {
+    display: flex;
+    align-items: center;
+}
+.App .equalHeightBoxes .WorkspaceObjectSelector > .icon-sort-alpha-asc {
+    flex: 0 0 17px;
 }
 .App .standardField.WorkspaceObjectSelector .search-box {
+    flex: 0 0 auto;
     width: 510px;
     max-width: calc(100% - 40px);
 }

@@ -443,7 +443,8 @@ define([
 
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
-        this.readTable.style.display = 'block';
+        // '' restores the table's own display; 'block' collapses its cells.
+        this.readTable.style.display = '';
         this.annotationFileBox.style.display = 'none';
         this.contigsFile.reset();
         this.contigsFile.set('required', false);

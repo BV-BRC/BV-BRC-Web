@@ -657,7 +657,8 @@ define([
 
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
-        this.readTable.style.display = 'block';
+        // '' restores the table's own display; 'block' collapses its cells.
+        this.readTable.style.display = '';
         this.assemblyStrategy.style.display = 'block';
         this.primersStrategy.style.display = 'block';
         // this.assembly_additional_parameters_block.style.display = 'block';

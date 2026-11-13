@@ -32,7 +32,7 @@
           <td style="width:50%; vertical-align:top">
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
-                <div style="width: 400px;display:inline-block;">
+                <div style="width:85%;display:inline-block;">
                   <label class="appBoxLabel">Input File</label>
                   <div name="read-input-file" class="infobox iconbox infobutton dialoginfo">
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
@@ -44,99 +44,96 @@
                     <div class="appsublabel" style="display:inline-block;">Send to Selected Libraries</div>  <i data-dojo-attach-point="submit_selected_libs_validation_message"></i>
                     <div style="width:40%; display:inline-block;"></div>
                     <i data-dojo-attach-point="submit_data_to_lib" data-dojo-attach-event="click:onAddInputs" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sample details for the reads being sent, above the reads
+                   themselves. Sample Identifier and Sample Date clear after
+                   each send; the primers stay as chosen. -->
+              <div class="appRow" data-dojo-attach-point="primersStrategy">
+                <div class="readField" style="display:flex; gap:8px;">
+                  <div>
+                    <label class="paramlabel" style="font-weight: bold;">Primers</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:156px" required="true" data-dojo-attach-event="onChange:onPrimersChange">
+                      <option value="ARTIC" selected="selected">ARTIC</option>
+                      <option value="midnight">midnight</option>
+                      <option value="qiagen">qiagen</option>
+                      <option value="swift">swift</option>
+                      <option value="varskip">varskip</option>
+                      <option value="varskip-long">varskip-long</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="paramlabel" style="font-weight: bold;">Version</label><br>
+                    <select data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:80px">
+                      <option value="V5.3.2" selected="selected">V5.3.2</option>
+                      <option value="V4.1">V4.1</option>
+                      <option value="V4">V4</option>
+                      <option value="V3">V3</option>
+                      <option value="V2">V2</option>
+                      <option value="V1">V1</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
+                <label class="paramlabel" style="font-weight: bold;">Sample Identifier</label>
+                <div class="appsublabel">Filled in from the read file name.</div>
+                <div data-dojo-type="dijit/form/ValidationTextBox"
+                  data-dojo-attach-point="input_sample_id" class="readField" required="false"
+                  data-dojo-props="intermediateChanges:true,trim:true,placeHolder:'SAMPLE ID'"></div>
+              </div>
+              <div class="appRow">
+                <label class="paramlabel" style="font-weight: bold;">Sample Date</label><br>
+                <div data-dojo-type="dijit/form/ValidationTextBox"
+                  data-dojo-attach-point="sample_level_date" class="readField" required="false"
+                  data-dojo-props="trim:true,placeholder:'MM/DD/YYYY', intermediateChanges:true, regExp:'^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/(1000|1\d{3}|2[0-9]{3})$', invalidMessage:'Please enter a date in format MM/DD/YYYY.',"></div>
+                <!-- this regex pattern is designed to validate a date format in the form of "MM/DD/YYYY," where MM is the month (01 to 12), DD is the day (01 to 31), and YYYY is the year (1000 to 2999). -->
+              </div>
+
+              <div class="appRow">
+                <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
               </div>
               <div class="appRow">
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
                   name="libdat_file1pair"
                   data-dojo-attach-point="read1"
-                  style="width:300px; height:20px;"
+                  style="width:300px"
                   required="false"
                   data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"
                   data-dojo-attach-event="change:setPairedId"
                 ></div>
               </div>
+              <div class="appRow" data-dojo-attach-point="read2block">
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
+                  name="libdat_file2pair"
+                  data-dojo-attach-point="read2"
+                  style="width:300px"
+                  required="false"
+                  data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"
+                ></div>
+              </div>
               <div class="appRow">
-                <div data-dojo-attach-point="read2block">
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                    name="libdat_file2pair"
-                    data-dojo-attach-point="read2"
-                    style="width:300px; height:20px;"
-                    required="false"
-                    data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"
-                    ></div>
-                </div>
-              <div class="appRow">
-                <div style="width:100%;display:inline-block;">
-                  <label class="paramlabel" style="font-weight: bold;">Single read library</label>
-                    <div style="width:50%; display:inline-block;"></div>
+                <label class="paramlabel" style="font-weight: bold;">Single read library</label>
+              </div>
               <div class="appRow">
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                      name="libdat_readfile"
-                      data-dojo-attach-point="single_end_libsWidget"
-                      style="width:300px; height:20px;" required="false"
-                      data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"
-                      data-dojo-attach-event="change:setSingleId"
-                      ></div>
+                  name="libdat_readfile"
+                  data-dojo-attach-point="single_end_libsWidget"
+                  style="width:300px" required="false"
+                  data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"
+                  data-dojo-attach-event="change:setSingleId"
+                ></div>
               </div>
               <div class="appRow">
-                <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
-                </div>
+                <label class="paramlabel" style="font-weight: bold;">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
+              </div>
+              <div class="appRow">
                 <div data-dojo-type="dijit/form/ValidationTextBox"
-                data-dojo-attach-point="srr_accession" style="width: 260px; height:20px;" required="false"
-                data-dojo-props="intermediateChanges:true,missingMessage:'You must provide an accession',trim:true,placeHolder:'SRR'"
-                data-dojo-attach-event="change:setSrrId"></div>
-              </div>
-            </div>
-                  <!-- primers -->
-                  <div data-dojo-attach-point="primersStrategy" class="appRow">
-                    <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:40%">
-                      <label class="paramlabel">Primers</label><br>
-                      <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:160px" required="true" data-dojo-attach-event="onChange:onPrimersChange">
-                        <option value="ARTIC" selected="selected">ARTIC</option>
-                        <option value="midnight">midnight</option>
-                        <option value="qiagen">qiagen</option>
-                        <option value="swift">swift</option>
-                        <option value="varskip">varskip</option>
-                        <option value="varskip-long">varskip-long</option>
-                      </select>
-                    </div>
-                    <!-- primer_versions -->
-                    <div class="appRowSegment" style="text-align:left; width:40%">
-                      <label class="paramlabel">Version</label><br>
-                      <select data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px">
-                        <option value="V5.3.2" selected="selected">V5.3.2</option>
-                        <option value="V4.1">V4.1</option>
-                        <option value="V4">V4</option>
-                        <option value="V3">V3</option>
-                        <option value="V2">V2</option>
-                        <option value="V1">V1</option>
-                </select>
-              </div>
-            </div>
-            <div class="appRow">
-              <div style="width:85%;display:inline-block;">
-                <label class="paramlabel">Sample Identifier</label>
-              <div data-dojo-type="dijit/form/ValidationTextBox"
-              data-dojo-attach-point="input_sample_id" style="width:300px; height:20px;" required="false"
-              data-dojo-props="intermediateChanges:true,trim:true,placeHolder:'SAMPLE ID'"></div>
-            </div>
-          </div>
-      <div class="appRow">
-          <div class="appRow">
-            <div style="width:85%;display:inline-block;">
-              <label class="paramlabel">Sample Date</label>
-            <div data-dojo-type="dijit/form/ValidationTextBox"
-            data-dojo-attach-point="sample_level_date" style="width:300px; height:20px;" required="false"
-            data-dojo-props="trim:true,placeholder:'MM/DD/YYYY', intermediateChanges:true, regExp:'^(0[1-9]|1[0-2])/(0[1-9]|[12][0-9]|3[01])/(1000|1\d{3}|2[0-9]{3})$', invalidMessage:'Please enter a date in format MM/DD/YYYY.',"></div>
-            <!-- this regex pattern is designed to validate a date format in the form of "MM/DD/YYYY," where MM is the month (01 to 12), DD is the day (01 to 31), and YYYY is the year (1000 to 2999). -->
-          </div>
-        </div>
+                  data-dojo-attach-point="srr_accession" class="readField" required="false"
+                  data-dojo-props="intermediateChanges:true,missingMessage:'You must provide an accession',trim:true,placeHolder:'SRR'"
+                  data-dojo-attach-event="change:setSrrId"></div>
               </div>
             </div>
           </td>

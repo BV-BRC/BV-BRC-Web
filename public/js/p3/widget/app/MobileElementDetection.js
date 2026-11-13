@@ -133,6 +133,7 @@ define([
       this.contigs_input_section.style.display = 'block';
       this.reads_input_section.style.display = 'none';
       this.selected_libraries_cell.style.display = 'none';
+      this.input_cell.style.width = '100%';
       this.assembly_parameters.style.display = 'none';
 
       // Set initial required state and constraints (contigs mode by default)
@@ -178,6 +179,7 @@ define([
         this.contigs_input_section.style.display = 'block';
         this.reads_input_section.style.display = 'none';
         this.selected_libraries_cell.style.display = 'none';
+        this.input_cell.style.width = '100%';
         this.assembly_parameters.style.display = 'none';
 
 
@@ -193,7 +195,10 @@ define([
       } else if (inputType === 'reads') {
         this.contigs_input_section.style.display = 'none';
         this.reads_input_section.style.display = 'block';
-        this.selected_libraries_cell.style.display = 'table-cell';
+        // '' restores the stylesheet's display, which lines the two boxes up
+        // at the same height; Input Configuration shares the row again.
+        this.selected_libraries_cell.style.display = '';
+        this.input_cell.style.width = '50%';
         this.assembly_parameters.style.display = 'block';
         // In reads mode: input_file not required, numlibs required
         this.input_file.set('required', false);

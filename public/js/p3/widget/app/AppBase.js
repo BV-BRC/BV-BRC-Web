@@ -446,6 +446,23 @@ define([
       return true;
     },
 
+    // Forms with one Sample Identifier box at the top of Input File fill it
+    // from the read file or accession being entered. A box the user typed in
+    // is left alone; an empty box, or one still holding the last filled-in
+    // name, takes the new one.
+    fillSampleId: function (box, name) {
+      if (!box) {
+        return;
+      }
+      var current = box.get('value');
+      if (current && current !== box._filledSampleId) {
+        return;
+      }
+      var id = this.replaceInvalidChars ? this.replaceInvalidChars(name.split('.')[0]) : name.split('.')[0];
+      box._filledSampleId = id;
+      box.set('value', id);
+    },
+
     // The single "Send to Selected Libraries" arrow: adds each read input that
     // is filled in (read pair, single read, SRA run) and not already in Selected
     // Libraries, through the form's own add handlers.
@@ -484,6 +501,13 @@ define([
         });
       };
       var start = count();
+      // Where one Sample Identifier box serves every read type, name it after
+      // the library about to be sent (unless the user typed their own).
+      var fillId = lang.hitch(this, function (setter) {
+        if (this[setter]) {
+          this[setter]();
+        }
+      });
       var send = function (add, widgets) {
         var before = count();
         add();
@@ -497,9 +521,11 @@ define([
         }
       });
       if (pair) {
+        fillId('setPairedId');
         send(lang.hitch(this, 'onAddPair'), [this.read1, this.read2, this.paired_sample_id]);
       }
       if (singleNew) {
+        fillId('setSingleId');
         send(lang.hitch(this, 'onAddSingle'), [single, this.single_sample_id]);
       }
       if (!srr) {
@@ -507,6 +533,7 @@ define([
         return;
       }
       var beforeSRR = count();
+      fillId('setSrrId');
       this.onAddSRR();
       var afterSRR = lang.hitch(this, function () {
         if (count() > beforeSRR) {

@@ -785,8 +785,7 @@ define([
     },
 
     setSingleId: function () {
-      var read_name = this.read.searchBox.get('displayedValue');
-      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.fillSampleId(this.single_sample_id, this.read.searchBox.get('displayedValue'));
     },
 
     onAddSingle: function () {
@@ -943,8 +942,7 @@ define([
     },
 
     setPairedId: function () {
-      var read_name = this.read1.searchBox.get('displayedValue');
-      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.fillSampleId(this.paired_sample_id, this.read1.searchBox.get('displayedValue'));
     },
 
     onAddPair: function () {
