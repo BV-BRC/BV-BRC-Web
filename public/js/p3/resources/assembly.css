@@ -436,6 +436,27 @@ div.appsublabel {
 .App .standardField.WorkspaceObjectSelector > .icon-sort-alpha-asc {
     flex: 0 0 17px;
 }
+/* The same rules at the 300px width of .medInput fields (Bacterial Genome
+   Tree's Number of Genes and Max Allowed boxes): a 300px field, or a
+   workspace picker whose search box ends on that field's right edge with
+   the folder icon past it. */
+.App .medField {
+    width: 300px;
+    max-width: 100%;
+}
+.App .medField.WorkspaceObjectSelector {
+    width: 373px;
+    display: flex;
+    align-items: center;
+}
+.App .medField.WorkspaceObjectSelector > .icon-sort-alpha-asc {
+    flex: 0 0 17px;
+}
+.App .medField.WorkspaceObjectSelector .search-box {
+    flex: 0 0 auto;
+    width: 283px;
+    max-width: calc(100% - 40px);
+}
 /* The read pickers in Input File get the same treatment, so their search
    boxes start exactly where the Sample ID and SRR boxes (.readField) do. */
 .App .equalHeightBoxes .WorkspaceObjectSelector {
@@ -454,6 +475,11 @@ div.appsublabel {
    the added width and the blue button grows. */
 .App .standardField.dijitSelect .dijitButtonContents {
     width: 100%;
+}
+/* Every dropdown's gray arrow keeps the standard 16px (18px with its
+   borders), however wide the dropdown is set; the text cell takes the rest. */
+.App .dijitSelect .dijitArrowButton {
+    width: 16px;
 }
 .taxFields {
     display: flex;
