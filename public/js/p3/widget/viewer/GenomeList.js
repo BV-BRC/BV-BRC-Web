@@ -114,6 +114,12 @@ define([
       // server would refuse as too broad.
       const dataType = activeTab.dataModel;
       if (dataType && activeQueryState.search) {
+        // Prefer the server's own answer when it is reachable. /fields
+        // reports `filterable` per field (BV-BRC-API#287), which is the
+        // distinction the static table encodes by hand. Fire-and-forget:
+        // this call is synchronous, and /fields 404s on production, so
+        // the table is what the current query uses either way.
+        genomeContextQuery.refreshFilterableFields(dataType);
         const retargeted = genomeContextQuery(activeQueryState.search, dataType);
         activeQueryState.search = retargeted.query;
         if (retargeted.dropped.length) {

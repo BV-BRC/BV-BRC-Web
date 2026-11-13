@@ -96,6 +96,7 @@ define([
           // reason). Re-target per collection; see util/genomeContextQuery.
           // eslint-disable-next-line no-case-declarations
           const retargeted = genomeContextQuery(activeQueryState.search, activeTab.dataModel);
+          genomeContextQuery.refreshFilterableFields(activeTab.dataModel);
           if (activeTab.dataModel && activeQueryState.search) {
             activeQueryState.search = retargeted.query;
             if (retargeted.unfiltered) {

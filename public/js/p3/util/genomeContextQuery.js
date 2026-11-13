@@ -1,4 +1,8 @@
-define([], function () {
+define([
+  'dojo/request'
+], function (
+  request
+) {
 
   /**
    * Re-target a query written against the `genome` collection so a sibling
@@ -41,20 +45,78 @@ define([], function () {
    */
 
   /**
-   * Fields a collection carries natively, restricted to those that also
+   * Fields a collection can be FILTERED on, restricted to those that also
    * exist on `genome` -- the only ones a genome-built query can mention.
    *
-   * From `/<collection>/fields` on alpha, 2026-11-13, filtered to
-   * `source: native`. **Enriched fields are deliberately excluded**: the
-   * endpoint lists them, but they are not queryable, which is exactly the
-   * trap here -- `/genome_feature/fields` advertises `segment` and
-   * `collection_year`, and filtering on either is a 400.
+   * From `/<collection>/fields` on alpha, 2026-11-13. **Enriched fields
+   * are deliberately excluded**: the endpoint lists them, but they are
+   * added to the page after the query runs, so Solr never sees them --
+   * `/genome_feature/fields` advertises `segment` and `collection_year`,
+   * and filtering on either is a 400. That trap is the whole reason this
+   * module exists.
    *
-   * The endpoint 404s on production (see util/CollectionFields.js), so this
-   * is a static table rather than a fetch. Being wrong in the safe
-   * direction costs a join we did not need; being wrong the other way is
-   * the 400 above, so when in doubt leave a field out.
+   * BV-BRC-API#287 made this explicit: each field now reports
+   * `filterable`, so the distinction no longer has to be inferred from
+   * `source: native`. `useFilterableFields()` below adopts the live
+   * answer when it is available. This table remains the fallback, because
+   * /fields still 404s on production (see util/CollectionFields.js).
+   *
+   * Checked field-for-field against that endpoint's `filterable` set: the
+   * two agree everywhere, with one difference -- `text`, Solr's catch-all
+   * copy field, which is filterable but is not a `genome` field any query
+   * here would name. Being wrong in the safe direction costs a join we
+   * did not need; being wrong the other way is the 400 above, so when in
+   * doubt leave a field out.
    */
+  /**
+   * Every field `genome` itself can be filtered on, from
+   * `/genome/fields?all=true` on alpha, 2026-11-13.
+   *
+   * Only used to bound `useFilterableFields()`: a genome-built query can
+   * only ever name a genome field, so anything outside this set is noise
+   * from the target collection's own schema.
+   */
+  var GENOME_FIELDS = [
+    'additional_metadata', 'altitude', 'annotation_job_id',
+    'annotation_method', 'antimicrobial_resistance',
+    'antimicrobial_resistance_evidence', 'assembly_accession',
+    'assembly_method', 'authors', 'bioproject_accession',
+    'biosample_accession', 'biovar', 'body_sample_site',
+    'body_sample_subsite', 'cds', 'cds_ratio', 'cell_shape', 'cgmlst_hc0',
+    'cgmlst_hc10', 'cgmlst_hc100', 'cgmlst_hc2', 'cgmlst_hc20',
+    'cgmlst_hc5', 'cgmlst_hc50', 'cgmlst_id', 'checkm_completeness',
+    'checkm_contamination', 'chromosomes', 'city', 'clade', 'class',
+    'coarse_consistency', 'collection_date', 'collection_date_dr',
+    'collection_year', 'comments', 'common_name', 'completion_date',
+    'contig_l50', 'contig_n50', 'contigs', 'core_families',
+    'core_family_ratio', 'county', 'culture_collection', 'date_inserted',
+    'date_modified', 'depth', 'disease', 'family', 'fine_consistency',
+    'gc_content', 'genbank_accessions', 'genome_id', 'genome_length',
+    'genome_name', 'genome_quality', 'genome_quality_flags',
+    'genome_status', 'genus', 'geographic_group', 'geographic_location',
+    'gram_stain', 'h1_clade_global', 'h1_clade_us', 'h3_clade', 'h5_clade',
+    'h_type', 'habitat', 'host_age', 'host_common_name', 'host_gender',
+    'host_group', 'host_health', 'host_name', 'host_scientific_name',
+    'hypothetical_cds', 'hypothetical_cds_ratio', 'isolation_comments',
+    'isolation_country', 'isolation_site', 'isolation_source', 'kingdom',
+    'lab_host', 'latitude', 'lineage', 'longitude', 'mat_peptide',
+    'missing_core_family_ids', 'mlst', 'motility', 'n_type',
+    'ncbi_project_id', 'nearest_genomes', 'optimal_temperature', 'order',
+    'organism_name', 'other_clinical', 'other_environmental',
+    'other_names', 'other_typing', 'outgroup_genomes', 'owner',
+    'oxygen_requirement', 'p2_genome_id', 'partial_cds',
+    'partial_cds_ratio', 'passage', 'pathovar', 'patric_cds', 'ph1n1_like',
+    'phenotype', 'phylum', 'plasmids', 'plfam_cds', 'plfam_cds_ratio',
+    'public', 'publication', 'reference_genome', 'refseq_accessions',
+    'refseq_cds', 'refseq_project_id', 'rrna', 'salinity', 'season',
+    'segment', 'segments', 'sequencing_centers', 'sequencing_depth',
+    'sequencing_platform', 'sequencing_status', 'serovar', 'species',
+    'sporulation', 'sra_accession', 'state_province', 'strain', 'subclade',
+    'subtype', 'superkingdom', 'taxon_id', 'taxon_lineage_ids',
+    'taxon_lineage_names', 'temperature_range', 'text', 'trna',
+    'type_strain', 'user_read', 'user_write'
+  ];
+
   var SHARED_NATIVE_FIELDS = {
     genome_sequence: ['date_inserted', 'date_modified', 'gc_content', 'genome_id',
       'genome_name', 'owner', 'public', 'segment', 'taxon_id', 'user_read', 'user_write'],
@@ -205,7 +267,9 @@ define([], function () {
    *   collection and the caller must not run it.
    */
   function genomeContextQuery(query, dataType) {
-    var result = { query: query || '', joined: false, dropped: [], unfiltered: false };
+    var result = {
+      query: query || '', joined: false, dropped: [], unfiltered: false
+    };
     if (!result.query || !dataType || dataType === 'genome') {
       return result;
     }
@@ -279,6 +343,98 @@ define([], function () {
     return result;
   }
 
+  /**
+   * Replace a collection's table entry with the live `filterable` set
+   * from `/<collection>/fields` (BV-BRC-API#287).
+   *
+   * Deliberately a push, not a fetch: genomeContextQuery is called from
+   * setActivePanelState, which is synchronous, and a query that waited on
+   * a round trip would race the grid it is meant to configure. A caller
+   * that already holds a /fields payload hands it over; everyone else
+   * keeps the static table.
+   *
+   * Intersected with `genome`'s own fields, because only those can appear
+   * in a genome-built query, and union'd with nothing -- an unexpected
+   * payload leaves the vetted table in place rather than narrowing it to
+   * whatever arrived. Narrowing wrongly would add joins (slow but
+   * correct); widening wrongly would 400, so the guard is one-sided.
+   *
+   * @param {string} dataType
+   * @param {Array} fields `/fields` entries, each `{name, filterable}`
+   * @returns {boolean} true when the table was updated
+   */
+  function useFilterableFields(dataType, fields) {
+    if (!dataType || !SHARED_NATIVE_FIELDS[dataType] || !fields || !fields.length) {
+      return false;
+    }
+    var genomeFields = GENOME_FIELDS;
+    var next = [];
+    fields.forEach(function (f) {
+      if (f && f.filterable && f.name && genomeFields.indexOf(f.name) !== -1
+          && next.indexOf(f.name) === -1) {
+        next.push(f.name);
+      }
+    });
+    // A payload that yields nothing recognisable is a shape change, not a
+    // collection that lost every field. Keep what we have.
+    if (!next.length) { return false; }
+    SHARED_NATIVE_FIELDS[dataType] = next;
+    return true;
+  }
+
+  /**
+   * Refresh the table for one collection from the live endpoint.
+   *
+   * Fire-and-forget, and deliberately NOT awaited by anything: the first
+   * query of a session uses the static table (correct as of the date
+   * above), and a later one picks up the live answer if the fetch landed.
+   * The point is drift protection, not correctness -- so nothing blocks
+   * on it, a failure is silent, and each collection is tried once.
+   *
+   * `fetchFields` is injectable so the rules stay testable without a
+   * transport; it defaults to `fetchFilterableFields` below.
+   *
+   * @param {string} dataType
+   * @param {Function} [fetchFields] `function(dataType) -> promise of payload`
+   */
+  /**
+   * Ask the Data API which of a collection's fields can be filtered on.
+   *
+   * `?all=true` because the default payload is returnable fields only,
+   * and a field can be filterable without being returnable.
+   */
+  function fetchFilterableFields(dataType) {
+    var app = (typeof window !== 'undefined' && window.App) || {};
+    var base = String(app.dataAPI || app.dataServiceURL || '').replace(/\/+$/, '');
+    if (!base || !request || typeof request.get !== 'function') { return null; }
+    return request.get(base + '/' + dataType + '/fields?all=true', {
+      handleAs: 'json',
+      headers: { Accept: 'application/json' }
+    });
+  }
+
+  var refreshed = {};
+  function refreshFilterableFields(dataType, fetchFields) {
+    fetchFields = fetchFields || fetchFilterableFields;
+    if (!dataType || refreshed[dataType] || typeof fetchFields !== 'function') {
+      return;
+    }
+    refreshed[dataType] = true;
+    try {
+      var p = fetchFields(dataType);
+      if (p && typeof p.then === 'function') {
+        p.then(function (payload) {
+          var fields = payload && (payload.fields || payload);
+          useFilterableFields(dataType, fields);
+        }, function () { /* /fields 404s on production; the table stands */ });
+      }
+    } catch (e) { /* same */ }
+  }
+
+  genomeContextQuery.useFilterableFields = useFilterableFields;
+  genomeContextQuery.refreshFilterableFields = refreshFilterableFields;
+  genomeContextQuery._resetRefreshed = function () { refreshed = {}; };
+  genomeContextQuery.GENOME_FIELDS = GENOME_FIELDS;
   genomeContextQuery.SHARED_NATIVE_FIELDS = SHARED_NATIVE_FIELDS;
   genomeContextQuery.GENOME_JOIN = GENOME_JOIN;
   genomeContextQuery.splitTopLevel = splitTopLevel;

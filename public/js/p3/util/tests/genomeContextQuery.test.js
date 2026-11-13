@@ -215,6 +215,155 @@ describe('degenerate input', () => {
   });
 });
 
+/**
+ * BV-BRC-API#287 made `filterable` explicit on /<collection>/fields, so
+ * the distinction this module encodes no longer has to be inferred.
+ *
+ * It stays a push rather than a fetch: genomeContextQuery is called from
+ * setActivePanelState, which is synchronous, so a query that awaited a
+ * round trip would race the grid it configures. And /fields still 404s on
+ * production, so the static table cannot be deleted.
+ */
+describe('useFilterableFields (live /fields override)', () => {
+  // Each case reloads the module so a mutated table cannot leak between
+  // tests -- the function edits SHARED_NATIVE_FIELDS in place.
+  let m;
+  beforeEach(() => { m = loadGenomeContextQuery(); });
+
+  test('adopts the live filterable set', () => {
+    const ok = m.useFilterableFields('genome_feature', [
+      { name: 'genome_id', filterable: true },
+      { name: 'public', filterable: true },
+      { name: 'segment', filterable: false }
+    ]);
+    expect(ok).toBe(true);
+    expect(m.SHARED_NATIVE_FIELDS.genome_feature.sort()).toEqual(['genome_id', 'public']);
+  });
+
+  test('a field the API calls filterable is then not joined', () => {
+    // Before: segment is genome-only on genome_feature, so it joins.
+    expect(m('eq(segment,HA)', 'genome_feature').joined).toBe(true);
+    m.useFilterableFields('genome_feature', [{ name: 'segment', filterable: true }]);
+    // After: the API says the collection can answer it directly.
+    expect(m('eq(segment,HA)', 'genome_feature').joined).toBe(false);
+  });
+
+  test('ignores fields that are not genome fields', () => {
+    // A target collection's own schema carries plenty that `genome` does
+    // not; a genome-built query can never name those.
+    m.useFilterableFields('genome_feature', [
+      { name: 'genome_id', filterable: true },
+      { name: 'patric_id', filterable: true },   // genome_feature-only
+      { name: 'aa_length', filterable: true }    // genome_feature-only
+    ]);
+    expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(['genome_id']);
+  });
+
+  describe('the guard is one-sided: never widen on a bad payload', () => {
+    // Narrowing wrongly costs a join (slow, correct). Widening wrongly is
+    // a 400 -- the bug this module exists to prevent.
+    test('an empty or junk payload leaves the vetted table alone', () => {
+      const before = m.SHARED_NATIVE_FIELDS.genome_feature.slice();
+      expect(m.useFilterableFields('genome_feature', [])).toBe(false);
+      expect(m.useFilterableFields('genome_feature', null)).toBe(false);
+      expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(before);
+    });
+
+    test('a payload where nothing is filterable is treated as a shape change', () => {
+      // Not "this collection lost every field" -- that cannot happen.
+      const before = m.SHARED_NATIVE_FIELDS.genome_feature.slice();
+      expect(m.useFilterableFields('genome_feature', [
+        { name: 'genome_id', filterable: false }
+      ])).toBe(false);
+      expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(before);
+    });
+
+    test('a payload missing the capability flag changes nothing', () => {
+      // An older API deployment predating #287.
+      const before = m.SHARED_NATIVE_FIELDS.genome_feature.slice();
+      expect(m.useFilterableFields('genome_feature', [{ name: 'genome_id' }])).toBe(false);
+      expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(before);
+    });
+
+    test('an unknown collection is not added to the table', () => {
+      expect(m.useFilterableFields('nonesuch', [{ name: 'genome_id', filterable: true }]))
+        .toBe(false);
+      expect(m.SHARED_NATIVE_FIELDS.nonesuch).toBeUndefined();
+    });
+  });
+
+  test('the static table agrees with the live API it now defers to', () => {
+    // Recorded from /<collection>/fields?all=true on alpha 2026-11-13,
+    // intersected with genome's own filterable set. `text` is Solr's
+    // catch-all copy field: filterable, but nothing a genome query names.
+    const liveMinusText = {
+      genome_feature: ['date_inserted', 'date_modified', 'genome_id', 'genome_name',
+        'owner', 'public', 'segments', 'taxon_id', 'user_read', 'user_write'],
+      genome_sequence: ['date_inserted', 'date_modified', 'gc_content', 'genome_id',
+        'genome_name', 'owner', 'public', 'segment', 'taxon_id', 'user_read', 'user_write'],
+      epitope: ['comments', 'date_inserted', 'date_modified', 'host_name', 'taxon_id',
+        'taxon_lineage_ids', 'taxon_lineage_names']
+    };
+    Object.keys(liveMinusText).forEach(function (coll) {
+      expect(m.SHARED_NATIVE_FIELDS[coll].slice().sort()).toEqual(liveMinusText[coll]);
+    });
+  });
+
+  describe('refreshFilterableFields', () => {
+    test('applies the payload and asks each collection only once', () => {
+      let calls = 0;
+      const fetcher = (dt) => {
+        calls++;
+        return Promise.resolve({ fields: [{ name: 'segment', filterable: true }] });
+      };
+      m.refreshFilterableFields('genome_feature', fetcher);
+      m.refreshFilterableFields('genome_feature', fetcher);
+      expect(calls).toBe(1);
+      return Promise.resolve().then(() => {
+        expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(['segment']);
+      });
+    });
+
+    test('accepts a bare array as well as a {fields} envelope', () => {
+      m.refreshFilterableFields('genome_feature',
+        () => Promise.resolve([{ name: 'public', filterable: true }]));
+      return Promise.resolve().then(() => {
+        expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(['public']);
+      });
+    });
+
+    test('a rejected fetch is silent and leaves the table intact', () => {
+      // /fields 404s on production; that is the expected case, not an error.
+      const before = m.SHARED_NATIVE_FIELDS.genome_feature.slice();
+      m.refreshFilterableFields('genome_feature', () => Promise.reject(new Error('404')));
+      return Promise.resolve().then(() => {
+        expect(m.SHARED_NATIVE_FIELDS.genome_feature).toEqual(before);
+      });
+    });
+
+    test('a throwing or non-promise fetcher does not propagate', () => {
+      const before = m.SHARED_NATIVE_FIELDS.genome_sequence.slice();
+      expect(() => m.refreshFilterableFields('genome_sequence', () => {
+        throw new Error('boom');
+      })).not.toThrow();
+      m._resetRefreshed();
+      expect(() => m.refreshFilterableFields('genome_sequence', () => null)).not.toThrow();
+      expect(m.SHARED_NATIVE_FIELDS.genome_sequence).toEqual(before);
+    });
+
+    test('no transport available (the jest case) is a no-op, not a crash', () => {
+      // The AMD shim supplies no dojo/request, so the default fetcher has
+      // none either -- this must degrade to the static table silently.
+      expect(() => m.refreshFilterableFields('genome_feature')).not.toThrow();
+    });
+  });
+
+  test('GENOME_FIELDS covers the fields the saved search actually used', () => {
+    ['taxon_lineage_ids', 'genome_status', 'public', 'segment', 'collection_year']
+      .forEach(function (f) { expect(m.GENOME_FIELDS).toContain(f); });
+  });
+});
+
 describe('splitTopLevel', () => {
   test('does not split on & inside parentheses', () => {
     expect(gcq.splitTopLevel('and(eq(a,1),eq(b,2))&eq(c,3)'))
