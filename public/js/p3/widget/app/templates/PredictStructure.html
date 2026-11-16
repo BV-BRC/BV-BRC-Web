@@ -17,10 +17,10 @@
           href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
     </div>
 
-    <div style="width:85%; margin:auto" class="formFieldsContainer">
+    <div class="formFieldsContainer">
 
       <!-- Prediction Tool -->
-      <div style="width:97%;" class="appBox appShadow">
+      <div class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Prediction Tool</label>
@@ -30,10 +30,10 @@
           </div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="width:380px">
+          <div class="appFieldLong">
             <label>Structure Prediction Engine</label><br>
             <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="tool" name="tool"
-              style="width:100%;" data-dojo-attach-event="onChange:onToolChange"
+              class="standardField" data-dojo-attach-event="onChange:onToolChange"
               data-dojo-props="value:'auto'">
               <option value="auto" selected>Auto</option>
               <option value="boltz">Boltz-2</option>
@@ -47,7 +47,7 @@
       </div>
 
       <!-- Biomolecular Inputs -->
-      <div style="width:97%;" class="appBox appShadow">
+      <div class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Biomolecular Inputs</label>
@@ -62,44 +62,44 @@
              payload and the app spec are unchanged -- this is presentation only.
              Each row picks which one it shows; unused rows are hidden AND
              cleared (a hidden-but-populated selector still serialises). -->
-        <div class="appRow" data-dojo-attach-point="entityRow0">
+        <div class="appRow entityRow" data-dojo-attach-point="entityRow0">
           <div class="appFieldLong">
             <select data-dojo-attach-point="entityType0"
               data-dojo-attach-event="onChange:onEntityTypeChange"
-              style="width:22%;margin-right:6px;vertical-align:top;">
+              class="entityType">
               <option value="protein">Protein</option>
               <option value="dna">DNA</option>
               <option value="rna">RNA</option>
             </select>
-            <span data-dojo-attach-point="entitySlot0" style="display:inline-block;width:70%;"></span>
+            <span data-dojo-attach-point="entitySlot0" class="entitySlot"></span>
             <button type="button" data-dojo-attach-point="entityAdd0"
               data-dojo-attach-event="onClick:onEntityAdd"
-              style="margin-left:6px;">+ Add</button>
+              class="fieldAction">+ Add</button>
           </div>
         </div>
-        <div class="appRow" data-dojo-attach-point="entityRow1" style="display:none;">
+        <div class="appRow entityRow" data-dojo-attach-point="entityRow1" style="display:none;">
           <div class="appFieldLong">
             <select data-dojo-attach-point="entityType1"
               data-dojo-attach-event="onChange:onEntityTypeChange"
-              style="width:22%;margin-right:6px;vertical-align:top;"></select>
-            <span data-dojo-attach-point="entitySlot1" style="display:inline-block;width:70%;"></span>
+              class="entityType"></select>
+            <span data-dojo-attach-point="entitySlot1" class="entitySlot"></span>
             <button type="button" data-dojo-attach-point="entityAdd1"
               data-dojo-attach-event="onClick:onEntityAdd"
-              style="margin-left:6px;">+ Add</button>
+              class="fieldAction">+ Add</button>
             <button type="button" data-dojo-attach-point="entityRemove1"
               data-dojo-attach-event="onClick:onEntityRemove"
-              title="Remove this input" style="margin-left:4px;">&times;</button>
+              title="Remove this input" class="fieldAction">&times;</button>
           </div>
         </div>
-        <div class="appRow" data-dojo-attach-point="entityRow2" style="display:none;">
+        <div class="appRow entityRow" data-dojo-attach-point="entityRow2" style="display:none;">
           <div class="appFieldLong">
             <select data-dojo-attach-point="entityType2"
               data-dojo-attach-event="onChange:onEntityTypeChange"
-              style="width:22%;margin-right:6px;vertical-align:top;"></select>
-            <span data-dojo-attach-point="entitySlot2" style="display:inline-block;width:70%;"></span>
+              class="entityType"></select>
+            <span data-dojo-attach-point="entitySlot2" class="entitySlot"></span>
             <button type="button" data-dojo-attach-point="entityRemove2"
               data-dojo-attach-event="onClick:onEntityRemove"
-              title="Remove this input" style="margin-left:4px;">&times;</button>
+              title="Remove this input" class="fieldAction">&times;</button>
           </div>
         </div>
 
@@ -125,7 +125,7 @@
       </div>
 
       <!-- Ligands -->
-      <div style="width:97%;" class="appBox appShadow">
+      <div class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Ligands</label>
@@ -135,10 +135,10 @@
           </div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="width:380px">
+          <div class="appFieldLong">
             <label>Notation</label><br>
             <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="ligand_type"
-              name="ligand_type" style="width:100%;"
+              name="ligand_type" class="standardField"
               data-dojo-attach-event="onChange:onLigandTypeChange"
               data-dojo-props="value:'ccd'">
               <option value="ccd" selected>CCD codes</option>
@@ -150,18 +150,18 @@
           <div class="appFieldLong">
             <label data-dojo-attach-point="ligand_input_label">Ligands</label><br>
             <textarea id="${id}_ligand_input" data-dojo-attach-point="ligand_input" name="ligand_input"
-              style="resize: none; height:110px; width:96%; margin-left:10px; font-family: monospace; font-size:12px;"
+              class="standardField" style="resize: none; height:110px; box-sizing:border-box; font-family: monospace; font-size:12px;"
               data-dojo-type="dijit/form/SimpleTextarea"
               data-dojo-attach-event="onChange:checkLigandInput"
               data-dojo-props="rows:6, placeholder:'ATP\nNAD\nNAG', trim:true, intermediateChanges:true"></textarea>
             <div class="warning" data-dojo-attach-point="ligand_message"
-              style="color:#b50707; margin-left:10px; min-height:1em;"></div>
+              style="color:#b50707; min-height:1em;"></div>
           </div>
         </div>
       </div>
 
       <!-- MSA File -->
-      <div style="width:97%;" class="appBox appShadow">
+      <div class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Multiple Sequence Alignment</label>
@@ -171,10 +171,10 @@
           </div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="width:380px">
+          <div class="appFieldLong">
             <label>MSA Source</label><br>
             <select data-dojo-type="dijit/form/Select" data-dojo-attach-point="msa_source"
-              name="msa_source" style="width:100%;"
+              name="msa_source" class="standardField"
               data-dojo-attach-event="onChange:onMsaSourceChange"
               data-dojo-props="value:'none'">
               <option value="none" selected>None</option>
@@ -187,7 +187,7 @@
         <div class="appRow" data-dojo-attach-point="msa_workspace_row" style="display:none;">
           <div class="appFieldLong">
             <label>MSA File</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="msa_file" style="width:75%;"
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="msa_file" class="standardField"
               data-dojo-attach-point="msa_file"
               data-dojo-attach-event="onChange:checkParameterRequiredFields"
               data-dojo-props="type:['unspecified','txt'],multi:false,promptMessage:'Pre-computed Multiple Sequence Alignment (.a3m, .sto, .pqt). Used as-is by Boltz-2, OpenFold 3, and Chai-1.',placeHolder:'MSA data file'">
@@ -197,7 +197,7 @@
       </div>
 
       <!-- Output -->
-      <div style="width:97%;" class="appBox appShadow">
+      <div class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Output</label>
@@ -210,25 +210,25 @@
           <div class="appFieldLong">
             <label>Output Folder</label><br>
             <div data-dojo-attach-point="output_path" data-dojo-type="p3/widget/WorkspaceObjectSelector"
-              name="output_path" style="width:75%" required="true"
+              name="output_path" class="standardField" required="true"
               data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,value:'${activeWorkspacePath}',workspace:'${activeWorkspace}',promptMessage:'Workspace folder for prediction results.',missingMessage:'Output Folder must be selected.'"
               data-dojo-attach-event="onChange:onOutputPathChange">
             </div>
           </div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="width:380px">
+          <div class="appFieldLong">
             <label>Job Name</label><span class="charError"
               style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
             <div data-dojo-attach-point="output_file" data-dojo-attach-event="onChange:checkOutputName"
-              style="width:100%;"
+              class="standardField"
               data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
               data-dojo-props="intermediateChanges:true, promptMessage:'Name for this job. A workspace object with this name is created inside the Output Folder and holds all job-related info including the prediction results.',trim:true,placeHolder:'Job name'">
             </div>
           </div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="margin-top:8px; padding:8px 12px; background:#f5f5f5; border-left:3px solid #6e8baf; font-family:monospace; font-size:12px; color:#333;">
+          <div class="appFieldLong resultPreview" style="margin-top:8px; padding:8px 12px; background:#f5f5f5; border-left:3px solid #6e8baf; font-family:monospace; font-size:12px; color:#333;">
             <span style="color:#6e8baf; font-weight:bold;">Result location:</span>
             <span data-dojo-attach-point="output_path_preview">(set Output Folder and Job Name)</span>
           </div>

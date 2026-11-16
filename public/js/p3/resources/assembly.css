@@ -667,3 +667,42 @@ div.appsublabel {
 :is(.App, .PanelForm) .checkboxGrid .dojoxMultiSelectItem:nth-child(n+25) {
     margin-top: 8px;
 }
+/* Protein Structure Prediction's input rows: a molecule-type dropdown, then
+   the file picker, then Add / Remove. The picker's search box ends on the
+   standard edge, as on the other services, with the buttons past its folder
+   icon (as .fieldWithAction). */
+.PredictStructure .entityRow .appFieldLong {
+    display: flex;
+    align-items: center;
+}
+.PredictStructure .entityRow .entityType {
+    flex: 0 0 auto;
+    width: 90px;
+    margin-right: 6px;
+}
+.PredictStructure .entityRow .entitySlot {
+    flex: 0 0 auto;
+}
+.PredictStructure .entityRow .entitySlot .WorkspaceObjectSelector {
+    width: auto !important;
+    display: flex;
+    align-items: center;
+}
+.PredictStructure .entityRow .entitySlot .WorkspaceObjectSelector > .icon-sort-alpha-asc {
+    flex: 0 0 17px;
+}
+.PredictStructure .entityRow .entitySlot .WorkspaceObjectSelector .search-box {
+    flex: 0 0 auto;
+    width: 414px;
+}
+.PredictStructure .entityRow .fieldAction {
+    margin-left: 6px;
+}
+/* The text area and the Result location box count their borders and
+   padding inside their width, so 529px ends them on the standard edge. */
+.PredictStructure textarea.standardField,
+.PredictStructure .resultPreview {
+    width: 529px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
