@@ -383,6 +383,18 @@ define([
    * for any row height from ~10 px up.
    *
    * The cap alone is not enough: see overflow-anchor in startup().
+   *
+   * Second invariant, also found by driving it: farOffRemoval must be at least
+   * bufferRows * rowHeight. dgrid REQUESTS rows up to requestBuffer
+   * (bufferRows * rowHeight, ~2,350 px) beyond the viewport but TRIMS loaded
+   * rows to farOffRemoval beyond it. With a trim distance shorter than the
+   * request distance it loads a page, trims it back below what it just decided
+   * it needed, loads it again, and never stops: store.query alternated
+   * start=170 / start=564 every 72 ms, all served from the page cache, until
+   * the tab hung. dgrid's own default bufferRows is 10 (240 px), which is why
+   * this never shows up normally. 4,000 keeps a page that has just landed
+   * (worst case ~7,000 px from the viewport) from being trimmed at once, since
+   * trimming only starts past twice this distance.
    */
   var PAGE_ROWS = 200;
   var scrollingBody = lang.mixin({}, body, {
@@ -390,6 +402,13 @@ define([
     minRowsPerPage: PAGE_ROWS,
     maxRowsPerPage: PAGE_ROWS,
     maxEmptySpace: 1000,
+    farOffRemoval: 4000,
+    // The shared body sets keepScrollPosition: true, which numbered pages never
+    // read. OnDemandList does: after a re-sort or a new filter it would restore
+    // the old offset (79,000 px down a list that no longer contains those rows,
+    // clamped to the bottom of the first page). A pager went back to page 1;
+    // so does this. An explicit refresh({ keepScrollPosition: true }) still wins.
+    keepScrollPosition: false,
     // Request while the user scrolls, not after they stop: the default
     // 'debounce' fires nothing until scrolling ends, which defeats prefetch.
     pagingMethod: 'throttleDelayed',
