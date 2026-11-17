@@ -44,6 +44,12 @@ const defaults = {
   // banner. Separate from enableIrdShell so the shell can be on without them;
   // also requires enableIrdShell. Off by default.
   enableIrdSearch: false,
+  // Page the data grids with Solr cursor marks and infinite scroll instead of
+  // numbered pages and offsets. Offset paging gets slower the deeper it goes
+  // (19 s at row 2,000,000 against 1.5 s for a cursor page at any depth), and
+  // the production proxy blocks deep offsets sent in the query string. Off by
+  // default; see PLAN-cursor-infinite-scroll.md.
+  useCursorPaging: false,
   // Workspace folder holding the shipped FASTA header format presets (NCBI,
   // GISAID, ...) offered in the download wizard's FASTA options step. One
   // JSON file per preset, so a curator can add a format without a release.

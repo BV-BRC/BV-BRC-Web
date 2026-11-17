@@ -4,7 +4,8 @@ define([
   'dojo/store/util/QueryResults',
   'dojo/when', 'dojo/_base/lang',
   'dojo/_base/xhr', 'dojo/json',
-  'dojo/Evented', '../auth/authHeaders', '../util/retryRequest', '../util/dateRangeWithinQuery'
+  'dojo/Evented', '../auth/authHeaders', '../util/retryRequest', '../util/dateRangeWithinQuery',
+  'dojo/Deferred', './cursorPaging'
 
 ], function (
   declare,
@@ -12,9 +13,98 @@ define([
   QueryResults,
   when, lang,
   xhr, json,
-  Evented, authHeader, retryRequest, dateRangeWithinQuery) {
+  Evented, authHeader, retryRequest, dateRangeWithinQuery,
+  Deferred, cursorPaging) {
   return declare([Store, Evented], {
     headers: null,
+
+    // Per-store cursor bookkeeping; see cursorPaging.js. Created lazily so
+    // each instance has its own (the constructor is not the place: subclass
+    // stores run this one first).
+    _cursorRegistry: null,
+
+    /**
+     * Forget every recorded cursor mark and cached page. The grid calls this
+     * on refresh: marks stay valid, but the rows behind them may not.
+     */
+    resetCursor: function () {
+      if (this._cursorRegistry) {
+        cursorPaging.resetRegistry(this._cursorRegistry);
+      }
+    },
+
+    /**
+     * Serve a bounded range of rows from cursor pages. Returns null when this
+     * request is not one cursor paging can serve, so the caller falls back to
+     * offsets.
+     */
+    _cursorQuery: function (query, options) {
+      var span = cursorPaging.pagesFor(options.start, options.count, this.cursorPageSize);
+      if (!span || typeof query !== 'string') {
+        return null;
+      }
+      var rql = dateRangeWithinQuery(query.charAt(0) === '?' ? query.substr(1) : query);
+      if (!cursorPaging.isCursorable(rql)) {
+        return null;
+      }
+
+      var sort = cursorPaging.sortClause(options.sort, this.ascendingPrefix, this.descendingPrefix);
+      if (!this._cursorRegistry) {
+        this._cursorRegistry = cursorPaging.newRegistry();
+      }
+      var state = cursorPaging.stateFor(this._cursorRegistry, cursorPaging.resetKey(rql, sort));
+      if (cursorPaging.walkTooLong(state, span.first, span.last)) {
+        return null;
+      }
+
+      var self = this;
+      // The cursor, not a Range, selects the rows; sending both only invites
+      // confusion (the API ignores Range when a cursor is present).
+      var headers = lang.mixin({ Accept: this.accepts }, this.headers, options.headers);
+
+      var loaded = new Deferred();
+      var fetchOne = function (mark, limit) {
+        return self._fetchCursorPage(cursorPaging.buildQuery(rql, sort, mark, limit), headers);
+      };
+      cursorPaging.loadRange(state, options.start || 0, options.count, this.cursorPageSize, fetchOne).then(function (res) {
+        loaded.resolve(res);
+      }, function (err) {
+        loaded.reject(err);
+      });
+
+      // dojo/Deferred freezes its promise, so assigning .total to it would be a
+      // silent no-op and every grid would lose its row count. Delegate first,
+      // exactly as the offset path does.
+      var results = lang.delegate(loaded.promise.then(function (res) { return res.rows; }));
+      results.total = loaded.promise.then(function (res) { return res.total; });
+      return QueryResults(results);
+    },
+
+    /** POST one cursor page; resolves { rows, next, total }. */
+    _fetchCursorPage: function (postData, headers) {
+      var target = this.target;
+      var lastXhr = null;
+      return new Promise(function (resolve, reject) {
+        retryRequest(function () {
+          var attempt = dojo.rawXhrPost({
+            url: target,
+            postData: postData,
+            handleAs: 'json',
+            headers: headers
+          }, true);
+          lastXhr = attempt.ioArgs && attempt.ioArgs.xhr;
+          return attempt;
+        }, { label: target }).then(function (rows) {
+          var range = lastXhr && (lastXhr.getResponseHeader('Content-Range')
+            || lastXhr.getResponseHeader('X-Content-Range'));
+          resolve({
+            rows: rows,
+            next: lastXhr && lastXhr.getResponseHeader('X-Cursor-Mark'),
+            total: cursorPaging.totalFromRange(range)
+          });
+        }, reject);
+      });
+    },
     constructor: function (options) {
       // console.log("P3JsonRest Options", options);
       var baseUrl = (window.App.dataServiceURL ? (window.App.dataServiceURL) : '');
@@ -41,6 +131,13 @@ define([
       };
     },
     autoFacet: false,
+
+    // Rows fetched per cursor page. Requests are made in whole pages of this
+    // size and sliced to what the grid asked for, so a cursor mark is only
+    // ever recorded at a boundary we can name. Matches PageGrid's
+    // rowsPerPage / the scrolling grid's page size.
+    cursorPageSize: 200,
+
     dataModel: '',
     target: '',
     idProperty: 'id',
@@ -72,6 +169,17 @@ define([
         query = query ? (hasQuestionMark ? '&' : '?') + query : '';
       }
       query = query || '';
+
+      // Cursor paging (config flag useCursorPaging). Anything it cannot serve
+      // -- an unbounded request, a query with its own limit(), a target with a
+      // query string, a very long walk -- falls through to the offset path
+      // below, which is unchanged.
+      if (cursorPaging.isEnabled() && !hasQuestionMark) {
+        var cursored = this._cursorQuery(query, options);
+        if (cursored) {
+          return cursored;
+        }
+      }
 
       // console.log("p3JsonRest Query: ", query)
       if (options.start >= 0 || options.count >= 0) {
