@@ -10,7 +10,7 @@ define([
 
   var store = new Store({});
 
-  return declare([Grid], {
+  return declare([Grid.Auto], {
     constructor: function () {
       this.queryOptions = {
         sort: [{attribute: 'sf_name', descending: false}]

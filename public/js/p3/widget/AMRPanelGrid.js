@@ -14,7 +14,7 @@ define([
 
   var store = new Store({});
 
-  return declare([Grid], {
+  return declare([Grid.Auto], {
     region: 'center',
     query: (this.query || ''),
     store: store,

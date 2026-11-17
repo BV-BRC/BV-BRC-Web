@@ -2,14 +2,16 @@ define([
   'dojo/_base/declare', 'dgrid/Grid', 'dojo/store/JsonRest', 'dgrid/extensions/DijitRegistry', 'dgrid/extensions/Pagination',
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
-  'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard', '../auth/authHeaders'
+  'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard', '../auth/authHeaders',
+  'dgrid/OnDemandGrid', '../store/cursorPaging'
 ], function (
   declare, Grid, Store, DijitRegistry, Pagination,
   Keyboard, Selection, formatter, ColumnResizer,
   ColumnHider, DnD, DnDSource,
   Deferred, aspect, lang, PathJoin,
   ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard,
-  authHeader) {
+  authHeader,
+  OnDemandGrid, cursorPaging) {
 
   var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
   // var hasUserSelect = has('css-user-select');
@@ -22,7 +24,9 @@ define([
     return document.getElementById(id);
   }
 
-  return declare([Grid, Pagination, ColumnReorder, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection,GridCopyToClipboard], {
+  var mixins = [ColumnReorder, ColumnHider, Keyboard, ColumnResizer, DijitRegistry, Selection, GridCopyToClipboard];
+
+  var body = {
     constructor: function () {
       this.dndParams.creator = lang.hitch(this, function (item, hint) {
         // console.log("item: ", item, " hint:", hint, "dataType: ", this.dndDataType);
@@ -168,7 +172,27 @@ define([
         this.queryOptions.sort = this.queryOptions.sort.filter(sort => sort.attribute in this.columns);
       }
 
+      // Marks and cached pages in a cursor-paging store are only good until
+      // the grid next refreshes (new query, new sort, or an explicit refresh):
+      // the cursor positions stay valid but the rows behind them may not.
+      aspect.before(_self, 'refresh', function () {
+        if (_self.store && _self.store.resetCursor) {
+          _self.store.resetCursor();
+        }
+      });
+
       this.inherited(arguments);
+
+      // Infinite scroll only: stop the browser "helping" with the scroll
+      // position. With the viewport inside the unloaded space below the last
+      // row, that space is the scroll anchor, so every page of rows inserted
+      // above it makes the browser shift scrollTop down by the same height --
+      // which lands the viewport back in the unloaded space and triggers the
+      // next load, forever (141,000 px in three seconds from one End key).
+      // dgrid manages its own scroll position, so there is nothing to anchor.
+      if (this.scrolling && this.bodyNode) {
+        this.bodyNode.style.overflowAnchor = 'none';
+      }
       this._started = true;
 
     },
@@ -333,5 +357,52 @@ define([
       this._updateDeselectionAspect();
     }
 
+  };
+
+  // Numbered pages. What every PageGrid consumer gets, and the only variant for
+  // grids over an in-memory store or that drive the pager themselves
+  // (JobsGrid / JobManager use gotoPage and _currentPage).
+  var PageGrid = declare([Grid, Pagination].concat(mixins), body);
+
+  /**
+   * Infinite scroll over Solr cursor pages (see PLAN-cursor-infinite-scroll.md).
+   *
+   * dgrid's OnDemandGrid sizes its scroll area from the full row count, which
+   * would let the thumb land anywhere in 17 million rows and demand an offset
+   * there. maxEmptySpace caps the unloaded space below the last row instead,
+   * so the scroll area only extends a little past what is loaded: reach the
+   * bottom, a page arrives, the area grows. Every fetch is then the next
+   * cursor page or a replay of a mark already recorded -- never an offset.
+   *
+   * Keep the cap below bufferRows * rowHeight (~2,350 px). OnDemandList
+   * decides where to load from how far the viewport top sits past the
+   * unloaded node, less requestBuffer; if the scroll area can extend further
+   * than that, End or a thumb drag makes dgrid load a page FURTHER on than the
+   * next one, leaving a gap. At or below it dgrid's requests are always
+   * contiguous (measured: start=200, 400, 600, ...). 1,000 px leaves margin
+   * for any row height from ~10 px up.
+   *
+   * The cap alone is not enough: see overflow-anchor in startup().
+   */
+  var PAGE_ROWS = 200;
+  var scrollingBody = lang.mixin({}, body, {
+    scrolling: true,
+    minRowsPerPage: PAGE_ROWS,
+    maxRowsPerPage: PAGE_ROWS,
+    maxEmptySpace: 1000,
+    // Request while the user scrolls, not after they stop: the default
+    // 'debounce' fires nothing until scrolling ends, which defeats prefetch.
+    pagingMethod: 'throttleDelayed',
+    // How far ahead of the viewport a page is requested: 2,400 px, comfortably
+    // more than a 1.5 s cursor fetch at a brisk scroll. Keep maxEmptySpace
+    // below this (see above).
+    bufferRows: 100
   });
+  PageGrid.Scrolling = declare([OnDemandGrid].concat(mixins), scrollingBody);
+
+  // What an API-backed list grid extends: scrolling when useCursorPaging is
+  // on, numbered pages otherwise. Chosen when this module is first required.
+  PageGrid.Auto = cursorPaging.isEnabled() ? PageGrid.Scrolling : PageGrid;
+
+  return PageGrid;
 });
