@@ -126,15 +126,18 @@
             </div>
         </div>
         <div class="appBox appShadow">
-            <div class="appRow">
-                <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:70%">
+            <!-- Database Source and Database Type split one standard-width row
+                 between them (.fieldPair); the wider gap leaves room for the
+                 Output Folder picker's folder icon in the row below. -->
+            <div class="appRow fieldPair fieldPairWithPicker">
+                <div>
                     <div class="headerrow" style="margin-bottom: 7px">
                         <label class="appBoxLabel">Database Source</label>
                         <div name="database-source" class="infobox iconbox infobutton dialoginfo">
                             <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                         </div>
                     </div>
-                    <select name="database" style="width:96%; margin-left:10px" data-dojo-type="dijit/form/Select"
+                    <select name="database" class="pairField" data-dojo-type="dijit/form/Select"
                         data-dojo-attach-event="onChange:onChangeDatabase" data-dojo-props="disabled:false"
                         data-dojo-attach-point="database">
                         <option value="bacteria-archaea">Reference and representative genomes (bacteria, archaea)
@@ -148,7 +151,7 @@
                         <option value="selFasta">Search within selected fasta file</option>
                     </select>
                 </div>
-                <div class="appRowSegment" style="text-align:left; width:20%">
+                <div>
                     <div class="headerrow" style="margin-bottom: 7px">
                         <label class="appBoxLabel">Database Type</label>
                         <div name="database-type" class="infobox iconbox infobutton dialoginfo">
@@ -156,7 +159,7 @@
                         </div>
                     </div>
                     <div data-dojo-type="dijit/form/Select" name="search_for" data-dojo-props="disabled:false"
-                        data-dojo-attach-event="onChange:onChangeDBType" maxHeight="200" style="width:100%"
+                        data-dojo-attach-event="onChange:onChangeDBType" maxHeight="200" class="pairField"
                         required="true" data-dojo-attach-point="search_for">
                     </div>
                     <div class="warning" data-dojo-attach-point="search_for_message"></div>
@@ -217,37 +220,35 @@
                 </div>
                 <div class="warning" data-dojo-attach-point="db_fasta_file_message"></div>
             </div>
-            <table>
-                <tr>
-                    <td>
-                        <div class="headerrow" style="margin: 16px 0 7px 0">
-                            <label class="appBoxLabel">Output Folder</label>
-                        </div>
-                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                            data-dojo-attach-point="output_path" style="width:300px" required="true"
+            <div class="appRow fieldPair fieldPairWithPicker">
+                <div>
+                    <div class="headerrow" style="margin: 16px 0 7px 0">
+                        <label class="appBoxLabel">Output Folder</label>
+                    </div>
+                    <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
+                            data-dojo-attach-point="output_path" class="pairPicker" required="true"
                             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
-                    </td>
-                    <td>
-                        <div class="headerrow" style="margin: 16px 0 7px 0">
-                            <label class="appBoxLabel">Output Name</label><span class="charError"
-                                style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                        </div>
-                        <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
+                </div>
+                <div>
+                    <div class="headerrow" style="margin: 16px 0 7px 0">
+                        <label class="appBoxLabel">Output Name</label><span class="charError"
+                            style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+                    </div>
+                    <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
                             data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
-                            style="width:300px" required="true"
+                            class="pairField" required="true"
                             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
                         </div>
-                    </td>
-                </tr>
-            </table>
+                </div>
+            </div>
             <div class="warning" data-dojo-attach-point="database_message"></div>
         </div>
         <div class="appRow" style="text-align:center">
             <div class="appRowSegment" data-dojo-attach-point="advanced">
                 <label class="largelabel">Advanced options</label>
                 <div class="iconbox" style="margin-left:0">
-                    <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+                    <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-left fa-1"></i>
                 </div>
             </div>
         </div>

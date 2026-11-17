@@ -67,7 +67,7 @@
                 <table data-dojo-attach-point="fasta_table" style="width:100%; display:none">
                     <tr>
                         <td>
-                            <div style="width:85%;display:inline-block;"
+                            <div class="standardField"
                                  data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
                                  data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
                                  data-dojo-props="type:['feature_protein_fasta', 'contigs'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
@@ -78,7 +78,7 @@
                 <table data-dojo-attach-point="feature_group_table" style="width:100%; display:none">
                     <tr>
                         <td>
-                            <div style="width:85%;display:inline-block;"
+                            <div class="standardField"
                                  data-dojo-type="p3/widget/WorkspaceObjectSelector" name="feature_group" required="false"
                                  data-dojo-attach-point="feature_group"
                                  data-dojo-props="type:['feature_group'], disabled:false,allowUpload:false,multi:false,promptMessage:'Select a feature group from your workspace for alignment.',missingMessage:'Feature group is required.', placeHolder:'Feature group'">
@@ -93,14 +93,14 @@
                         <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                     </div>
             </div>
-            <div class="appRowSegment" style="text-align:left; width:30%">
+            <div style="text-align:left">
                 <select data-dojo-type="dojox/form/CheckedMultiSelect" name="conversionScheme" data-dojo-props="disabled:false"
-                     required="true" data-dojo-attach-point="conversionScheme" multiple style="width: 100%"></select>
+                     required="true" data-dojo-attach-point="conversionScheme" multiple class="standardField checkboxGrid"></select>
 
             </div>
-            <table>
-                <tr>
-                    <td>
+            <!-- Output Folder and Output Name split one standard-width row, as on BLAST -->
+            <div class="appRow fieldPair fieldPairWithPicker">
+                <div>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
                             <label class="appBoxLabel">Output Folder</label>
                                 <div name="output-folder" class="infobox iconbox infobutton dialoginfo">
@@ -108,11 +108,11 @@
                                 </div>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                             data-dojo-attach-point="output_path" style="width:300px" required="true"
+                             data-dojo-attach-point="output_path" class="pairPicker" required="true"
                              data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
                              data-dojo-attach-event="onChange:onOutputPathChange"></div>
-                    </td>
-                    <td>
+                </div>
+                <div>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
                             <label class="appBoxLabel">Output Name</label>
                                 <div name="output-name" class="infobox iconbox infobutton dialoginfo">
@@ -122,12 +122,11 @@
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
                              data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
-                             style="width:300px" required="true"
+                             class="pairField" required="true"
                              data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
                         </div>
-                    </td>
-                </tr>
-            </table>
+                </div>
+            </div>
             <div class="warning" data-dojo-attach-point="database_message"></div>
         </div>
     </div>

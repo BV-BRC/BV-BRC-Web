@@ -83,12 +83,12 @@ define([
         if (!this.strategyrow.turnedOn) {
           this.strategyrow.turnedOn = true;
           this.strategyrow.style.display = 'block';
-          this.strategyicon.className = 'fa icon-caret-left fa-1';
+          this.strategyicon.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.strategyrow.turnedOn = false;
           this.strategyrow.style.display = 'none';
-          this.strategyicon.className = 'fa icon-caret-down fa-1';
+          this.strategyicon.className = 'fa icon-caret-left fa-1';
         }
       }));
     },
@@ -386,7 +386,7 @@ define([
         this.strategy.style.display = 'inline-block';
         this.strategyrow.turnedOn = false;
         this.strategyrow.style.display = 'none';
-        this.strategyicon.className = 'fa icon-caret-down fa-1';
+        this.strategyicon.className = 'fa icon-caret-left fa-1';
       }
 
       // console.log('def: ' + def);

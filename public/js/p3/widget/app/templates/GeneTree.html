@@ -25,9 +25,11 @@
       <table class="assemblyblocks">
         <tr>
           <td style="width:50%">
-            <table>
+            <!-- Fixed column split (Input / Parameters), as these forms had
+                 before their fields got fixed widths. -->
+            <table style="width:100%">
               <tr>
-                <td>
+                <td style="width:52%">
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
@@ -90,7 +92,7 @@
                     </div>
                   </div>
                 </td>
-                <td>
+                <td style="width:48%">
                   <div class="appBox appShadow">
                     <div class="headerrow">
                       <div style="width:85%;display:inline-block;">
@@ -167,11 +169,11 @@
                     <br>
                     <div class="appRow">
                       <label class="paramlabel">Output Folder</label><br>
-                      <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
+                      <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" class="medField" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>
                     </div>
                     <div class="appRow">
                       <label class="paramlabel">Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                      <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file" style="width:85%" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
+                      <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" data-dojo-attach-event="onChange:checkOutputName" name="output_file" class="medField" data-dojo-attach-point="output_file" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
                     </div>
                   </div>
                 </td>
@@ -185,7 +187,7 @@
                   <div class="appRowSegment" data-dojo-attach-point="advanced">
                       <label class="largelabel">Metadata options</label>
                       <div class="iconbox" style="margin-left:0">
-                          <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
+                          <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-left fa-1"></i>
                       </div>
                   </div>
               </div>

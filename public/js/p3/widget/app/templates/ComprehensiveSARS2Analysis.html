@@ -18,7 +18,7 @@
       <div style="display: none;">
         <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs" data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
-      <div id="startWithBox" style="width:375px;" class="appBox appShadow">
+      <div id="startWithBox" class="appBox appShadow">
         <div class="headerrow">
           <label class="appBoxLabel">Start With:</label>
           <div name="start-with" class="infobox iconbox infobutton dialoginfo">
@@ -26,15 +26,15 @@
           </div>
         </div>
         <div class="appRow">
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked />
-          <label for="radio1">Read File</label>
-          <input type="radio" data-dojo-type="dijit/form/RadioButton" data-dojo-attach-point="startWithContigs" name="startWith" value="contigs" data-dojo-attach-event="onChange:onStartWithChange" />
-          <label for="radio2">Assembled Contigs</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" id="${id}_startWithRead" data-dojo-attach-point="startWithRead" name="startWith" value="read" checked />
+          <label class="startWithOption" for="${id}_startWithRead">Read File</label>
+          <input type="radio" data-dojo-type="dijit/form/RadioButton" id="${id}_startWithContigs" data-dojo-attach-point="startWithContigs" name="startWith" value="contigs" data-dojo-attach-event="onChange:onStartWithChange" />
+          <label class="startWithOption" for="${id}_startWithContigs">Assembled Contigs</label>
         </div>
       </div>
-      <table data-dojo-attach-point="readTable" style="width:100%">
+      <table data-dojo-attach-point="readTable" class="equalHeightBoxes" style="width:100%">
         <tr>
-          <td>
+          <td style="width:50%; vertical-align:top">
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
@@ -43,14 +43,19 @@
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
                 </div>
+                <!-- submit to selected libraries arrow button, as on SARS-CoV-2 Wastewater Analysis -->
+                <div class="appRow">
+                  <div style="width:100%;display:inline-block;">
+                    <div class="appsublabel" style="display:inline-block;">Send to Selected Libraries</div>  <i data-dojo-attach-point="submit_selected_libs_validation_message"></i>
+                    <div style="width:40%; display:inline-block;"></div>
+                    <i data-dojo-attach-event="click:onAddReads" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                  </div>
+                </div>
               </div>
 
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Paired read library</label>
-                </div>
-                <div style="width:10%;display:inline-block;">
-                  <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                  <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
                 </div>
               </div>
               <div class="appRow">
@@ -77,12 +82,11 @@
 
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Single read library</label>
+                  <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                 </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:285px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
+                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile" data-dojo-attach-point="single_end_libsWidget" style="width:300px" required="false" data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
               </div>
               <div class="appRow" data-dojo-attach-point="advrow">
                 <div class="appRowSegment" style="margin:0 0 0 17px">
@@ -99,26 +103,25 @@
 
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
+                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label>  <i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
-                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 300px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
+                <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession" style="width: 260px" required="false" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"></div>
               </div>
 
             </div>
           </td>
-          <td>
-            <div class="appBox appShadow" style="height:275px; width:330px">
+          <td style="width:50%; vertical-align:top">
+            <div class="appBox appShadow libraryBox">
               <div class="headerrow">
-                <label class="appBoxLabel">Selected libraries</label>
+                <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
                 <br>
-                <div class="appsublabel">Place read files here using the arrow buttons.</div>
+                <div class="appsublabel">Place read files here using the arrow button.</div>
               </div>
-              <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
-                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style="margin:0 0 0 10px; width:90%;">
+              <div class="appRow libraryTableRow" style="width:100%; margin-top:10px; text-align: center;">
+                <table class="librarytable" frame="box" data-dojo-attach-point="libsTable" style="margin:0 10px; width:calc(100% - 20px);">
                   <tbody data-dojo-attach-point="libsTableBody">
                   </tbody>
                 </table>
@@ -127,7 +130,7 @@
           </td>
         </tr>
       </table>
-      <div data-dojo-attach-point="annotationFileBox" style="width:375px; display:none" class="appBox appShadow">
+      <div data-dojo-attach-point="annotationFileBox" style="display:none" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Input File</label>
@@ -138,11 +141,11 @@
         </div>
         <div class="appRow">
             <label class="paramlabel">Contigs</label><br>
-            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" data-dojo-attach-point="contigsFile" data-dojo-attach-event="onChange:setContigsFile" style="width:100%" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
+            <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="contigs" class="standardField" data-dojo-attach-point="contigsFile" data-dojo-attach-event="onChange:setContigsFile" required="false" data-dojo-props="type:['contigs'],multi:false,promptMessage:'Select or Upload Contigs to your workspace for Annotation'">
             </div>
         </div>
       </div>
-      <div id="parameterBox" style="width:375px; " class="appBox appShadow">
+      <div id="parameterBox" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Parameters</label>
@@ -153,7 +156,7 @@
         </div>
         <div data-dojo-attach-point="assemblyStrategy" class="appRow">
           <label class="paramlabel">Strategy</label><br>
-          <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe" style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
+          <select data-dojo-type="dijit/form/Select" name="recipe" class="standardField" data-dojo-attach-point="recipe" required="true" data-dojo-attach-event="onChange:onRecipeChange">
             <option value="onecodex">One Codex</option>
             <option value="cdc-illumina">CDC-Illumina</option>
             <option value="cdc-nanopore">CDC-Nanopore</option>
@@ -163,30 +166,29 @@
         </div>
 
         <div data-dojo-attach-point="primersStrategy" class="appRow">
-          <!-- primers -->
-          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:40%">
-            <label class="paramlabel">Primers</label><br>
-            <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:160px" required="true" data-dojo-attach-event="onChange:onPrimersChange">
-              <option value="ARTIC">ARTIC</option>
-              <option value="midnight">midnight</option>
-              <option value="qiagen">qiagen</option>
-              <option value="swift">swift</option>
-              <option value="varskip">varskip</option>
-              <option value="varskip-long">varskip-long</option>
-            </select>
-          </div>
-
-          <!-- primer_versions -->
-          <div class="appRowSegment" style="text-align:left; width:40%">
-            <label class="paramlabel">Version</label><br>
-            <select data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:50px">
-              <option value="V5.3.2">V5.3.2</option>
-              <option value="V4.1">V4.1</option>
-              <option value="V4">V4</option>
-              <option value="V3">V3</option>
-              <option value="V2">V2</option>
-              <option value="V1">V1</option>
-            </select>
+          <div class="taxFields">
+            <div class="taxNameField">
+              <label class="paramlabel">Primers</label><br>
+              <select data-dojo-type="dijit/form/Select" name="primers" data-dojo-attach-point="primers" style="width:100%" required="true" data-dojo-attach-event="onChange:onPrimersChange">
+                <option value="ARTIC">ARTIC</option>
+                <option value="midnight">midnight</option>
+                <option value="qiagen">qiagen</option>
+                <option value="swift">swift</option>
+                <option value="varskip">varskip</option>
+                <option value="varskip-long">varskip-long</option>
+              </select>
+            </div>
+            <div class="taxIdField">
+              <label class="paramlabel">Version</label><br>
+              <select data-dojo-type="dijit/form/Select" name="primer_version" data-dojo-attach-point="primer_version" style="width:100%">
+                <option value="V5.3.2">V5.3.2</option>
+                <option value="V4.1">V4.1</option>
+                <option value="V4">V4</option>
+                <option value="V3">V3</option>
+                <option value="V2">V2</option>
+                <option value="V1">V1</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -194,14 +196,14 @@
         <div class="appRow" style="display:none">
           <div class="appFieldLong">
             <label class="paramlabel">Domain</label><br>
-            <select data-dojo-type="dijit/form/Select" name="domain" data-dojo-attach-point="workspaceName" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+            <select data-dojo-type="dijit/form/Select" name="domain" class="standardField" data-dojo-attach-point="workspaceName" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="Viruses">Viruses</option>
             </select>
           </div>
         </div>
 
-        <div class="appRow">
-          <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:60%">
+        <div class="appRow taxFields">
+          <div class="taxNameField">
             <label class="paramlabel">Taxonomy Name</label>
             <div name="taxonomy-name" class="infobox iconbox infobutton tooltipinfo">
               <i class="fa icon-question-circle fa"></i>
@@ -209,7 +211,7 @@
             <br>
             <div data-dojo-attach-event="onChange:onSuggestNameChange" data-dojo-type="p3/widget/TaxonNameSelector" data-dojo-props="displayedValue:'Severe acute respiratory syndrome coronavirus 2'" name="scientific_name" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="scientific_nameWidget"></div>
           </div>
-          <div class="appRowSegment" style="text-align:left; width:20%">
+          <div class="taxIdField">
             <label class="paramlabel">Taxonomy ID</label><br>
             <div data-dojo-attach-event="onChange:onTaxIDChange" data-dojo-type="p3/widget/TaxIDSelector" data-dojo-props="displayedValue:'2697049'" name="tax_id" maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="tax_idWidget"></div>
           </div>
@@ -217,7 +219,7 @@
         <div class="appRow">
           <div class="appFieldLong">
             <label class="paramlabel">My Label</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateOutputName" name="my_label" data-dojo-attach-point="myLabelWidget" style="width: 300px" required="true" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'"></div>
+            <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-event="onChange:updateOutputName" name="my_label" class="standardField" data-dojo-attach-point="myLabelWidget" required="true" data-dojo-props="intermediateChanges:true, missingMessage:'You must provide a label',trim:true,intermediateChanges:true,placeHolder:'My identifier123'"></div>
           </div>
         </div>
 
@@ -225,7 +227,7 @@
         <div class="appRow" style="display:none">
           <div class="appFieldLong">
             <label class="paramlabel">Genetic Code</label><br>
-            <select data-dojo-attach-point="genetic_code" data-dojo-type="dijit/form/Select" name="code" style="width:300px" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
+            <select data-dojo-attach-point="genetic_code" data-dojo-type="dijit/form/Select" name="code" class="standardField" required="true" data-dojo-props="intermediateChanges:true,missingMessage:'Name Must be provided for Folder',trim:true,placeHolder:'MySubFolder'">
               <option value="1">1 (Viruses)</option>
             </select>
           </div>
@@ -233,12 +235,12 @@
 
         <div class="appRow">
           <label class="paramlabel">Output Folder</label><br>
-          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" style="width:300px" required="true" data-dojo-attach-event="onChange:onOutputPathChange" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" class="standardField" data-dojo-attach-point="output_path" required="true" data-dojo-attach-event="onChange:onOutputPathChange" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false"></div>
         </div>
         <div class="appRow">
-          <div class="appFieldLong" style="width:380px">
+          <div class="appFieldLong">
             <label class="paramlabel">Output Name</label><br>
-            <div data-dojo-attach-point="output_nameWidget" style="width:340px; background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
+            <div class="standardField" data-dojo-attach-point="output_nameWidget" style="background-color:#F0F1F3" data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" required="true" data-dojo-props="readOnly: true, promptMessage:'The output name for your Annotation Results',missingMessage:'Output Name must be provided.',trim:true,placeHolder:'Taxonomy + My Label'"></div>
           </div>
         </div>
       </div>

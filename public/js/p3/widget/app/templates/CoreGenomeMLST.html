@@ -25,10 +25,10 @@
         </div>
         <div class="appRow">
             <label class="paramlabel">Select Genome Group</label><br>
-            <div style="width:100%;display:inline-block;" 
+            <div 
               data-dojo-type="p3/widget/WorkspaceObjectSelector" 
               name="input_genome_group" required="true" 
-              data-dojo-attach-point="input_genome_group" 
+              class="standardField" data-dojo-attach-point="input_genome_group" 
               data-dojo-attach-event="click:onAddGenomeGroup"
               data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace',missingMessage:'Genome group is required.', placeHolder:'Select an exisiting Genome Group'">
             </div>
@@ -37,12 +37,12 @@
         <!-- Schema selector second app row -->
         <div class="appRow">
           <label class="paramlabel">Select Reference Schema</label><br>
-          <div style="width:85%;display:inline-block;" 
+          <div 
             data-dojo-type="dijit/form/FilteringSelect" 
             id="input_schema_selection"
             name="input_schema_selection" 
             required="true" 
-            data-dojo-attach-point="input_schema_selection" 
+            class="standardField" data-dojo-attach-point="input_schema_selection" 
             data-dojo-attach-event="click:onSelectSchema" 
             data-dojo-props="promptMessage:'Select a reference according to the target species within genome group. Click down arrow for all available schemas.',missingMessage:'Reference schema is required. Click down arrow for available schemas.', placeHolder:'Select an exisiting Reference Schema'">
           </div>
@@ -60,9 +60,9 @@
         </div>
       <div class="appRow">
         <label class="paramlabel">Output Folder</label><br>
-        <div style="width:100%;display:inline-block;"
+        <div
         data-dojo-type="p3/widget/WorkspaceObjectSelector" 
-        name="output_path" data-dojo-attach-point="output_path"
+        name="output_path" class="standardField" data-dojo-attach-point="output_path"
         required="true"
         data-dojo-props="allowUpload:false,title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false,placeHolder:'Output Folder'"
         data-dojo-attach-event="onChange:onOutputPathChange"></div>
@@ -71,8 +71,7 @@
         <label class="paramlabel">Output Name</label><span class="charError"
           style="width:100%;color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
-          data-dojo-attach-event="onChange:checkOutputName" name="output_file" data-dojo-attach-point="output_file"
-          style="width:85%" required="true"
+          data-dojo-attach-event="onChange:checkOutputName" name="output_file" class="standardField" data-dojo-attach-point="output_file" required="true"
           data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
         </div>
       </div>

@@ -26,9 +26,9 @@
         <input data-dojo-type="dijit/form/NumberTextBox" value="0" required="true" data-dojo-attach-point="numlibs"
           data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
-      <table class="assemblyblocks" style="width:100%">
+      <table class="assemblyblocks equalHeightBoxes" style="width:100%">
         <tr>
-          <td>
+          <td data-dojo-attach-point="input_cell" style="width:50%; vertical-align:top">
             <div id="inputBox" class="appBox appShadow">
               <div class="headerrow">
                 <div style="width:85%;display:inline-block;">
@@ -53,21 +53,26 @@
               <div data-dojo-attach-point="contigs_input_section">
                 <div class="appRow" data-dojo-attach-point="input_file_block">
                   <label class="paramlabel">Input FASTA file</label><br>
-                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="input_file"
-                    data-dojo-attach-point="input_file" style="width:300px" required="true"
+                  <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="input_file" class="standardField"
+                    data-dojo-attach-point="input_file" required="true"
                     data-dojo-props="type:['contigs'],multi:false,placeHolder:'Select FASTA file'"></div>
                 </div>
               </div>
 
               <!-- Reads Input Section -->
               <div data-dojo-attach-point="reads_input_section" style="display:none">
+                <!-- submit to selected libraries arrow button, as on SARS-CoV-2 Wastewater Analysis -->
+                <div class="appRow">
+                  <div style="width:100%;display:inline-block;">
+                    <div class="appsublabel" style="display:inline-block;">Send to Selected Libraries</div>  <i data-dojo-attach-point="submit_selected_libs_validation_message"></i>
+                    <div style="width:40%; display:inline-block;"></div>
+                    <i data-dojo-attach-event="click:onAddReads" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                  </div>
+                </div>
                 <!-- Paired Read Library -->
                 <div class="appRow">
                   <div style="width:85%;display:inline-block;">
-                    <label class="paramlabel" style="font-weight: bold;"> Paired read library</label>
-                  </div>
-                  <div style="width:10%;display:inline-block;">
-                    <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                    <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
                   </div>
                 </div>
                 <div class="appRow">
@@ -86,7 +91,7 @@
                   <div class="appRowSegment" data-dojo-attach-point="advanced">
                     <label class="largelabel">Advanced</label>
                     <div class="iconbox" style="margin-left:0px">
-                      <i data-dojo-attach-point="advicon" class="fa icon-caret-down fa-1"></i>
+                      <i data-dojo-attach-point="advicon" class="fa icon-caret-left fa-1"></i>
                     </div>
                   </div>
                 </div>
@@ -127,8 +132,6 @@
                   <div style="width:85%;display:inline-block;">
                     <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                   </div>
-                  <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle"
-                      class="fa icon-arrow-circle-o-right fa-lg"></i></div>
                 </div>
                 <div class="appRow">
                   <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="libdat_readfile"
@@ -139,7 +142,7 @@
                   <div class="appRowSegment" data-dojo-attach-point="advanced3">
                     <label class="largelabel">Advanced</label>
                     <div class="iconbox" style="margin-left:0px">
-                      <i data-dojo-attach-point="advicon3" class="fa icon-caret-down fa-1"></i>
+                      <i data-dojo-attach-point="advicon3" class="fa icon-caret-left fa-1"></i>
                     </div>
                   </div>
                 </div>
@@ -163,305 +166,30 @@
                     <label class="paramlabel" style="font-weight: bold;">SRA run accession</label> <i
                       data-dojo-attach-point="srr_accession_validation_message"></i>
                   </div>
-                  <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR"
-                      class="fa icon-arrow-circle-o-right fa-lg"></i></div>
                 </div>
                 <div class="appRow">
                   <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession"
-                    style="width: 300px" required="false"
+                    style="width: 260px" required="false"
                     data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'">
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="appBox appShadow" data-dojo-attach-point="assembly_parameters">
-              <div class="headerrow">
-                <label class="appBoxLabel">Assembly Parameters</label>
-                <div name="assembly-parameters" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                </div>
-              </div>
-
-              <!-- Basic Assembly Settings -->
-              <div class="appRow">
-                <label class="paramlabel">Assembly Strategy</label><br>
-                <select data-dojo-type="dijit/form/Select" name="recipe" data-dojo-attach-point="recipe"
-                  style="width:300px" required="true" data-dojo-attach-event="onChange:onRecipeChange">
-                  <option value="auto">Auto</option>
-                  <option value="unicycler">Unicycler</option>
-                  <option value="spades">SPAdes</option>
-                  <option value="canu">Canu</option>
-                  <option value="meta-spades">metaSPAdes</option>
-                  <option value="plasmid-spades">plasmidSPAdes</option>
-                  <option value="single-cell">MDA (single-cell)</option>
-                  <option value="flye">Flye</option>
-                  <option value="meta-flye">metaFlye</option>
-                  <option value="megahit">MegaHit</option>
-                </select>
-              </div>
-
-              <!-- Advanced Options Toggle -->
-              <div class="appRow">
-                <div class="appRowSegment" style="margin: 10px 0 0 0;">
-                  <div data-dojo-attach-point="advanced2" style="display:inline-block">
-                    <label class="largelabel">Advanced Options</label>
-                    <div class="iconbox" style="margin-left:0px">
-                      <i data-dojo-attach-point="advicon2" class="fa icon-caret-down fa-1"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Advanced Options Content -->
-              <div data-dojo-attach-point="advrow2" style="display: none">
-                <!-- Read Processing Section -->
-                <div class="appRow" style="margin:5px 0 15px 0; text-align:left">
-                  <div class="headerrow">
-                    <label class="appBoxLabel">Read Processing</label>
-                    <div name="read-processing" class="infobox iconbox infobutton dialoginfo">
-                      <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                    </div>
-                  </div>
-                  <div class="appRowSegment" style="margin:5px 20px 0 0; text-align:left">
-                    <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="normalize" data-dojo-props="checked:false"></div>
-                    <label class="paramlabel" style="margin-left:5px">Normalize reads using BBNorm</label>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 20px 0 0; text-align:left">
-                    <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim"
-                      data-dojo-props="checked:false"></div>
-                    <label class="paramlabel" style="margin-left:5px">Trim reads before assembly</label>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 20px 0 0; text-align:left">
-                    <div id="${id}_filtlong" name="filtlong" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="filtlong" data-dojo-props="checked:false"></div>
-                    <label class="paramlabel" style="margin-left:5px">Filter long reads on length and quality</label>
-                  </div>
-                </div>
-
-                <div class="appRow" style="margin:0 0 15px 0; text-align:left">
-                  <!-- Genome Parameters Section -->
-                  <div class="headerrow">
-                    <label class="appBoxLabel">Genome Parameters</label>
-                    <div name="genome-parameters" class="infobox iconbox infobutton dialoginfo">
-                      <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                    </div>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:50%">
-                    <label class="paramlabel">Estimated Genome Size</label>
-                    <br>
-                    <div class="insertspinner" name="genome_size" data-dojo-type="dijit/form/NumberSpinner"
-                      data-dojo-attach-point="genome_size"
-                      data-dojo-props="value:5, smallDelta:1, constraints:{min:1,max:10,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                    <select style="width: 10%; margin-left:5px" name="genome_size_units"
-                      data-dojo-type="dijit/form/Select" data-dojo-attach-point="genome_size_units"
-                      data-dojo-attach-event="onChange:onGenomeSizeUnitsChange">
-                      <option value="M">M</option>
-                      <option value="K">K</option>
-                    </select>
-                    <span style="margin-left:25px">x</span>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:45%">
-                    <label class="paramlabel">Target Genome Coverage</label>
-                    <br>
-                    <div class="insertspinner" name="target_depth" data-dojo-type="dijit/form/NumberSpinner"
-                      data-dojo-attach-point="target_depth"
-                      data-dojo-props="value:200, smallDelta:50, constraints:{min:100,max:500,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Assembly Polishing Section -->
-                <div class="appRow" style="margin:0 0 15px 0; text-align:left">
-                  <div class="headerrow">
-                    <label class="appBoxLabel">Assembly Polishing</label>
-                    <div name="assembly-polishing" class="infobox iconbox infobutton dialoginfo">
-                      <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                    </div>
-                  </div>
-                  <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:50%">
-                    <label class="paramlabel">Racon Iterations</label>
-                    <br>
-                    <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner"
-                      data-dojo-attach-point="racon_iter"
-                      data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:45%">
-                    <label class="paramlabel">Pilon Iterations</label>
-                    <br>
-                    <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner"
-                      data-dojo-attach-point="pilon_iter"
-                      data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Assembly Thresholds Section -->
-                <div class="appRow" style="margin:0 0 15px 0; text-align:left">
-                  <div class="headerrow">
-                    <label class="appBoxLabel">Assembly Thresholds</label>
-                    <div name="assembly-thresholds" class="infobox iconbox infobutton dialoginfo">
-                      <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                    </div>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
-                    <label class="paramlabel">Min. contig length</label>
-                    <br>
-                    <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner"
-                      data-dojo-attach-point="min_contig_len"
-                      data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
-                    <label class="paramlabel">Min. contig coverage</label>
-                    <br>
-                    <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner"
-                      data-dojo-attach-point="min_contig_cov"
-                      data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 50px 0 0; text-align:left">
-                    <label class="paramlabel">Maximum bases</label>
-                    <br>
-                    <div class="insertspinner" style="width: 150px" name="max_bases"
-                      data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="max_bases"
-                      data-dojo-props="value:10000000000, smallDelta:1000000000, constraints:{min:1000000,max:100000000000,places:0}, invalidMessage:'Please provide an integer value'">
-                    </div>
-                  </div>
-                </div>
-
-                <div class="headerrow">
-                  <label class="appBoxLabel">Genomad Parameters</label>
-                  <div name="genomad-parameters" class="infobox iconbox infobutton dialoginfo">
-                    <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                  </div>
-                </div>
-
-                <div class="appRow">
-                  <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:50%">
-                    <label class="paramlabel">Filtering preset</label>
-                    <select data-dojo-type="dijit/form/Select" name="filtering-preset"
-                      data-dojo-attach-point="filtering-preset" style="width:130px" required="false">
-                      <option value="">None</option>
-                      <option value="conservative">Conservative</option>
-                      <option value="relaxed">Relaxed</option>
-                    </select>
-                  </div>
-
-                  <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:45%">
-                    <label class="paramlabel">Sample composition</label>
-                    <select data-dojo-type="dijit/form/Select" name="composition" data-dojo-attach-point="composition"
-                      style="width:130px" required="false">
-                      <option value="auto">Auto</option>
-                      <option value="metagenome">Metagenome</option>
-                      <option value="virome">Virome</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="appRow">
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
-                    <div id="${id}_restart" name="restart" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="restart" data-dojo-props="checked:true"></div>
-                    <label class="paramlabel">Restart analysis</label>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
-                    <div id="${id}_verbose" name="verbose" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="verbose" data-dojo-props="checked:true"></div>
-                    <label class="paramlabel">Verbose output</label>
-                  </div>
-                </div>
-
-                <div class="appRow">
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
-                    <div id="${id}_lenient-taxonomy" name="lenient-taxonomy" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="lenient-taxonomy" data-dojo-props="checked:false"></div>
-                    <label class="paramlabel">Lenient taxonomy</label>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
-                    <div id="${id}_full-ictv-lineage" name="full-ictv-lineage" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="full-ictv-lineage" data-dojo-props="checked:true"></div>
-                    <label class="paramlabel">Full ICTV lineage</label>
-                  </div>
-                </div>
-
-                <div class="appRow">
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
-                    <div id="${id}_cleanup" name="cleanup" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="cleanup" data-dojo-props="checked:true"></div>
-                    <label class="paramlabel">Cleanup intermediate files</label>
-                  </div>
-
-                  <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
-                    <div id="${id}_force-auto" name="force-auto" data-dojo-type="dijit/form/CheckBox"
-                      data-dojo-attach-point="force-auto" data-dojo-props="checked:false"></div>
-                    <label class="paramlabel">Force auto composition</label>
-                  </div>
-                </div>
-
-                <div class="appRow">
-                  <label class="paramlabel">Debug level</label><br>
-                  <div class="insertspinner" name="debug" data-dojo-type="dijit/form/NumberSpinner"
-                    data-dojo-attach-point="debug"
-                    data-dojo-props="value:0, smallDelta:1, constraints:{min:0,max:3,places:0}, invalidMessage:'Please provide an integer value'">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="appBox appShadow">
-              <div class="headerrow">
-                <label class="appBoxLabel">Output</label>
-                <div name="output" class="infobox iconbox infobutton dialoginfo">
-                  <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
-                </div>
-              </div>
-              <div class="appRow">
-                <label class="paramlabel">Output Folder</label><br>
-                <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                  data-dojo-attach-point="output_path" style="width:300px" required="true"
-                  data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false"
-                  data-dojo-attach-event="onChange:onOutputPathChange"></div>
-              </div>
-              <div class="appRow">
-                <label class="paramlabel">Output Name</label><span class="charError"
-                  style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
-                <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-                  data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
-                  style="width:300px" required="true"
-                  data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
-                </div>
-              </div>
-            </div>
-
           </td>
-
-          <td data-dojo-attach-point="selected_libraries_cell">
-            <div class="appBox appShadow" style="height:379px; width:330px">
+          <td data-dojo-attach-point="selected_libraries_cell" style="width:50%; vertical-align:top">
+            <div class="appBox appShadow libraryBox">
               <div class="headerrow">
                 <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
                 <br>
-                <div class="appsublabel">Place read files here using the arrow buttons.</div>
+                <div class="appsublabel">Place read files here using the arrow button.</div>
               </div>
-              <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+              <div class="appRow libraryTableRow" style="width:100%; margin-top:10px; text-align: center;">
                 <table class="librarytable" frame="box" data-dojo-attach-point="libsTable"
-                  style="margin:0 0 0 10px; width:90%;">
+                  style="margin:0 10px; width:calc(100% - 20px);">
                   <tbody data-dojo-attach-point="libsTableBody">
                   </tbody>
                 </table>
@@ -471,6 +199,275 @@
           </td>
         </tr>
       </table>
+      <div class="appBox appShadow" data-dojo-attach-point="assembly_parameters">
+        <div class="headerrow">
+          <label class="appBoxLabel">Assembly Parameters</label>
+          <div name="assembly-parameters" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div>
+        </div>
+
+        <!-- Basic Assembly Settings -->
+        <div class="appRow">
+          <label class="paramlabel">Assembly Strategy</label><br>
+          <select data-dojo-type="dijit/form/Select" name="recipe" class="standardField" data-dojo-attach-point="recipe" required="true" data-dojo-attach-event="onChange:onRecipeChange">
+            <option value="auto">Auto</option>
+            <option value="unicycler">Unicycler</option>
+            <option value="spades">SPAdes</option>
+            <option value="canu">Canu</option>
+            <option value="meta-spades">metaSPAdes</option>
+            <option value="plasmid-spades">plasmidSPAdes</option>
+            <option value="single-cell">MDA (single-cell)</option>
+            <option value="flye">Flye</option>
+            <option value="meta-flye">metaFlye</option>
+            <option value="megahit">MegaHit</option>
+          </select>
+        </div>
+
+        <!-- Advanced Options Toggle -->
+        <div class="appRow">
+          <div class="appRowSegment" style="margin: 10px 0 0 0;">
+            <div data-dojo-attach-point="advanced2" style="display:inline-block">
+              <label class="largelabel">Advanced Options</label>
+              <div class="iconbox" style="margin-left:0px">
+                <i data-dojo-attach-point="advicon2" class="fa icon-caret-left fa-1"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advanced Options Content -->
+        <div data-dojo-attach-point="advrow2" style="display: none">
+          <!-- Read Processing Section -->
+          <div class="appRow" style="margin:5px 0 15px 0; text-align:left">
+            <div class="headerrow">
+              <label class="appBoxLabel">Read Processing</label>
+              <div name="read-processing" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+            </div>
+            <div class="appRowSegment" style="margin:5px 20px 0 0; text-align:left">
+              <div id="${id}_normalize" name="normalize" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="normalize" data-dojo-props="checked:false"></div>
+              <label class="paramlabel" style="margin-left:5px">Normalize reads using BBNorm</label>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 20px 0 0; text-align:left">
+              <div id="${id}_trim" name="trim" data-dojo-type="dijit/form/CheckBox" data-dojo-attach-point="trim"
+                data-dojo-props="checked:false"></div>
+              <label class="paramlabel" style="margin-left:5px">Trim reads before assembly</label>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 20px 0 0; text-align:left">
+              <div id="${id}_filtlong" name="filtlong" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="filtlong" data-dojo-props="checked:false"></div>
+              <label class="paramlabel" style="margin-left:5px">Filter long reads on length and quality</label>
+            </div>
+          </div>
+
+          <div class="appRow" style="margin:0 0 15px 0; text-align:left">
+            <!-- Genome Parameters Section -->
+            <div class="headerrow">
+              <label class="appBoxLabel">Genome Parameters</label>
+              <div name="genome-parameters" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:50%">
+              <label class="paramlabel">Estimated Genome Size</label>
+              <br>
+              <div class="insertspinner" name="genome_size" data-dojo-type="dijit/form/NumberSpinner"
+                data-dojo-attach-point="genome_size"
+                data-dojo-props="value:5, smallDelta:1, constraints:{min:1,max:10,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+              <select style="width: 10%; margin-left:5px" name="genome_size_units"
+                data-dojo-type="dijit/form/Select" data-dojo-attach-point="genome_size_units"
+                data-dojo-attach-event="onChange:onGenomeSizeUnitsChange">
+                <option value="M">M</option>
+                <option value="K">K</option>
+              </select>
+              <span style="margin-left:25px">x</span>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:45%">
+              <label class="paramlabel">Target Genome Coverage</label>
+              <br>
+              <div class="insertspinner" name="target_depth" data-dojo-type="dijit/form/NumberSpinner"
+                data-dojo-attach-point="target_depth"
+                data-dojo-props="value:200, smallDelta:50, constraints:{min:100,max:500,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+            </div>
+          </div>
+
+          <!-- Assembly Polishing Section -->
+          <div class="appRow" style="margin:0 0 15px 0; text-align:left">
+            <div class="headerrow">
+              <label class="appBoxLabel">Assembly Polishing</label>
+              <div name="assembly-polishing" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+            </div>
+            <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:50%">
+              <label class="paramlabel">Racon Iterations</label>
+              <br>
+              <div class="insertspinner" name="racon_iter" data-dojo-type="dijit/form/NumberSpinner"
+                data-dojo-attach-point="racon_iter"
+                data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; text-align:left; width:45%">
+              <label class="paramlabel">Pilon Iterations</label>
+              <br>
+              <div class="insertspinner" name="pilon_iter" data-dojo-type="dijit/form/NumberSpinner"
+                data-dojo-attach-point="pilon_iter"
+                data-dojo-props="value:2, smallDelta:1, constraints:{min:0,max:4,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+            </div>
+          </div>
+
+          <!-- Assembly Thresholds Section -->
+          <div class="appRow" style="margin:0 0 15px 0; text-align:left">
+            <div class="headerrow">
+              <label class="appBoxLabel">Assembly Thresholds</label>
+              <div name="assembly-thresholds" class="infobox iconbox infobutton dialoginfo">
+                <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+              </div>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
+              <label class="paramlabel">Min. contig length</label>
+              <br>
+              <div class="insertspinner" name="min_contig_len" data-dojo-type="dijit/form/NumberSpinner"
+                data-dojo-attach-point="min_contig_len"
+                data-dojo-props="value:300, smallDelta:10, constraints:{min:100,max:100000,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
+              <label class="paramlabel">Min. contig coverage</label>
+              <br>
+              <div class="insertspinner" name="min_contig_cov" data-dojo-type="dijit/form/NumberSpinner"
+                data-dojo-attach-point="min_contig_cov"
+                data-dojo-props="value:5, smallDelta:5, constraints:{min:0,max:100000,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 50px 0 0; text-align:left">
+              <label class="paramlabel">Maximum bases</label>
+              <br>
+              <div class="insertspinner" style="width: 150px" name="max_bases"
+                data-dojo-type="dijit/form/NumberSpinner" data-dojo-attach-point="max_bases"
+                data-dojo-props="value:10000000000, smallDelta:1000000000, constraints:{min:1000000,max:100000000000,places:0}, invalidMessage:'Please provide an integer value'">
+              </div>
+            </div>
+          </div>
+
+          <div class="headerrow">
+            <label class="appBoxLabel">Genomad Parameters</label>
+            <div name="genomad-parameters" class="infobox iconbox infobutton dialoginfo">
+              <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+            </div>
+          </div>
+
+          <div class="appRow">
+            <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:50%">
+              <label class="paramlabel">Filtering preset</label>
+              <select data-dojo-type="dijit/form/Select" name="filtering-preset"
+                data-dojo-attach-point="filtering-preset" style="width:130px" required="false">
+                <option value="">None</option>
+                <option value="conservative">Conservative</option>
+                <option value="relaxed">Relaxed</option>
+              </select>
+            </div>
+
+            <div class="appRowSegment" style="margin-left: 0px; text-align:left; width:45%">
+              <label class="paramlabel">Sample composition</label>
+              <select data-dojo-type="dijit/form/Select" name="composition" data-dojo-attach-point="composition"
+                style="width:130px" required="false">
+                <option value="auto">Auto</option>
+                <option value="metagenome">Metagenome</option>
+                <option value="virome">Virome</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="appRow">
+            <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
+              <div id="${id}_restart" name="restart" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="restart" data-dojo-props="checked:true"></div>
+              <label class="paramlabel">Restart analysis</label>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
+              <div id="${id}_verbose" name="verbose" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="verbose" data-dojo-props="checked:true"></div>
+              <label class="paramlabel">Verbose output</label>
+            </div>
+          </div>
+
+          <div class="appRow">
+            <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
+              <div id="${id}_lenient-taxonomy" name="lenient-taxonomy" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="lenient-taxonomy" data-dojo-props="checked:false"></div>
+              <label class="paramlabel">Lenient taxonomy</label>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
+              <div id="${id}_full-ictv-lineage" name="full-ictv-lineage" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="full-ictv-lineage" data-dojo-props="checked:true"></div>
+              <label class="paramlabel">Full ICTV lineage</label>
+            </div>
+          </div>
+
+          <div class="appRow">
+            <div class="appRowSegment" style="margin:0 0 0 0; width:50%; text-align:left">
+              <div id="${id}_cleanup" name="cleanup" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="cleanup" data-dojo-props="checked:true"></div>
+              <label class="paramlabel">Cleanup intermediate files</label>
+            </div>
+
+            <div class="appRowSegment" style="margin:0 0 0 0; width:45%; text-align:left">
+              <div id="${id}_force-auto" name="force-auto" data-dojo-type="dijit/form/CheckBox"
+                data-dojo-attach-point="force-auto" data-dojo-props="checked:false"></div>
+              <label class="paramlabel">Force auto composition</label>
+            </div>
+          </div>
+
+          <div class="appRow">
+            <label class="paramlabel">Debug level</label><br>
+            <div class="insertspinner" name="debug" data-dojo-type="dijit/form/NumberSpinner"
+              data-dojo-attach-point="debug"
+              data-dojo-props="value:0, smallDelta:1, constraints:{min:0,max:3,places:0}, invalidMessage:'Please provide an integer value'">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="appBox appShadow">
+        <div class="headerrow">
+          <label class="appBoxLabel">Output</label>
+          <div name="output" class="infobox iconbox infobutton dialoginfo">
+            <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
+          </div>
+        </div>
+        <div class="appRow">
+          <label class="paramlabel">Output Folder</label><br>
+          <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" class="standardField"
+            data-dojo-attach-point="output_path" required="true"
+            data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false"
+            data-dojo-attach-event="onChange:onOutputPathChange"></div>
+        </div>
+        <div class="appRow">
+          <label class="paramlabel">Output Name</label><span class="charError"
+            style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
+          <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file" class="standardField"
+            data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file" required="true"
+            data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="appSubmissionArea">

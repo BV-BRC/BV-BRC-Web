@@ -51,12 +51,47 @@
          width: 30%;
       }
 
+      /* A field alone on its row (FASTA file, genome group, output folder,
+         output name) spans the same width as the Inference method and
+         Reference tree inference method pair: a 433px text box, or a
+         workspace picker whose search box ends on that edge with the folder
+         icon past it. */
+      .App .treesort--span-field {
+         max-width: 100%;
+         width: 433px;
+      }
+      .App .treesort--span-field.WorkspaceObjectSelector {
+         align-items: center;
+         display: flex;
+         width: auto;
+      }
+      .App .treesort--span-field.WorkspaceObjectSelector > .icon-sort-alpha-asc {
+         flex: 0 0 17px;
+      }
+      .App .treesort--span-field.WorkspaceObjectSelector .search-box {
+         flex: 0 0 auto;
+         max-width: calc(100% - 40px);
+         width: 416px;
+      }
+
+      /* The input pickers sit in layout tables; without cell spacing they
+         start on the same edge as the other fields. */
+      .TreeSort .appBox table {
+         border-spacing: 0;
+      }
+      .TreeSort .appBox table td {
+         padding: 0;
+      }
+
       .appRow.checkbox-row {
          margin-bottom: 1.0rem;
       }
+      /* Same font as the other checkbox labels, but in regular case at the
+         12px of the forms' helper text so the longer labels stay readable. */
       .appRow.checkbox-row label {
-         font-size: 1.0rem;
+         font-size: 12px;
          margin-left: 0.25rem;
+         text-transform: none;
       }
 
       /* Some whitespace between rows */
@@ -272,13 +307,12 @@
                <table data-dojo-attach-point="fasta_table">
                   <tr>
                      <td>
-                        <div name="fasta_file_id"
+                        <div class="treesort--span-field" name="fasta_file_id"
                              data-dojo-attach-event="onChange:handleFastaFileIdChange"
                              data-dojo-attach-point="fastaFileIdEl"
                              data-dojo-type="p3/widget/WorkspaceObjectSelector"
                              data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload a FASTA file from your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'"
                              required="true"
-                             style="padding: 0; width: 85%; display: inline-block;"
                         ></div>
                         <div class="warning treesort--error-message" data-dojo-attach-point="fastaFileIdMessageEl"></div>
                      </td>
@@ -287,10 +321,9 @@
                <table data-dojo-attach-point="genome_group_table" style="display:none">
                   <tr>
                      <td>
-                        <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genomeGroup"
+                        <div class="treesort--span-field" data-dojo-type="p3/widget/WorkspaceObjectSelector" name="genomeGroup"
                              required="false" data-dojo-attach-point="genomeGroup"
-                             data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'"
-                             style="padding: 0; width: 85%; display: inline-block;">
+                             data-dojo-props="type:['genome_group'],multi:false,promptMessage:'Select a genome group from your workspace.',missingMessage:'Genome group is required.',placeHolder:'Genome group'">
                         </div>
                      </td>
                   </tr>
@@ -330,7 +363,6 @@
                </div>
             </div>
          </div>
-      </div>
 
       <div class="appBox appShadow" style="margin-top:10px">
 
@@ -346,45 +378,38 @@
          <!-- The summary of FASTA validation will be displayed here. -->
          <div class="treesort--fasta-validation-panel" data-dojo-attach-point="fastaValidationPanelEl"></div>
 
-         <div class="appRow treesort--row-with-columns">
-            <div class="appRowSegment treesort--left-column">
-
-               <!-- Output folder (path) -->
-               <label class="paramlabel">Output folder</label>
-               <div name="output-folder" class="infobox iconbox infobutton tooltipinfo">
-                  <i class="fa icon-question-circle fa"></i>
-               </div>
-               <br/>
-               <div name="output_path"
-                  data-dojo-attach-event="onChange:handleOutputPathChange"
-                  data-dojo-attach-point="outputPathEl"
-                  data-dojo-props="title:'Select an Output Folder', autoSelectCurrent:true, selectionText:'Destination',
-                     title:'Select an Output Folder', type:['folder'], multi:false, placeHolder:'Output Folder'"
-                  data-dojo-type="p3/widget/WorkspaceObjectSelector"
-                  required="true",
-                  style="width: 200px"
-               ></div>
-               <div class="warning treesort--error-message" data-dojo-attach-point="outputPathMessageEl"></div>
-
+         <!-- Output folder (path) -->
+         <div class="appRow">
+            <label class="paramlabel">Output folder</label>
+            <div name="output-folder" class="infobox iconbox infobutton tooltipinfo">
+               <i class="fa icon-question-circle fa"></i>
             </div>
-            <div class="appRowSegment" style="text-align:left;">
+            <br/>
+            <div name="output_path" class="treesort--span-field"
+               data-dojo-attach-event="onChange:handleOutputPathChange"
+               data-dojo-attach-point="outputPathEl"
+               data-dojo-props="title:'Select an Output Folder', autoSelectCurrent:true, selectionText:'Destination',
+                  title:'Select an Output Folder', type:['folder'], multi:false, placeHolder:'Output Folder'"
+               data-dojo-type="p3/widget/WorkspaceObjectSelector"
+               required="true"
+            ></div>
+            <div class="warning treesort--error-message" data-dojo-attach-point="outputPathMessageEl"></div>
+         </div>
 
-               <!-- Output filename -->
-               <label class="paramlabel">Output name</label>
-               <div name="output-name" class="infobox iconbox infobutton tooltipinfo">
-                  <i class="fa icon-question-circle fa"></i>
-               </div>
-               <br/>
-               <input name="output_file"
-                  data-dojo-attach-event="onChange:handleOutputFileChange"
-                  data-dojo-attach-point="outputFileEl"
-                  data-dojo-props="intermediateChanges: false, invalidMessage:'A name must be provided for the job result', trim:true, placeholder:'Output name'"
-                  data-dojo-type="dijit/form/ValidationTextBox"
-                  required="false",
-                  style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 200px;" />
-               <div class="warning treesort--error-message" data-dojo-attach-point="outputFileMessageEl"></div>
-
+         <!-- Output filename -->
+         <div class="appRow">
+            <label class="paramlabel">Output name</label>
+            <div name="output-name" class="infobox iconbox infobutton tooltipinfo">
+               <i class="fa icon-question-circle fa"></i>
             </div>
+            <br/>
+            <input name="output_file" class="treesort--span-field"
+               data-dojo-attach-event="onChange:handleOutputFileChange"
+               data-dojo-attach-point="outputFileEl"
+               data-dojo-props="intermediateChanges: false, invalidMessage:'A name must be provided for the job result', trim:true, placeHolder:'Output Name'"
+               data-dojo-type="dijit/form/ValidationTextBox"
+               required="false" />
+            <div class="warning treesort--error-message" data-dojo-attach-point="outputFileMessageEl"></div>
          </div>
 
          <div class="appRow treesort--row-with-columns">
@@ -535,7 +560,7 @@
                         data-dojo-props="constraints:{min:1, places:3 }, invalidMessage:'Enter a number > 1.0'"
                         data-dojo-type="dijit/form/NumberTextBox"
                         required="false"
-                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
+                        style="width: 100px;"
                      />
                      <div class="warning treesort--error-message" data-dojo-attach-point="deviationMessageEl"></div>
 
@@ -555,7 +580,7 @@
                            invalidMessage:'Enter a number between 0-1.0'"
                         data-dojo-type="dijit/form/NumberTextBox"
                         required="false"
-                        style="font-family: monospace; font-size: 1.0rem; height: 20px; width: 100px;"
+                        style="width: 100px;"
                      />
                      <div class="warning treesort--error-message" data-dojo-attach-point="pValueMessageEl"></div>
 
@@ -570,10 +595,10 @@
                      <br/>
                      <input name="clades_path"
                         data-dojo-attach-point="cladesPathEl"
-                        data-dojo-props="intermediateChanges: false, trim:true, placeholder:'Optional'"
+                        data-dojo-props="intermediateChanges: false, trim:true, placeHolder:'Optional'"
                         data-dojo-type="dijit/form/ValidationTextBox"
                         required="false"
-                        style="font-family: monospace; font-size: 1.0rem; height: 20px;" />
+                        style="width: 152px;" /><!-- ends on the same edge as Reference tree inference method -->
 
                   </div>
                </div>
@@ -611,6 +636,7 @@
          </div>
 
       </div>
+      </div><!-- /formFieldsContainer: holds both boxes so they get its font size -->
    </div>
 
    <div class="appSubmissionArea">

@@ -22,7 +22,7 @@ define([
     pageTitle: 'Comparative Pathway Tool',
     libraryData: null,
     defaultPath: '',
-    startingRows: 8,
+    startingRows: 4,
 
     constructor: function () {
 
@@ -50,7 +50,9 @@ define([
       if (window.App.user) {
         var ggDom = query('div[name="genome_group"]')[0];
 
-        this.genome_group = new WorkspaceObjectSelector();
+        // 300px like the read forms' pickers, so its search box is the
+        // same width as theirs (and as the Genome box above it).
+        this.genome_group = new WorkspaceObjectSelector({ style: 'width:300px' });
         this.genome_group.set('type', ['genome_group']);
         this.genome_group.placeAt(ggDom, 'only');
       }
@@ -78,6 +80,47 @@ define([
       }
       return name;
     },
+    // The Send to Selected Genomes arrow: adds the genome and/or genome group,
+    // whichever is filled in and not already in Selected Genomes.
+    onAddGenomes: function () {
+      var selected = lang.hitch(this, function (test) {
+        return this.addedList.some(test);
+      });
+      var groupBox = this.genome_group && this.genome_group.searchBox;
+      this.sendToSelected([
+        {
+          value: lang.hitch(this, function () {
+            return this.genome.get('value');
+          }),
+          isNew: lang.hitch(this, function () {
+            var id = this.genome.get('value');
+            return !selected(function (rec) {
+              return rec.type === 'genome' && rec.genome_ids[0] === id;
+            });
+          }),
+          add: lang.hitch(this, 'onAddGenome'),
+          clear: lang.hitch(this, function () {
+            this.genome.set('value', '');
+          })
+        },
+        {
+          value: function () {
+            return groupBox ? groupBox.get('value') : '';
+          },
+          isNew: function () {
+            var path = groupBox.get('value');
+            return !selected(function (rec) {
+              return rec.type === 'genome_group' && rec.path === path;
+            });
+          },
+          add: lang.hitch(this, 'onAddGenomeGroup'),
+          clear: function () {
+            groupBox.set('value', '');
+          }
+        }
+      ], 'Choose a genome or genome group that is not already in Selected Genomes.');
+    },
+
     onAddGenome: function () {
       var lrec = {};
 
@@ -112,6 +155,7 @@ define([
         handle.remove();
       }));
       this.increaseLib(lrec);
+      return true;
     },
     onAddGenomeGroup: function () {
       var lrec = {};
@@ -122,7 +166,7 @@ define([
       lrec.label = label;
       lrec.type = 'genome_group';
 
-      WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function (objs) {
+      return WorkspaceManager.getObjects(paths, false).then(lang.hitch(this, function (objs) {
 
         var genomeIdHash = {};
         objs.forEach(function (obj) {
@@ -161,6 +205,7 @@ define([
           handle.remove();
         }));
         this.increaseLib(lrec);
+        return true;
       }));
     },
     onSubmit: function (evt) {

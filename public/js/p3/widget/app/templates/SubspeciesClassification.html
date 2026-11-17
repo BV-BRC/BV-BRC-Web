@@ -64,7 +64,7 @@
                 <table data-dojo-attach-point="fasta_table" style="width:100%; display:none">
                     <tr>
                         <td>
-                            <div style="width:85%;display:inline-block;"
+                            <div class="standardField"
                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_fasta" required="false"
                                 data-dojo-attach-point="query_fasta" data-dojo-attach-event="onChange:validate"
                                 data-dojo-props="type:['feature_protein_fasta', 'feature_dna_fasta', 'genome_protein_fasta', 'genome_dna_fasta', 'contigs'],multi:false,promptMessage:'Select or upload FASTA file to your workspace.',missingMessage:'FASTA file is required.',placeHolder:'FASTA file'">
@@ -75,7 +75,7 @@
                 <table data-dojo-attach-point="group_table" style="width:100%; display:none">
                     <tr>
                         <td>
-                            <div style="width:85%;display:inline-block;"
+                            <div class="standardField"
                                 data-dojo-type="p3/widget/WorkspaceObjectSelector" name="query_genomegroup"
                                 required="false" data-dojo-attach-point="query_genomegroup"
                                 data-dojo-attach-event="onChange:validate"
@@ -102,7 +102,7 @@
                         <div class="warning" data-dojo-attach-point="ref_msa_fasta_file_message"></div>
                     </div>
                 </div>-->
-                <div style="text-align:left; width:50%">
+                <div style="text-align:left">
                     <div class="headerrow" style="margin-bottom: 7px">
                         <label class="appBoxLabel">Species</label>
                             <div name="species" class="infobox iconbox infobutton dialoginfo">
@@ -110,14 +110,14 @@
                             </div>
                     </div>
                     <div data-dojo-type="dijit/form/Select" name="virus_type" data-dojo-props="disabled:false"
-                        maxHeight="200" style="width:100%" required="true" data-dojo-attach-point="virus_type">
+                        maxHeight="200" class="standardField" required="true" data-dojo-attach-point="virus_type">
                     </div>
                     <div class="warning" data-dojo-attach-point="virus_type_message"></div>
                 </div>
             </div>
-            <table>
-                <tr>
-                    <td>
+            <!-- Output Folder and Output Name split one standard-width row, as on BLAST -->
+            <div class="appRow fieldPair fieldPairWithPicker">
+                <div>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
                             <label class="appBoxLabel">Output Folder</label>
                                 <div name="output-folder" class="infobox iconbox infobutton dialoginfo">
@@ -125,11 +125,11 @@
                                 </div>
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                            data-dojo-attach-point="output_path" style="width:300px" required="true"
+                            data-dojo-attach-point="output_path" class="pairPicker" required="true"
                             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false,placeHolder:'Output Folder'"
                             data-dojo-attach-event="onChange:onOutputPathChange"></div>
-                    </td>
-                    <td>
+                </div>
+                <div>
                         <div class="headerrow" style="margin: 16px 0 7px 0">
                             <label class="appBoxLabel">Output Name</label>
                                 <div name="output-name" class="infobox iconbox infobutton dialoginfo">
@@ -139,12 +139,11 @@
                         </div>
                         <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
                             data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
-                            style="width:300px" required="true"
+                            class="pairField" required="true"
                             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
                         </div>
-                    </td>
-                </tr>
-            </table>
+                </div>
+            </div>
             <div class="warning" data-dojo-attach-point="database_message"></div>
         </div>
     </div>

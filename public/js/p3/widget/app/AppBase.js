@@ -4,14 +4,14 @@ define([
   'dojo/text!./templates/AppLogin.html', 'dijit/form/Form', 'p3/widget/WorkspaceObjectSelector', 'dojo/topic', 'dojo/_base/lang',
   '../../util/PathJoin', 'dojox/xml/parser',
   'dijit/Dialog', 'dojo/request', 'dojo/dom-construct', 'dojo/query', 'dijit/TooltipDialog', 'dijit/popup', 'dijit/registry', 'dojo/dom',
-  '../../JobManager', '../../util/loading'
+  '../../JobManager', '../../util/loading', 'dojo/when'
 ], function (
   declare, WidgetBase, on,
   domClass, Templated, WidgetsInTemplate,
   LoginTemplate, FormMixin, WorkspaceObjectSelector, Topic, lang,
   PathJoin, xmlParser,
   Dialog, xhr, domConstruct, query, TooltipDialog, popup, registry, dom,
-  JobManager, Loading
+  JobManager, Loading, when
 ) {
   return declare([WidgetBase, FormMixin, Templated, WidgetsInTemplate], {
     baseClass: 'App Sleep',
@@ -444,6 +444,149 @@ define([
       this.srr_accession_validation_message.innerHTML = '';
       this.srr_accession.set('disabled', false);
       return true;
+    },
+
+    // Genome forms (Comparative Systems, Comparative Pathway, Proteome
+    // Comparison): the one "Send to Selected Genomes" arrow adds each filled-in
+    // input that isn't already in Selected Genomes, as onAddReads does for
+    // reads. Each input gives:
+    //   value()  its current value ('' when empty)
+    //   isNew()  false when it is already in Selected Genomes
+    //   add()    the form's add handler; returns, or resolves to, false when
+    //            nothing was added (limit reached, empty group)
+    //   clear()  empties the input
+    // An input is cleared only once its row is in the table, so one that
+    // could not be added stays to be fixed.
+    sendToSelected: function (inputs, hint) {
+      var message = this.submit_selected_libs_validation_message;
+      var filled = inputs.filter(function (input) {
+        return input.value();
+      });
+      var fresh = filled.filter(function (input) {
+        return input.isNew();
+      });
+      if (!fresh.length) {
+        message.innerHTML = ' <br> ' + (filled.length ? 'Nothing new to add.' : 'Nothing to add.') + '<br>Hint: ' + hint;
+        return;
+      }
+      message.innerHTML = '';
+      fresh.forEach(function (input) {
+        when(input.add(), function (added) {
+          if (added !== false) {
+            input.clear();
+          }
+        });
+      });
+    },
+
+    // Forms with one Sample Identifier box at the top of Input File fill it
+    // from the read file or accession being entered. A box the user typed in
+    // is left alone; an empty box, or one still holding the last filled-in
+    // name, takes the new one.
+    fillSampleId: function (box, name) {
+      if (!box) {
+        return;
+      }
+      var current = box.get('value');
+      if (current && current !== box._filledSampleId) {
+        return;
+      }
+      var id = this.replaceInvalidChars ? this.replaceInvalidChars(name.split('.')[0]) : name.split('.')[0];
+      box._filledSampleId = id;
+      box.set('value', id);
+    },
+
+    // The single "Send to Selected Libraries" arrow: adds each read input that
+    // is filled in (read pair, single read, SRA run) and not already in Selected
+    // Libraries, through the form's own add handlers.
+    onAddReads: function () {
+      var value = function (w) {
+        return w ? (w.searchBox || w).get('value') : '';
+      };
+      var makeID = this.makeLibraryID || this.makeStoreID;
+      var isNew = lang.hitch(this, function (type) {
+        return !(makeID.call(this, type) in this.libraryStore.index);
+      });
+      // The single read selector's attach point differs by form; single_end_libs
+      // is also the name of a list some forms keep, so only take a widget.
+      var single = [this.single_end_libsWidget, this.single_end_libs, this.read].filter(function (w) {
+        return w && w.searchBox;
+      })[0];
+      var pair = (value(this.read1) || value(this.read2)) && isNew('paired');
+      var singleNew = value(single) && isNew('single');
+      var srr = value(this.srr_accession) && isNew('srr_accession');
+      if (!pair && !singleNew && !srr) {
+        this.submit_selected_libs_validation_message.innerHTML = ' <br> Nothing new to add.<br>Hint: Fill in a read file or SRA run accession that is not already in Selected Libraries.';
+        return;
+      }
+      this.submit_selected_libs_validation_message.innerHTML = '';
+      // Each send starts from a clean form: clear what was added (input that
+      // could not be added stays to be fixed) and, where the form has one,
+      // reset the Condition dropdown so the next reads get theirs picked again.
+      var count = lang.hitch(this, function () {
+        return this.libraryStore.data.length;
+      });
+      var clear = function (widgets) {
+        widgets.forEach(function (w) {
+          if (w) {
+            (w.searchBox || w).set('value', '');
+          }
+        });
+      };
+      var start = count();
+      // Where one Sample Identifier box serves every read type, name it after
+      // the library about to be sent (unless the user typed their own).
+      var fillId = lang.hitch(this, function (setter) {
+        if (this[setter]) {
+          this[setter]();
+        }
+      });
+      var send = function (add, widgets) {
+        var before = count();
+        add();
+        if (count() > before) {
+          clear(widgets);
+        }
+      };
+      var resetCondition = lang.hitch(this, function () {
+        if (this.condition_reads && count() > start) {
+          this.condition_reads.reset();
+        }
+      });
+      if (pair) {
+        fillId('setPairedId');
+        send(lang.hitch(this, 'onAddPair'), [this.read1, this.read2, this.paired_sample_id]);
+      }
+      if (singleNew) {
+        fillId('setSingleId');
+        send(lang.hitch(this, 'onAddSingle'), [single, this.single_sample_id]);
+      }
+      if (!srr) {
+        resetCondition();
+        return;
+      }
+      var beforeSRR = count();
+      fillId('setSrrId');
+      this.onAddSRR();
+      var afterSRR = lang.hitch(this, function () {
+        if (count() > beforeSRR) {
+          clear([this.srr_accession, this.srr_sample_id]);
+        }
+        resetCondition();
+      });
+      // A new SRA run is checked online before it is added; the accession box
+      // is re-enabled when that check is done.
+      if (this.srr_accession.get('disabled')) {
+        var handle = this.srr_accession.watch('disabled', function (name, was, now) {
+          if (!now) {
+            handle.unwatch();
+            afterSRR();
+          }
+        });
+      }
+      else {
+        afterSRR();
+      }
     },
 
     onAddSRR: function () {

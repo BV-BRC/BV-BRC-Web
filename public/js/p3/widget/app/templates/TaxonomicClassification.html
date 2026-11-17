@@ -27,9 +27,9 @@
                data-dojo-props="constraints:{min:1,max:1000}," />
       </div>
       </div>
-      <table data-dojo-attach-point="readTable" style="width:100%">
+      <table data-dojo-attach-point="readTable" class="equalHeightBoxes" style="width:100%">
         <tr>
-          <td>
+          <td style="width:50%; vertical-align:top">
             <div id="pairedBox" class="appBox appShadow">
               <div class="headerrow">
                 <div style="width: 400px;display:inline-block;">
@@ -38,13 +38,31 @@
                     <i class="fa icon-info-circle fa" title="click to open info dialog"></i>
                   </div>
                 </div>
+                <!-- submit to selected libraries arrow button, as on SARS-CoV-2 Wastewater Analysis -->
+                <div class="appRow">
+                  <div style="width:100%;display:inline-block;">
+                    <div class="appsublabel" style="display:inline-block;">Send to Selected Libraries</div>  <i data-dojo-attach-point="submit_selected_libs_validation_message"></i>
+                    <div style="width:40%; display:inline-block;"></div>
+                    <i data-dojo-attach-event="click:onAddReads" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                  </div>
+                </div>
               </div>
+              <!-- One sample ID for the reads being sent; the code's
+                   paired_sample_id, single_sample_id and srr_sample_id all
+                   point at this box. It clears after each send. -->
+              <div class="appRow">
+                <label class="paramlabel" style="font-weight: bold;">Sample Identifier</label>
+                <div class="appsublabel">Filled in from the read file name.</div>
+                <input name="sample_id_reads" class="readField"
+                        data-dojo-attach-point="sample_id_reads"
+                        data-dojo-type="dijit/form/ValidationTextBox"
+                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
+                        required="false"/>
+              </div>
+
               <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Paired read library</label>
-                </div>
-                <div style="width:10%;display:inline-block;">
-                  <i data-dojo-attach-event="click:onAddPair" class="fa icon-arrow-circle-o-right fa-lg"></i>
+                  <label class="paramlabel" style="font-weight: bold;">Paired read library</label>
                 </div>
               </div>
               <div class="appRow">
@@ -69,79 +87,50 @@
                 </div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">Sample Identifier</label><br>
-                <input  name="paired_sample_id"
-                        style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
-                        data-dojo-attach-point="paired_sample_id"
-                        data-dojo-type="dijit/form/ValidationTextBox"
-                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
-                        required="false"/>
-              </div>
-              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">Single read library</label>
+                  <label class="paramlabel" style="font-weight: bold;">Single read library</label>
                 </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSingle" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
                 <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
                       name="libdat_readfile"
                       data-dojo-attach-point="single_end_libsWidget"
-                      style="width:285px" required="false"
+                      style="width:300px" required="false"
                       data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"
                       data-dojo-attach-event="change:setSingleId"
                       ></div>
               </div>
               <div class="appRow">
-                <label class="paramlabel">Sample Identifier</label><br>
-                <input  name="single_sample_id"
-                        style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
-                        data-dojo-attach-point="single_sample_id"
-                        data-dojo-type="dijit/form/ValidationTextBox"
-                        data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
-                        required="false"/>
-              </div>
-              <div class="appRow">
                 <div style="width:85%;display:inline-block;">
-                  <label class="paramlabel">SRA run accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i>
+                  <label class="paramlabel" style="font-weight: bold;">SRA run accession</label><i data-dojo-attach-point="srr_accession_validation_message"></i>
                 </div>
-                <div style="width:10%;display:inline-block;"><i data-dojo-attach-event="click:onAddSRR" class="fa icon-arrow-circle-o-right fa-lg"></i></div>
               </div>
               <div class="appRow">
                 <div data-dojo-type="dijit/form/ValidationTextBox"
                     data-dojo-attach-point="srr_accession"
-                    style="width: 300px"
+                    class="readField"
                     required="false"
                     data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRR'"
                     data-dojo-attach-event="change:setSrrId"
                     ></div>
-                <div class="appRow">
-                  <label class="paramlabel">Sample Identifier</label><br>
-                  <input  name="srr_sample_id"
-                          style="width:75%; height:20px; margin-left:10px; font-family: monospace; font-size:12px"
-                          data-dojo-attach-point="srr_sample_id"
-                          data-dojo-type="dijit/form/ValidationTextBox"
-                          data-dojo-props="trim:true,placeholder:'Sample ID', intermediateChanges:true"
-                          required="false"/>
-                </div>
               </div>
             </div>
           </td>
-          <td>
-            <div class="appBox appShadow" style="min-height:400px; width:400px;", >
+          <td style="width:50%; vertical-align:top">
+            <div class="appBox appShadow libraryBox">
               <div class="headerrow">
                 <label class="appBoxLabel">Selected Libraries</label>
                 <div name="selected-libraries" class="infobox iconbox infobutton tooltipinfo">
                   <i class="fa icon-question-circle fa"></i>
                 </div>
                 <br>
-                <div class="appsublabel">Place read files here using the arrow buttons.</div>
+                <div class="appsublabel">Place read files here using the arrow button.</div>
               </div>
-              <div class="appRow" style="width:100%; margin-top:10px; text-align: center;">
+              <div class="appRow libraryTableRow" style="width:100%; margin-top:10px; text-align: center;">
                 <table class="librarytable"
                        frame="box"
                        data-dojo-attach-point="libsTable"
-                       style="margin:0 0 0 10px; width:90%;">
+                       style="margin:0 10px; width:calc(100% - 20px);">
                   <tbody data-dojo-attach-point="libsTableBody">
                   </tbody>
                 </table>
@@ -150,14 +139,14 @@
           </td>
         </tr>
       </table>
-      <div data-dojo-attach-point="annotationFileBox" style="min-height: 400px; width:400px; display:none" class="appBox appShadow">
+      <div data-dojo-attach-point="annotationFileBox" style="min-height: 400px; display:none" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Input File</label>
           </div>
         </div>
       </div>
-      <div id="parameterBox" style="width:400px; " class="appBox appShadow">
+      <div id="parameterBox" class="appBox appShadow">
         <div class="headerrow">
           <div style="width:85%;display:inline-block;">
             <label class="appBoxLabel">Parameters</label>
@@ -196,9 +185,8 @@
             </div><br>
               <!-- end new i icon -->
             <select data-dojo-type="dijit/form/Select"
-                    name="analysis_type"
+                    name="analysis_type" class="standardField"
                     data-dojo-attach-point="analysis_type"
-                    style="width:300px"
                     required="true"
                     data-dojo-props="intermediateChanges:true,missingMessage:'You must select a Sequencing type before analysis type',displayedValue:'Analysis type'" />
               <option value="microbiome">Microbiome Analysis</option>
@@ -213,8 +201,7 @@
               </div><br>
                 <!-- end new i icon -->
             <select data-dojo-type="dijit/form/Select"
-                    name="database"
-                    style="width:300px"
+                    name="database" class="standardField"
                     required="true"
                     data-dojo-attach-point="database"
                     data-dojo-attach-event="onChange: checkParameterRequiredFields"
@@ -233,9 +220,8 @@
           </div><br>
             <!-- end new i icon -->
           <select data-dojo-type="dijit/form/Select"
-                  name="host_genome"
+                  name="host_genome" class="standardField"
                   data-dojo-attach-point="host_genome"
-                  style="width:300px"
                   required="true"
                   data-dojo-props="intermediateChanges:false">
             <option value="no_host" selected="selected">None</option>
@@ -259,9 +245,8 @@
         </div><br>
           <!-- end new i icon -->
         <select data-dojo-type="dijit/form/Select"
-                name="confidence_interval"
+                name="confidence_interval" class="standardField"
                 data-dojo-attach-point="confidence_interval"
-                style="width:300px"
                 required="true"
                 data-dojo-props="intermediateChanges:true">
           <option value="0">0</option>
@@ -305,7 +290,7 @@
         <div class="appRow">
           <label>Output Folder</label><br>
           <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
-            name="output_path"
+            name="output_path" class="standardField"
             data-dojo-attach-point="output_path"
             required="true"
             data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange">
@@ -315,9 +300,8 @@
           <label>Output Name</label><span class="charError" style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
           <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox"
             data-dojo-attach-event="onChange:checkOutputName"
-            name="output_file"
+            name="output_file" class="standardField"
             data-dojo-attach-point="output_file"
-            style="width:85%"
             required="true"
             data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'">
           </div>

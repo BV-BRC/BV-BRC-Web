@@ -25,7 +25,7 @@ define([
     videoLink: 'https://youtu.be/PsqHeZ8pvt4',
     libraryData: null,
     defaultPath: '',
-    startingRows: 14,
+    startingRows: 9,
     libCreated: 0,
     required: true,
 
@@ -46,6 +46,8 @@ define([
         return;
       }
       this.inherited(arguments);
+      // One Sample Identifier box serves paired, single and SRA reads alike.
+      this.paired_sample_id = this.single_sample_id = this.srr_sample_id = this.sample_id_reads;
       var _self = this;
       _self.defaultPath = WorkspaceManager.getDefaultFolder() || _self.activeWorkspacePath;
       _self.output_path.set('value', _self.defaultPath);
@@ -82,7 +84,7 @@ define([
     getValues: function () {
       var values = this.inherited(arguments);
       // inputs that are NOT needed by the backend
-      var not_needed_inputs = ['libdat_file1pair', 'libdat_file2pair', 'libdat_readfile'];
+      var not_needed_inputs = ['libdat_file1pair', 'libdat_file2pair', 'libdat_readfile', 'sample_id_reads'];
       not_needed_inputs.forEach(function (key) {
         if (Object.prototype.hasOwnProperty.call(values, key)) {
           delete values[key];
@@ -299,13 +301,11 @@ define([
     },
 
     setSrrId: function () {
-      var srr_user_input = this.srr_accession.get('displayedValue');
-      this.srr_sample_id.set('value', this.replaceInvalidChars(srr_user_input.split('.')[0]));
+      this.fillSampleId(this.srr_sample_id, this.srr_accession.get('displayedValue'));
     },
 
     setSingleId: function () {
-      var read_name = this.single_end_libsWidget.searchBox.get('displayedValue');
-      this.single_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.fillSampleId(this.single_sample_id, this.single_end_libsWidget.searchBox.get('displayedValue'));
     },
 
     onAddSingle: function () {
@@ -343,8 +343,7 @@ define([
     },
 
     setPairedId: function () {
-      var read_name = this.read1.searchBox.get('displayedValue');
-      this.paired_sample_id.set('value', this.replaceInvalidChars(read_name.split('.')[0]));
+      this.fillSampleId(this.paired_sample_id, this.read1.searchBox.get('displayedValue'));
     },
 
     onAddPair: function () {

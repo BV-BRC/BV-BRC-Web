@@ -57,12 +57,12 @@ define([
         if (!this.advrow2.turnedOn) {
           this.advrow2.turnedOn = true;
           this.advrow2.style.display = 'block';
-          this.advicon2.className = 'fa icon-caret-left fa-1';
+          this.advicon2.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.advrow2.turnedOn = false;
           this.advrow2.style.display = 'none';
-          this.advicon2.className = 'fa icon-caret-down fa-1';
+          this.advicon2.className = 'fa icon-caret-left fa-1';
         }
       }));
     },

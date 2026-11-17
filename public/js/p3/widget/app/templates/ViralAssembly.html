@@ -15,7 +15,7 @@
             <p>${applicationDescription} For further explanation, please see the ${applicationLabel} Service <a
                     href="${docsServiceURL}${tutorialLink}" target="_blank">Tutorial</a>.</p>
         </div>
-        <div class="formFieldsContainer" style="max-width: 500px; margin: auto">
+        <div class="formFieldsContainer">
             <div id="${id}_startWithBox" class="appBox appShadow">
                 <div class="headerrow">
                     <label class="appBoxLabel">Input File</label>
@@ -40,14 +40,14 @@
                 <div id="${id}_pairedReadLibraryBox">
                     <div class="appRow">
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="read1"
-                             data-dojo-attach-point="read1" required="false"
+                             class="standardField" data-dojo-attach-point="read1" required="false"
                              data-dojo-attach-event="onChange:onReadFileChange"
                              data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 1'"></div>
                     </div>
                     <div class="appRow">
                         <div data-dojo-attach-point="read2block">
                             <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="read2"
-                                 data-dojo-attach-point="read2" required="false"
+                                 class="standardField" data-dojo-attach-point="read2" required="false"
                                  data-dojo-attach-event="onChange:onReadFileChange"
                                  data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE 2'"></div>
                         </div>
@@ -57,7 +57,7 @@
                 <div id="${id}_singleReadLibraryBox" style="display:none;">
                     <div class="appRow">
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="read"
-                             data-dojo-attach-point="read" required="false"
+                             class="standardField" data-dojo-attach-point="read" required="false"
                              data-dojo-attach-event="onChange:onReadFileChange"
                              data-dojo-props="type:['reads'],multi:false,placeHolder:'READ FILE'"></div>
                     </div>
@@ -65,8 +65,7 @@
 
                 <div id="${id}_sraAccessionBox" style="display:none;">
                     <div class="appRow">
-                        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-attach-point="srr_accession"
-                             style="width:95%" required="false" data-dojo-attach-event="onBlur:onSRRChange" name="srr_accession"
+                        <div data-dojo-type="dijit/form/ValidationTextBox" class="standardField" data-dojo-attach-point="srr_accession" required="false" data-dojo-attach-event="onBlur:onSRRChange" name="srr_accession"
                              data-dojo-props="intermediateChanges:true, missingMessage:'You must provide an accession', trim:true, placeHolder:'SRA Accession'"></div>
                         <div data-dojo-attach-point="srr_accession_validation_message"></div>
                     </div>
@@ -81,8 +80,7 @@
                 </div>
                 <div class="appRow">
                     <label class="paramlabel">Assembly Strategy</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="strategy" data-dojo-attach-point="strategy"
-                            style="width:95%" required="true" data-dojo-attach-event="onChange:onStrategyChange">
+                    <select data-dojo-type="dijit/form/Select" name="strategy" class="standardField" data-dojo-attach-point="strategy" required="true" data-dojo-attach-event="onChange:onStrategyChange">
                         <!--?<option value="auto">Auto</option>-->
                         <option value="irma">IRMA</option>
                         <option value="reference-guided">Reference Guided Assembly</option>
@@ -90,8 +88,7 @@
                 </div>
                 <div class="appRow" data-dojo-attach-point="irma_module_row">
                     <label class="paramlabel">Reference Database</label><br>
-                    <select data-dojo-type="dijit/form/Select" name="module" data-dojo-attach-point="module"
-                            style="width:95%" required="true"
+                    <select data-dojo-type="dijit/form/Select" name="module" class="standardField" data-dojo-attach-point="module" required="true"
                             data-dojo-attach-event="onChange:onModuleChange">
                         <option value="FLU">Influenza A &amp; B</option>
                         <option value="FLU_AD">Influenza A, B, C &amp; D</option>
@@ -135,8 +132,7 @@
                         <div data-dojo-attach-event="onChange:onSuggestNameChange"
                              data-dojo-type="p3/widget/GenomeNameSelector"
                              name="reference_genome_id"
-                             data-dojo-attach-point="reference_genome_nameWidget"
-                             style="width:95%"
+                             class="standardField" data-dojo-attach-point="reference_genome_nameWidget"
                              required="false"
                              maxHeight="200"></div>
                     </div>
@@ -150,8 +146,7 @@
                     <div class="appRow" data-dojo-attach-point="reference_genbank_row" style="display:none;">
                         <div data-dojo-type="dijit/form/ValidationTextBox"
                              name="reference_genbank_accession"
-                             data-dojo-attach-point="reference_genbank_accession"
-                             style="width:95%"
+                             class="standardField" data-dojo-attach-point="reference_genbank_accession"
                              required="false"
                              data-dojo-props="intermediateChanges:true,trim:true,placeHolder:'GenBank Accession (e.g. NC_045512.2 or NC_045512.2,MN908947.3)'"
                              data-dojo-attach-event="onChange:onReferenceFieldChange"></div>
@@ -159,8 +154,7 @@
                     <div class="appRow" data-dojo-attach-point="reference_fasta_row" style="display:none;">
                         <div data-dojo-type="p3/widget/WorkspaceObjectSelector"
                              name="reference_fasta_file"
-                             data-dojo-attach-point="reference_fasta_file"
-                             style="width:95%"
+                             class="standardField" data-dojo-attach-point="reference_fasta_file"
                              required="false"
                              data-dojo-props="type:['feature_dna_fasta','genome_dna_fasta','contigs'],multi:false,promptMessage:'Select or upload a FASTA file.',placeHolder:'FASTA file'"
                              data-dojo-attach-event="onChange:onReferenceFieldChange"></div>
@@ -169,7 +163,7 @@
                 <div class="appRow">
                     <label class="paramlabel">Output Folder</label><br>
                     <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path"
-                         data-dojo-attach-point="output_path" required="true"
+                         class="standardField" data-dojo-attach-point="output_path" required="true"
                          data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',title:'Select an Output Folder',type:['folder'],multi:false"
                          data-dojo-attach-event="onChange:onOutputPathChange"></div>
                 </div>
@@ -177,8 +171,7 @@
                     <label class="paramlabel">Output Name</label><span class="charError"
                                                                        style="color:red; font-size:8pt; padding-left:10px; font-weight:bold">&nbsp;</span><br>
                     <div data-dojo-type="p3/widget/WorkspaceFilenameValidationTextBox" name="output_file"
-                         data-dojo-attach-event="onChange:checkOutputName" data-dojo-attach-point="output_file"
-                         style="width:95%" required="true"
+                         data-dojo-attach-event="onChange:checkOutputName" class="standardField" data-dojo-attach-point="output_file" required="true"
                          data-dojo-props="intermediateChanges:true,missingMessage:'Name must be provided for the job result',trim:true,placeHolder:'Output Name'"></div>
                 </div>
             </div>

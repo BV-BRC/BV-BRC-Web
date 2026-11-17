@@ -62,6 +62,23 @@ define([
       this.fastaToAttachPt = ['query_fasta'];
     },
 
+    postCreate: function () {
+      this.inherited(arguments);
+      // The form re-validates every field whenever anything on the page
+      // changes, and an empty scheme list answers with an "At least one item
+      // must be selected." bubble: on load and while a sequence is typed.
+      // Hold the bubble back until the user has clicked in the list (Submit
+      // stays disabled until a scheme is picked either way).
+      var schemes = this.conversionScheme;
+      var showMessage = schemes.displayMessage;
+      schemes.displayMessage = function (message) {
+        showMessage.call(schemes, schemes._userClicked ? message : '');
+      };
+      schemes.domNode.addEventListener('click', function () {
+        schemes._userClicked = true;
+      });
+    },
+
     startup: function () {
       if (this._started) { return; }
       if (this.requireAuth && (window.App.authorizationToken === null || window.App.authorizationToken === undefined)) {

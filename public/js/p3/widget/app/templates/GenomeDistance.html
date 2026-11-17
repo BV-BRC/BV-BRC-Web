@@ -33,14 +33,14 @@
                     <div class="paramlabel">Search by genome name or genome ID</div>
                     <div data-dojo-attach-event="onChange:onSuggestNameChange"
                         data-dojo-type="p3/widget/GenomeNameSelector" data-dojo-attach-point="genome_id"
-                        style="width:600px;">
+                        class="standardField">
                     </div>
                     <div class="warning" data-dojo-attach-point="genome_message"></div>
                 </div>
 
                 <div class="appRow" data-dojo-attach-point="fasta_wrapper">
                     <label class="paramlabel">OR Upload FASTA/FASTQ</label>
-                    <div name="fasta" style="width:100%"></div>
+                    <div name="fasta"></div>
 
                     <div class="warning" data-dojo-attach-point="fasta_message"></div>
                 </div>
@@ -50,7 +50,7 @@
                 <div class="appRowSegment" data-dojo-attach-point="advanced">
                     <label class="largelabel">Advanced options</label>
                     <div class="iconbox" style="margin-left:0">
-                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-left fa-1"></i>
+                        <i data-dojo-attach-point="advancedOptionIcon" class="fa icon-caret-down fa-1"></i>
                     </div>
                 </div>
             </div>

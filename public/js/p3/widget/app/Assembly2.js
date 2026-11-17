@@ -25,7 +25,7 @@ define([
     videoLink: 'https://youtube.com/playlist?list=PLWfOyhOW_Oat3lYK7hXorV9jPZxgwBw32&si=L0ApfPQlx-65230D',
     libraryData: null,
     defaultPath: '',
-    startingRows: 13,
+    startingRows: 6,
     libCreated: 0,
 
     constructor: function () {
@@ -65,12 +65,12 @@ define([
         if (!this.advrow.turnedOn) {
           this.advrow.turnedOn = true;
           this.advrow.style.display = 'block';
-          this.advicon.className = 'fa icon-caret-left fa-1';
+          this.advicon.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.advrow.turnedOn = false;
           this.advrow.style.display = 'none';
-          this.advicon.className = 'fa icon-caret-down fa-1';
+          this.advicon.className = 'fa icon-caret-left fa-1';
         }
       }));
       this.advrow2.turnedOn = (this.advrow2.style.display != 'none');
@@ -79,12 +79,12 @@ define([
         if (!this.advrow2.turnedOn) {
           this.advrow2.turnedOn = true;
           this.advrow2.style.display = 'block';
-          this.advicon2.className = 'fa icon-caret-left fa-1';
+          this.advicon2.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.advrow2.turnedOn = false;
           this.advrow2.style.display = 'none';
-          this.advicon2.className = 'fa icon-caret-down fa-1';
+          this.advicon2.className = 'fa icon-caret-left fa-1';
         }
       }));
       this.advrow3.turnedOn = (this.advrow3.style.display != 'none');
@@ -93,12 +93,12 @@ define([
         if (!this.advrow3.turnedOn) {
           this.advrow3.turnedOn = true;
           this.advrow3.style.display = 'block';
-          this.advicon3.className = 'fa icon-caret-left fa-1';
+          this.advicon3.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.advrow3.turnedOn = false;
           this.advrow3.style.display = 'none';
-          this.advicon3.className = 'fa icon-caret-down fa-1';
+          this.advicon3.className = 'fa icon-caret-left fa-1';
         }
       }));
       this.pairToAttachPt1.concat(this.singleToAttachPt).forEach(lang.hitch(this, function (attachname) {

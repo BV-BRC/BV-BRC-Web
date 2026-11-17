@@ -65,12 +65,12 @@ define([
         if (!this.advrow.turnedOn) {
           this.advrow.turnedOn = true;
           this.advrow.style.display = 'block';
-          this.advicon.className = 'fa icon-caret-left fa-1';
+          this.advicon.className = 'fa icon-caret-down fa-1';
         }
         else {
           this.advrow.turnedOn = false;
           this.advrow.style.display = 'none';
-          this.advicon.className = 'fa icon-caret-down fa-1';
+          this.advicon.className = 'fa icon-caret-left fa-1';
         }
       }));
 
@@ -443,7 +443,8 @@ define([
 
     onStartWithChange: function () {
       if (this.startWithRead.checked == true) {
-        this.readTable.style.display = 'block';
+        // '' restores the table's own display; 'block' collapses its cells.
+        this.readTable.style.display = '';
         this.annotationFileBox.style.display = 'none';
         this.contigsFile.reset();
         this.contigsFile.set('required', false);
