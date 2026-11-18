@@ -1,0 +1,396 @@
+[
+ {
+  "name": "Metabolism",
+  "subsystem_count": 92,
+  "gene_count": 768,
+  "children": [
+   {
+    "name": "Cofactors, Vitamins, Prosthetic Groups",
+    "subsystem_count": 27,
+    "gene_count": 302,
+    "children": [
+     {
+      "name": "Tetrapyrroles",
+      "subsystem_count": 7,
+      "gene_count": 69
+     },
+     {
+      "name": "Folate and pterines",
+      "subsystem_count": 3,
+      "gene_count": 58
+     },
+     {
+      "name": "Biotin",
+      "subsystem_count": 3,
+      "gene_count": 57
+     },
+     {
+      "name": "NAD and NADP",
+      "subsystem_count": 2,
+      "gene_count": 32
+     },
+     {
+      "name": "Lipoic acid",
+      "subsystem_count": 2,
+      "gene_count": 19
+     },
+     {
+      "name": "Riboflavin, FMN, FAD",
+      "subsystem_count": 1,
+      "gene_count": 12
+     },
+     {
+      "name": "Coenzyme A",
+      "subsystem_count": 2,
+      "gene_count": 11
+     },
+     {
+      "name": "Pyridoxine",
+      "subsystem_count": 1,
+      "gene_count": 10
+     },
+     {
+      "name": "Fe-S clusters",
+      "subsystem_count": 1,
+      "gene_count": 9
+     },
+     {
+      "name": "Mycofactocin",
+      "subsystem_count": 1,
+      "gene_count": 8
+     },
+     {
+      "name": "Coenzyme F420",
+      "subsystem_count": 1,
+      "gene_count": 7
+     },
+     {
+      "name": "Quinone cofactors",
+      "subsystem_count": 1,
+      "gene_count": 7
+     },
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 2
+     },
+     {
+      "name": "Thiamin",
+      "subsystem_count": 1,
+      "gene_count": 1
+     }
+    ]
+   },
+   {
+    "name": "Amino Acids and Derivatives",
+    "subsystem_count": 26,
+    "gene_count": 160,
+    "children": [
+     {
+      "name": "Lysine, threonine, methionine, and cysteine",
+      "subsystem_count": 6,
+      "gene_count": 45
+     },
+     {
+      "name": "Aromatic amino acids and derivatives",
+      "subsystem_count": 3,
+      "gene_count": 24
+     },
+     {
+      "name": "Proline and 4-hydroxyproline",
+      "subsystem_count": 4,
+      "gene_count": 22
+     },
+     {
+      "name": "Arginine; urea cycle, creatine, polyamines",
+      "subsystem_count": 3,
+      "gene_count": 19
+     },
+     {
+      "name": "Branched-chain amino acids",
+      "subsystem_count": 2,
+      "gene_count": 16
+     },
+     {
+      "name": "Alanine, serine, and glycine",
+      "subsystem_count": 3,
+      "gene_count": 13
+     },
+     {
+      "name": "Histidine Metabolism",
+      "subsystem_count": 1,
+      "gene_count": 12
+     },
+     {
+      "name": "Glutamine, glutamate, aspartate, asparagine; ammonia assimilation",
+      "subsystem_count": 3,
+      "gene_count": 6
+     },
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 3
+     }
+    ]
+   },
+   {
+    "name": "Fatty Acids, Lipids, and Isoprenoids",
+    "subsystem_count": 18,
+    "gene_count": 140,
+    "children": [
+     {
+      "name": "Fatty acids",
+      "subsystem_count": 9,
+      "gene_count": 59
+     },
+     {
+      "name": "Phospholipids",
+      "subsystem_count": 4,
+      "gene_count": 33
+     },
+     {
+      "name": "Steroids and Hopanoids",
+      "subsystem_count": 1,
+      "gene_count": 26
+     },
+     {
+      "name": "Isoprenoids",
+      "subsystem_count": 3,
+      "gene_count": 20
+     },
+     {
+      "name": "Sphingolipids",
+      "subsystem_count": 1,
+      "gene_count": 2
+     }
+    ]
+   },
+   {
+    "name": "Nucleosides and Nucleotides",
+    "subsystem_count": 8,
+    "gene_count": 58,
+    "children": [
+     {
+      "name": "Purines",
+      "subsystem_count": 5,
+      "gene_count": 35
+     },
+     {
+      "name": "",
+      "subsystem_count": 2,
+      "gene_count": 14
+     },
+     {
+      "name": "Pyrimidines",
+      "subsystem_count": 1,
+      "gene_count": 9
+     }
+    ]
+   },
+   {
+    "name": "Iron acquisition and metabolism",
+    "subsystem_count": 1,
+    "gene_count": 35,
+    "children": [
+     {
+      "name": "Siderophores",
+      "subsystem_count": 1,
+      "gene_count": 35
+     }
+    ]
+   },
+   {
+    "name": "Carbohydrates",
+    "subsystem_count": 5,
+    "gene_count": 32,
+    "children": [
+     {
+      "name": "C-1 compound metabolism",
+      "subsystem_count": 2,
+      "gene_count": 12
+     },
+     {
+      "name": "Di- and oligosaccharides",
+      "subsystem_count": 1,
+      "gene_count": 8
+     },
+     {
+      "name": "Polysaccharides",
+      "subsystem_count": 1,
+      "gene_count": 7
+     },
+     {
+      "name": "Monosaccharides",
+      "subsystem_count": 1,
+      "gene_count": 5
+     }
+    ]
+   },
+   {
+    "name": "Metabolite damage and its repair or mitigation",
+    "subsystem_count": 4,
+    "gene_count": 16,
+    "children": [
+     {
+      "name": "",
+      "subsystem_count": 4,
+      "gene_count": 16
+     }
+    ]
+   },
+   {
+    "name": "Phosphate Metabolism",
+    "subsystem_count": 1,
+    "gene_count": 14,
+    "children": [
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 14
+     }
+    ]
+   },
+   {
+    "name": "Sulfur Metabolism",
+    "subsystem_count": 1,
+    "gene_count": 6,
+    "children": [
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 6
+     }
+    ]
+   },
+   {
+    "name": "Nitrogen Metabolism",
+    "subsystem_count": 1,
+    "gene_count": 5,
+    "children": [
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 5
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "Protein Processing",
+  "subsystem_count": 41,
+  "gene_count": 231,
+  "children": [
+   {
+    "name": "Protein Synthesis",
+    "subsystem_count": 30,
+    "gene_count": 173,
+    "children": [
+     {
+      "name": "Ribosome biogenesis",
+      "subsystem_count": 4,
+      "gene_count": 101
+     },
+     {
+      "name": "Aminoacyl-tRNA-synthetases",
+      "subsystem_count": 20,
+      "gene_count": 36
+     },
+     {
+      "name": "Translation",
+      "subsystem_count": 5,
+      "gene_count": 23
+     },
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 13
+     }
+    ]
+   },
+   {
+    "name": "Protein Fate (folding, modification, targeting, degradation)",
+    "subsystem_count": 11,
+    "gene_count": 58,
+    "children": [
+     {
+      "name": "Protein targeting, sorting, translocation",
+      "subsystem_count": 3,
+      "gene_count": 33
+     },
+     {
+      "name": "Protein folding",
+      "subsystem_count": 3,
+      "gene_count": 16
+     },
+     {
+      "name": "Protein processing and modification",
+      "subsystem_count": 3,
+      "gene_count": 6
+     },
+     {
+      "name": "Protein degradation",
+      "subsystem_count": 2,
+      "gene_count": 3
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "Energy",
+  "subsystem_count": 28,
+  "gene_count": 209,
+  "children": [
+   {
+    "name": "Energy and Precursor Metabolites Generation",
+    "subsystem_count": 16,
+    "gene_count": 116,
+    "children": [
+     {
+      "name": "Central Metabolism",
+      "subsystem_count": 13,
+      "gene_count": 108
+     },
+     {
+      "name": "Fermentation",
+      "subsystem_count": 3,
+      "gene_count": 8
+     }
+    ]
+   },
+   {
+    "name": "Respiration",
+    "subsystem_count": 12,
+    "gene_count": 93,
+    "children": [
+     {
+      "name": "Electron donating reactions",
+      "subsystem_count": 4,
+      "gene_count": 52
+     },
+     {
+      "name": "Biogenesis of respiratory chain components",
+      "subsystem_count": 5,
+      "gene_count": 26
+     },
+     {
+      "name": "ATP synthases",
+      "subsystem_count": 1,
+      "gene_count": 10
+     },
+     {
+      "name": "",
+      "subsystem_count": 1,
+      "gene_count": 3
+     },
+     {
+      "name": "Electron accepting reactions",
+      "subsystem_count": 1,
+      "gene_count": 2
+     }
+    ]
+   }
+  ]
+ }
+]
