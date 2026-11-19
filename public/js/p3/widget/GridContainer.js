@@ -2236,22 +2236,8 @@ define([
       const folder = PathJoin(WorkspaceManager.userId, 'home', '._tmp_groups');
       const groupName = 'tmp_feature_group_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       const alphabet = this.containerType === 'protein_data' ? 'protein' : 'dna';
-      // Open the tab during the click, before the workspace requests start.
-      const msaTab = window.open('', '_blank');
-      if (!msaTab) {
-        Topic.publish('/Notification', {
-          message: 'Allow pop-ups for this site to open Multiple Sequence Alignment.',
-          type: 'error'
-        });
-        return;
-      }
-
+      let msaTab;
       try {
-        msaTab.document.title = 'Multiple Sequence Alignment';
-        if (msaTab.document.body) {
-          msaTab.document.body.textContent = 'Preparing Multiple Sequence Alignment…';
-        }
-
         if (!this.msaLoadingMask) {
           this.msaLoadingMask = new Standby({
             target: this.id,
@@ -2274,21 +2260,29 @@ define([
           }
         }
 
-        if (msaTab.closed) {
+        const group = await WorkspaceManager.createGroup(groupName, 'feature_group', folder, 'feature_id', featureIds);
+        if (this._destroyed) {
           return;
         }
-        const group = await WorkspaceManager.createGroup(groupName, 'feature_group', folder, 'feature_id', featureIds);
-        if (!msaTab.closed) {
-          const jobData = {
-            feature_groups: [group.path],
-            alphabet: alphabet,
-            aligner: 'Muscle',
-            input_type: 'input_group'
-          };
-          RerunUtility.rerun(JSON.stringify(jobData), 'MSA', window, Topic, msaTab);
+
+        msaTab = window.open('', '_blank');
+        if (!msaTab) {
+          Topic.publish('/Notification', {
+            message: 'Your MSA input is ready, but the browser blocked the new tab. Allow pop-ups for this site and try again.',
+            type: 'error'
+          });
+          return;
         }
+
+        const jobData = {
+          feature_groups: [group.path],
+          alphabet: alphabet,
+          aligner: 'Muscle',
+          input_type: 'input_group'
+        };
+        RerunUtility.rerun(JSON.stringify(jobData), 'MSA', window, Topic, msaTab);
       } catch (error) {
-        if (!msaTab.closed) {
+        if (msaTab && !msaTab.closed) {
           msaTab.close();
         }
         console.error('Unable to prepare Multiple Sequence Alignment:', error);
