@@ -703,6 +703,7 @@ define([
           popup.open({
             popup: new ServicesTooltipDialog({
               context: 'grid_container',
+              onLaunchMSA: lang.hitch(this, '_launchMsaForSelection'),
               button: button,
               data: params,
             }),
@@ -1269,90 +1270,8 @@ define([
           tooltip: 'Multiple Sequence Alignment',
           validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
-        async function (selection) {
-          if (this.msaLoadingMask && this.msaLoadingMask.isVisible()) {
-            return;
-          }
-
-          const featureIds = Array.from(new Set(selection.map(function (row) {
-            return row.feature_id;
-          }).filter(Boolean)));
-          if (featureIds.length < 2) {
-            Topic.publish('/Notification', {
-              message: 'Select at least two distinct features to open Multiple Sequence Alignment.',
-              type: 'error'
-            });
-            return;
-          }
-
-          const folder = PathJoin(WorkspaceManager.userId, 'home', '._tmp_groups');
-          const groupName = 'tmp_feature_group_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-          const alphabet = this.containerType === 'protein_data' ? 'protein' : 'dna';
-          // Open the tab during the click, before the workspace requests start.
-          const msaTab = window.open('', '_blank');
-          if (!msaTab) {
-            Topic.publish('/Notification', {
-              message: 'Allow pop-ups for this site to open Multiple Sequence Alignment.',
-              type: 'error'
-            });
-            return;
-          }
-
-          try {
-            msaTab.document.title = 'Multiple Sequence Alignment';
-            if (msaTab.document.body) {
-              msaTab.document.body.textContent = 'Preparing Multiple Sequence Alignment…';
-            }
-
-            if (!this.msaLoadingMask) {
-              this.msaLoadingMask = new Standby({
-                target: this.id,
-                image: '/public/js/p3/resources/images/spin.svg',
-                color: '#efefef'
-              });
-              this.own(this.msaLoadingMask);
-              this.addChild(this.msaLoadingMask);
-              this.msaLoadingMask.startup();
-            }
-            this.msaLoadingMask.show();
-
-            try {
-              await WorkspaceManager.createFolder(folder);
-            } catch (error) {
-              // A concurrent request or an earlier launch may have created the folder.
-              const existing = await WorkspaceManager.getObject(folder, true);
-              if (existing.type !== 'folder') {
-                throw error;
-              }
-            }
-
-            if (msaTab.closed) {
-              return;
-            }
-            const group = await WorkspaceManager.createGroup(groupName, 'feature_group', folder, 'feature_id', featureIds);
-            if (!msaTab.closed) {
-              const jobData = {
-                feature_groups: [group.path],
-                alphabet: alphabet,
-                aligner: 'Muscle',
-                input_type: 'input_group'
-              };
-              RerunUtility.rerun(JSON.stringify(jobData), 'MSA', window, Topic, msaTab);
-            }
-          } catch (error) {
-            if (!msaTab.closed) {
-              msaTab.close();
-            }
-            console.error('Unable to prepare Multiple Sequence Alignment:', error);
-            Topic.publish('/Notification', {
-              message: 'Could not open Multiple Sequence Alignment for this selection. Please try again.',
-              type: 'error'
-            });
-          } finally {
-            if (!this._destroyed && this.msaLoadingMask) {
-              this.msaLoadingMask.hide();
-            }
-          }
+        function (selection) {
+          return this._launchMsaForSelection(selection);
         },
         false
       ], [
@@ -2290,6 +2209,97 @@ define([
         return url.pathname + url.search + url.hash;
       } catch (error) {
         return null;
+      }
+    },
+
+    _launchMsaForSelection: async function (selection) {
+      if (!window.App.user || !window.App.user.id) {
+        Topic.publish('/login');
+        return;
+      }
+
+      if (this.msaLoadingMask && this.msaLoadingMask.isVisible()) {
+        return;
+      }
+
+      const featureIds = Array.from(new Set(selection.map(function (row) {
+        return row.feature_id;
+      }).filter(Boolean)));
+      if (featureIds.length < 2) {
+        Topic.publish('/Notification', {
+          message: 'Select at least two distinct features to open Multiple Sequence Alignment.',
+          type: 'error'
+        });
+        return;
+      }
+
+      const folder = PathJoin(WorkspaceManager.userId, 'home', '._tmp_groups');
+      const groupName = 'tmp_feature_group_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      const alphabet = this.containerType === 'protein_data' ? 'protein' : 'dna';
+      // Open the tab during the click, before the workspace requests start.
+      const msaTab = window.open('', '_blank');
+      if (!msaTab) {
+        Topic.publish('/Notification', {
+          message: 'Allow pop-ups for this site to open Multiple Sequence Alignment.',
+          type: 'error'
+        });
+        return;
+      }
+
+      try {
+        msaTab.document.title = 'Multiple Sequence Alignment';
+        if (msaTab.document.body) {
+          msaTab.document.body.textContent = 'Preparing Multiple Sequence Alignment…';
+        }
+
+        if (!this.msaLoadingMask) {
+          this.msaLoadingMask = new Standby({
+            target: this.id,
+            image: '/public/js/p3/resources/images/spin.svg',
+            color: '#efefef'
+          });
+          this.own(this.msaLoadingMask);
+          this.addChild(this.msaLoadingMask);
+          this.msaLoadingMask.startup();
+        }
+        this.msaLoadingMask.show();
+
+        try {
+          await WorkspaceManager.createFolder(folder);
+        } catch (error) {
+          // A concurrent request or an earlier launch may have created the folder.
+          const existing = await WorkspaceManager.getObject(folder, true);
+          if (existing.type !== 'folder') {
+            throw error;
+          }
+        }
+
+        if (msaTab.closed) {
+          return;
+        }
+        const group = await WorkspaceManager.createGroup(groupName, 'feature_group', folder, 'feature_id', featureIds);
+        if (!msaTab.closed) {
+          const jobData = {
+            feature_groups: [group.path],
+            alphabet: alphabet,
+            aligner: 'Muscle',
+            input_type: 'input_group'
+          };
+          RerunUtility.rerun(JSON.stringify(jobData), 'MSA', window, Topic, msaTab);
+        }
+      } catch (error) {
+        if (!msaTab.closed) {
+          msaTab.close();
+        }
+        console.error('Unable to prepare Multiple Sequence Alignment:', error);
+        Topic.publish('/Notification', {
+          message: 'Could not open Multiple Sequence Alignment for this selection. Please try again.',
+          type: 'error'
+        });
+      } finally {
+        if (!this._destroyed && this.msaLoadingMask) {
+          this.msaLoadingMask.hide();
+        }
       }
     },
 
