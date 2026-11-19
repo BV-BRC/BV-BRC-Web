@@ -9,7 +9,7 @@ define([
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
   'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders',
-  '../widget/ThrottleBanner'
+  '../widget/ThrottleBanner', '../util/fullCollectionDateUrl'
 
 ], function (
   declare,
@@ -22,7 +22,7 @@ define([
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
   ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
-  authHeader, ThrottleBanner) {
+  authHeader, ThrottleBanner, fullCollectionDateUrl) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -384,6 +384,7 @@ define([
       Router.register('/view(/.*)', function (params, path) {
         console.log("Register Viewer Route: ", params, path);
         var newState = getState(params, path);
+        newState.search = fullCollectionDateUrl.expand(newState.search);
         var parts = newState.pathname.split('/');
         parts.shift();
         var type = parts.shift();
