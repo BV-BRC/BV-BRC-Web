@@ -2296,7 +2296,10 @@ define([
         var href = this._getInfluenzaSearchReturnUrl();
         if (href) Topic.publish('/navigate', { href: href });
       }), !!this._getInfluenzaSearchReturnUrl());
-      domConstruct.place(this.selectionActionBar._actions.EditInfluenzaSearch.button, this.selectionActionBar.containerNode, 'first');
+      var guideAction = this.selectionActionBar._actions.UserGuide;
+      if (guideAction) {
+        domConstruct.place(this.selectionActionBar._actions.EditInfluenzaSearch.button, guideAction.button, 'after');
+      }
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.selectionActionBar) {
