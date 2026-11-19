@@ -1,0 +1,1325 @@
+{
+ "responseHeader": {
+  "status": 0
+ },
+ "response": {
+  "numFound": 1208,
+  "start": 0,
+  "docs": []
+ },
+ "facet_counts": {
+  "facet_pivot": {
+   "superclass,class,subclass,subsystem_id": [
+    {
+     "field": "superclass",
+     "value": "Energy",
+     "count": 209,
+     "pivot": [
+      {
+       "field": "class",
+       "value": "Energy and Precursor Metabolites Generation",
+       "count": 116,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "Central Metabolism",
+         "count": 108,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "2-oxoglutarate_dehydrogenase_",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Anaerobic_module_of_TCA",
+           "count": 5
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Cyanobacterial_bypass_in_the_TCA",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Dehydrogenase_complexes",
+           "count": 11
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glycolate,_glyoxylate_interconversions",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glycolysis_and_Gluconeogenesis",
+           "count": 15
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glyoxylate_bypass",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Methylglyoxal_Metabolism",
+           "count": 6
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Pentose_phosphate_pathway",
+           "count": 10
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Pyruvate_Alanine_Serine_Interconversions",
+           "count": 9
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Pyruvate_metabolism_I:_anaplerotic_reactions,_PEP",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Pyruvate_metabolism_II:_acetyl-CoA,_acetogenesis_from_pyruvate",
+           "count": 11
+          },
+          {
+           "field": "subsystem_id",
+           "value": "TCA_Cycle",
+           "count": 17
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Fermentation",
+         "count": 8,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Acetoin,_butanediol_metabolism",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Acetolactate_synthase_subunits",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Fermentations:_Lactate",
+           "count": 3
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Respiration",
+       "count": 93,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 3,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Quinone_oxidoreductase_family",
+           "count": 3
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "ATP synthases",
+         "count": 10,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "F0F1-type_ATP_synthase",
+           "count": 10
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Biogenesis of respiratory chain components",
+         "count": 26,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Biogenesis_of_c-type_cytochromes",
+           "count": 11
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Biogenesis_of_cytochrome_c_oxidases",
+           "count": 4
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Heme_O_and_Heme_A_biosynthesis",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Heme_O_and_Heme_A_biosynthesis_(with_selected_terminal_oxidases)",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "NiFe_hydrogenase_maturation",
+           "count": 1
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Electron accepting reactions",
+         "count": 2,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Cytochrome_d_ubiquinol_oxidase_operon",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Electron donating reactions",
+         "count": 52,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "NADH_ubiquinone_oxidoreductase",
+           "count": 14
+          },
+          {
+           "field": "subsystem_id",
+           "value": "NADH_ubiquinone_oxidoreductase_vs._multi-subunit_cation_antiporter",
+           "count": 14
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Respiratory_Complex_I",
+           "count": 14
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Succinate_dehydrogenase_and_Fumarate_reductase_cpmlexes",
+           "count": 10
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "field": "superclass",
+     "value": "Metabolism",
+     "count": 768,
+     "pivot": [
+      {
+       "field": "class",
+       "value": "Amino Acids and Derivatives",
+       "count": 160,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 3,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Amino_acid_racemase",
+           "count": 3
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Alanine, serine, and glycine",
+         "count": 13,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "D-3-phosphoglycerate_to_phosphoserine_module",
+           "count": 7
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glycine_cleavage_system",
+           "count": 4
+          },
+          {
+           "field": "subsystem_id",
+           "value": "L-serine_dehydratase_subunits",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Arginine; urea cycle, creatine, polyamines",
+         "count": 19,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Arginine_biosynthesis_via_N-acetyl-L-citrulline",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Polyamine_Metabolism",
+           "count": 5
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Urease_subunits",
+           "count": 6
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Aromatic amino acids and derivatives",
+         "count": 24,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Chorismate_Synthesis",
+           "count": 11
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Phenylalanine_and_Tyrosine_synthesis_1",
+           "count": 5
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Tryptophan_synthesis",
+           "count": 8
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Branched-chain amino acids",
+         "count": 16,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Branched-Chain_Amino_Acid_Biosynthesis",
+           "count": 12
+          },
+          {
+           "field": "subsystem_id",
+           "value": "HMG_CoA_Synthesis",
+           "count": 4
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Glutamine, glutamate, aspartate, asparagine; ammonia assimilation",
+         "count": 6,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Aspartate_to_Homoserine_module",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glutamate_dehydrogenases",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glutamine_synthetases",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Histidine Metabolism",
+         "count": 12,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Histidine_Biosynthesis",
+           "count": 12
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Lysine, threonine, methionine, and cysteine",
+         "count": 45,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Aspartate_to_Threonine_Module",
+           "count": 5
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Cysteine_dioxygenase_containing_cluster_1",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Cysteine_synthesis",
+           "count": 18
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Diaminopimelate_Synthesis_",
+           "count": 9
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Lysine_DAP_biosynthetic_pathway",
+           "count": 9
+          },
+          {
+           "field": "subsystem_id",
+           "value": "S-methylmethionine",
+           "count": 1
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Proline and 4-hydroxyproline",
+         "count": 22,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "A_Hypothetical_Protein_Related_to_Proline_Metabolism",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Proline,_4-hydroxyproline_uptake_and_utilization",
+           "count": 4
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Proline_Synthesis",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Proline_biosynthesis_(for_review)",
+           "count": 12
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Carbohydrates",
+       "count": 32,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "C-1 compound metabolism",
+         "count": 12,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "One-carbon_metabolism_by_tetrahydropterines",
+           "count": 4
+          },
+          {
+           "field": "subsystem_id",
+           "value": "S-Adenosyl-L-homocysteine_recycling",
+           "count": 8
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Di- and oligosaccharides",
+         "count": 8,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Galactose_utilization",
+           "count": 8
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Monosaccharides",
+         "count": 5,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "GDP-fucose_to_mannose-1P_module",
+           "count": 5
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Polysaccharides",
+         "count": 7,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Glycogen_metabolism",
+           "count": 7
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Cofactors, Vitamins, Prosthetic Groups",
+       "count": 302,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 2,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Molybdopterin_cytosine_dinucleotide",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Biotin",
+         "count": 57,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Biotin_biosynthesis",
+           "count": 24
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Biotin_synthesis_&_utilization",
+           "count": 26
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Biotin_synthesis_cluster",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Coenzyme A",
+         "count": 11,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Coenzyme_A",
+           "count": 4
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Coenzyme_A_Biosynthesis_cluster",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Coenzyme F420",
+         "count": 7,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Coenzyme_F420_synthesis",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Fe-S clusters",
+         "count": 9,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Fe-S_cluster_assembly",
+           "count": 9
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Folate and pterines",
+         "count": 58,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Folate_Biosynthesis",
+           "count": 20
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Folate_biosynthesis_cluster",
+           "count": 14
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Molybdenum_cofactor_biosynthesis",
+           "count": 24
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Lipoic acid",
+         "count": 19,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Lipoic_acid_metabolism",
+           "count": 7
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Lipoylated_proteins",
+           "count": 12
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Mycofactocin",
+         "count": 8,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Mycofactocin_system_cluster",
+           "count": 8
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "NAD and NADP",
+         "count": 32,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "NAD_and_NADP_cofactor_biosynthesis_bacterial",
+           "count": 16
+          },
+          {
+           "field": "subsystem_id",
+           "value": "NAD_and_NADP_cofactor_biosynthesis_global",
+           "count": 16
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Pyridoxine",
+         "count": 10,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Pyridoxin_(Vitamin_B6)_Biosynthesis",
+           "count": 10
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Quinone cofactors",
+         "count": 7,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Menaquinone_biosynthesis_from_chorismate_via_1,4-dihydroxy-2-naphthoate",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Riboflavin, FMN, FAD",
+         "count": 12,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Riboflavin,_FMN_and_FAD_metabolism_with_fusion_events",
+           "count": 12
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Tetrapyrroles",
+         "count": 69,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Cob(I)alamin_adenosyltransferase",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Cobalamin_synthesis",
+           "count": 11
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Cobalamin_synthesis,_Precorin-2_to_Cob(II)yrinate_a,c_diamide,_aerobic",
+           "count": 9
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Cobalamin_synthesis_from_Cob(II)yrinate_a,c_diamide",
+           "count": 11
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Heme_Biosynthesis:_protoporphyrin-,_coproporphyrin-_and_siroheme-dependent_pathways",
+           "count": 17
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Metal_chelatases",
+           "count": 13
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Mycobacterial_heme_acquisition_system",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Thiamin",
+         "count": 1,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Thiamin,_thiazole,_hydroxymethylpyrimidine_salvage_and_uptake",
+           "count": 1
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Fatty Acids, Lipids, and Isoprenoids",
+       "count": 140,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "Fatty acids",
+         "count": 59,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Acyl-CoA_thioesterase_II",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Acyl_carrier_protein",
+           "count": 4
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Enoyl-[ACP]_reductases_disambiguation",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Fatty_Acid_Biosynthesis_FASII",
+           "count": 14
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Fatty_Acid_Biosynthesis_cluster",
+           "count": 6
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Mycobacterial_FadD_proteins_(fatty_acid_CoA-_and_AMP-_ligases)",
+           "count": 22
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Mycobacterial_HadABC_proteins_((3R)-hydroxyacyl-ACP_dehydrates_of_FASII)",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Mycobacterial_gene_cluster_associated_with_resistance_against_FAS-II_antibiotics",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Putative_oxidase_COG2907",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Isoprenoids",
+         "count": 20,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Acyclic_terpene_utilization",
+           "count": 7
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Isoprenoid_Biosynthesis:_Interconversions",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Nonmevalonate_Branch_of_Isoprenoid_Biosynthesis",
+           "count": 10
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Phospholipids",
+         "count": 33,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Cardiolipin_biosynthesis",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Glycerolipid_and_Glycerophospholipid_Metabolism_in_Bacteria",
+           "count": 27
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Inositol-containing_phospholipids",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Lipid_orphans",
+           "count": 1
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Sphingolipids",
+         "count": 2,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Bacterial_Sphingolipids",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Steroids and Hopanoids",
+         "count": 26,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Cholesterol_catabolism",
+           "count": 26
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Iron acquisition and metabolism",
+       "count": 35,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "Siderophores",
+         "count": 35,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Siderophore_Mycobactin",
+           "count": 35
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Metabolite damage and its repair or mitigation",
+       "count": 16,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 16,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "D-tyrosyl-tRNA(Tyr)_deacylase",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Damaged_nicotinamide_nucleotide_NAD(P)HX_repair",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Metabolite_repair",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Nudix_proteins_(nucleoside_triphosphate_hydrolases)",
+           "count": 5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Nitrogen Metabolism",
+       "count": 5,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 5,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Denitrifying_reductase_gene_clusters",
+           "count": 5
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Nucleosides and Nucleotides",
+       "count": 58,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 14,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Adenosyl_nucleosidases",
+           "count": 7
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Ribonucleotide_reduction",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Purines",
+         "count": 35,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "DeNovo_Purine_Biosynthesis",
+           "count": 21
+          },
+          {
+           "field": "subsystem_id",
+           "value": "GMP_synthase",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "IMP_and_Xanthine_conversion_to_XMP_and_GMP_module",
+           "count": 6
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Nucleoside_uptake_and_degradation_cluster",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Purine_nucleotide_synthesis_regulator",
+           "count": 3
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Pyrimidines",
+         "count": 9,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "De_Novo_Pyrimidine_Synthesis",
+           "count": 9
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Phosphate Metabolism",
+       "count": 14,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 14,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "High_affinity_phosphate_transporter_and_control_of_PHO_regulon",
+           "count": 14
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Sulfur Metabolism",
+       "count": 6,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 6,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Sulfurtransferase_and_Ssec_cluster",
+           "count": 6
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "field": "superclass",
+     "value": "Protein Processing",
+     "count": 231,
+     "pivot": [
+      {
+       "field": "class",
+       "value": "Protein Fate (folding, modification, targeting, degradation)",
+       "count": 58,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "Protein degradation",
+         "count": 3,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Protein_degradation",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Putative_TldE-TldD_proteolytic_complex",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Protein folding",
+         "count": 16,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Chaperones_GroEL_GroES_and_Thermosome",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Periplasmic_disulfide_interchange",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Protein_chaperones",
+           "count": 7
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Protein processing and modification",
+         "count": 6,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Peptide_methionine_sulfoxide_reductase",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Ribosomal_protein_S5p_acylation",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Signal_peptidase",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Protein targeting, sorting, translocation",
+         "count": 33,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Encapsulation_of_DyP-type_peroxidase_or_ferritin-like_protein_oligomers",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Twin-arginine_translocation_system",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Twin-arginine_translocation_system_related_cluster",
+           "count": 27
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "field": "class",
+       "value": "Protein Synthesis",
+       "count": 173,
+       "pivot": [
+        {
+         "field": "subclass",
+         "value": "",
+         "count": 13,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Universal_GTPases",
+           "count": 13
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Aminoacyl-tRNA-synthetases",
+         "count": 36,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Ala",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Arg",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Asn",
+           "count": 6
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Asp",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Cys",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Gln",
+           "count": 6
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Glu",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Gly",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_His",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Ile",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Leu",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Lys",
+           "count": 3
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Met",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Phe",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Pro",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Ser",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Thr",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Trp",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Tyr",
+           "count": 2
+          },
+          {
+           "field": "subsystem_id",
+           "value": "tRNA_aminoacylation,_Val",
+           "count": 1
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Ribosome biogenesis",
+         "count": 101,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Ribosomal_proteins,_single-copy",
+           "count": 41
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Ribosomal_proteins,_zinc_requirement",
+           "count": 24
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Ribosome_LSU,_bacterial",
+           "count": 34
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Ribosome_activity_modulation",
+           "count": 2
+          }
+         ]
+        },
+        {
+         "field": "subclass",
+         "value": "Translation",
+         "count": 23,
+         "pivot": [
+          {
+           "field": "subsystem_id",
+           "value": "Programmed_frameshift",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Trans-translation_by_stalled_ribosomes",
+           "count": 1
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Translation_elongation_factors,_bacterial",
+           "count": 8
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Translation_initiation_factors,_bacterial",
+           "count": 5
+          },
+          {
+           "field": "subsystem_id",
+           "value": "Translation_termination_factors,_bacterial",
+           "count": 8
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

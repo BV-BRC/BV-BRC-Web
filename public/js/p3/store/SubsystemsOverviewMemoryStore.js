@@ -5,7 +5,7 @@ define([
   'dojo/store/util/QueryResults',
   'dojo/when', 'dojo/_base/lang',
   'dojo/_base/Deferred', 'dojo/Stateful',
-  '../util/PathJoin', '../auth/authHeaders'
+  '../util/PathJoin', '../auth/authHeaders', '../util/subsystemSummary'
 
 ], function (
   declare,
@@ -15,7 +15,8 @@ define([
   when, lang,
   Deferred, Stateful,
   PathJoin,
-  authHeader) {
+  authHeader,
+  SubsystemSummary) {
   return declare([Memory, Stateful], {
     baseQuery: {},
     idProperty: 'id',
@@ -133,17 +134,58 @@ define([
 
       var _self = this;
 
-      this._loadingDeferred = when(request.get(PathJoin(this.apiServer, 'data/subsystem_summary', this.state.genome_id), {
-        handleAs: 'json',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'X-Requested-With': null,
-          Authorization: authHeader('api', this.token)
-        },
-        timeout: 1200000
+      var headers = {
+        Accept: 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': null,
+        Authorization: authHeader('api', this.token)
+      };
 
-      }), lang.hitch(this, function (response) {
+      // The cached summary. Fast, and complete for anything an anonymous user
+      // can see -- but the route queries as nobody and caches by URL, so for a
+      // private genome it answers [] and the pie chart draws nothing.
+      var fromCache = lang.hitch(this, function () {
+        return request.get(PathJoin(this.apiServer, 'data/subsystem_summary', this.state.genome_id), {
+          handleAs: 'json',
+          headers: headers,
+          timeout: 1200000
+        });
+      });
+
+      // The same pivot asked of the ordinary data API, which carries the
+      // caller's token and applies its permission filter. Reshaped to match
+      // what the cached route returns, so the chart cannot tell the difference.
+      var fromApi = lang.hitch(this, function () {
+        var body = SubsystemSummary.buildSolrQuery(this.state.genome_id);
+        if (!body) {
+          return [];
+        }
+        return request.post(PathJoin(this.apiServer, 'subsystem') + '/', {
+          handleAs: 'json',
+          data: body,
+          headers: lang.mixin({}, headers, {
+            Accept: 'application/solr+json',
+            'Content-Type': 'application/solrquery+x-www-form-urlencoded'
+          }),
+          timeout: 1200000
+        }).then(SubsystemSummary.fromPivot);
+      });
+
+      var source = SubsystemSummary.chooseSource(state, !!(window.App && window.App.authorizationToken));
+      var summary;
+      if (source === 'api') {
+        summary = fromApi();
+      } else if (source === 'cache-then-api') {
+        // Privacy unknown: a private genome's cached answer is [], which is
+        // indistinguishable from a genome that simply has no subsystems.
+        summary = when(fromCache(), function (rows) {
+          return (rows && rows.length) ? rows : fromApi();
+        }, fromApi);
+      } else {
+        summary = fromCache();
+      }
+
+      this._loadingDeferred = when(summary, lang.hitch(this, function (response) {
 
         if ( response ) {
           _self.setData(response.filter(function (row) { return row.name !== ''; }));
