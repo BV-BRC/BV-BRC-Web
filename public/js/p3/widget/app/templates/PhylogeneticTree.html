@@ -190,25 +190,40 @@
             </div>
           </div>
           <div class="appRow">
-            <label class="paramlabel">Max Allowed Deletions (0~10):</label>
-            <div name="max_genomes_missing"
-              class="medInput"
-              data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-attach-point="max_genomes_missing"
-              data-dojo-props="constraints:{min:0,max:10}"
-              value="0">
+            <label class="paramlabel">Sequences to Analyze:</label><br>
+            <label style="margin-right:12px; cursor:pointer;">
+              <input type="radio" data-dojo-type="dijit/form/RadioButton" name="sequence_type" value="dna" data-dojo-attach-point="sequence_type_dna" /> DNA (fastest)
+            </label>
+            <label style="margin-right:12px; cursor:pointer;">
+              <input type="radio" data-dojo-type="dijit/form/RadioButton" name="sequence_type" value="protein" data-dojo-attach-point="sequence_type_protein" /> Protein
+            </label>
+            <label style="cursor:pointer;">
+              <input type="radio" data-dojo-type="dijit/form/RadioButton" name="sequence_type" value="both" data-dojo-attach-point="sequence_type_both" checked /> Both
+            </label>
+          </div>
+          <div class="appRow">
+            <div style="display:inline-block; width:47%; vertical-align:top;">
+              <label class="paramlabel" title="0 to 10: number of main genomes that may lack a gene in any PGFam">Max Deleted Genes:</label>
+              <div name="max_genomes_missing"
+                style="width:100%; box-sizing:border-box;"
+                data-dojo-type="dijit/form/NumberTextBox"
+                data-dojo-attach-point="max_genomes_missing"
+                data-dojo-props="constraints:{min:0,max:10}"
+                value="0">
+              </div>
+            </div>
+            <div style="display:inline-block; width:47%; margin-left:3%; vertical-align:top;">
+              <label class="paramlabel" title="0 to 10: extra gene copies allowed for main genomes in any PGFam">Max Duplicated Genes:</label>
+              <div name="max_allowed_dups"
+                style="width:100%; box-sizing:border-box;"
+                data-dojo-type="dijit/form/NumberTextBox"
+                data-dojo-attach-point="max_allowed_dups"
+                data-dojo-props="constraints:{min:0,max:10}"
+                value="0">
+              </div>
             </div>
           </div>
           <div class="appRow">
-            <label class="paramlabel">Max Allowed Duplications (0~10):</label>
-            <div name="max_allowed_dups"
-              class="medInput"
-              data-dojo-type="dijit/form/NumberTextBox"
-              data-dojo-attach-point="max_allowed_dups"
-              data-dojo-props="constraints:{min:0,max:10}"
-              value="0">
-            </div>
-            <br><br>
             <div class="appRow">
               <label class="paramlabel">Output Folder</label><br>
               <div data-dojo-type="p3/widget/WorkspaceObjectSelector" name="output_path" data-dojo-attach-point="output_path" required="true" data-dojo-props="title:'Select an Output Folder',autoSelectCurrent:true,selectionText:'Destination',type:['folder'],multi:false" data-dojo-attach-event="onChange:onOutputPathChange"></div>

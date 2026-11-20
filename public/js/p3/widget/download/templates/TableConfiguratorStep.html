@@ -20,6 +20,25 @@
     </div>
   </div>
 
+  <!-- Saved column sets. Above the picker because applying one replaces
+       the whole selection below it. Hidden when signed out, since saving
+       needs a workspace. -->
+  <div class="configSection savedFormatsSection dijitHidden"
+       data-dojo-attach-point="columnSetsSection">
+    <div class="savedFormatsRow">
+      <span class="savedFormatsLabel">Saved columns</span>
+      <select data-dojo-attach-point="columnSetSelect" class="savedFormatDropdown"
+              aria-label="Apply a saved column set"
+              data-dojo-attach-event="onchange:_onColumnSetChange"></select>
+      <button type="button" class="savedFormatBtn dijitHidden"
+              data-dojo-attach-point="saveColumnSetBtn"
+              data-dojo-attach-event="onclick:_onSaveColumnSet">Save as…</button>
+      <button type="button" class="savedFormatBtn dijitHidden"
+              data-dojo-attach-point="deleteColumnSetBtn"
+              data-dojo-attach-event="onclick:_onDeleteColumnSet">Delete</button>
+    </div>
+  </div>
+
   <!-- Column Selection Section -->
   <div class="configSection">
     <h4><i class="icon-columns"></i> Column Selection</h4>

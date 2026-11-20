@@ -5,7 +5,7 @@ define([
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../../util/genomeKingdom'
+  '../../util/genomeKingdom', '../../util/genomeContextQuery'
 ], function (
   declare, lang,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
@@ -13,7 +13,7 @@ define([
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
   EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  genomeKingdom
+  genomeKingdom, genomeContextQuery
 ) {
 
   return declare([GenomeList], {
@@ -87,6 +87,28 @@ define([
         // eslint-disable-next-line no-case-declarations
         default:
           const activeQueryState = lang.mixin({}, this.state)
+
+          // The group's query is `in(genome_id,GenomeGroup(...))`, which
+          // only works on collections that have genome_id. Epitopes and
+          // Serology do not, so they answered 400 and rendered an empty
+          // grid that looked like "this group has none" (the Strains tab
+          // above is already special-cased onto genome_ids for the same
+          // reason). Re-target per collection; see util/genomeContextQuery.
+          // eslint-disable-next-line no-case-declarations
+          const retargeted = genomeContextQuery(activeQueryState.search, activeTab.dataModel);
+          genomeContextQuery.refreshFilterableFields(activeTab.dataModel);
+          if (activeTab.dataModel && activeQueryState.search) {
+            activeQueryState.search = retargeted.query;
+            if (retargeted.unfiltered) {
+              // Everything was dropped. genomeContextQuery substitutes a
+              // match-nothing clause rather than an empty query, because
+              // an empty query returns the WHOLE collection -- which would
+              // show every epitope in the database as this group's.
+              activeQueryState.autoFilterMessage = activeTab.title
+                + ' cannot be filtered by genome group, so this view cannot be '
+                + 'applied here. Showing no results rather than every record.';
+            }
+          }
 
           if (activeQueryState) {
             activeTab.set('state', activeQueryState)

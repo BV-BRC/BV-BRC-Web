@@ -320,6 +320,24 @@ uses `id`. `buildQuery()` builds the sort from `[sortField, pk, DownloadFormats.
 `sortField`/`pk` in `dataTypeFormats` is not the uniqueKey (e.g. subsystem's `subsystem_id`, pathway's
 `pathway_id`) would 500 without this — and must be added to `getUniqueKey()` if its uniqueKey isn't `id`.
 
+**Pitfall 1a — an *unknown* field in `sort()` gives 200 and an EMPTY body, not an error.** The 400
+above is the case where the uniqueKey is *missing*. Naming a field the collection does not have fails
+differently and far more quietly:
+
+```
+sort(+feature_id,+id)   on genome_feature  ->  200, 0 bytes
+sort(+feature_id)                          ->  200, 134 bytes
+```
+
+Identical on alpha and production. So a download can silently produce a zero-byte file with nothing
+in the console and no failed request. If a download comes back empty, check the sort fields against
+the collection before looking anywhere else.
+
+This is why `buildQuery()` must not fall back to a bare `'id'` for `pk`: most collections have no such
+field, it lands in the sort, and the download dies silently. The fallback chain is
+`spec.primaryKey → dataTypeConfig.pk → getUniqueKey(dataType)`. A caller that omits `primaryKey`
+(saved searches did) is then still correct.
+
 **Pitfall 2 — cross-collection sequence download in *selected* scope must read the linkField off the
 selected rows.** Some formats target a different collection than the source grid (e.g. specialty-genes
 grid, pk `id` UUID → sequence FASTA from `genome_feature` via `linkField: feature_id`). In selected scope
@@ -610,6 +628,24 @@ Configured in `p3-web.conf`:
 - Homology Service: BLAST searches
 - Compare Regions: Genome comparison
 
+### alpha and production are not the same API
+
+`alpha.bv-brc.org/api` carries API changes — download fixes in particular — that
+`www.bv-brc.org/api` does not. The local dev config points at **alpha**, so anything exercised
+through the running app hits alpha, not prod.
+
+Two consequences when investigating an API behaviour:
+
+- **Check both hosts before concluding it is general.** A `curl` against one proves nothing
+  about the other. Run the same request against `alpha.bv-brc.org/api` and
+  `www.bv-brc.org/api` and say which you used.
+- **Don't switch hosts mid-investigation.** Comparing "transport A on prod" against
+  "transport B on alpha" produces a difference that is neither.
+
+Endpoints also differ in existence, not just behaviour: `/<collection>/fields` serves on alpha
+and 404s on production (see the FASTA field-picker notes), so a client consuming it needs a
+fallback or must ship with the matching API release.
+
 ### User service `/verify/` endpoint (resend verification email)
 
 The only caller of the user-service `/verify/` API is `UserProfileForm.js`
@@ -671,6 +707,45 @@ focus: function () {
   // Otherwise, block automatic focus from form validation
 }
 ```
+
+### Copying to the clipboard: use `util/copyToClipboard.js`, never hand-roll it
+
+A modal `dijit/Dialog` **contains focus** — focus landing on a node outside the dialog is
+pulled straight back. That turns the standard "append a hidden textarea, select it,
+`execCommand('copy')`" recipe into a **silent false success**:
+
+```javascript
+var ta = domConstruct.create('textarea', { value: text, … }, document.body);
+ta.select();
+document.execCommand('copy');   // returns TRUE, copied an EMPTY selection
+```
+
+`.select()` never moves focus (measured: `activeElement` stayed on the dialog's `<select>`),
+so the copy event fires over an empty selection and `execCommand` **still returns `true`**.
+The button reports "copied", the clipboard keeps its previous contents. Two separate
+hand-rolled helpers in `widget/download/` hit this.
+
+Three rules the shared module encodes, all of which were got wrong at least once:
+
+- **Host the textarea inside the open dialog**, not on `document.body`, or focus containment
+  defeats the selection.
+- **Don't trust `execCommand`'s return value.** Verify `document.activeElement` is the
+  textarea and the selection is non-empty before believing it.
+- **Synchronous first, async as the fallback — not the reverse.** `execCommand` only works
+  inside the user gesture, and `await`ing a promise *ends* that gesture, so an
+  `await navigator.clipboard.writeText(...)`-then-fall-back helper cannot recover in Safari.
+  For the same reason, **no inline `require()` in a copy click handler** — an async module
+  load ends the gesture too. Put the dependency in the `define` array.
+
+A rejected `navigator.clipboard.writeText` is a **real failure** (insecure context, denied
+permission, unfocused window). Report it so the caller can log the text as a fallback;
+swallowing it with an empty handler and returning `true` is how the original bug shipped.
+
+**Verify a copy against the real clipboard.** Stubbing `navigator.clipboard.writeText` to
+capture the string proves the text was *built*, not *copied* — that is precisely what hid
+this bug through a round of testing. Prime the clipboard with a sentinel, click the real
+button, then read it back (`pbpaste` on macOS). Avoid `navigator.clipboard.readText()` in an
+automated check: it blocks on a permission prompt that may never resolve.
 
 ### Making Custom Widgets Participate in Form Validation
 To make a custom widget participate in dijit form validation:

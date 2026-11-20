@@ -429,3 +429,44 @@ describe('a configured API base with a trailing slash', () => {
     expect(url).not.toContain('//genome_feature');
   });
 });
+
+describe('sort clause when primaryKey is omitted', () => {
+  /**
+   * A saved-search download produced a zero-byte file. buildQuery fell
+   * back to a bare 'id' for the primary key and emitted
+   * sort(+feature_id,+id) -- genome_feature has no `id` field, and the
+   * http_download path answers an unknown sort field with 200 and an
+   * EMPTY body rather than an error, so nothing surfaced.
+   *
+   * Confirmed identical on alpha and production.
+   */
+  function sortIn(spec) {
+    const captured = {};
+    const Executor = loadExecutor(makeStubs(captured));
+    Executor.execute(Object.assign({
+      format: 'protein+fasta',
+      dataType: 'genome_feature',
+      scope: 'all',
+      rqlQuery: 'eq(genome_id,83332.12)'
+    }, spec), { forceClientSide: true });
+    const m = (captured.data || '').match(/sort\(([^)]*)\)/);
+    return m ? m[1] : null;
+  }
+
+  test('no bare id for a collection that has none', () => {
+    const sort = sortIn({});           // primaryKey omitted
+    expect(sort).not.toMatch(/\+id\b/);
+  });
+
+  test('falls back to the collection primary key', () => {
+    expect(sortIn({})).toBe('+feature_id');
+  });
+
+  test('an explicit primaryKey is still honoured', () => {
+    expect(sortIn({ primaryKey: 'feature_id' })).toBe('+feature_id');
+  });
+
+  test('the uniqueKey is always present — cursorMark requires it', () => {
+    expect(sortIn({ sortFieldOverride: 'product' })).toMatch(/\+feature_id/);
+  });
+});
