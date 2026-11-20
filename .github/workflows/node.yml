@@ -1,5 +1,5 @@
-# CI: install deps and verify the server module graph loads on the
-# production Node version. See https://github.com/actions/setup-node
+# CI: install deps and verify the server module graph loads on every Node
+# version this app has to run on. See https://github.com/actions/setup-node
 #
 # This exists specifically to catch require()/ESM breakage. Production runs
 # Node 22, which cannot require() an ESM-only module, while dev often runs
@@ -7,6 +7,19 @@
 # then loads fine in dev but crashes prod on startup (e.g. sanitize-html
 # 2.17.6 -> htmlparser2 12, which is ESM-only). Loading app.js on Node 22
 # here reproduces that failure in CI instead of in production.
+#
+# 24.x is tested alongside 22.x ahead of the planned production upgrade.
+# Production runs every Node service from a single pm2 ecosystem.js, so the
+# move is all-at-once for the whole fleet rather than service by service --
+# there is no way to stage it, which makes "is 24 green?" something worth
+# knowing well before the maintenance window rather than during it.
+#
+# Note the upgrade direction is the forgiving one: 24 can require() ESM, so
+# it REMOVES the failure mode above rather than adding one. The real risks
+# are native modules needing a rebuild for the new ABI, and services whose
+# package.json declares no `engines` and so records no tested version.
+#
+# When production is on 24, drop 22.x from the matrix.
 
 name: CI
 
@@ -18,12 +31,19 @@ on:
 
 jobs:
   build:
+    # Names the run "Node 22.x" / "Node 24.x" in the checks list, so a
+    # failure says which version broke without opening the logs.
+    name: Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
 
     strategy:
+      # Report both versions rather than stopping at the first failure:
+      # "fails on 24, passes on 22" and "fails on both" mean different
+      # things, and the difference is the whole point of the matrix.
+      fail-fast: false
       matrix:
-        # Match production. Add newer lines here as prod upgrades.
-        node-version: [ 22.x ]
+        # 22.x is production today; 24.x is where it is going.
+        node-version: [ 22.x, 24.x ]
 
     steps:
       - uses: actions/checkout@v4
