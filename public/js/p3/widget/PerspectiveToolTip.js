@@ -3,13 +3,13 @@ define([
   'dojo/_base/lang', 'dojo/mouse',
   'dojo/topic', 'dojo/query', 'dijit/layout/ContentPane',
   'dijit/Dialog', 'dijit/popup', 'dijit/TooltipDialog',
-  './AdvancedDownload', 'dojo/dom-class'
+  'dojo/dom-class'
 ], function (
   declare, on, domConstruct,
   lang, Mouse,
   Topic, query, ContentPane,
   Dialog, popup, TooltipDialog,
-  AdvancedDownload, domClass
+  domClass
 ) {
 
   return declare([TooltipDialog], {

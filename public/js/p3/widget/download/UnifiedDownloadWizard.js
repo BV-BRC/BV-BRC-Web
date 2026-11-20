@@ -20,7 +20,6 @@ define([
   './TableConfiguratorStep',
   './AccessionConfiguratorStep',
   './GenbankConfiguratorStep',
-  './GenomeBundleConfiguratorStep',
   'dijit/form/Button'
 ], function (
   declare,
@@ -44,7 +43,6 @@ define([
   TableConfiguratorStep,
   AccessionConfiguratorStep,
   GenbankConfiguratorStep,
-  GenomeBundleConfiguratorStep
 ) {
   /**
    * UnifiedDownloadWizard - Main wizard dialog for downloads
@@ -358,9 +356,7 @@ define([
 
       // Determine which configurator to use based on format type
       var StepClass;
-      if (formatType === 'bundle') {
-        StepClass = GenomeBundleConfiguratorStep;
-      } else if (DownloadFormats.isFastaFormat(formatType)) {
+      if (DownloadFormats.isFastaFormat(formatType)) {
         StepClass = FASTAConfiguratorStep;
       } else if (formatType === 'genbank') {
         StepClass = GenbankConfiguratorStep;
