@@ -152,6 +152,7 @@ define([
       //   this.viewer.removeChild(this.strains);
       // }
 
+      /* Temporarily hide the Strains tabs.
       if (taxonomy.lineage_names.includes('Orthomyxoviridae')) {
         this.viewer.addChild(this.strains_orthomyxoviridae, 3);
       } else if (taxonomy.lineage_names.includes('Bunyaviricetes')) {
@@ -159,6 +160,7 @@ define([
       } else {
         this.viewer.removeChild(this.strains || this.strains_orthomyxoviridae || this.strains_bunyavirales);
       }
+      */
 
       // switch tab configuration & view context
       if (taxonomy.lineage_names.includes('Bacteria') && this.context === 'virus') {
@@ -324,9 +326,9 @@ define([
           break;
         case 'surveillance':
         case 'serology':
-        case 'strains':
-        case 'strains_orthomyxoviridae':
-        case 'strains_bunyavirales':
+        // case 'strains':
+        // case 'strains_orthomyxoviridae':
+        // case 'strains_bunyavirales':
         case 'epitope':
         case 'experiments':
           activeTab.set('state', lang.mixin({}, this.state, {

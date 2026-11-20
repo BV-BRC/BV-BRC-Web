@@ -2,12 +2,12 @@ define([
   'dojo/_base/declare', 'dojo/_base/lang', 'dijit/popup', 'dojo/on', 'dojo/dom', 'dojo/dom-class', 'dojo/query',
   'dojo/store/Memory', 'dijit/Calendar', 'dijit/TooltipDialog', './SearchBase', './TextInputEncoder',
   './FacetStoreBuilder', './HostGroups', 'dojo/text!./templates/InfluenzaSearch.html', 'rql/parser',
-  'dojo/request', '../../auth/authHeaders', './MultiValueSelect'
+  'dojo/request', '../../auth/authHeaders', '../../util/fullCollectionDatePattern', './MultiValueSelect'
 ], function (
   declare, lang, popup, on, dom, domClass, query,
   Memory, Calendar, TooltipDialog, SearchBase, TextInputEncoder,
   storeBuilder, hostGroupStore, template, RQLParser,
-  request, authHeader
+  request, authHeader, fullCollectionDatePattern
 ) {
 
   // Legacy + updated NCBI Taxonomy IDs — both needed for facet store scoping
@@ -67,6 +67,7 @@ define([
     stateProvince: 'text',
     collectionDateFrom: 'text',
     collectionDateTo: 'text',
+    fullCollectionDate: 'checkbox',
     season: 'text',
     strainName: 'text',
     seqLengthFrom: 'text',
@@ -1013,7 +1014,7 @@ define([
 
       // Reset checkboxes
       var checkboxes = [
-        this.completeGenomeNode,
+        this.completeGenomeNode, this.fullCollectionDateNode,
         this.segPB2Node, this.segPB1Node, this.segPANode, this.segHANode,
         this.segNPNode, this.segNANode, this.segMNode, this.segNSNode,
         this.segSelectAllNode
@@ -1085,12 +1086,19 @@ define([
     _buildDateQuery: function (field, fromNode, toNode) {
       var fromStr = fromNode.get('value').trim();
       var toStr = toNode.get('value').trim();
-      if (fromStr && toStr) {
-        return 'between(' + field + ',' + encodeURIComponent(toSolrDateLower(fromStr)) + ',' + encodeURIComponent(toSolrDateUpper(toStr)) + ')';
-      } else if (fromStr) {
-        return 'gt(' + field + ',' + encodeURIComponent(toSolrDateLower(fromStr)) + ')';
-      } else if (toStr) {
-        return 'lt(' + field + ',' + encodeURIComponent(toSolrDateUpper(toStr)) + ')';
+      var lower = fromStr && toSolrDateLower(fromStr);
+      var upper = toStr && toSolrDateUpper(toStr);
+      if (field === 'collection_date') {
+        // Full ISO dates sort chronologically as strings on the raw field.
+        lower = lower.slice(0, 10);
+        upper = upper.slice(0, 10);
+      }
+      if (lower && upper) {
+        return 'between(' + field + ',' + encodeURIComponent(lower) + ',' + encodeURIComponent(upper) + ')';
+      } else if (lower) {
+        return 'gt(' + field + ',' + encodeURIComponent(lower) + ')';
+      } else if (upper) {
+        return 'lt(' + field + ',' + encodeURIComponent(upper) + ')';
       }
       return null;
     },
@@ -1170,8 +1178,11 @@ define([
       pushEq(q, 'state_province', this.stateProvinceNode);
 
       // Collection date
-      var collDateQ = this._buildDateQuery('collection_date_dr', this.collectionDateFromNode, this.collectionDateToNode);
+      var fullCollectionDate = this.fullCollectionDateNode.get('value');
+      var collectionDateField = fullCollectionDate ? 'collection_date' : 'collection_date_dr';
+      var collDateQ = this._buildDateQuery(collectionDateField, this.collectionDateFromNode, this.collectionDateToNode);
       if (collDateQ) q.push(collDateQ);
+      if (fullCollectionDate) q.push('eq(collection_date,' + encodeURIComponent(fullCollectionDatePattern) + ')');
 
       // Season
       pushEq(q, 'season', this.seasonNode);
@@ -1267,9 +1278,10 @@ define([
       ].some(function (n) { return n && n.get('value'); });
       if (segChecked) cols.push('segment');
 
-      // Collection date — add if either bound is filled
-      var collDateSet = (this.collectionDateFromNode && this.collectionDateFromNode.get('value')) ||
-                        (this.collectionDateToNode && this.collectionDateToNode.get('value'));
+      // Collection date — add when filtering by range or precision.
+      var collDateSet = this.fullCollectionDateNode.get('value')
+        || (this.collectionDateFromNode && this.collectionDateFromNode.get('value'))
+        || (this.collectionDateToNode && this.collectionDateToNode.get('value'));
       if (collDateSet) cols.push('collection_date');
 
       // Submission date — add if either bound is filled

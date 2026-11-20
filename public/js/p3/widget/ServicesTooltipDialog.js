@@ -17,6 +17,7 @@ define([
     selection: null,
     label: '',
     genome_info: null,
+    onLaunchMSA: null,
     _setSelectionAttr: function (val) {
       this.selection = val;
     },
@@ -365,26 +366,9 @@ define([
           RerunUtility.rerun(JSON.stringify(job_data), 'HASubtypeNumberingConversion', window, Topic);
         }
       }
-      if (service === 'MSA') {
-        var job_data;
-        // always features
-        if (this.context === 'grid_container') {
-          var feature_list = data.selection.map(x => x.feature_id);
-          this.saveTempGroup('feature', feature_list).then(lang.hitch(this, function (group_path) {
-            // create data json
-            job_data = {};
-            job_data['input_type'] = 'input_group';
-            job_data['feature_groups'] = [group_path];
-            job_data['alphabet'] = 'dna';
-            job_data['aligner'] = 'Muscle';
-            RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
-          }), lang.hitch(this, function (err) {
-            this.loadingMask.hide();
-            console.log('error during temporary group creating: exiting');
-            console.log(err);
-            return false;
-          }));
-        }
+      if (service === 'MSA' && this.context === 'grid_container' && this.onLaunchMSA) {
+        popup.close(this);
+        return this.onLaunchMSA(data.selection);
       }
     },
 

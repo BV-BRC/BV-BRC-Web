@@ -1,7 +1,7 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
-  '../GenomeListOverview', '../StrainGridContainer', '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
+  '../GenomeListOverview', /* '../StrainGridContainer', */ '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
@@ -9,7 +9,7 @@ define([
 ], function (
   declare, lang,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
-  Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
+  Overview, /* StrainGridContainer, */ GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
   EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
@@ -73,7 +73,7 @@ define([
         return;
       }
       switch (active) {
-        case 'strains':
+        // case 'strains':
         case 'transcriptomics':
           activeTab.set('state', lang.mixin({}, this.state, { search: `in(genome_ids,GenomeGroup(${encodeURIComponent('/' + this.groupPath)}))` }));
           break;
@@ -133,12 +133,14 @@ define([
 
       this.overview = this.createOverviewPanel();
 
+      /* Temporarily hide the Strains tab.
       this.strains = new StrainGridContainer({
         title: 'Strains',
         id: this.viewer.id + '_strains',
         disabled: false,
         state: this.state
       })
+      */
       this.genomes = new GroupGenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
@@ -231,7 +233,7 @@ define([
       });
 
       this.viewer.addChild(this.overview);
-      this.viewer.addChild(this.strains);
+      // this.viewer.addChild(this.strains);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
@@ -251,7 +253,7 @@ define([
     },
 
     changeToBacteria: function () {
-      this.viewer.removeChild(this.strains);
+      // this.viewer.removeChild(this.strains);
       this.viewer.removeChild(this.surveillance);
       this.viewer.removeChild(this.serology);
     },

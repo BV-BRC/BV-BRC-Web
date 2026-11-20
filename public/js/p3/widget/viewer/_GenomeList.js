@@ -5,7 +5,9 @@ define([
   '../PathwayGridContainer',
   '../ExperimentsContainer', '../InteractionContainer', '../GenomeGridContainer',
   '../AMRPanelGridContainer', '../SubsystemGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer', '../SFVTGridContainer',
-  '../SequenceGridContainer', '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog', '../../auth/authHeaders'
+  '../SequenceGridContainer',
+  /* '../StrainGridContainer', '../StrainGridContainer_Orthomyxoviridae', '../StrainGridContainer_Bunyavirales', */
+  '../EpitopeGridContainer', '../../util/PathJoin', '../../util/QueryToEnglish', 'dijit/Dialog', '../../auth/authHeaders'
 ], function (
   declare, TabViewerBase, on, lang, xhr,
   ContentPane, Topic, domConstruct,
@@ -13,7 +15,9 @@ define([
   PathwayGridContainer,
   ExperimentsContainer, InteractionsContainer, GenomeGridContainer,
   AMRPanelGridContainer, SubsystemGridContainer, SurveillanceGridContainer, SerologyGridContainer, SFVTGridContainer,
-  SequenceGridContainer, StrainGridContainer, StrainGridContainer_Orthomyxoviridae, StrainGridContainer_Bunyavirales, EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog,
+  SequenceGridContainer,
+  /* StrainGridContainer, StrainGridContainer_Orthomyxoviridae, StrainGridContainer_Bunyavirales, */
+  EpitopeGridContainer, PathJoin, QueryToEnglish, Dialog,
   authHeader) {
   return declare([TabViewerBase], {
     totalGenomes: 0,
@@ -212,6 +216,7 @@ define([
         state: this.state,
         disable: false
       });
+      /* Temporarily hide the Strains tabs.
       this.strains = new StrainGridContainer({
         title: 'Strains',
         id: this.viewer.id + '_strains',
@@ -227,6 +232,7 @@ define([
         id: this.viewer.id + '_strains_bunyavirales',
         state: this.state
       });
+      */
       this.sequences = new SequenceGridContainer({
         title: 'Sequences',
         id: this.viewer.id + '_sequences',
