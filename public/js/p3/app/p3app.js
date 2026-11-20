@@ -389,6 +389,17 @@ define([
         parts.shift();
         var type = parts.shift();
 
+        if (type === 'StrainList') {
+          window.location.replace('/searches');
+          return;
+        }
+
+        // Use the default tab for links to the temporarily hidden strain tabs.
+        if (newState.hashParams && ['GenomeList', 'GenomeGroup', 'Taxonomy'].includes(type) &&
+          /^strains(?:_orthomyxoviridae|_bunyavirales)?$/.test(newState.hashParams.view_tab)) {
+          delete newState.hashParams.view_tab;
+        }
+
         newState.widgetClass = 'p3/widget/viewer/' + type;
         console.log("window.App:", window.App,window.App.production)
         newState.layers = ['p3/layer/grids','p3/layer/jbrowse','p3/layer/viewers'];
@@ -428,6 +439,11 @@ define([
         let parts = newState.pathname.split('/');
         parts.shift();
         const type = parts.shift();
+
+        if (type === 'StrainSearch') {
+          window.location.replace('/searches');
+          return;
+        }
 
         newState.widgetClass = 'p3/widget/search/' + type;
         newState.layers = ['p3/layer/search'];

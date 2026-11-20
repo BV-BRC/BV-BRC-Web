@@ -5,7 +5,7 @@ define([
   '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFamiliesContainer',
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer',
-  '../StrainGridContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
+  /* '../StrainGridContainer', */ '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
   '../InteractionsContainer', '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
   '../../util/genomeKingdom', '../../util/genomeContextQuery'
 ], function (
@@ -15,7 +15,7 @@ define([
   AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, SpecialtyGeneGridContainer, ProteinFamiliesContainer,
   PathwaysContainer, ExperimentsContainer, SubSystemsContainer,
-  StrainGridContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
+  /* StrainGridContainer, */ ProteinStructureGridContainer, ProteinFeaturesGridContainer,
   InteractionsContainer, EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
   genomeKingdom, genomeContextQuery
 ) {
@@ -213,12 +213,14 @@ define([
 
       this.overview = this.createOverviewPanel()
 
+      /* Temporarily hide the Strains tab.
       this.strains = new StrainGridContainer({
         title: 'Strains',
         id: this.viewer.id + '_strains',
         disabled: false,
         state: this.state
       })
+      */
 
       this.genomes = new GenomeGridContainer({
         title: 'Genomes',
@@ -324,7 +326,7 @@ define([
       });
 
       this.viewer.addChild(this.overview)
-      this.viewer.addChild(this.strains);
+      // this.viewer.addChild(this.strains);
       this.viewer.addChild(this.genomes)
       this.viewer.addChild(this.sequences);
       this.viewer.addChild(this.amr);
@@ -344,7 +346,7 @@ define([
     },
 
     changeToBacteria: function () {
-      this.viewer.removeChild(this.strains);
+      // this.viewer.removeChild(this.strains);
       this.viewer.removeChild(this.surveillance);
       this.viewer.removeChild(this.serology);
     },
