@@ -363,7 +363,13 @@ define([
         visibleColumns: options.visibleColumns || null,
 
         // All available columns for this data type
-        availableColumns: options.availableColumns || null
+        availableColumns: options.availableColumns || null,
+
+        // URL of the search form that produced this query, when there is
+        // one that can rebuild itself from a URL (Influenza Search). Lets
+        // a reloaded saved search still offer "edit the search that made
+        // this" rather than only the raw RQL.
+        searchFormUrl: options.searchFormUrl || null
       };
 
       // Generate display query if not provided

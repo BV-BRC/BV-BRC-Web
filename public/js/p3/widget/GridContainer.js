@@ -439,7 +439,36 @@ define([
       descriptor.primaryKey = primaryKey;
       descriptor.rqlQuery = (grid && grid.get('query')) || '';
 
+      // Keep the route back to the form that built this search, so a
+      // reloaded saved search still offers EDIT SEARCH.
+      //
+      // The live button reads a sessionStorage record written at submit
+      // time, which is per-tab and does not survive the session -- fine
+      // for Back, useless for something saved to the workspace. The
+      // form also serialises into the search page's own `fluSearch`
+      // hash, and that URL is durable, so persist that instead.
+      var editUrl = this._getSearchFormUrl();
+      if (editUrl) {
+        descriptor.searchFormUrl = editUrl;
+      }
+
       return descriptor;
+    },
+
+    /**
+     * The URL of the form that produced the current results, when the
+     * results came from one and that form can rebuild itself from a URL.
+     *
+     * Today that means Influenza Search, whose `fluSearch` hash carries
+     * the whole form. Returns null when the form state only exists in
+     * sessionStorage/history (the oversized-form path), because a URL
+     * that cannot restore the selections is worse than no button.
+     */
+    _getSearchFormUrl: function () {
+      var returnUrl = this._getInfluenzaSearchReturnUrl();
+      if (!returnUrl) return null;
+      // Only durable if the form actually round-trips through the hash.
+      return /[#&]fluSearch=/.test(returnUrl) ? returnUrl : null;
     },
 
     /**
@@ -469,6 +498,14 @@ define([
       var self = this;
       when(SavedSearchManager.load(), function () {
         var search = SavedSearchManager.get(searchId);
+
+        // The saved searches are only now in memory, so EDIT SEARCH --
+        // whose visibility depends on this search's searchFormUrl --
+        // could not have been evaluated correctly at setupActions time.
+        // Re-run the action bar's filter. Done before the early return
+        // below so a saved search with no selection still gets it.
+        self._refreshSelectionActions();
+
         if (!search || !search.selectedIds || !search.selectedIds.length) {
           return;
         }
@@ -2352,9 +2389,78 @@ define([
       try {
         var saved = JSON.parse(window.sessionStorage.getItem('bvbrc:influenza-search:' + id));
         if (!saved || !saved.form || saved.form.version !== 1 || typeof saved.url !== 'string') return null;
-        var url = new URL(saved.url, window.location.origin);
-        if (url.origin !== window.location.origin || !/^\/searches\/InfluenzaSearch\/?$/.test(url.pathname)) return null;
+        return this._safeSearchFormUrl(saved.url);
+      } catch (error) {
+        return null;
+      }
+    },
+
+    /**
+     * Accept a search-form URL only if it is same-origin and points at a
+     * form we know how to return to.
+     *
+     * One of the two sources is a saved search, which is workspace data
+     * and can be shared, so this is a trust boundary: without the check
+     * a crafted `searchFormUrl` would be published straight to
+     * `/navigate`. Returns a path, never an absolute URL.
+     */
+    _safeSearchFormUrl: function (candidate) {
+      if (typeof candidate !== 'string' || !candidate) return null;
+      try {
+        var url = new URL(candidate, window.location.origin);
+        if (url.origin !== window.location.origin) return null;
+        if (!/^\/searches\/InfluenzaSearch\/?$/.test(url.pathname)) return null;
         return url.pathname + url.search + url.hash;
+      } catch (error) {
+        return null;
+      }
+    },
+
+    /**
+     * Re-run the selection action bar's visibility filter without
+     * changing what is selected.
+     *
+     * `shouldShow` is only consulted inside the bar's selection setter,
+     * so an action whose visibility depends on data that arrives later
+     * (here: the saved searches) stays hidden until something else
+     * touches the selection. Re-setting the current value is the
+     * supported way to ask for a re-evaluation.
+     */
+    _refreshSelectionActions: function () {
+      var bar = this.selectionActionBar;
+      if (!bar || typeof bar.set !== 'function') return;
+      try {
+        bar.set('selection', bar.get('selection') || []);
+      } catch (e) {
+        // A cosmetic refresh must never break the restore path.
+      }
+    },
+
+    /**
+     * Where EDIT SEARCH should go.
+     *
+     * Two sources, in order of fidelity:
+     *
+     *  1. The sessionStorage record written when the form was submitted.
+     *     Per-tab and gone with the session, but it is the live path and
+     *     matches exactly what the user just ran.
+     *  2. `searchFormUrl` off the saved search being replayed. This is
+     *     what survives a reload, a new tab, or another machine.
+     *
+     * Without (2) a reloaded saved search lost the button entirely --
+     * the results were right but the criteria that produced them were
+     * neither shown nor editable.
+     */
+    _getEditSearchUrl: function () {
+      var live = this._getInfluenzaSearchReturnUrl();
+      if (live) return live;
+
+      var searchId = this.state && this.state.hashParams
+        && this.state.hashParams.savedSearch;
+      if (!searchId) return null;
+      try {
+        var search = SavedSearchManager.get(decodeURIComponent(searchId));
+        return search ? this._safeSearchFormUrl(search.searchFormUrl) : null;
       } catch (error) {
         return null;
       }
@@ -2377,11 +2483,11 @@ define([
         persistent: true,
         validTypes: ['*'],
         ignoreDataType: true,
-        shouldShow: lang.hitch(this, function () { return !!this._getInfluenzaSearchReturnUrl(); })
+        shouldShow: lang.hitch(this, function () { return !!this._getEditSearchUrl(); })
       }, lang.hitch(this, function () {
-        var href = this._getInfluenzaSearchReturnUrl();
+        var href = this._getEditSearchUrl();
         if (href) Topic.publish('/navigate', { href: href });
-      }), !!this._getInfluenzaSearchReturnUrl());
+      }), !!this._getEditSearchUrl());
       domConstruct.place(this.selectionActionBar._actions.EditInfluenzaSearch.button, this.selectionActionBar.containerNode, 'first');
 
       // Hide the panel on a small screen

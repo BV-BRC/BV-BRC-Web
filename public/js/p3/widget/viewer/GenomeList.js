@@ -7,7 +7,7 @@ define([
   '../PathwayGridContainer', '../ExperimentsContainer',  '../SubsystemGridContainer',
   '../StrainGridContainer', '../ProteinStructureGridContainer', '../ProteinFeaturesGridContainer',
   '../InteractionsContainer', '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../../util/genomeKingdom'
+  '../../util/genomeKingdom', '../../util/genomeContextQuery'
 ], function (
   declare, lang, Topic, domConstruct, xhr,
   TabViewerBase, QueryToEnglish, DataAPI, PathJoin, dateRangeWithinQuery,
@@ -17,7 +17,7 @@ define([
   PathwaysContainer, ExperimentsContainer, SubSystemsContainer,
   StrainGridContainer, ProteinStructureGridContainer, ProteinFeaturesGridContainer,
   InteractionsContainer, EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  genomeKingdom
+  genomeKingdom, genomeContextQuery
 ) {
 
   return declare([TabViewerBase], {
@@ -101,6 +101,57 @@ define([
         return;
       }
       const activeQueryState = lang.mixin({}, this.state, { hashParams: lang.mixin({}, this.state.hashParams) })
+
+      // state.search is written against the `genome` collection and is
+      // shared verbatim by every tab, so a genome-only field in it is a
+      // 400 on each sibling -- `undefined field segment` on Features,
+      // `undefined field collection_year` on Sequences. Re-target it for
+      // the tab's own collection. Taxonomy.js has always done this; this
+      // view did not, so any search richer than a taxon id broke the
+      // non-genome tabs. genomeContextQuery only adds the join when the
+      // collection really lacks a field, which keeps queries it can answer
+      // itself (notably `eq(public,false)`, 726k genomes) off a join the
+      // server would refuse as too broad.
+      const dataType = activeTab.dataModel;
+      if (dataType && activeQueryState.search) {
+        // Prefer the server's own answer when it is reachable. /fields
+        // reports `filterable` per field (BV-BRC-API#287), which is the
+        // distinction the static table encodes by hand. Fire-and-forget:
+        // this call is synchronous, and /fields 404s on production, so
+        // the table is what the current query uses either way.
+        genomeContextQuery.refreshFilterableFields(dataType);
+        const retargeted = genomeContextQuery(activeQueryState.search, dataType);
+        activeQueryState.search = retargeted.query;
+        if (retargeted.dropped.length) {
+          // Say so: a filter that silently vanishes reads as wrong data.
+          //
+          // Report field NAMES, not the clauses. The banner is rendered
+          // through innerHTML (GridContainer.onSetState) and this query
+          // comes from the URL, so echoing it back is reflected XSS --
+          // and raw RQL is not something to show a user anyway. Field
+          // names come from genomeContextQuery's own regex and so can
+          // only ever be [A-Za-z0-9_].
+          var droppedFields = [];
+          retargeted.dropped.forEach(function (clause) {
+            genomeContextQuery.fieldsIn(clause).forEach(function (f) {
+              var label = f.replace(/_/g, ' ');
+              if (droppedFields.indexOf(label) === -1) { droppedFields.push(label); }
+            });
+          });
+          if (droppedFields.length) {
+            activeQueryState.autoFilterMessage = retargeted.unfiltered
+              // Nothing survived, so the grid is showing a deliberate
+              // zero rather than the whole collection. Say that, instead
+              // of implying a partially-filtered result.
+              ? (activeTab.title + ' cannot be filtered by '
+                 + droppedFields.join(', ') + ', so this search cannot be '
+                 + 'applied here. Showing no results rather than every record.')
+              : (activeTab.title + ' cannot be filtered by '
+                 + droppedFields.join(', ') + ', so those criteria are not '
+                 + 'applied here.');
+          }
+        }
+      }
 
       activeTab.set('state', activeQueryState)
 
