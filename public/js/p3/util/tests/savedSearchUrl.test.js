@@ -111,6 +111,49 @@ describe('savedSearchUrl', () => {
    * The builder must not pre-escape -- callers assign it as a DOM
    * attribute -- so this pins the raw form.
    */
+  /**
+   * A saved selection can be tens of kilobytes of ids, which no URL should
+   * carry, so the hash carries the search id and the view resolves the ids
+   * from SavedSearchManager.
+   */
+  describe('selection hash', () => {
+    test('adds #savedSearch when the search carries a selection', () => {
+      const url = savedSearchUrl({
+        id: 'search_123', dataType: 'genome_feature',
+        rqlQuery: 'keyword(x)', selectedIds: ['a', 'b']
+      });
+      expect(url).toBe('/view/FeatureList/?keyword(x)#savedSearch=search_123');
+    });
+
+    test('no hash when there is no selection', () => {
+      expect(savedSearchUrl({
+        id: 'search_123', dataType: 'genome', rqlQuery: 'keyword(x)'
+      })).toBe('/view/GenomeList/?keyword(x)');
+      expect(savedSearchUrl({
+        id: 'search_123', dataType: 'genome', rqlQuery: 'keyword(x)', selectedIds: []
+      })).toBe('/view/GenomeList/?keyword(x)');
+    });
+
+    test('no hash when the search has no id to resolve', () => {
+      expect(savedSearchUrl({
+        dataType: 'genome', rqlQuery: 'keyword(x)', selectedIds: ['a']
+      })).toBe('/view/GenomeList/?keyword(x)');
+    });
+
+    test('the id is encoded', () => {
+      const url = savedSearchUrl({
+        id: 'a b&c', dataType: 'genome', rqlQuery: 'keyword(x)', selectedIds: ['a']
+      });
+      expect(url).toContain('#savedSearch=a%20b%26c');
+    });
+
+    test('works on a query-less search', () => {
+      expect(savedSearchUrl({
+        id: 's1', dataType: 'genome', rqlQuery: '', selectedIds: ['a']
+      })).toBe('/view/GenomeList/#savedSearch=s1');
+    });
+  });
+
   test('comparison operators are returned raw, for DOM-attribute assignment', () => {
     const url = savedSearchUrl({
       dataType: 'genome',
