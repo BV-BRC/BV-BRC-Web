@@ -9,7 +9,7 @@ define([
   '../jsonrpc', '../panels', '../WorkspaceManager', '../DataAPI', 'dojo/keys',
   'dijit/ConfirmDialog', '../util/PathJoin', 'dojo/request', '../widget/WorkspaceController',
   'p3/widget/copilot/ChatButton', '../util/RecentFolders', '../util/FavoriteFolders', '../auth/authHeaders',
-  '../widget/ThrottleBanner', '../util/SavedSearchManager', '../util/savedSearchUrl'
+  '../widget/ThrottleBanner', '../util/fullCollectionDateUrl', '../util/SavedSearchManager', '../util/savedSearchUrl'
 
 ], function (
   declare,
@@ -22,7 +22,7 @@ define([
   Drawer, ContentPane,
   RPC, Panels, WorkspaceManager, DataAPI, Keys,
   ConfirmDialog, PathJoin, xhr, WorkspaceController, ChatButton, RecentFolders, FavoriteFolders,
-  authHeader, ThrottleBanner, SavedSearchManager, savedSearchUrl) {
+  authHeader, ThrottleBanner, fullCollectionDateUrl, SavedSearchManager, savedSearchUrl) {
   return declare([App], {
     panels: Panels,
     activeWorkspace: null,
@@ -384,9 +384,21 @@ define([
       Router.register('/view(/.*)', function (params, path) {
         console.log("Register Viewer Route: ", params, path);
         var newState = getState(params, path);
+        newState.search = fullCollectionDateUrl.expand(newState.search);
         var parts = newState.pathname.split('/');
         parts.shift();
         var type = parts.shift();
+
+        if (type === 'StrainList') {
+          window.location.replace('/searches');
+          return;
+        }
+
+        // Use the default tab for links to the temporarily hidden strain tabs.
+        if (newState.hashParams && ['GenomeList', 'GenomeGroup', 'Taxonomy'].includes(type) &&
+          /^strains(?:_orthomyxoviridae|_bunyavirales)?$/.test(newState.hashParams.view_tab)) {
+          delete newState.hashParams.view_tab;
+        }
 
         newState.widgetClass = 'p3/widget/viewer/' + type;
         console.log("window.App:", window.App,window.App.production)
@@ -427,6 +439,11 @@ define([
         let parts = newState.pathname.split('/');
         parts.shift();
         const type = parts.shift();
+
+        if (type === 'StrainSearch') {
+          window.location.replace('/searches');
+          return;
+        }
 
         newState.widgetClass = 'p3/widget/search/' + type;
         newState.layers = ['p3/layer/search'];

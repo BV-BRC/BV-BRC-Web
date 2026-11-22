@@ -1,5 +1,5 @@
-define(['dojo/_base/declare', 'dojo/router/RouterBase'
-], function (declare, Router) {
+define(['dojo/_base/declare', 'dojo/router/RouterBase', './util/fullCollectionDateUrl'
+], function (declare, Router, fullCollectionDateUrl) {
 
   // Firing of routes on the route object is always the same,
   // no clean way to expose this on the prototype since it's for the
@@ -57,6 +57,7 @@ define(['dojo/_base/declare', 'dojo/router/RouterBase'
       // console.log("go(" + href + ")", state)
 
       state = state || {};
+      href = fullCollectionDateUrl.shorten(href);
 
       // console.log("Current HREF: ", this._currentPath, " New HREF: ", href, " STATE: ", state);
 

@@ -23,6 +23,12 @@ define([
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
   }
 
+  function keywordClause(value) {
+    // RQL uses parentheses for operators, and encodeURIComponent leaves them unescaped.
+    const encoded = encodeURIComponent(value).replace(/\(/g, '%28').replace(/\)/g, '%29');
+    return 'keyword(' + encoded + ')';
+  }
+
   function parseFacetCounts(facets) {
     const out = {};
 
@@ -550,7 +556,7 @@ define([
         if (this._filterKeywords) {
           this._filterKeywords.forEach(function (fk) {
             if (fk) {
-              fkws.push(`keyword(${encodeURIComponent(fk)})`)
+              fkws.push(keywordClause(fk));
             }
           });
         }
@@ -660,7 +666,7 @@ define([
 
       if (keywords) {
         keywords.forEach(function (k) {
-          ffilter.push('keyword(' + encodeURIComponent(k) + ')');
+          ffilter.push(keywordClause(k));
         });
       }
 
@@ -734,7 +740,7 @@ define([
 
       if (keywords) {
         keywords.forEach(function (k) {
-          ffilter.push('keyword(' + encodeURIComponent(k) + ')');
+          ffilter.push(keywordClause(k));
         });
       }
 
