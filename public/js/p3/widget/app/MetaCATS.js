@@ -9,6 +9,8 @@ define([
   Memory, domready,
   query, MetaCATSGrid, MetaCATSStore, DataAPI, WorkspaceManager
 ) {
+  var maxJobParameterBytes = 64 * 1024;
+
   return declare([AppBase], {
     baseClass: 'AppBase MetaCATS',
     templateString: Template,
@@ -258,6 +260,18 @@ define([
         console.log('Incorrect input.');
       }
       return values;
+    },
+
+    doSubmit: function (values, start_params) {
+      if (values.input_type === 'auto' && !window.App.noJobSubmission) {
+        var jobParams = window.App.containerBuildID
+          ? Object.assign({}, values, { container_id: window.App.containerBuildID })
+          : values;
+        if (new TextEncoder().encode(JSON.stringify(jobParams)).byteLength > maxJobParameterBytes) {
+          return Promise.reject(new Error('Your MetaCATS job is too large to submit. Select some rows in the Groups Grid, click Delete Rows, and try again.'));
+        }
+      }
+      return this.inherited(arguments);
     },
 
     controlYear: function () {
