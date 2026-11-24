@@ -427,6 +427,40 @@ define([], function () {
     'fasta_data': 'genome_feature'
   };
 
+  /**
+   * Fields offered as the FASTA sequence identifier, keyed by the collection
+   * the sequences come from (the step's target dataType, after any
+   * cross-collection override).
+   *
+   * The ID is the first word of the header line, so a field qualifies only if
+   * it is an identifier and never contains whitespace. Names, products and
+   * descriptions are excluded; so are fields shared by many records, such as
+   * genome_id on contigs. Two groups, measured on alpha 2026-11-24:
+   *
+   *  - unique: one value per record across BV-BRC. patric_id is missing on
+   *    RefSeq-annotated features, but feature grids default to the BV-BRC
+   *    annotation.
+   *  - external: real identifiers that repeat across BV-BRC records.
+   *    refseq_locus_tag and protein_id are shared by the BV-BRC and RefSeq
+   *    copies of a gene (3,896 repeats in H37Rv); a contig accession repeats
+   *    when the sequence is in several genome records (OR133593: 6).
+   *    protein_id is also missing on some BV-BRC-annotated proteins.
+   *
+   * A record without the chosen field gets the ID `unknown` from the server.
+   */
+  var fastaIdFields = {
+    'genome_feature': [
+      { field: 'patric_id', label: 'BV-BRC ID', unique: true },
+      { field: 'feature_id', label: 'Feature ID', unique: true },
+      { field: 'refseq_locus_tag', label: 'RefSeq Locus Tag', unique: false },
+      { field: 'protein_id', label: 'Protein ID', unique: false }
+    ],
+    'genome_sequence': [
+      { field: 'sequence_id', label: 'Sequence ID', unique: true },
+      { field: 'accession', label: 'Accession', unique: false }
+    ]
+  };
+
   return {
     /**
      * Get all format definitions
@@ -703,6 +737,36 @@ define([], function () {
       }
       // Fallback to pk
       return config ? config.pk : 'id';
+    },
+
+    /**
+     * Choices for the FASTA sequence ID dropdown, grouped for <optgroup>s.
+     *
+     * `current` is the field already selected. If it is not one of the
+     * offered identifiers -- a saved format from before the list was curated,
+     * say -- it is returned in its own group rather than silently replaced,
+     * so applying a saved format never changes what it produces.
+     *
+     * @param {string} dataType - Collection the sequences come from
+     * @param {string} [current] - Currently selected field
+     * @returns {Array<{label: string, fields: Array<{field: string, label: string}>}>}
+     */
+    getFastaIdChoices: function (dataType, current) {
+      var fields = fastaIdFields[dataType];
+      if (!fields) {
+        // A collection with no curated list: offer its default ID only.
+        var fallback = this.getDefaultIdField(dataType);
+        fields = [{ field: fallback, label: fallback, unique: true }];
+      }
+      var groups = [
+        { label: 'Unique in BV-BRC', fields: fields.filter(function (f) { return f.unique; }) },
+        { label: 'External IDs (can repeat across BV-BRC records)', fields: fields.filter(function (f) { return !f.unique; }) }
+      ];
+      var offered = fields.some(function (f) { return f.field === current; });
+      if (current && !offered) {
+        groups.push({ label: 'From saved format', fields: [{ field: current, label: current }] });
+      }
+      return groups.filter(function (g) { return g.fields.length; });
     },
 
     /**

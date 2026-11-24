@@ -1721,18 +1721,38 @@
   background: #27ae60;
 }
 
-/* Download Wizard Content Area */
+/* Download Wizard Content Area
+ *
+ * The pane is a flex column capped at the viewport: header and footer keep
+ * their height and the step content takes what is left, scrolling inside it.
+ * So the Download button stays on screen however long the step is.
+ *
+ * The cap is below 90vh on purpose. dijit/Dialog's resize() shrinks any
+ * dialog taller than maxRatio (0.9) of the viewport and puts a scrollbar on
+ * the whole pane, which scrolls the footer away with the content. Past the
+ * cap that is what used to happen; with it, that fallback never fires. 48px
+ * covers the dialog title bar and borders.
+ *
+ * (The previous max-height: calc(100vh - 260px) on the content guessed the
+ * height of everything else, and the Options step still ran 14px over 90vh
+ * on an 800px-high window.) */
+.downloadWizardDialog .dijitDialogPaneContent.unifiedDownloadWizard {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(90vh - 48px);
+  min-height: min(400px, calc(90vh - 48px));
+}
+
+.downloadWizardDialog .downloadWizardHeader,
+.downloadWizardDialog .downloadWizardFooter {
+  flex: none;
+}
+
 .downloadWizardContent {
   padding: 20px;
-  min-height: 200px;
-  /* A fixed 400px left the FASTA field picker below the fold on a laptop:
-     the content area held 1096px of step and showed 440 of it, so the
-     Available Fields list was only ~112px visible however tall it was.
-     Scale with the viewport instead, keeping room for the dialog's own
-     header, step indicator and footer. */
-  max-height: calc(100vh - 260px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  flex: 1;
 }
 
 /* Download Wizard Footer */

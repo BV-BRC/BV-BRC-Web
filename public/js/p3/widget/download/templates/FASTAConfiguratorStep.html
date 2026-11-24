@@ -69,7 +69,10 @@
   <!-- Section 1: Sequence ID Field -->
   <div class="configSection">
     <h4>Sequence ID Field</h4>
-    <p class="sectionDescription">Select the field to use as the sequence identifier (appears after &gt;).</p>
+    <p class="sectionDescription">Select the field to use as the sequence identifier (appears after &gt;).
+      Only identifiers without spaces are offered. External IDs can repeat when a download includes
+      more than one copy of the same gene or sequence, and a record without the chosen ID is written
+      as <code>unknown</code>.</p>
     <div class="idFieldSelector">
       <select data-dojo-attach-point="idFieldSelect" class="idFieldDropdown"></select>
     </div>
