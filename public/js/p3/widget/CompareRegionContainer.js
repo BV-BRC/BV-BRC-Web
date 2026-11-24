@@ -21,6 +21,20 @@ define([
     patric_id: null,
     topicId: null,
 
+    // Feature types offered in the Compare Region Viewer.
+    //
+    // The service anchors a region on a patric_id, so any feature carrying
+    // one can be passed to it -- mat_peptide does, and returns a populated
+    // region. (gene and source features have no patric_id at all, so they
+    // could never work.)
+    //
+    // This is an allowlist rather than "anything with a patric_id" because
+    // other types are untested here: misc_feature and the RNAs do return a
+    // region, but whether that region is biologically useful is a separate
+    // question from whether the call succeeds. Add types once someone has
+    // looked at the output.
+    supportedFeatureTypes: ['CDS', 'mat_peptide'],
+
     constructor: function (options) {
       this.topicId = 'CompareRegions_' + options.id.split('_compareRegionViewer')[0];
 
@@ -99,13 +113,13 @@ define([
 	      console.log("Skipping due to missing feature");
 	      return;
 	    }
-	    if (state.feature.feature_type === 'CDS')
+	    if (this.supportedFeatureTypes.indexOf(state.feature.feature_type) !== -1)
 	    {
               var window = this.region_size.get('value');
               var n_genomes = this.n_genomes.get('value');
               var method = this.method.get('value');
               var filter = this.g_filter.get('value');
-	      
+
 	      console.log("initial render", state.feature.patric_id, window, n_genomes, method, filter);
               this.render(state.feature.patric_id, window, n_genomes, method, filter);
               // this.render(state.feature.patric_id, 10000, 10, 'pgfam', 'representative+reference');
@@ -114,7 +128,8 @@ define([
 	    {
               new Dialog({
 		title: '',
-		content: 'Compare Region Viewer is only available for CDS features.',
+		content: 'Compare Region Viewer is not available for ' +
+		  (state.feature.feature_type || 'this') + ' features.',
 		style: 'width: 400px'
               }).show();
             }
@@ -293,6 +308,10 @@ define([
           value: 'pgfam', label: 'PATRIC cross-genus families (PGfams)'
         }, {
           value: 'plfam', label: 'PATRIC genus-specific families (PLfams)'
+        }, {
+          // Maps to the sog_id field; the compare_regions service groups
+          // and colours by it the same way it does the PATRIC families.
+          value: 'sog', label: 'Strict ortholog groups (SOGs)'
         }]
       });
       domConstruct.place(label_method, filterPanel.containerNode, 'last');

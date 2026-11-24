@@ -4,14 +4,16 @@ define([
   'dojo/_base/Deferred', '../JobManager', './Confirmation', './RerunUtility',
   'dojo/topic', 'dijit/layout/BorderContainer', './ActionBar', './ItemDetailPanel', '../util/encodePath',
   './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
-  'dijit/Dialog', 'dijit/layout/ContentPane', 'dojo/hash', 'dojo/io-query'
+  'dijit/Dialog', 'dijit/layout/ContentPane', 'dojo/hash', 'dojo/io-query',
+  '../util/predictStructureReport', 'dojo/when', '../WorkspaceManager'
 ], function (
   declare, on, lang, query,
   domClass, domAttr, domConstr, JobsGrid, JobContainerActionBar,
   Deferred, JobManager, Confirmation, rerunUtility,
   Topic, BorderContainer, ActionBar, ItemDetailPanel, encodePath,
   CopilotAPI, ChatSessionOptionsBar,
-  Dialog, ContentPane, hash, ioQuery
+  Dialog, ContentPane, hash, ioQuery,
+  predictStructureReport, when, WorkspaceManager
 ) {
   return declare([BorderContainer], {
     disabled: false,
@@ -354,6 +356,30 @@ define([
           var params = selection[0].parameters;
           var path = encodePath(params.output_path + '/' + params.output_file);
           Topic.publish('/navigate', { href: '/workspace' + path });
+        },
+        false
+      ], [
+        'ViewPredictStructureReport',
+        'MultiButton fa icon-eye fa-2x',
+        {
+          label: 'REPORT',
+          validTypes: ['*'],
+          multiple: false,
+          tooltip: 'View Structure Prediction Report',
+          validContainerTypes: ['*'],
+          shouldShow: predictStructureReport.shouldShow
+        },
+        function (selection) {
+          var path = predictStructureReport.reportPath(selection[0]);
+          if (path) {
+            when(WorkspaceManager.getObject(path, true), function () {
+              window.open('/workspace' + encodePath(path), '_blank');
+            }, function () {
+              Topic.publish('/Notification', { message: 'No report.html found for this job', type: 'error' });
+            });
+          } else {
+            console.log('Error: could not determine report.html path');
+          }
         },
         false
       ], [

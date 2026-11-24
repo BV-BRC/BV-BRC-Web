@@ -28,7 +28,8 @@ define([
     'dijit/popup',
     'dojo/request',
     '../../util/PathJoin',
-    'dojo/dom'
+    'dojo/dom',
+    './FloatingWindowGeometry'
 ], function(
     declare,
     _WidgetBase,
@@ -54,7 +55,8 @@ define([
     popup,
     xhr,
     PathJoin,
-    dom
+    dom,
+    Geometry
 ) {
     return declare([BorderContainer], {
         baseClass: 'CopilotFloatingWindow',
@@ -345,31 +347,21 @@ define([
                 handle: titleNode
             });
 
-            // Add bounds checking to prevent dragging outside viewport
+            // Keep the window inside the viewport while it is dragged.
             this._moveable.onMove = lang.hitch(this, function(mover, leftTop) {
-                var viewport = {
-                    width: window.innerWidth || document.documentElement.clientWidth,
-                    height: window.innerHeight || document.documentElement.clientHeight
-                };
-
-                var widgetWidth = parseInt(domStyle.get(this.domNode, 'width')) || 650;
-                var widgetHeight = parseInt(domStyle.get(this.domNode, 'height')) || 450;
-
-                // Constrain horizontal position
-                var newLeft = Math.max(0, Math.min(leftTop.l, viewport.width - widgetWidth));
-                // Constrain vertical position
-                var newTop = Math.max(0, Math.min(leftTop.t, viewport.height - widgetHeight));
-
-                // Apply the constrained position
+                var r = Geometry.clampRect({
+                    left: leftTop.l,
+                    top: leftTop.t,
+                    width: this.domNode.offsetWidth,
+                    height: this.domNode.offsetHeight
+                }, this._viewport());
                 domStyle.set(this.domNode, {
-                    left: newLeft + 'px',
-                    top: newTop + 'px'
+                    left: r.left + 'px',
+                    top: r.top + 'px'
                 });
-
                 return false; // Prevent default positioning
             });
 
-            // Optional: Add visual feedback when dragging starts/stops
             this._moveable.onMoveStart = lang.hitch(this, function(mover) {
                 domClass.add(this.domNode, 'copilotDragging');
                 domStyle.set(this.headerNode, 'background-color', '#e8e8e8');
@@ -378,10 +370,18 @@ define([
             this._moveable.onMoveStop = lang.hitch(this, function(mover) {
                 domClass.remove(this.domNode, 'copilotDragging');
                 domStyle.set(this.headerNode, 'background-color', '#f8f8f8');
+                this._saveGeometry();
             });
 
             // Create comprehensive resize handles for all sides and corners
             this._createResizeHandles();
+
+            // Sidebar overlay for narrow windows, size/position from storage,
+            // and the browser-resize listener.  Done here rather than in
+            // startup(): ChatButton places the window on <body>, so dijit
+            // never calls startup() for it.
+            this._initSidebarOverlay();
+            this._initGeometry();
         },
 
         _parseListPayload: function(value) {
@@ -889,7 +889,9 @@ define([
         },
 
         /**
-         * Starts the resize operation
+         * Starts the resize operation.  The dragged edges follow the mouse;
+         * the result is clamped to the current viewport on every move and
+         * saved (as fractions of the viewport) when the mouse is released.
          */
         _startResize: function(e, directions) {
             e.preventDefault();
@@ -897,148 +899,156 @@ define([
 
             var startX = e.clientX;
             var startY = e.clientY;
-            var startWidth = parseInt(domStyle.get(this.domNode, 'width'));
-            var startHeight = parseInt(domStyle.get(this.domNode, 'height'));
-            var startLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
-            var startTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
+            var startWidth = this.domNode.offsetWidth;
+            var startHeight = this.domNode.offsetHeight;
+            var startLeft = parseInt(domStyle.get(this.domNode, 'left'), 10) || 0;
+            var startTop = parseInt(domStyle.get(this.domNode, 'top'), 10) || 0;
+            var minWidth = Geometry.MIN_W;
+            var minHeight = Geometry.MIN_H;
 
-            // Minimum dimensions
-            var minWidth = 300;
-            var minHeight = 200;
-
-            // Get viewport dimensions
-            var viewport = {
-                width: window.innerWidth || document.documentElement.clientWidth,
-                height: window.innerHeight || document.documentElement.clientHeight
-            };
-
-            // Add visual feedback
             domClass.add(this.domNode, 'copilot-resizing');
 
             var mouseMoveHandle = on(document, 'mousemove', lang.hitch(this, function(e) {
+                var viewport = this._viewport();
                 var deltaX = e.clientX - startX;
                 var deltaY = e.clientY - startY;
+                var left = startLeft;
+                var top = startTop;
+                var width = startWidth;
+                var height = startHeight;
 
-                var newWidth = startWidth;
-                var newHeight = startHeight;
-                var newLeft = startLeft;
-                var newTop = startTop;
-
-                // Handle horizontal resizing
                 if (directions.indexOf('e') !== -1) {
-                    // Resize from right edge
-                    newWidth = Math.max(minWidth, startWidth + deltaX);
-                    newWidth = Math.min(newWidth, viewport.width - startLeft);
+                    width = Math.min(Math.max(minWidth, startWidth + deltaX), viewport.width - startLeft);
                 } else if (directions.indexOf('w') !== -1) {
-                    // Resize from left edge
-                    var proposedWidth = startWidth - deltaX;
-                    var proposedLeft = startLeft + deltaX;
-
-                    if (proposedWidth >= minWidth && proposedLeft >= 0) {
-                        newWidth = proposedWidth;
-                        newLeft = proposedLeft;
-                    } else if (proposedLeft < 0) {
-                        newWidth = startWidth + startLeft;
-                        newLeft = 0;
-                    } else {
-                        newWidth = minWidth;
-                        newLeft = startLeft + startWidth - minWidth;
+                    left = startLeft + deltaX;
+                    width = startWidth - deltaX;
+                    if (width < minWidth) {
+                        left = startLeft + startWidth - minWidth;
+                        width = minWidth;
+                    }
+                    if (left < 0) {
+                        width += left;
+                        left = 0;
                     }
                 }
 
-                // Handle vertical resizing
                 if (directions.indexOf('s') !== -1) {
-                    // Resize from bottom edge
-                    newHeight = Math.max(minHeight, startHeight + deltaY);
-                    newHeight = Math.min(newHeight, viewport.height - startTop);
+                    height = Math.min(Math.max(minHeight, startHeight + deltaY), viewport.height - startTop);
                 } else if (directions.indexOf('n') !== -1) {
-                    // Resize from top edge
-                    var proposedHeight = startHeight - deltaY;
-                    var proposedTop = startTop + deltaY;
-
-                    if (proposedHeight >= minHeight && proposedTop >= 0) {
-                        newHeight = proposedHeight;
-                        newTop = proposedTop;
-                    } else if (proposedTop < 0) {
-                        newHeight = startHeight + startTop;
-                        newTop = 0;
-                    } else {
-                        newHeight = minHeight;
-                        newTop = startTop + startHeight - minHeight;
+                    top = startTop + deltaY;
+                    height = startHeight - deltaY;
+                    if (height < minHeight) {
+                        top = startTop + startHeight - minHeight;
+                        height = minHeight;
+                    }
+                    if (top < 0) {
+                        height += top;
+                        top = 0;
                     }
                 }
 
-                // Apply the new dimensions and position
-                domStyle.set(this.domNode, {
-                    width: newWidth + 'px',
-                    height: newHeight + 'px',
-                    left: newLeft + 'px',
-                    top: newTop + 'px'
-                });
-
-                // Force layout recalculation
-                if (this.layoutContainer && this.layoutContainer.resize) {
-                    this.layoutContainer.resize();
-                }
-
-                // Notify any listeners that the widget has been resized
-                if (this.controllerPanel && this.controllerPanel.displayWidget) {
-                    this.controllerPanel.displayWidget.resize();
-                }
+                this._applyRect({ left: left, top: top, width: width, height: height });
             }));
 
             var mouseUpHandle = on(document, 'mouseup', lang.hitch(this, function(e) {
-                // Remove visual feedback
                 domClass.remove(this.domNode, 'copilot-resizing');
-
-                // Clean up event handlers
                 mouseMoveHandle.remove();
                 mouseUpHandle.remove();
+                this._saveGeometry();
             }));
         },
 
         startup: function() {
             this.inherited(arguments);
-            this.resize();
-
-            // Add window resize listener to keep widget within bounds
-            this._windowResizeHandle = on(window, 'resize', lang.hitch(this, '_constrainToBounds'));
+            this._layoutNow();
         },
 
         /**
-         * Constrains the widget to stay within viewport boundaries
+         * The window's own BorderContainer has no region children: its content
+         * is laid out by this.layoutContainer (see _layoutNow).  Without this
+         * override, resize() on the window threw "No region setting" for
+         * layoutContainer (show() used to call it on every reopen), and in
+         * narrow mode it would try to position the detached sidebar.
          */
-        _constrainToBounds: function() {
-            var viewport = {
-                width: window.innerWidth || document.documentElement.clientWidth,
-                height: window.innerHeight || document.documentElement.clientHeight
+        layout: function() {
+        },
+
+        // ---- Geometry (see FloatingWindowGeometry.js) ----------------------
+
+        _viewport: function() {
+            var de = document.documentElement;
+            return {
+                width: (de && de.clientWidth) || window.innerWidth,
+                height: (de && de.clientHeight) || window.innerHeight
             };
+        },
 
-            var widgetWidth = parseInt(domStyle.get(this.domNode, 'width')) || 650;
-            var widgetHeight = parseInt(domStyle.get(this.domNode, 'height')) || 450;
-            var currentLeft = parseInt(domStyle.get(this.domNode, 'left') || 0);
-            var currentTop = parseInt(domStyle.get(this.domNode, 'top') || 0);
+        _storage: function() {
+            try {
+                return window.localStorage;
+            } catch (e) {
+                return null; // storage blocked: the window is just not remembered
+            }
+        },
 
-            // Check if widget extends beyond viewport and adjust position
-            var newLeft = Math.max(0, Math.min(currentLeft, viewport.width - widgetWidth));
-            var newTop = Math.max(0, Math.min(currentTop, viewport.height - widgetHeight));
+        /**
+         * Size and position from storage (or the default), and re-derive them
+         * from the stored fractions whenever the browser is resized, so the
+         * window grows back after the browser does.
+         */
+        _initGeometry: function() {
+            this._frac = Geometry.load(this._storage()) || Geometry.DEFAULT;
+            this._applyRect(Geometry.fromFractions(this._frac, this._viewport()));
 
-            // Also constrain size if needed
-            var maxWidth = viewport.width - newLeft;
-            var maxHeight = viewport.height - newTop;
-            var newWidth = Math.min(widgetWidth, maxWidth);
-            var newHeight = Math.min(widgetHeight, maxHeight);
+            this._windowResizeHandle = on(window, 'resize', lang.hitch(this, function() {
+                if (this._resizeFrame) {
+                    return;
+                }
+                var raf = window.requestAnimationFrame || function(fn) { return setTimeout(fn, 16); };
+                this._resizeFrame = raf(lang.hitch(this, function() {
+                    this._resizeFrame = null;
+                    if (this._destroyed) {
+                        return;
+                    }
+                    this._applyRect(Geometry.fromFractions(this._frac, this._viewport()));
+                }));
+            }));
+        },
 
+        /** Clamp a pixel rect to the viewport, apply it, and lay the content out. */
+        _applyRect: function(rect) {
+            var r = Geometry.clampRect(rect, this._viewport());
             domStyle.set(this.domNode, {
-                left: newLeft + 'px',
-                top: newTop + 'px',
-                width: newWidth + 'px',
-                height: newHeight + 'px'
+                left: r.left + 'px',
+                top: r.top + 'px',
+                width: r.width + 'px',
+                height: r.height + 'px'
             });
+            this._layoutNow();
+            return r;
+        },
 
-            // Force layout recalculation
+        /** Remember the window as the user left it (after a drag or a resize only). */
+        _saveGeometry: function() {
+            this._frac = Geometry.toFractions({
+                left: parseInt(domStyle.get(this.domNode, 'left'), 10) || 0,
+                top: parseInt(domStyle.get(this.domNode, 'top'), 10) || 0,
+                width: this.domNode.offsetWidth,
+                height: this.domNode.offsetHeight
+            }, this._viewport());
+            Geometry.save(this._storage(), this._frac);
+        },
+
+        _layoutNow: function() {
+            this._updateNarrowMode();
             if (this.layoutContainer && this.layoutContainer.resize) {
                 this.layoutContainer.resize();
+            }
+            if (this._overlayOpen) {
+                this._resizeSidebarContent();
+            }
+            if (this.controllerPanel && this.controllerPanel.displayWidget && this.controllerPanel.displayWidget.resize) {
+                this.controllerPanel.displayWidget.resize();
             }
         },
 
@@ -1046,13 +1056,12 @@ define([
             domStyle.set(this.containerNode, {
                 display: 'block'
             });
-            if (this.layoutContainer && this.layoutContainer.resize) {
-                this.layoutContainer.resize();
-            }
-            this.resize();
+            // The browser may have been resized while the window was hidden.
+            this._applyRect(Geometry.fromFractions(this._frac, this._viewport()));
         },
 
         hide: function() {
+            this._closeSidebarOverlay();
             domStyle.set(this.containerNode, {
                 display: 'none'
             });
@@ -1204,9 +1213,9 @@ define([
                 on(optionsButton, 'click', lang.hitch(this, 'toggleOptionsBar'));
             }
 
-            // Force resize of panel after placement
+            // Lay the panel out once it is in the page (placeAt does not start it)
             setTimeout(lang.hitch(this, function() {
-                this.layoutContainer.resize();
+                this._layoutNow();
                 try {
                     var savedTabs = localStorage.getItem('copilot-show-panel-tabs');
                     var showTabs = savedTabs !== null ? savedTabs === 'true' : true;
@@ -1225,83 +1234,166 @@ define([
             return this.controllerPanel;
         },
 
+        // ---- Sidebar: a left region when wide, an overlay when narrow -------
+
+        _initSidebarOverlay: function() {
+            this._sidebarAttached = true; // added to layoutContainer in postCreate
+            this._sidebarWidth = 175;
+            this._overlayOpen = false;
+            this._narrow = null; // unknown until the first layout
+
+            var saved = null;
+            try {
+                var storage = this._storage();
+                saved = storage ? storage.getItem('copilot-floating-sidebar') : null;
+            } catch (e) {
+                saved = null;
+            }
+            this.optionsSidebarOpen = saved !== 'closed';
+
+            this._sidebarBackdrop = domConstruct.create('div', {
+                className: 'copilotSidebarBackdrop'
+            }, this.contentContainer);
+            this._sidebarOverlay = domConstruct.create('div', {
+                className: 'copilotSidebarOverlay'
+            }, this.contentContainer);
+
+            on(this._sidebarBackdrop, 'click', lang.hitch(this, '_closeSidebarOverlay'));
+
+            // Picking or starting a chat from the overlay closes it.
+            this.own(
+                topic.subscribe('ChatSession:Selected', lang.hitch(this, '_closeSidebarOverlay')),
+                topic.subscribe('createNewChatSession', lang.hitch(this, '_closeSidebarOverlay'))
+            );
+        },
+
+        /** Below Geometry.NARROW_BELOW px the sidebar leaves the layout; ☰ shows it as an overlay. */
+        _updateNarrowMode: function() {
+            if (!this.optionsBarContainer || this._sidebarAttached === undefined) {
+                return;
+            }
+            // The inline width set by _applyRect: valid before the window is in the DOM.
+            var width = parseInt(this.domNode.style.width, 10) || this.domNode.offsetWidth || 0;
+            if (!width) {
+                return;
+            }
+            var narrow = Geometry.isNarrow(width);
+            if (narrow === this._narrow) {
+                return;
+            }
+            this._narrow = narrow;
+            domClass.toggle(this.domNode, 'copilotFloatingNarrow', narrow);
+            this._closeSidebarOverlay();
+            if (narrow || !this.optionsSidebarOpen) {
+                this._detachSidebar();
+            } else {
+                this._attachSidebar();
+            }
+            this._updateOptionsButton();
+        },
+
+        _attachSidebar: function() {
+            if (this._sidebarAttached) {
+                return;
+            }
+            var node = this.optionsBarContainer.domNode;
+            domStyle.set(node, { display: 'block', height: '', width: this._sidebarWidth + 'px' });
+            this.layoutContainer.addChild(this.optionsBarContainer);
+            this._sidebarAttached = true;
+        },
+
+        _detachSidebar: function() {
+            if (!this._sidebarAttached) {
+                return;
+            }
+            var node = this.optionsBarContainer.domNode;
+            if (node.offsetWidth > 0) {
+                this._sidebarWidth = node.offsetWidth; // keep what the splitter set
+            }
+            this.layoutContainer.removeChild(this.optionsBarContainer);
+            domClass.remove(node, 'dijitAlignLeft');
+            domStyle.set(node, {
+                position: '', left: '', top: '', right: '', bottom: '',
+                width: '100%', height: '100%', display: 'block'
+            });
+            this._sidebarOverlay.appendChild(node);
+            this._sidebarAttached = false;
+        },
+
+        _resizeSidebarContent: function() {
+            var w = this._sidebarOverlay.offsetWidth;
+            var h = this._sidebarOverlay.offsetHeight;
+            if (w > 0 && h > 0 && this.optionsBarContainer.resize) {
+                this.optionsBarContainer.resize({ w: w, h: h });
+            }
+            if (this.optionsSidebarContainer && this.optionsSidebarContainer.resize) {
+                this.optionsSidebarContainer.resize();
+            }
+        },
+
+        _openSidebarOverlay: function() {
+            this._detachSidebar();
+            this._overlayOpen = true;
+            domClass.add(this.domNode, 'copilotSidebarOverlayOpen');
+            this._resizeSidebarContent();
+            this._updateOptionsButton();
+        },
+
+        _closeSidebarOverlay: function() {
+            if (!this._overlayOpen) {
+                return;
+            }
+            this._overlayOpen = false;
+            domClass.remove(this.domNode, 'copilotSidebarOverlayOpen');
+            this._updateOptionsButton();
+        },
+
         /**
-         * Toggles the options bar open/closed by showing/hiding the container
+         * ☰: when wide, show or hide the sidebar (the chat column takes the
+         * space; the window keeps its size) and remember the choice; when
+         * narrow, open or close the overlay.
          */
         toggleOptionsBar: function() {
             if (!this.optionsBarContainer) return;
 
-            // Toggle the state
-            this.optionsSidebarOpen = !this.optionsSidebarOpen;
-
-            if (this.optionsSidebarOpen) {
-                // Show the options bar container
-                domStyle.set(this.optionsBarContainer.domNode, {
-                    display: 'block'
-                });
-
-                // Get current position and dimensions
-                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 650);
-                var sidebarWidth = 150;
-                var newWidth = currentContainerWidth + sidebarWidth;
-
-                var anim = baseFx.animateProperty({
-                    node: this.domNode,
-                    properties: {
-                        width: newWidth
-                    },
-                    duration: 300,
-                    onEnd: lang.hitch(this, function() {
-                        // Force layout recalculation after animation
-                        if (this.layoutContainer && this.layoutContainer.resize) {
-                            this.layoutContainer.resize();
-                        }
-                    })
-                });
-                anim.play();
-            } else {
-                // Hide the options bar container
-                domStyle.set(this.optionsBarContainer.domNode, {
-                    display: 'none'
-                });
-
-                // Get current position and dimensions
-                var currentContainerWidth = parseInt(domStyle.get(this.domNode, 'width') || 650);
-                var sidebarWidth = 150;
-                var originalWidth = currentContainerWidth - sidebarWidth;
-
-                var anim = baseFx.animateProperty({
-                    node: this.domNode,
-                    properties: {
-                        width: originalWidth
-                    },
-                    duration: 300,
-                    onEnd: lang.hitch(this, function() {
-                        // Force layout recalculation after animation
-                        if (this.layoutContainer && this.layoutContainer.resize) {
-                            this.layoutContainer.resize();
-                        }
-                    })
-                });
-                anim.play();
-            }
-
-            // Update the options button appearance when sidebar is open
-            var optionsButton = this.headerNode.querySelector('.copilotChatOptionsButton');
-            if (optionsButton) {
-                if (this.optionsSidebarOpen) {
-                    domStyle.set(optionsButton, {
-                        color: '#2a7aeb'  // Highlight color when open
-                    });
+            if (this._narrow) {
+                if (this._overlayOpen) {
+                    this._closeSidebarOverlay();
                 } else {
-                    domStyle.set(optionsButton, {
-                        color: 'inherit'  // Return to default color
-                    });
+                    this._openSidebarOverlay();
                 }
+                return;
             }
+
+            this.optionsSidebarOpen = !this.optionsSidebarOpen;
+            try {
+                var storage = this._storage();
+                if (storage) {
+                    storage.setItem('copilot-floating-sidebar', this.optionsSidebarOpen ? 'open' : 'closed');
+                }
+            } catch (e) {
+                // not remembered
+            }
+            if (this.optionsSidebarOpen) {
+                this._attachSidebar();
+            } else {
+                this._detachSidebar();
+            }
+            this._layoutNow();
+            this._updateOptionsButton();
+        },
+
+        _updateOptionsButton: function() {
+            var optionsButton = this.headerNode && this.headerNode.querySelector('.copilotChatOptionsButton');
+            if (!optionsButton) {
+                return;
+            }
+            var open = this._narrow ? this._overlayOpen : this.optionsSidebarOpen;
+            domStyle.set(optionsButton, { color: open ? '#2a7aeb' : 'inherit' });
         },
 
         destroy: function() {
+            this._destroyed = true;
             // Clean up the window resize listener
             if (this._windowResizeHandle) {
                 this._windowResizeHandle.remove();

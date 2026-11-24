@@ -1,7 +1,7 @@
 define([
-  'rql/parser'
+  'rql/parser', './fullCollectionDatePattern'
 ], function (
-  RQLParser
+  RQLParser, fullCollectionDatePattern
 ) {
 
   // HTML escape function to prevent XSS
@@ -75,11 +75,16 @@ define([
           var v = escapeHtml(decodeURIComponent(term.args[1]));
           out =  f + '<span class="searchOperator"> is not </span>' + v;
           break;
-        case 'eq':
-          var f = escapeHtml(decodeURIComponent(term.args[0]).replace(/_/g, ' '));
-          var v = escapeHtml(decodeURIComponent(term.args[1]));
-          out =  '<span class="searchField">' + f  + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + v + '</span>';
+        case 'eq': {
+          const field = decodeURIComponent(term.args[0]);
+          const value = decodeURIComponent(term.args[1]);
+          if (field === 'collection_date' && value === fullCollectionDatePattern) {
+            return '<span class="searchValue">Full collection dates only</span>';
+          }
+          out = '<span class="searchField">' + escapeHtml(field.replace(/_/g, ' '))
+            + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + escapeHtml(value) + '</span>';
           break;
+        }
         case 'keyword':
           out = '<span class="searchValue"> '  + escapeHtml(decodeURIComponent(term.args[0])) + '</span>';
           break;
@@ -119,10 +124,40 @@ define([
   };
 
 
-  return function (query) {
+  var queryToEnglish = function (query) {
     var q = parseQuery(query);
     // q = q.substr(1, q.length-2);
     return q;
   };
+
+  /**
+   * The same description with the markup removed.
+   *
+   * The main function emits HTML -- <span class="searchField"> and friends
+   * -- which suits the list viewers that drop it straight into innerHTML.
+   * Anywhere the text goes into a title attribute, a dialog label, or a
+   * saved record it has to be plain, and three call sites were already
+   * written against a `toPlainText` that did not exist (SaveSearchDialog,
+   * SavedSearchBrowser, and a guarded one in QueryDescriptor). This adds
+   * it rather than scattering strip-tag calls at each.
+   *
+   * Entities are decoded after stripping, so a query containing `>` comes
+   * back as `>` rather than `&gt;`.
+   */
+  queryToEnglish.toPlainText = function (query) {
+    var html = queryToEnglish(query);
+    if (!html) return '';
+    return String(html)
+      .replace(/<[^>]*>/g, '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  return queryToEnglish;
 
 });

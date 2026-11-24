@@ -67,6 +67,9 @@ define([
       this.libraryStore = new Memory({ data: [], idProperty: 'id' });
       this.libraryID = 0;
       this.numAlign = 0;
+      this.numHostRemoval = 0;
+      this.defaultAligner = 'bowtie2';
+      this.defaultSpecies = 'Human';
       this.num_action = 0;
     },
 
@@ -108,7 +111,7 @@ define([
         id: 'paired_filter', condition: 'paired_filter', label: 'Paired_Filter', icon: this.getConditionIcon()
       };
       var scrub = {
-        id: 'scrub_human', condition: 'scrub_human', label: 'Scrub_Human', icon: this.getConditionIcon()
+        id: 'host_removal', condition: 'host_removal', label: 'Host_Removal', icon: this.getConditionIcon()
       };
       // temporary until contrasts table added
       this.updateConditionStore(trim, false);
@@ -399,6 +402,14 @@ define([
       this.addedCond = { counter: 0 };
       this.numAlign = 0;
       this.toggleGenome();
+      this.numHostRemoval = 0;
+      this.toggleHostRemovalOptions();
+      this.clearLibraries();
+      this.libraryStore = new Memory({ data: [], idProperty: 'id' });
+    },
+
+    // Remove every library from the store and the library table.
+    clearLibraries: function () {
       var toDestroy = [];
       this.libraryStore.data.forEach(lang.hitch(this, function (lrec) {
         toDestroy.push(lrec.id);
@@ -407,7 +418,19 @@ define([
       toDestroy.forEach(lang.hitch(this, function (id) {
         this.destroyLib({}, id, 'id');
       }));
-      this.libraryStore = new Memory({ data: [], idProperty: 'id' });
+    },
+
+    // After a job is accepted, clear the library list so it is not silently
+    // resubmitted with the next job set up in this tab.
+    doSubmit: function (values, start_params) {
+      var def = this.inherited(arguments);
+      if (def && typeof def.then === 'function') {
+        return def.then(lang.hitch(this, function (results) {
+          this.clearLibraries();
+          return results;
+        }));
+      }
+      return def;
     },
 
     makeConditionName: function (conditionName) {
@@ -437,6 +460,22 @@ define([
       else {
         this.genome_nameWidget.set('disabled', true);
         this.genome_nameWidget.set('required', false);
+      }
+    },
+
+    isHostRemovalCondition: function (condition) {
+      return String(condition || '').toLowerCase() === 'host_removal';
+    },
+
+    // show the aligner and host species choices only while Host_Removal is in the pipeline
+    toggleHostRemovalOptions: function () {
+      if (this.numHostRemoval > 0) {
+        this.hostRemovalBlock.style.display = '';
+      }
+      else {
+        this.hostRemovalBlock.style.display = 'none';
+        this.aligner.set('value', this.defaultAligner);
+        this.species_common_name.set('value', this.defaultSpecies);
       }
     },
 
@@ -488,6 +527,10 @@ define([
             this.numAlign -= 1;
             this.toggleGenome();
           }
+          if (this.isHostRemovalCondition(lrec.condition)) {
+            this.numHostRemoval -= 1;
+            this.toggleHostRemovalOptions();
+          }
           // this.destroyContrastRow(query_id = lrec["condition"]);
           this.updateActiveStore(lrec, true);
           this.decreaseRows(this.condTable, this.addedCond, this.numCondWidget);
@@ -500,6 +543,10 @@ define([
           this.action_select.reset();
           handle.remove();
         }));
+        if (this.isHostRemovalCondition(lrec.condition)) {
+          this.numHostRemoval += 1;
+          this.toggleHostRemovalOptions();
+        }
         this.increaseRows(this.condTable, this.addedCond, this.numCondWidget);
       }
     },
@@ -700,6 +747,10 @@ define([
     },
 
     checkBaseParameters: function (values, assembly_values) {
+      // Start from fresh per-instance arrays; AppBase declares these on the shared prototype.
+      this.paired_end_libs = [];
+      this.single_end_libs = [];
+      this.sra_libs = [];
       // reads,sra
       var pairedList = this.libraryStore.query({ type: 'paired' });
       var pairedAttrs = ['read1', 'read2'];
@@ -750,6 +801,11 @@ define([
       // target_genome
       assembly_values.reference_genome_id = values.genome_name;
       this.target_genome_id = assembly_values.reference_genome_id;
+      // aligner and host species only apply to the host_removal step
+      if (this.numHostRemoval > 0) {
+        assembly_values.aligner = this.aligner.get('value') || this.defaultAligner;
+        assembly_values.species_common_name = this.species_common_name.get('value') || this.defaultSpecies;
+      }
 
       // empty paired, single, and sra libs
       this.paired_end_libs = [];
@@ -801,10 +857,24 @@ define([
       if (!job_data.hasOwnProperty('sra_libs')) {
         job_data.sra_libs = job_data.srr_libs;
       }
+      // jobs submitted before the rename used scrub_human
+      if (job_data.recipe) {
+        job_data.recipe = job_data.recipe.map(function (step) {
+          return String(step).toLowerCase() === 'scrub_human' ? 'Host_Removal' : step;
+        });
+      }
       return job_data;
     },
 
     addJobParams: function (job_data) {
+      if (this.numHostRemoval > 0) {
+        if (job_data.aligner) {
+          this.aligner.set('value', job_data.aligner);
+        }
+        if (job_data.species_common_name) {
+          this.species_common_name.set('value', job_data.species_common_name);
+        }
+      }
       if (job_data['recipe'].includes('Align')) {
         var query = 'eq(genome_id,' + job_data['reference_genome_id'] + ')';
         DataAPI.queryGenomes(query).then(lang.hitch(this, function (res) {
@@ -840,6 +910,10 @@ define([
           this.numAlign += 1;
           this.toggleGenome();
         }
+        if (this.isHostRemovalCondition(lrec.condition)) {
+          this.numHostRemoval += 1;
+          this.toggleHostRemovalOptions();
+        }
 
         var handle = on(td2, 'click', lang.hitch(this, function (evt) {
           console.log('Delete Row');
@@ -848,6 +922,10 @@ define([
           if (lrec.condition == 'Align') {
             this.numAlign -= 1;
             this.toggleGenome();
+          }
+          if (this.isHostRemovalCondition(lrec.condition)) {
+            this.numHostRemoval -= 1;
+            this.toggleHostRemovalOptions();
           }
           // this.destroyContrastRow(query_id = lrec["condition"]);
           this.updateActiveStore(lrec, true);

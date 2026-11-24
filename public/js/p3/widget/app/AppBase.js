@@ -669,7 +669,9 @@ define([
           this.addLibraryRowFormFill(lrec, infoLabels, 'srrdata');
         }));
       }
-      if (local_job.srr_libs) {
+      // Some services' formatRerunJson() alias sra_libs to the same array as srr_libs;
+      // loading both would add every SRA run to the table twice.
+      if (local_job.srr_libs && local_job.srr_libs !== local_job.sra_libs) {
         local_job.srr_libs.forEach(lang.hitch(this, function (sra_lib) {
           var lrec = { _type: 'srr_accession', type: 'srr_accession', title: sra_lib['srr_accession'] };
           this.setupLibraryData(lrec, sra_lib, 'srr_accession');

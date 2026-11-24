@@ -73,6 +73,11 @@ router.get('/brc-calendar', function (req, res) {
   res.render('pages/brc-calendar', { title: 'PATRIC', request: req, response: res });
 });
 
+// Temporarily retire the direct Strain Search and Strain List URLs.
+router.get(/^\/(?:searches\/StrainSearch|view\/StrainList)(?:\/|$)/, function (req, res) {
+  res.redirect(302, '/searches');
+});
+
 /* GET all searches page. */
 router.get('/searches', function (req, res) {
   req.applicationModule = 'p3/app/p3app';

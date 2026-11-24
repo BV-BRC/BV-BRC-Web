@@ -1,0 +1,49 @@
+/* PhyloTreeSvg's own rules (phylotree_svg.js), all scoped to the tree's svg (class "phylotree") so that a page
+   holding the tree alongside other figures neither styles their shapes nor is styled by them. The tree draws
+   nothing correctly without these: a node's dot is a <circle> or <rect> with no size or fill of its own until
+   a state class is put on it.
+
+   The accessory-genome viewer still also loads tree_style.css, whose older global rules (circle, .branch, ...)
+   say the same things unscoped; these win where both apply and agree with them. */
+
+/* branches: clickable, highlighted in clean blue along a selected branch and its subtree (PhyloTreeSvg.highlight_branch) */
+.phylotree .branch {fill: none; stroke-width: 2.2; stroke: #475569; cursor: pointer; transition: stroke 0.12s, opacity 0.12s;}
+.phylotree .branch:hover {stroke-width: 3.2; stroke: #0284c7;}
+.phylotree.has_selection .branch:not(.branch_highlight) {stroke: #cbd5e1;}
+.phylotree path.branch_highlight {stroke: #1565c0 !important; stroke-width: 3.0;}
+
+/* A node's own glyph: a <circle> at a tip, a smaller <rect> at an inner node, so that a state inferred for an
+   ancestor does not read as one observed at a tip (PhyloNodeSvg.use_internal_marker). Invisible until a state is
+   set on it (PhyloTreeSvg.set_node_states). */
+.phylotree circle.node_marker {r: 4.5; fill: none; stroke: none; pointer-events: visible; cursor: pointer;}
+.phylotree rect.node_marker {fill: none; stroke: none; pointer-events: visible; cursor: pointer;}
+.phylotree rect.node_marker.internal {x: -3; y: -3; width: 6px; height: 6px;}
+.phylotree .node_marker.present {fill: #2ca02c; stroke: #111; stroke-width: 1;}
+.phylotree .node_marker.multi {fill: #ff7f0e; stroke: #111; stroke-width: 1;}
+.phylotree .node_marker.event {fill: #d500f9; stroke: #4a148c; stroke-width: 1.2;}
+.phylotree .node_marker.anchor {fill: #2e7d32; stroke: #1b5e20; stroke-width: 1.2;}
+.phylotree .node_marker.absent {fill: none; stroke: none;}
+.phylotree .node_marker.unknown {fill: none; stroke: #777; stroke-dasharray: 2,1.5;}
+.phylotree .node_marker.other {fill: #0288d1; stroke: #01579b; stroke-width: 1;}
+.phylotree .node_marker.empty {fill: white; stroke: #64748b; stroke-width: 1.2;}
+
+/* a quantity at a tip (PhyloTreeSvg.set_tip_quantities) */
+.phylotree ellipse.quantity {fill: #ff7f0e; stroke: #c2410c; opacity: 0.45;}
+.phylotree .invisible {visibility: hidden;}
+
+/* tip labels: interactive and picked out with clean normal-weight blue + dimmed background tips when a selection is active */
+.phylotree g.tip text {cursor: pointer; fill: #1e293b; stroke: none !important; font-weight: normal !important;}
+.phylotree.has_selection g.tip text:not(.branch_highlight):not(.tip_focus):not(.tip_highlight):not(.tip_search_hit) {fill: #94a3b8;}
+.phylotree g.tip text:hover, .phylotree text.tip_highlight {fill: #0284c7 !important; stroke: none !important; text-decoration: underline; font-weight: normal !important;}
+.phylotree text.branch_highlight, .phylotree text.tip_focus {fill: #0369a1 !important; stroke: none !important; font-weight: normal !important;}
+.phylotree text.tip_search_hit {fill: #b45309 !important; stroke: none !important; font-weight: normal !important; text-decoration: underline;}
+
+/* a mark on a node's incoming branch (PhyloTreeSvg.set_node_marks) */
+.phylotree path.coalition_mark {stroke-width: 1.4; cursor: pointer;}
+.phylotree path.coalition_mark:hover {stroke-width: 2.4;}
+.phylotree path.coalition_mark.selected {stroke: #111; stroke-width: 2.4;}
+
+/* the tree's own header, when no header element is handed to it: the legend, the label selector and the search */
+.phylotree_header {display: flex; flex-direction: column; gap: 3px; padding: 4px 6px; font-family: sans-serif; background: #f8fafc; border-bottom: 1px solid #cbd5e1;}
+.phylotree_header .panel_row {display: flex; align-items: center; gap: 6px; width: 100%; box-sizing: border-box;}
+.phylotree_header .panel_title {font-weight: bold; font-size: 12px; color: #1e293b;}

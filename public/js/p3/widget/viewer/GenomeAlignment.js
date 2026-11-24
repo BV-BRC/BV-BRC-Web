@@ -40,13 +40,17 @@ define([
 
       var loading = Loading(container, 'fetching alignment data...');
       WorkspaceManager.getObject(path).then(function (res) {
-        var lcbs = JSON.parse(res.data);
+        var rawData = JSON.parse(res.data);
+        var lcbs = Array.isArray(rawData) ? rawData : (rawData.lcbs || []);
+        var contigLayout = (!Array.isArray(rawData) && rawData.contig_layout) ? rawData.contig_layout :
+          ((lcbs.length && lcbs[0].length && lcbs[0][0]._contig_layout) ? lcbs[0][0]._contig_layout : null);
 
         // get ids from alignment file (to be removed)
         var ext;
         var ids = [];
         lcbs.forEach(function (lcbSet) {
           lcbSet.forEach(function (r) {
+            if (!r || !r.name) return;
             ext = r.name.split('.').pop();
             var name = r.name.replace('.' + ext, '');
             if (ids.indexOf(name) == -1) ids.push(name);
@@ -55,7 +59,7 @@ define([
 
         // fetch all mauve data and load viewer
         loading.text('fetching genome data...');
-        self.getMauveData(ids, ext)
+        self.getMauveData(ids, ext, contigLayout, lcbs)
           .then(function (data) {
             new MauveViewer({
               ele: container,
@@ -179,12 +183,20 @@ define([
       var ntPos = 0;
       contigs.forEach(function (c) {
         // get all features in this contig
-        var contigFeatures = features.filter(function (f) { return f.sequence_id == c.sequence_id; });
+        var contigFeatures = features.filter(function (f) {
+          return f.sequence_id == c.sequence_id || (c.accession && (f.accession == c.accession || f.sequence_id == c.accession));
+        });
 
-        // set xStart/xEnd using contig's start/end
+        // set xStart/xEnd using contig's start/end (and reverse-complement if contig is oriented '-')
         contigFeatures = contigFeatures.map(function (f) {
-          f.xStart = ntPos + f.start;
-          f.xEnd = ntPos + f.end;
+          if (c.strand === '-') {
+            f.xStart = ntPos + Math.max(1, c.length - f.end + 1);
+            f.xEnd = ntPos + Math.max(1, c.length - f.start + 1);
+            f.strand = (f.strand === '+' || f.strand === 1) ? '-' : '+';
+          } else {
+            f.xStart = ntPos + f.start;
+            f.xEnd = ntPos + f.end;
+          }
           return f;
         });
 
@@ -195,23 +207,62 @@ define([
       return newFeatures;
     },
 
-    setContigPositions: function (contigs) {
+    setContigPositions: function (contigs, genomeLayout) {
+      var orderedContigs = contigs || [];
+      if (genomeLayout && Array.isArray(genomeLayout) && genomeLayout.length > 0 && orderedContigs.length > 0) {
+        var usedIdx = {};
+        var reordered = [];
+        genomeLayout.forEach(function (item) {
+          var targetId = item.sequence_id || item.contig;
+          var targetLower = targetId ? String(targetId).toLowerCase() : '';
+          var foundIdx = -1;
+          for (var i = 0; i < orderedContigs.length; i++) {
+            if (usedIdx[i]) continue;
+            var c = orderedContigs[i];
+            if (c.sequence_id === targetId || c.accession === targetId ||
+                (c.sequence_id && String(c.sequence_id).toLowerCase() === targetLower) ||
+                (c.accession && String(c.accession).toLowerCase() === targetLower)) {
+              foundIdx = i;
+              break;
+            }
+          }
+          if (foundIdx !== -1) {
+            usedIdx[foundIdx] = true;
+            var matched = orderedContigs[foundIdx];
+            matched.strand = item.strand || '+';
+            if (item.bp_length && (!matched.length || matched.length < item.bp_length)) {
+              matched.length = item.bp_length;
+            }
+            reordered.push(matched);
+          }
+        });
+        for (var j = 0; j < orderedContigs.length; j++) {
+          if (!usedIdx[j]) {
+            orderedContigs[j].strand = orderedContigs[j].strand || '+';
+            reordered.push(orderedContigs[j]);
+          }
+        }
+        orderedContigs = reordered;
+      }
+
       var ntPos = 1;
-      contigs.forEach(function (c) {
+      orderedContigs.forEach(function (c) {
         c.xStart = ntPos;
         c.xEnd = ntPos + c.length - 1;
         ntPos += c.length;
       });
 
-      return contigs;
+      return orderedContigs;
     },
 
     /**
      * gets all data required for the viewer
      * @param {*} genomeIDs list of genome ids
      * @param {*} ext the mauve output file extension (to be removed)
+     * @param {*} contigLayout optional Panaconda contig layout & orientation metadata
+     * @param {*} lcbs optional LCB array to snap contig-relative coordinates to exact sequence lengths
      */
-    getMauveData: function (genomeIDs, ext) {
+    getMauveData: function (genomeIDs, ext, contigLayout, lcbs) {
       var self = this;
 
       var nameProm = self.getGenomeLabels(genomeIDs, ext);
@@ -238,9 +289,44 @@ define([
 
           // update contig metadata with locations of contigs
           var contigs = {};
+          var contigLookup = {};
           genomeIDs.forEach(function (genomeID) {
-            contigs[genomeID] = self.setContigPositions(contigsObj[genomeID]);
+            var gLayout = contigLayout && contigLayout[genomeID] ? contigLayout[genomeID] : null;
+            contigs[genomeID] = self.setContigPositions(contigsObj[genomeID], gLayout);
+            contigLookup[genomeID] = {};
+            contigs[genomeID].forEach(function (c) {
+              if (c.sequence_id) {
+                contigLookup[genomeID][c.sequence_id] = c;
+                contigLookup[genomeID][String(c.sequence_id).toLowerCase()] = c;
+              }
+              if (c.accession) {
+                contigLookup[genomeID][c.accession] = c;
+                contigLookup[genomeID][String(c.accession).toLowerCase()] = c;
+              }
+            });
           });
+
+          // Snap Panaconda contig-relative LCB coordinates to exact DataAPI contig offsets/lengths
+          if (contigLayout && Array.isArray(lcbs)) {
+            lcbs.forEach(function (lcbSet) {
+              lcbSet.forEach(function (r) {
+                if (!r || !r.name || !r.contig || r.local_start === undefined || r.local_end === undefined) return;
+                var gid = r.name.slice(0, r.name.lastIndexOf('.'));
+                var gMap = contigLookup[gid];
+                if (!gMap) return;
+                var c = gMap[r.contig] || gMap[String(r.contig).toLowerCase()];
+                if (!c) return;
+                var cOff = c.xStart - 1;
+                if (c.strand === '-') {
+                  r.start = cOff + Math.max(1, c.length - r.local_end + 1);
+                  r.end = cOff + Math.max(1, c.length - r.local_start + 1);
+                } else {
+                  r.start = cOff + r.local_start;
+                  r.end = cOff + r.local_end;
+                }
+              });
+            });
+          }
 
           // update feature metadata with locations of features
           var features = {};

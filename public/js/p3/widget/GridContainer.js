@@ -9,6 +9,8 @@ define([
   './copilot/CopilotApi', './copilot/ChatSessionOptionsBarSidePanel',
   '../auth/authHeaders',
   '../util/QueryDescriptor',
+  '../util/savedSelection',
+  '../util/SavedSearchManager',
   './download/UnifiedDownloadWizard',
   './download/SaveSearchDialog',
   '../util/joinTooBroad', './JoinTooBroadMessage',
@@ -23,7 +25,8 @@ define([
   FeatureDetailsTooltipDialog, ServicesTooltipDialog, RerunUtility, Standby,
   CopilotAPI, ChatSessionOptionsBar,
   authHeader,
-  QueryDescriptor, UnifiedDownloadWizard, SaveSearchDialog,
+  QueryDescriptor, savedSelection, SavedSearchManager,
+  UnifiedDownloadWizard, SaveSearchDialog,
   joinTooBroad, JoinTooBroadMessage,
   ColumnsGenome, AdvancedSearchFields, constructMetadataName, GenomeMetadataStore
 ) {
@@ -39,14 +42,6 @@ define([
     }
   });
 
-  var mmc = '<div class="wsActionTooltip" rel="dna">Nucleotide</div><div class="wsActionTooltip" rel="protein">Amino Acid</div>';
-  var viewMSATT = new TooltipDialog({
-    content: mmc,
-    onMouseLeave: function () {
-      popup.close(viewMSATT);
-    }
-  });
-
   var vfc = '<div class="wsActionTooltip" rel="dna">View FASTA DNA</div><div class="wsActionTooltip" rel="protein">View FASTA Proteins</div>';
   var viewFASTATT = new TooltipDialog({
     content: vfc,
@@ -54,20 +49,6 @@ define([
       popup.close(viewFASTATT);
     }
   });
-
-
-  on(viewMSATT.domNode, 'click', function (evt) {
-    var rel = evt.target.attributes.rel.value;
-    var sel = viewMSATT.selection;
-    var ids = sel.map(function (d) {
-      return d.feature_id;
-    });
-    delete viewMSATT.selection;
-    // var idType;
-
-    Topic.publish('/navigate', { href: '/view/MSA/' + rel + '/?in(feature_id,(' + ids.map(encodeURIComponent).join(',') + '))', target: 'blank' });
-  });
-
 
   on(viewFASTATT.domNode, 'click', function (evt) {
     var rel = evt.target.attributes.rel.value;
@@ -243,6 +224,9 @@ define([
       if (!state) {
         return;
       }
+      if (this.selectionActionBar) {
+        this.selectionActionBar.set('selection', this.selectionActionBar.get('selection') || []);
+      }
       var q = [];
 
       if (state.search) {
@@ -371,6 +355,150 @@ define([
       if (this.grid) {
         this.grid.set('apiServer', server);
       }
+    },
+
+    /**
+     * Open the download wizard for this grid.
+     *
+     * Shared by both download entry points -- the blue button above the
+     * table and the DOWNLOAD action in the green bar -- so the two cannot
+     * drift apart. Previously the blue button opened a small tooltip
+     * dialog with a short format list while only ADV DWNLD reached the
+     * wizard, which meant the obvious button was the less capable one.
+     *
+     * `selection` may be empty. QueryDescriptor.createFromGrid falls back
+     * to the grid's own query in that case, so the wizard opens scoped to
+     * the whole result set rather than refusing -- which is what makes the
+     * green-bar button useful with nothing selected.
+     */
+    openDownloadWizard: function (selection, container) {
+      try {
+        UnifiedDownloadWizard.show({
+          queryDescriptor: this.buildQueryDescriptor(selection, container)
+        });
+      } catch (e) {
+        console.error('Download wizard error:', e);
+      }
+    },
+
+    /**
+     * Describe what the grid is currently showing.
+     *
+     * Both DOWNLOAD and SAVE need the same answer to "what query is this
+     * grid displaying, and against which collection?", so they share this
+     * rather than each assembling a descriptor.
+     *
+     * SAVE used to call createFromGrid() bare, leaving dataType and
+     * primaryKey to be inferred from the container type alone. That
+     * inference happens to agree with the container's own dataModel and
+     * primaryKey for the grids checked, so this is not a bug fix -- but
+     * the container's values are the authoritative ones, and a saved
+     * search whose primaryKey disagrees with the download path's
+     * produces a zero-byte file rather than an error (CLAUDE.md,
+     * Pitfall 1a). One builder means they cannot disagree.
+     *
+     * `selection` may be empty; the descriptor then describes the whole
+     * result set, which is what lets both buttons work with nothing
+     * selected.
+     */
+    buildQueryDescriptor: function (selection, container) {
+      var dataType = this.dataModel || 'genome_feature';
+      var primaryKey = this.primaryKey || 'id';
+      var grid = (container && container.grid) || this.grid;
+
+      var descriptor = QueryDescriptor.createFromGrid(grid, this.containerType, {
+        selection: selection || [],
+        primaryKey: primaryKey
+      });
+
+      // The GridContainer's dataModel is more reliable than whatever the
+      // descriptor inferred from the container type.
+      descriptor.dataType = dataType;
+      descriptor.primaryKey = primaryKey;
+      descriptor.rqlQuery = (grid && grid.get('query')) || '';
+
+      // Keep the route back to the form that built this search, so a
+      // reloaded saved search still offers EDIT SEARCH.
+      //
+      // The live button reads a sessionStorage record written at submit
+      // time, which is per-tab and does not survive the session -- fine
+      // for Back, useless for something saved to the workspace. The
+      // form also serialises into the search page's own `fluSearch`
+      // hash, and that URL is durable, so persist that instead.
+      var editUrl = this._getSearchFormUrl();
+      if (editUrl) {
+        descriptor.searchFormUrl = editUrl;
+      }
+
+      return descriptor;
+    },
+
+    /**
+     * The URL of the form that produced the current results, when the
+     * results came from one and that form can rebuild itself from a URL.
+     *
+     * Today that means Influenza Search, whose `fluSearch` hash carries
+     * the whole form. Returns null when the form state only exists in
+     * sessionStorage/history (the oversized-form path), because a URL
+     * that cannot restore the selections is worse than no button.
+     */
+    _getSearchFormUrl: function () {
+      var returnUrl = this._getInfluenzaSearchReturnUrl();
+      if (!returnUrl) return null;
+      // Only durable if the form actually round-trips through the hash.
+      return /[#&]fluSearch=/.test(returnUrl) ? returnUrl : null;
+    },
+
+    /**
+     * Re-select the rows a saved search was saved with.
+     *
+     * Reached via `#savedSearch=<id>`, which savedSearchUrl adds when the
+     * search carries a selection. The ids live in the saved search rather
+     * than the URL because a large selection is tens of kilobytes.
+     *
+     * Only rows that actually resolve are selected -- dgrid will happily
+     * accept an id that is not in the result set, producing a selection
+     * the DOM and the action bar disagree with. When rows are missing the
+     * user is told, because a silently smaller selection looks like the
+     * save lost data.
+     */
+    _restoreSavedSelection: function () {
+      var hashParams = this.state && this.state.hashParams;
+      var searchId = hashParams && hashParams.savedSearch;
+      if (!searchId || !this.grid) return;
+
+      try {
+        searchId = decodeURIComponent(searchId);
+      } catch (e) {
+        // leave it as-is; a malformed id simply will not resolve
+      }
+
+      var self = this;
+      when(SavedSearchManager.load(), function () {
+        var search = SavedSearchManager.get(searchId);
+
+        // The saved searches are only now in memory, so EDIT SEARCH --
+        // whose visibility depends on this search's searchFormUrl --
+        // could not have been evaluated correctly at setupActions time.
+        // Re-run the action bar's filter. Done before the early return
+        // below so a saved search with no selection still gets it.
+        self._refreshSelectionActions();
+
+        if (!search || !search.selectedIds || !search.selectedIds.length) {
+          return;
+        }
+
+        var result = savedSelection.applySelection(self.grid, search.selectedIds);
+        var message = savedSelection.describeRestore(
+          result,
+          search.metadata && search.metadata.selectionCount
+        );
+        if (message) {
+          Topic.publish('/Notification', { message: message, type: 'message' });
+        }
+      }, function (err) {
+        console.error('Could not load saved searches to restore selection', err);
+      });
     },
 
     visible: false,
@@ -532,40 +660,18 @@ define([
       //   },
       //   true
       // ],
+      // There is no 'Selected' download action here. It opened the same
+      // wizard with the same arguments as DOWNLOAD below -- two buttons,
+      // one behaviour -- once both entry points were routed through
+      // openDownloadWizard(). DOWNLOAD is persistent and already scopes
+      // itself to the selection when there is one.
+      //
+      // Subclasses that concat their own 'DownloadSelection' (the 'DWNLD'
+      // tooltip-dialog flow in ProteinFamilies*, SubSystems*,
+      // IDMappingAppResult, InteractionGraph) are unaffected: each array
+      // entry gets its own addAction call and _actions is keyed by name,
+      // so theirs was already the one that won.
       [
-        'DownloadSelection',
-        'fa icon-download fa-2x',
-        {
-          label: 'Selected',
-          multiple: true,
-          validTypes: ['*'],
-          ignoreDataType: true,
-          tooltip: 'Download selected rows',
-          max: 10000,
-          tooltipDialog: downloadSelectionTT,
-          validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
-        },
-        function (selection, container) {
-
-          this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set('selection', selection);
-          this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set('containerType', this.containerType);
-          if (container && container.grid) {
-            this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.set('grid', container.grid);
-          }
-
-          this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog.timeout(3500);
-
-          setTimeout(lang.hitch(this, function () {
-            popup.open({
-              popup: this.selectionActionBar._actions.DownloadSelection.options.tooltipDialog,
-              around: this.selectionActionBar._actions.DownloadSelection.button,
-              orient: ['below']
-            });
-          }), 10);
-
-        },
-        false
-      ], [
         'CopySelection',
         'fa icon-clipboard2 fa-2x',
         {
@@ -602,29 +708,42 @@ define([
         'fa icon-bookmark fa-2x',
         {
           label: 'SAVE',
-          multiple: false,
+          // Always visible, like DOWNLOAD: what gets saved is the grid's
+          // query, which exists whether or not any rows are selected. The
+          // old `multiple: false` with no `persistent` meant the button
+          // appeared only when exactly one row was selected -- the one
+          // case where saving a search is least useful.
+          persistent: true,
+          multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
           tooltip: 'Save Current Search',
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
-          console.log('SaveSearch button clicked', selection, this.query);
           try {
-            // Create descriptor from grid to capture column visibility
-            var descriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType);
-            console.log('Created descriptor:', descriptor);
+            // Same descriptor the download path builds, so a saved search
+            // downloads identically to the grid it was saved from.
+            var descriptor = this.buildQueryDescriptor(selection, container);
 
-            if (this.state) {
+            // Persist the row selection, capped. selectedRows is transient
+            // (the download path uses it for cross-collection linkFields)
+            // and must not reach the preferences file.
+            var capped = savedSelection.capSelection(descriptor.selectedIds);
+            descriptor.selectedIds = capped.ids;
+            delete descriptor.selectedRows;
+
+            if (capped.total > 0) {
               descriptor.metadata = descriptor.metadata || {};
-              if (selection && selection.length > 0) {
-                descriptor.metadata.selectionCount = selection.length;
+              descriptor.metadata.selectionCount = capped.total;
+              if (capped.truncated) {
+                descriptor.metadata.selectionTruncated = true;
               }
             }
+
             SaveSearchDialog.show({
               queryDescriptor: descriptor,
               onSave: lang.hitch(this, function (saved) {
-                console.log('Search saved:', saved);
                 if (window.App && window.App.showMessage) {
                   window.App.showMessage('Search saved: ' + saved.name);
                 }
@@ -636,49 +755,23 @@ define([
         },
         true
       ], [
-        'AdvancedDownload',
+        'Download',
         'fa icon-download fa-2x',
         {
-          label: 'ADV DWNLD',
+          label: 'DOWNLOAD',
+          // Always visible: with nothing selected the wizard opens on the
+          // whole result set, which is the common case and used to require
+          // finding a different button.
           persistent: true,
           multiple: true,
           validTypes: ['*'],
           ignoreDataType: true,
-          tooltip: 'Advanced Download Options',
+          tooltip: 'Download this data',
           max: 100000,
           validContainerTypes: ['sequence_feature_data', 'genome_data', 'sequence_data', 'feature_data', 'protein_data', 'spgene_data', 'spgene_ref_data', 'transcriptomics_experiment_data', 'transcriptomics_sample_data', 'experiment_data', 'bioset_data', 'pathway_data', 'transcriptomics_gene_data', 'gene_expression_data', 'interaction_data', 'genome_amr_data', 'structure_data', 'proteinFeatures_data', 'pathwayTab_data', 'subsystemTab_data', 'epitope_data', 'surveillance_data', 'serology_data']
         },
         function (selection, container) {
-          console.log('AdvancedDownload button clicked', selection, this.containerType);
-          try {
-            // Get the data model and primary key from the container
-            var dataType = this.dataModel || 'genome_feature';
-            var primaryKey = this.primaryKey || 'id';
-            console.log('Data Type:', dataType, 'Primary Key:', primaryKey);
-
-            // Create a QueryDescriptor with selection - this is the standard interface for downloads
-            var queryDescriptor = QueryDescriptor.createFromGrid(this.grid, this.containerType, {
-              selection: selection,
-              primaryKey: primaryKey
-            });
-
-            // Override dataType with the GridContainer's dataModel (more reliable)
-            queryDescriptor.dataType = dataType;
-            queryDescriptor.primaryKey = primaryKey;
-
-            // Get the RQL query from the grid
-            var rqlQuery = this.grid.get('query') || '';
-            queryDescriptor.rqlQuery = rqlQuery;
-
-            console.log('QueryDescriptor:', queryDescriptor);
-
-            // Open the wizard with the query descriptor
-            UnifiedDownloadWizard.show({
-              queryDescriptor: queryDescriptor
-            });
-          } catch (e) {
-            console.error('AdvancedDownload error:', e);
-          }
+          this.openDownloadWizard(selection, container);
         },
         true
       ], [
@@ -722,6 +815,7 @@ define([
           popup.open({
             popup: new ServicesTooltipDialog({
               context: 'grid_container',
+              onLaunchMSA: lang.hitch(this, '_launchMsaForSelection'),
               button: button,
               data: params,
             }),
@@ -1279,58 +1373,17 @@ define([
         'fa icon-alignment fa-2x',
         {
           label: 'MSA',
+          requireAuth: true,
           ignoreDataType: true,
           min: 2,
           multiple: true,
           max: 5000,
           validTypes: ['*'],
-          tooltipDialog: viewMSATT,
           tooltip: 'Multiple Sequence Alignment',
           validContainerTypes: ['feature_data', 'protein_data', 'spgene_data', 'proteinfamily_data', 'pathway_data', 'transcriptomics_gene_data']
         },
         function (selection) {
-          const checkTEMP = function (tmp_path) {
-            WorkspaceManager.createFolder(tmp_path).then(lang.hitch(this, function (tmp_record) {
-              console.log('creating temporary group folder');
-            }), lang.hitch(this, function (err) {
-              console.log('temporary group folder already created');
-            }));
-          };
-          var hidden_group_path = WorkspaceManager.getDefaultFolder() + '/._tmp_groups';
-          var group_name = 'tmp_feature_group_' + Date.now();
-          var group_path = hidden_group_path + '/' + group_name;
-          console.log('tmp_group = ', group_name);
-          checkTEMP(hidden_group_path);
-          try {
-            this.loadingMask = new Standby({
-              target: this.id,
-              image: '/public/js/p3/resources/images/spin.svg',
-              color: '#efefef'
-            });
-            this.addChild(this.loadingMask);
-            this.loadingMask.startup();
-            this.loadingMask.show();
-            var feature_id_list = selection.filter(lang.hitch(this, function (d) {
-              return 'feature_id' in d;
-            })).map(lang.hitch(this, function (o) {
-              return o['feature_id'];
-            }));
-            WorkspaceManager.createGroup(group_name, 'feature_group', hidden_group_path, 'feature_id', feature_id_list).then(lang.hitch(this, function (res) {
-              this.loadingMask.hide();
-              var job_data = {
-                'feature_groups': [group_path],
-                'alphabet': 'dna',
-                'aligner': 'Muscle',
-                'input_type': 'input_group'
-              };
-              RerunUtility.rerun(JSON.stringify(job_data), 'MSA', window, Topic);
-            }));
-          } catch (error) {
-            console.log('error creating feature group: ', error);
-            if (this.loadingMask) {
-              this.loadingMask.hide();
-            }
-          }
+          return this._launchMsaForSelection(selection);
         },
         false
       ], [
@@ -2168,6 +2221,17 @@ define([
         this._onGridQueryError(evt && evt.error);
       }));
 
+      // Re-apply a saved search's row selection once the rows exist.
+      // Selecting before render matches nothing, so this waits for
+      // dgrid-refresh-complete, and only for the first one -- a later
+      // refresh is the user changing the query, where re-imposing an old
+      // selection would be wrong.
+      this.grid.on('dgrid-refresh-complete', lang.hitch(this, function () {
+        if (this._savedSelectionRestored) return;
+        this._savedSelectionRestored = true;
+        this._restoreSavedSelection();
+      }));
+
       this.grid.on('select', lang.hitch(this, function (evt) {
 
         var sel = Object.keys(evt.selected).map(lang.hitch(this, function (rownum) {
@@ -2256,6 +2320,175 @@ define([
       }));
     },
 
+    _getInfluenzaSearchReturnUrl: function () {
+      if (!/^\/view\/(GenomeList|SequenceList|FeatureList)\//.test(window.location.pathname)) return null;
+      var id = this.state && this.state.hashParams && this.state.hashParams.influenzaSearch;
+      if (!id || !/^[a-z0-9-]+$/.test(id)) return null;
+      try {
+        var saved = JSON.parse(window.sessionStorage.getItem('bvbrc:influenza-search:' + id));
+        if (!saved || !saved.form || saved.form.version !== 1 || typeof saved.url !== 'string') return null;
+        return this._safeSearchFormUrl(saved.url);
+      } catch (error) {
+        return null;
+      }
+    },
+
+    /**
+     * Accept a search-form URL only if it is same-origin and points at a
+     * form we know how to return to.
+     *
+     * One of the two sources is a saved search, which is workspace data
+     * and can be shared, so this is a trust boundary: without the check
+     * a crafted `searchFormUrl` would be published straight to
+     * `/navigate`. Returns a path, never an absolute URL.
+     */
+    _safeSearchFormUrl: function (candidate) {
+      if (typeof candidate !== 'string' || !candidate) return null;
+      try {
+        var url = new URL(candidate, window.location.origin);
+        if (url.origin !== window.location.origin) return null;
+        if (!/^\/searches\/InfluenzaSearch\/?$/.test(url.pathname)) return null;
+        return url.pathname + url.search + url.hash;
+      } catch (error) {
+        return null;
+      }
+    },
+
+    _launchMsaForSelection: async function (selection) {
+      if (!window.App.user || !window.App.user.id) {
+        Topic.publish('/login');
+        return;
+      }
+
+      if (this.msaLoadingMask && this.msaLoadingMask.isVisible()) {
+        return;
+      }
+
+      const featureIds = Array.from(new Set(selection.map(function (row) {
+        return row.feature_id;
+      }).filter(Boolean)));
+      if (featureIds.length < 2) {
+        Topic.publish('/Notification', {
+          message: 'Select at least two distinct features to open Multiple Sequence Alignment.',
+          type: 'error'
+        });
+        return;
+      }
+
+      const folder = PathJoin(WorkspaceManager.userId, 'home', '._tmp_groups');
+      const groupName = 'tmp_feature_group_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      const alphabet = this.containerType === 'protein_data' ? 'protein' : 'dna';
+      let msaTab;
+      try {
+        if (!this.msaLoadingMask) {
+          this.msaLoadingMask = new Standby({
+            target: this.id,
+            image: '/public/js/p3/resources/images/spin.svg',
+            color: '#efefef'
+          });
+          this.own(this.msaLoadingMask);
+          this.addChild(this.msaLoadingMask);
+          this.msaLoadingMask.startup();
+        }
+        this.msaLoadingMask.show();
+
+        try {
+          await WorkspaceManager.createFolder(folder);
+        } catch (error) {
+          // A concurrent request or an earlier launch may have created the folder.
+          const existing = await WorkspaceManager.getObject(folder, true);
+          if (existing.type !== 'folder') {
+            throw error;
+          }
+        }
+
+        const group = await WorkspaceManager.createGroup(groupName, 'feature_group', folder, 'feature_id', featureIds);
+        if (this._destroyed) {
+          return;
+        }
+
+        msaTab = window.open('', '_blank');
+        if (!msaTab) {
+          Topic.publish('/Notification', {
+            message: 'Your MSA input is ready, but the browser blocked the new tab. Allow pop-ups for this site and try again.',
+            type: 'error'
+          });
+          return;
+        }
+
+        const jobData = {
+          feature_groups: [group.path],
+          alphabet: alphabet,
+          aligner: 'Muscle',
+          input_type: 'input_group'
+        };
+        RerunUtility.rerun(JSON.stringify(jobData), 'MSA', window, Topic, msaTab);
+      } catch (error) {
+        if (msaTab && !msaTab.closed) {
+          msaTab.close();
+        }
+        console.error('Unable to prepare Multiple Sequence Alignment:', error);
+        Topic.publish('/Notification', {
+          message: 'Could not open Multiple Sequence Alignment for this selection. Please try again.',
+          type: 'error'
+        });
+      } finally {
+        if (!this._destroyed && this.msaLoadingMask) {
+          this.msaLoadingMask.hide();
+        }
+      }
+    },
+
+    /**
+     * Re-run the selection action bar's visibility filter without
+     * changing what is selected.
+     *
+     * `shouldShow` is only consulted inside the bar's selection setter,
+     * so an action whose visibility depends on data that arrives later
+     * (here: the saved searches) stays hidden until something else
+     * touches the selection. Re-setting the current value is the
+     * supported way to ask for a re-evaluation.
+     */
+    _refreshSelectionActions: function () {
+      var bar = this.selectionActionBar;
+      if (!bar || typeof bar.set !== 'function') return;
+      try {
+        bar.set('selection', bar.get('selection') || []);
+      } catch (e) {
+        // A cosmetic refresh must never break the restore path.
+      }
+    },
+
+    /**
+     * Where EDIT SEARCH should go.
+     *
+     * Two sources, in order of fidelity:
+     *
+     *  1. The sessionStorage record written when the form was submitted.
+     *     Per-tab and gone with the session, but it is the live path and
+     *     matches exactly what the user just ran.
+     *  2. `searchFormUrl` off the saved search being replayed. This is
+     *     what survives a reload, a new tab, or another machine.
+     *
+     * Without (2) a reloaded saved search lost the button entirely --
+     * the results were right but the criteria that produced them were
+     * neither shown nor editable.
+     */
+    _getEditSearchUrl: function () {
+      var live = this._getInfluenzaSearchReturnUrl();
+      if (live) return live;
+
+      var searchId = this.state && this.state.hashParams
+        && this.state.hashParams.savedSearch;
+      if (!searchId) return null;
+      try {
+        var search = SavedSearchManager.get(decodeURIComponent(searchId));
+        return search ? this._safeSearchFormUrl(search.searchFormUrl) : null;
+      } catch (error) {
+        return null;
+      }
+    },
+
     setupActions: function () {
       if (this.containerActionBar) {
         this.containerActions.forEach(function (a) {
@@ -2266,6 +2499,22 @@ define([
       this.selectionActions.forEach(function (a) {
         this.selectionActionBar.addAction(a[0], a[1], a[2], lang.hitch(this, a[3]), a[4], a[5]);
       }, this);
+
+      this.selectionActionBar.addAction('EditInfluenzaSearch', 'fa icon-arrow-left fa-2x', {
+        label: 'EDIT SEARCH',
+        tooltip: 'Return to Influenza Search with your original selections',
+        persistent: true,
+        validTypes: ['*'],
+        ignoreDataType: true,
+        shouldShow: lang.hitch(this, function () { return !!this._getEditSearchUrl(); })
+      }, lang.hitch(this, function () {
+        var href = this._getEditSearchUrl();
+        if (href) Topic.publish('/navigate', { href: href });
+      }), !!this._getEditSearchUrl());
+      var guideAction = this.selectionActionBar._actions.UserGuide;
+      if (guideAction) {
+        domConstruct.place(this.selectionActionBar._actions.EditInfluenzaSearch.button, guideAction.button, 'after');
+      }
 
       // Hide the panel on a small screen
       if (window.innerWidth <= 768 && this.selectionActionBar) {

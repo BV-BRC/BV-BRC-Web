@@ -13,6 +13,9 @@ define([
   'dojo/text!./templates/SavedSearchBrowser.html',
   '../../util/SavedSearchManager',
   '../../util/QueryToEnglish',
+  '../../util/DownloadExecutor',
+  '../../util/copyToClipboard',
+  '../../util/savedSearchUrl',
   './UnifiedDownloadWizard'
 ], function (
   declare,
@@ -29,6 +32,9 @@ define([
   template,
   SavedSearchManager,
   QueryToEnglish,
+  DownloadExecutor,
+  copyToClipboard,
+  savedSearchUrl,
   UnifiedDownloadWizard
 ) {
   /**
@@ -136,12 +142,20 @@ define([
     },
 
     /**
-     * Refresh the list from storage
+     * Refresh the list from storage.
+     *
+     * load() fetches from the workspace and fills the manager's cache;
+     * list() is the synchronous read over that cache. Without the load
+     * the first open would show an empty list and only populate after
+     * some later save.
      */
     refresh: function () {
-      this.searches = SavedSearchManager.list() || [];
-      this._updateDataTypeFilter();
-      this._applyFilters();
+      var self = this;
+      when(SavedSearchManager.load(), function () {
+        self.searches = SavedSearchManager.list() || [];
+        self._updateDataTypeFilter();
+        self._applyFilters();
+      });
     },
 
     /**
@@ -341,6 +355,20 @@ define([
       });
       this._handlers.push(downloadHandler);
 
+      // Copy curl button
+      var curlButton = domConstruct.create('button', {
+        'class': 'actionButton curlButton',
+        title: 'Copy a curl command that downloads this search',
+        type: 'button'
+      }, actionsCell);
+      domConstruct.create('span', { 'class': 'fa icon-clipboard2' }, curlButton);
+      domConstruct.create('span', { 'class': 'btnText', textContent: ' curl' }, curlButton);
+      var curlHandler = on(curlButton, 'click', function (e) {
+        e.stopPropagation();
+        self._copyCurl(search);
+      });
+      this._handlers.push(curlHandler);
+
       // Delete button
       var deleteButton = domConstruct.create('button', {
         'class': 'actionButton deleteButton',
@@ -465,57 +493,9 @@ define([
      * Run a search - navigate to the search results
      */
     _runSearch: function (search) {
-      // Map data types to their view URLs
-      var dataTypeToView = {
-        'genome': 'GenomeList',
-        'genome_feature': 'FeatureList',
-        'genome_sequence': 'SequenceList',
-        'sp_gene': 'SpecialtyGeneList',
-        'sp_gene_ref': 'SpecialtyGeneList',
-        'pathway': 'PathwayList',
-        'subsystem': 'SubsystemList',
-        'protein_structure': 'ProteinStructureList',
-        'epitope': 'EpitopeList',
-        'surveillance': 'SurveillanceList',
-        'serology': 'SerologyList',
-        'transcriptomics_experiment': 'ExperimentList',
-        'transcriptomics_sample': 'TranscriptomicsSampleList',
-        'transcriptomics_gene': 'TranscriptomicsGeneList',
-        'experiment': 'ExperimentList',
-        'bioset': 'BiosetList',
-        'ppi': 'InteractionList',
-        'genome_amr': 'AMRPanelList',
-        'protein_feature': 'ProteinFeatureList',
-        'sequence_feature': 'SequenceFeatureList'
-      };
-
-      // Build URL based on data type
-      var viewName = dataTypeToView[search.dataType] || 'GenomeList';
-      var url = '/view/' + viewName + '/';
-
-      // Clean up the RQL query:
-      // 1. Remove wildcard conditions like eq(genome_id,*)
-      // 2. Extract inner query from data type wrappers like genome(...)
-      var rqlQuery = search.rqlQuery || '';
-
-      // Remove wildcard patterns
-      rqlQuery = rqlQuery
-        .replace(/eq\([a-z_]+_id,\*\)&?/gi, '')
-        .replace(/^&+|&+$/g, '')
-        .replace(/&&+/g, '&');
-
-      // Extract inner query from data type wrappers (e.g., genome(and(...)))
-      var wrapperMatch = rqlQuery.match(/^(genome|genome_feature|genome_sequence|sp_gene|pathway|subsystem)\((.+)\)$/i);
-      if (wrapperMatch) {
-        rqlQuery = wrapperMatch[2];
-      }
-
-      if (rqlQuery) {
-        url += '?' + rqlQuery;
-      }
-
-      // Navigate using direct location change
-      window.location.href = url;
+      // Shared with the Workspaces-menu list, so a search opens the same
+      // view from either place.
+      window.location.href = savedSearchUrl(search);
 
       // Callback
       if (this.onSearchRun) {
@@ -524,8 +504,52 @@ define([
     },
 
     /**
-     * Download search results
+     * Copy a curl command that downloads this saved search.
+     *
+     * A saved search records a query and a column selection but no
+     * format -- the wizard asks for that. TSV is assumed here, with the
+     * saved columns, and the copied text says so: the alternative is
+     * making the user walk the whole wizard just to get a command.
+     * Swapping the format is a one-token edit in the result.
+     *
+     * Everything up to the clipboard write must stay synchronous: the
+     * execCommand fallback only works inside the user gesture, and an
+     * async module load would end it. Hence the static dependencies
+     * rather than an inline require().
      */
+    _copyCurl: function (search) {
+      var command;
+      try {
+        command = DownloadExecutor.buildCurlCommand({
+          format: 'tsv',
+          dataType: search.dataType,
+          scope: 'all',
+          rqlQuery: search.rqlQuery,
+          columns: (search.visibleColumns || []).map(function (c) {
+            return c.field || c;
+          })
+        });
+        command = '# Saved search: ' + search.name + '\n'
+          + '# Format assumed TSV; change http_accept for another.\n'
+          + command;
+      } catch (e) {
+        console.error('Could not build curl command:', e);
+        topic.publish('/Notification', {
+          message: 'Could not build the curl command', type: 'error'
+        });
+        return;
+      }
+
+      copyToClipboard(command).then(function (ok) {
+        topic.publish('/Notification', {
+          message: ok ? 'curl command copied to the clipboard'
+            : 'Could not copy — the command is in the browser console',
+          type: ok ? 'message' : 'error'
+        });
+        if (!ok) console.log(command);
+      });
+    },
+
     _downloadSearch: function (search) {
       // Build a queryDescriptor from the saved search for the wizard
       var queryDescriptor = {
@@ -535,6 +559,12 @@ define([
         rqlQuery: search.rqlQuery,
         displayQuery: search.displayQuery,
         source: 'saved_search',
+        // Carrying primaryKey matters: DownloadExecutor.buildQuery falls
+        // back to 'id' without it and emits sort(+feature_id,+id). The
+        // http_download path answers an invalid sort field with 200 and
+        // an EMPTY body, so dropping this produced a zero-byte download
+        // with no error anywhere.
+        primaryKey: search.primaryKey,
         visibleColumns: search.visibleColumns,
         availableColumns: search.availableColumns,
         downloadConfig: search.downloadConfig
