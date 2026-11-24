@@ -276,15 +276,8 @@ define([
 
         self.availableFields = fields;
 
-        // The selected ID field may not exist in the real list -- notably
-        // the built-in default for a cross-collection download. Keep it if
-        // the collection has it, otherwise fall back to the configured
-        // default so the dropdown never shows a field that cannot resolve.
-        var names = fields.map(function (f) { return f.field; });
-        if (names.indexOf(self.sequenceIdField) === -1) {
-          var preferred = DownloadFormats.getDefaultIdField(dataType);
-          self.sequenceIdField = names.indexOf(preferred) !== -1 ? preferred : names[0];
-        }
+        // The sequence ID dropdown is not built from this list (see
+        // _populateIdFieldDropdown), so the refresh leaves it alone.
 
         // Description fields chosen before the refresh may use the prefixed
         // name for an enriched field; map them onto the real entries so the
@@ -296,7 +289,6 @@ define([
           })[0] || chosen;
         });
 
-        self._populateIdFieldDropdown();
         self._populateFieldLists();
         self._populateTemplateFieldList();
         self._validateTemplate();
@@ -852,7 +844,12 @@ define([
     },
 
     /**
-     * Populate the sequence ID field dropdown
+     * Populate the sequence ID field dropdown.
+     *
+     * Offers identifier fields only (DownloadFormats.getFastaIdChoices), not
+     * availableFields: that list feeds the description picker and includes
+     * names, products and other values with spaces, which cannot be the first
+     * word of a header line.
      */
     _populateIdFieldDropdown: function () {
       var self = this;
@@ -862,16 +859,16 @@ define([
       // Clear existing options
       domConstruct.empty(this.idFieldSelect);
 
-      // Add options
-      this.availableFields.forEach(function (f) {
-        var option = domConstruct.create('option', {
-          value: f.field,
-          innerHTML: f.label
-        }, self.idFieldSelect);
-
-        if (f.field === self.sequenceIdField) {
-          option.selected = true;
-        }
+      var dataType = this.context ? this.context.dataType : 'genome_feature';
+      DownloadFormats.getFastaIdChoices(dataType, this.sequenceIdField).forEach(function (group) {
+        var optgroup = domConstruct.create('optgroup', { label: group.label }, self.idFieldSelect);
+        group.fields.forEach(function (f) {
+          domConstruct.create('option', {
+            value: f.field,
+            textContent: f.label,
+            selected: f.field === self.sequenceIdField
+          }, optgroup);
+        });
       });
 
       // Setup change handler if not already done
