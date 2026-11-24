@@ -8,7 +8,9 @@
     "<rootDir>/public/js/p3/widget/copilot",
     "<rootDir>/public/js/p3/widget/tests",
     "<rootDir>/public/js/p3/widget/app",
-    "<rootDir>/public/js/p3/widget/download"
+    "<rootDir>/public/js/p3/widget/download",
+    "<rootDir>/lib",
+    "<rootDir>/routes"
   ],
   "testMatch": [
     "**/tests/**/*.test.js"

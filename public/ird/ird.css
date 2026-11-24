@@ -1,0 +1,450 @@
+/*
+ * IRD shell: the look of the Influenza Research Database (fludb.org), for the
+ * pages under /ird. Colors and proportions follow the old site's style.css;
+ * the sprite sheet it used is replaced by gradients.
+ *
+ * Standalone: these pages do not load Dojo or the BV-BRC stylesheets.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #333;
+  background: #b5b5b6 linear-gradient(#e2e2e3, #b5b5b6 400px) no-repeat;
+}
+
+a:link,
+a:visited {
+  color: #3171ac;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  text-decoration: underline;
+}
+
+.ird-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.ird-skip {
+  position: absolute;
+  left: -9999px;
+}
+
+.ird-skip:focus {
+  left: 8px;
+  top: 8px;
+  z-index: 1000;
+  padding: 4px 8px;
+  background: #fff;
+}
+
+#ird-container {
+  width: 980px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Banner */
+
+#ird-header {
+  position: relative;
+  height: 100px;
+  background: #3a7fc4 url("images/ird-header.jpg") no-repeat left top;
+}
+
+#ird-logo {
+  display: block;
+  width: 352px;
+  height: 100px;
+  overflow: hidden;
+  text-indent: -9999px;
+}
+
+#ird-utility-nav {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#ird-utility-nav li {
+  display: inline-block;
+  margin-left: 12px;
+}
+
+#ird-utility-nav a {
+  color: #fff;
+  font-size: 12px;
+}
+
+#ird-quick-search {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  display: flex;
+  gap: 4px;
+}
+
+#ird-quick-search input {
+  width: 220px;
+  padding: 3px 6px;
+  border: 1px solid #1f5b93;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+#ird-quick-search button,
+.ird-landing-search button {
+  padding: 3px 10px;
+  border: 1px solid #b8860b;
+  border-radius: 3px;
+  background: linear-gradient(#f6c94d, #f1b321);
+  color: #000;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* Global navigation bar */
+
+#ird-navigation {
+  position: relative;
+  z-index: 50;
+  background: linear-gradient(#f4f4f4, #c9c9c9);
+  border-bottom: 1px solid #9a9a9a;
+}
+
+.ird-menu,
+.ird-submenu {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ird-menu {
+  display: flex;
+  padding-left: 20px;
+}
+
+.ird-menu > li {
+  position: relative;
+}
+
+.ird-menu-top {
+  display: block;
+  padding: 0 20px;
+  border: 0;
+  border-right: 1px solid #a8a8a8;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 30px;
+  text-transform: uppercase;
+  color: #000 !important;
+  cursor: pointer;
+}
+
+.ird-menu-top.ird-active {
+  background: #d2b674;
+}
+
+.ird-menu > li:hover > .ird-menu-top,
+.ird-menu > li:focus-within > .ird-menu-top {
+  background: #f1b321;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.ird-submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 260px;
+  max-height: 75vh;
+  overflow-y: auto;
+  border: 1px solid #808080;
+  border-top: 0;
+  background: #b9b9b9;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.ird-has-sub:hover > .ird-submenu,
+.ird-has-sub:focus-within > .ird-submenu {
+  display: block;
+}
+
+.ird-submenu li {
+  border-bottom: 1px solid #a0a0a0;
+}
+
+.ird-submenu a {
+  display: block;
+  padding: 2px 11px;
+  line-height: 22px;
+  color: #000 !important;
+}
+
+.ird-submenu a:hover,
+.ird-submenu a:focus {
+  background: #f1b321;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.ird-submenu .ird-divider {
+  padding: 2px 11px;
+  background: #8c8c8c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Notice strip under the menu */
+
+.ird-notice {
+  padding: 6px 20px;
+  border-bottom: 1px solid #e0cf9c;
+  background: #fdf6e0;
+  font-size: 12px;
+}
+
+/* Content */
+
+#ird-main {
+  padding: 15px 20px 20px;
+}
+
+.ird-page-title {
+  margin: 0 0 6px;
+  color: #1f5b93;
+  font-size: 20px;
+}
+
+.ird-intro {
+  margin: 0 0 15px;
+}
+
+.ird-columns {
+  display: flex;
+  gap: 15px;
+}
+
+.ird-main-column {
+  flex: 1;
+  min-width: 0;
+}
+
+.ird-sidebar {
+  flex: 0 0 260px;
+}
+
+/* IRD's blue-headed boxes */
+
+.ird-box {
+  margin-bottom: 15px;
+  border: 1px solid #c8d6e5;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.ird-box-header {
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(#2c6eab, #1f5b93);
+}
+
+.ird-box-header h1,
+.ird-box-header h2 {
+  margin: 0;
+  padding: 0 12px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 26px;
+}
+
+.ird-box-header a:link,
+.ird-box-header a:visited {
+  color: #fff;
+}
+
+.ird-welcome .ird-box-header h1 {
+  font-size: 15px;
+  line-height: 30px;
+}
+
+.ird-box-content {
+  padding: 8px 12px;
+}
+
+.ird-box-content p {
+  margin: 0 0 8px;
+}
+
+.ird-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ird-list li {
+  position: relative;
+  padding: 2px 0 2px 12px;
+}
+
+.ird-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  border: 4px solid transparent;
+  border-left-color: #f1b321;
+}
+
+.ird-highlights {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 15px;
+}
+
+.ird-more {
+  margin: 6px 0 0;
+  text-align: right;
+  font-size: 12px;
+}
+
+/* Landing pages */
+
+.ird-landing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 15px;
+  align-items: start;
+}
+
+.ird-block-desc {
+  color: #555;
+  font-size: 12px;
+}
+
+.ird-item-label {
+  font-weight: bold;
+}
+
+.ird-item-desc {
+  display: block;
+  color: #555;
+  font-size: 12px;
+}
+
+.ird-unavailable .ird-item-label {
+  color: #888;
+}
+
+.ird-unavailable::before {
+  border-left-color: #bbb !important;
+}
+
+.ird-landing-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.ird-landing-search label {
+  flex-basis: 100%;
+}
+
+.ird-landing-search input {
+  flex: 1;
+  max-width: 420px;
+  padding: 4px 6px;
+  border: 1px solid #1f5b93;
+  border-radius: 3px;
+}
+
+/* Footer */
+
+#ird-footer {
+  padding: 10px 20px 15px;
+  background: #1f5b93;
+  color: #dce8f4;
+  font-size: 11px;
+}
+
+.ird-footer-nav {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.ird-footer-nav li {
+  display: inline-block;
+  margin-right: 14px;
+}
+
+.ird-footer-nav a:link,
+.ird-footer-nav a:visited {
+  color: #fff;
+}
+
+#ird-footer p {
+  margin: 0;
+}
+
+/* Narrow screens: IRD was fixed-width; stack rather than overflow */
+
+@media (max-width: 760px) {
+  .ird-columns,
+  .ird-menu {
+    flex-direction: column;
+  }
+
+  .ird-sidebar {
+    flex-basis: auto;
+  }
+
+  .ird-menu-top {
+    width: 100%;
+    border-right: 0;
+    text-align: left;
+  }
+
+  .ird-highlights,
+  .ird-landing-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #ird-utility-nav {
+    display: none;
+  }
+
+  #ird-quick-search input {
+    width: 140px;
+  }
+
+  .ird-submenu {
+    position: static;
+    width: auto;
+  }
+}

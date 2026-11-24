@@ -372,6 +372,25 @@ Note: the Excel serializer is slow on multi-thousand-row exports (can exceed cli
 underlying Solr query/sort is identical to the tsv/csv path, so a slow Excel is a serializer perf issue,
 not a query bug.
 
+### IRD shell (`/ird`, behind `enableIrdShell`)
+
+An Influenza Research Database style front door for former IRD users: IRD's banner, menus,
+and Search/Analyze landing pages, with every item sending the user to the BV-BRC page that
+replaced it. Off by default; when off, `/ird` is an ordinary 404 (`next('router')`).
+
+- `lib/irdShell.js` — the menu tree (ported from the old webapp's `menu-influenza.xml`) and
+  the Quick Search query builder. `routes/ird.js`, `views/ird/`, `public/ird/` — standalone
+  pages: no Dojo, no BV-BRC stylesheet.
+- **Only link pages BV-BRC itself advertises** (its menus, the taxon overviews, or the
+  docs' `quick_start/ird-vipr_bv-brc_mapping.html`). A resolving route is not enough:
+  `/searches/StrainSearch` still resolves but is deliberately retired and redirects to
+  `/searches`. `lib/tests/irdShell.test.js` enforces this against `views/bv-brc-header.ejs`.
+- IRD features with no BV-BRC equivalent stay in the data with `unavailable: '<reason>'`:
+  landing pages list them greyed out so returning users learn they are gone; menus omit them.
+- Quick Search copies `processQuery()` from `widget/GlobalSearch.js` (it cannot be loaded
+  server-side). A test extracts the real function and compares, so editing `processQuery`
+  without updating the copy fails the build rather than drifting.
+
 ### Visualization Components
 - D3.js for custom visualizations (charts, domain viewers)
 - Cytoscape for network graphs
