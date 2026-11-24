@@ -1,0 +1,39 @@
+<%- include('_top') %>
+<h1 class="ird-page-title"><%= section.label %></h1>
+<% if (section.intro) { %><p class="ird-intro"><%= section.intro %></p><% } %>
+
+<% if (section.id === 'search') { %>
+<section class="ird-box">
+  <div class="ird-box-header"><h2>Quick Search</h2></div>
+  <div class="ird-box-content">
+    <form class="ird-landing-search" action="/ird/quicksearch" method="get" role="search">
+      <label for="ird-landing-q">Search all BV-BRC data by keyword or accession:</label>
+      <input id="ird-landing-q" name="q" type="search" placeholder="e.g. H5N1 hemagglutinin">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+</section>
+<% } %>
+
+<div class="ird-landing-grid">
+  <% section.sections.forEach(function (group) { %>
+  <section class="ird-box ird-landing-block">
+    <div class="ird-box-header"><h2><%= group.title %></h2></div>
+    <div class="ird-box-content">
+      <% if (group.desc) { %><p class="ird-block-desc"><%= group.desc %></p><% } %>
+      <ul class="ird-list">
+        <% group.items.forEach(function (item) { %>
+        <% if (item.unavailable) { %>
+        <li class="ird-unavailable"><span class="ird-item-label"><%= item.label %></span>
+          <span class="ird-item-desc"><%= item.unavailable %></span></li>
+        <% } else { %>
+        <li><a class="ird-item-label" href="<%= href(item.href) %>"><%= item.label %></a>
+          <% if (item.desc) { %><span class="ird-item-desc"><%= item.desc %></span><% } %></li>
+        <% } %>
+        <% }); %>
+      </ul>
+    </div>
+  </section>
+  <% }); %>
+</div>
+<%- include('_bottom') %>

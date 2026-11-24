@@ -1,0 +1,66 @@
+<%- include('_top') %>
+<div class="ird-columns">
+  <div class="ird-main-column">
+    <section class="ird-box ird-welcome">
+      <div class="ird-box-header"><h1>Influenza Research Database</h1></div>
+      <div class="ird-box-content">
+        <p>
+          The Influenza Research Database (IRD) is now part of BV-BRC. Its influenza sequence, surveillance,
+          structure, epitope, and serology data, and its most used analysis tools, are available here with
+          the IRD menus you know. Each search and tool opens in BV-BRC.
+        </p>
+        <p>
+          IRD accounts work in BV-BRC with the same user name and password, and IRD workbench data was
+          copied into BV-BRC workspaces in November 2022.
+        </p>
+      </div>
+    </section>
+
+    <div class="ird-highlights">
+      <% shell.navigation.forEach(function (group) { %>
+      <section class="ird-box ird-highlight">
+        <div class="ird-box-header"><h2>
+          <% if (group.landing) { %><a href="<%= group.landing %>"><%= group.label %></a><% } else { %><%= group.label %><% } %>
+        </h2></div>
+        <div class="ird-box-content">
+          <ul class="ird-list">
+            <% var shown = 0;
+               group.sections.forEach(function (section) {
+                 section.items.forEach(function (item) {
+                   if (item.unavailable || shown >= 5) { return; }
+                   shown++; %>
+            <li><a href="<%= href(item.href) %>"><%= item.label %></a></li>
+            <% }); }); %>
+          </ul>
+          <% if (group.landing) { %><p class="ird-more"><a href="<%= group.landing %>">All <%= group.label %> &raquo;</a></p><% } %>
+        </div>
+      </section>
+      <% }); %>
+    </div>
+  </div>
+
+  <aside class="ird-sidebar">
+    <section class="ird-box">
+      <div class="ird-box-header"><h2>Influenza in BV-BRC</h2></div>
+      <div class="ird-box-content">
+        <ul class="ird-list">
+          <% shell.influenzaLinks.forEach(function (item) { %>
+          <li><a href="<%= href(item.href) %>"><%= item.label %></a></li>
+          <% }); %>
+        </ul>
+      </div>
+    </section>
+    <section class="ird-box">
+      <div class="ird-box-header"><h2>Moving from IRD</h2></div>
+      <div class="ird-box-content">
+        <ul class="ird-list">
+          <li><a href="<%= href('docs:quick_start/ird-vipr_bv-brc_mapping.html') %>">Guide for IRD users</a></li>
+          <li><a href="/login">Sign in with your IRD account</a></li>
+          <li><a href="/workspace/">Your workspace (former workbench)</a></li>
+          <li><a href="/">Go to the BV-BRC home page</a></li>
+        </ul>
+      </div>
+    </section>
+  </aside>
+</div>
+<%- include('_bottom') %>

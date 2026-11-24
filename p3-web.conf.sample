@@ -9,5 +9,6 @@
   "enableDevTools": false,
   "cartoBasemapApiKey": "",
   "enableThrottleRetry": false,
+  "enableIrdShell": false,
   "fastaFormatPresetsPath": ""
 }

@@ -37,6 +37,9 @@ const defaults = {
   // traffic through p3/util/throttledRequest, so it wants a soak on a
   // deployment before being turned on everywhere.
   enableThrottleRetry: false,
+  // Serve the Influenza Research Database style entry pages under /ird
+  // (routes/ird.js). Off by default; when off, /ird is an ordinary 404.
+  enableIrdShell: false,
   // Workspace folder holding the shipped FASTA header format presets (NCBI,
   // GISAID, ...) offered in the download wizard's FASTA options step. One
   // JSON file per preset, so a curator can add a format without a release.

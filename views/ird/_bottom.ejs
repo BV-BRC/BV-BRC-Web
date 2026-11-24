@@ -1,0 +1,22 @@
+  </main>
+
+  <footer id="ird-footer">
+    <ul class="ird-footer-nav">
+      <li><a href="/ird/">IRD Home</a></li>
+      <% shell.navigation.forEach(function (group) { if (group.landing) { %>
+      <li><a href="<%= group.landing %>"><%= group.label %></a></li>
+      <% } }); %>
+      <li><a href="/">BV-BRC</a></li>
+      <li><a href="/citation">Cite</a></li>
+      <li><a href="/privacy-policy">Privacy Policy</a></li>
+    </ul>
+    <p>
+      The Influenza Research Database is part of the Bacterial and Viral Bioinformatics Resource Center (BV-BRC).
+      This project has been funded in whole or in part with Federal funds from the National Institute of Allergy
+      and Infectious Diseases, National Institutes of Health, Department of Health and Human Services, under
+      Grant No. U24AI183849, awarded to the University of Chicago.
+    </p>
+  </footer>
+</div>
+</body>
+</html>
