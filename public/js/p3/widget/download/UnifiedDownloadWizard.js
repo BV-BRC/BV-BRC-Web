@@ -97,9 +97,11 @@ define([
     postCreate: function () {
       this.inherited(arguments);
 
-      // Set dialog dimensions
+      // Set dialog width. Height is set in CSS (UnifiedDownload.css), capped to
+      // the viewport so the footer buttons stay visible.
       this.domNode.style.width = '900px';
-      this.containerNode.style.minHeight = '400px';
+
+      this._keepInViewport();
 
       // Build the wizard UI inside the dialog's containerNode
       this._buildWizardUI();
@@ -115,6 +117,36 @@ define([
 
       // Initialize first step
       this._goToStep(0);
+    },
+
+    /**
+     * Re-centre the dialog whenever its size changes.
+     *
+     * dijit/Dialog centres itself once, in show(). The wizard opens on its
+     * shortest step and grows on later ones (and again as the FASTA step's
+     * field lists load), so it grew downward from a top position chosen for
+     * the first step: on an 800px window the Options step's Download button
+     * landed at 808-842px, below the fold. resize() re-measures and calls
+     * _position(); the CSS height cap keeps it from shrinking the dialog.
+     */
+    _keepInViewport: function () {
+      if (typeof ResizeObserver === 'undefined') return;
+      var self = this;
+      var pending = false;
+      var observer = new ResizeObserver(function () {
+        // Coalesce bursts (a step swap resizes several times) into one
+        // reposition per frame. Moving the dialog does not change its size,
+        // so this cannot loop.
+        if (pending) return;
+        pending = true;
+        window.requestAnimationFrame(function () {
+          pending = false;
+          if (self._beingDestroyed || !self.open) return;
+          self.resize();
+        });
+      });
+      observer.observe(this.domNode);
+      this.own({ remove: function () { observer.disconnect(); } });
     },
 
     /**
