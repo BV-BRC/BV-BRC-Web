@@ -1,19 +1,19 @@
 define([
   'dojo/_base/declare', 'dojo/_base/lang',
   './TabViewerBase', './_GenomeList', '../AMRPanelGridContainer',
-  '../GenomeListOverview', '../StrainGridContainer', '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
+  '../GenomeListOverview', /* '../StrainGridContainer', */ '../GroupGenomeGridContainer', '../AMRPanelGridContainer', '../SequenceGridContainer',
   '../FeatureGridContainer', '../ProteinGridContainer', '../ProteinStructureGridContainer', '../SpecialtyGeneGridContainer', '../ProteinFeaturesGridContainer',
   '../ProteinFamiliesContainer', '../PathwayGridContainer', '../SubsystemGridContainer', '../ExperimentsContainer', '../InteractionsContainer',
   '../EpitopeGridContainer', '../SurveillanceGridContainer', '../SerologyGridContainer',
-  '../../util/genomeKingdom'
+  '../../util/genomeKingdom', '../../util/genomeContextQuery'
 ], function (
   declare, lang,
   TabViewerBase, GenomeList, AMRPanelGridContainer,
-  Overview, StrainGridContainer, GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
+  Overview, /* StrainGridContainer, */ GroupGenomeGridContainer, AMRPanelGridContainer, SequenceGridContainer,
   FeatureGridContainer, ProteinGridContainer, ProteinStructureGridContainer, SpecialtyGeneGridContainer, ProteinFeaturesGridContainer,
   ProteinFamiliesContainer, PathwayGridContainer, SubsystemGridContainer, ExperimentsContainer, InteractionsContainer,
   EpitopeGridContainer, SurveillanceGridContainer, SerologyGridContainer,
-  genomeKingdom
+  genomeKingdom, genomeContextQuery
 ) {
 
   return declare([GenomeList], {
@@ -73,7 +73,7 @@ define([
         return;
       }
       switch (active) {
-        case 'strains':
+        // case 'strains':
         case 'transcriptomics':
           activeTab.set('state', lang.mixin({}, this.state, { search: `in(genome_ids,GenomeGroup(${encodeURIComponent('/' + this.groupPath)}))` }));
           break;
@@ -87,6 +87,28 @@ define([
         // eslint-disable-next-line no-case-declarations
         default:
           const activeQueryState = lang.mixin({}, this.state)
+
+          // The group's query is `in(genome_id,GenomeGroup(...))`, which
+          // only works on collections that have genome_id. Epitopes and
+          // Serology do not, so they answered 400 and rendered an empty
+          // grid that looked like "this group has none" (the Strains tab
+          // above is already special-cased onto genome_ids for the same
+          // reason). Re-target per collection; see util/genomeContextQuery.
+          // eslint-disable-next-line no-case-declarations
+          const retargeted = genomeContextQuery(activeQueryState.search, activeTab.dataModel);
+          genomeContextQuery.refreshFilterableFields(activeTab.dataModel);
+          if (activeTab.dataModel && activeQueryState.search) {
+            activeQueryState.search = retargeted.query;
+            if (retargeted.unfiltered) {
+              // Everything was dropped. genomeContextQuery substitutes a
+              // match-nothing clause rather than an empty query, because
+              // an empty query returns the WHOLE collection -- which would
+              // show every epitope in the database as this group's.
+              activeQueryState.autoFilterMessage = activeTab.title
+                + ' cannot be filtered by genome group, so this view cannot be '
+                + 'applied here. Showing no results rather than every record.';
+            }
+          }
 
           if (activeQueryState) {
             activeTab.set('state', activeQueryState)
@@ -111,12 +133,14 @@ define([
 
       this.overview = this.createOverviewPanel();
 
+      /* Temporarily hide the Strains tab.
       this.strains = new StrainGridContainer({
         title: 'Strains',
         id: this.viewer.id + '_strains',
         disabled: false,
         state: this.state
       })
+      */
       this.genomes = new GroupGenomeGridContainer({
         title: 'Genomes',
         id: this.viewer.id + '_genomes',
@@ -209,7 +233,7 @@ define([
       });
 
       this.viewer.addChild(this.overview);
-      this.viewer.addChild(this.strains);
+      // this.viewer.addChild(this.strains);
       this.viewer.addChild(this.genomes);
       this.viewer.addChild(this.amr);
       this.viewer.addChild(this.sequences);
@@ -229,7 +253,7 @@ define([
     },
 
     changeToBacteria: function () {
-      this.viewer.removeChild(this.strains);
+      // this.viewer.removeChild(this.strains);
       this.viewer.removeChild(this.surveillance);
       this.viewer.removeChild(this.serology);
     },

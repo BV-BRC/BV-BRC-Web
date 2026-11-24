@@ -10,9 +10,7 @@ define([
   'dijit/Dialog',
   '../../util/SavedSearchManager',
   '../../util/QueryDescriptor',
-  '../../util/QueryToEnglish',
-  '../../WorkspaceManager',
-  '../WorkspaceObjectSelector'
+  '../../util/QueryToEnglish'
 ], function (
   declare,
   lang,
@@ -25,9 +23,7 @@ define([
   Dialog,
   SavedSearchManager,
   QueryDescriptor,
-  QueryToEnglish,
-  WorkspaceManager,
-  WorkspaceObjectSelector
+  QueryToEnglish
 ) {
   /**
    * SaveSearchDialog - Dialog for saving searches
@@ -47,10 +43,6 @@ define([
     // Input data
     queryDescriptor: null,
 
-    // State
-    saveToWorkspace: false,
-    workspacePath: null,
-
     // DOM references
     nameInput: null,
     dataTypeNode: null,
@@ -58,9 +50,6 @@ define([
     recordCountSection: null,
     recordCountNode: null,
     tagsInput: null,
-    workspaceCheckbox: null,
-    workspacePathSection: null,
-    workspacePathSelector: null,  // WorkspaceObjectSelector for folder selection
     duplicateWarning: null,
     saveButton: null,
     cancelButton: null,
@@ -140,35 +129,12 @@ define([
         placeholder: 'Enter tags separated by commas'
       }, tagsSection);
 
-      // Workspace checkbox section
-      var wsSection = domConstruct.create('div', { 'class': 'formSection workspaceSection' }, formContent);
-      var wsLabel = domConstruct.create('label', { 'class': 'checkboxLabel' }, wsSection);
-      this.workspaceCheckbox = domConstruct.create('input', { type: 'checkbox' }, wsLabel);
-      domConstruct.place(document.createTextNode(' Also save to workspace'), wsLabel);
-
-      // Workspace path section (hidden by default)
-      this.workspacePathSection = domConstruct.create('div', { 'class': 'formSection workspacePathSection dijitHidden' }, formContent);
-      domConstruct.create('label', { innerHTML: 'Workspace Folder:' }, this.workspacePathSection);
-
-      // Container for the WorkspaceObjectSelector
-      var wsSelectorContainer = domConstruct.create('div', {
-        'class': 'workspaceSelectorContainer',
-        style: 'width: 100%;'
-      }, this.workspacePathSection);
-
-      // Create WorkspaceObjectSelector for folder selection
-      var defaultPath = WorkspaceManager.getDefaultFolder() || '';
-      this.workspacePathSelector = new WorkspaceObjectSelector({
-        title: 'Select a Folder for Saved Searches',
-        type: ['folder'],
-        multi: false,
-        autoSelectCurrent: true,
-        selectionText: 'Destination',
-        path: defaultPath,
-        style: 'width: 100%;'
-      });
-      this.workspacePathSelector.placeAt(wsSelectorContainer);
-      this.workspacePathSelector.startup();
+      // No "also save to workspace" checkbox: saving always persists to
+      // the workspace, via SavedSearchManager's
+      // .preferences/saved-searches.json. The checkbox controlled a
+      // *second*, optional copy -- a standalone .search file in a folder
+      // of the user's choosing -- which made "save to workspace" look
+      // optional when it never was.
 
       // Action buttons
       var actions = domConstruct.create('div', { 'class': 'dialogActions' }, content);
@@ -198,15 +164,6 @@ define([
           self._validateName();
         });
         this._handlers.push(nameHandler);
-      }
-
-      // Workspace checkbox
-      if (this.workspaceCheckbox) {
-        var wsHandler = on(this.workspaceCheckbox, 'change', function () {
-          self.saveToWorkspace = this.checked;
-          self._updateWorkspaceSection();
-        });
-        this._handlers.push(wsHandler);
       }
 
       // Save button
@@ -366,25 +323,11 @@ define([
     },
 
     /**
-     * Update workspace section visibility
-     */
-    _updateWorkspaceSection: function () {
-      if (this.workspacePathSection) {
-        if (this.saveToWorkspace) {
-          domClass.remove(this.workspacePathSection, 'dijitHidden');
-        } else {
-          domClass.add(this.workspacePathSection, 'dijitHidden');
-        }
-      }
-    },
-
-    /**
      * Handle save button click
      */
     _onSave: function () {
       if (!this._validateName()) return;
 
-      var self = this;
       var name = this.nameInput.value.trim();
 
       // Update descriptor with name
@@ -403,47 +346,29 @@ define([
         }
       }
 
-      // Save locally
+      // save() updates the cache synchronously and writes
+      // .preferences/saved-searches.json in the background, so the
+      // search is always in the workspace -- there is nothing optional
+      // left to branch on here.
       var savedDescriptor = SavedSearchManager.save(this.queryDescriptor);
 
-      // Export to workspace if requested
-      if (this.saveToWorkspace && this.workspacePathSelector) {
-        var wsPath = this.workspacePathSelector.get('value');
-        if (wsPath) {
-          when(
-            SavedSearchManager.exportToWorkspace(savedDescriptor.id, wsPath),
-            function (result) {
-              self._onSaveComplete(savedDescriptor, result);
-            },
-            function (err) {
-              console.error('Failed to export to workspace:', err);
-              // Still consider save successful since local save worked
-              self._onSaveComplete(savedDescriptor, null);
-            }
-          );
-          return;
-        }
-      }
-
-      this._onSaveComplete(savedDescriptor, null);
+      this._onSaveComplete(savedDescriptor);
     },
 
     /**
      * Handle save completion
      * @param {Object} descriptor - Saved descriptor
-     * @param {Object} wsResult - Workspace export result (optional)
      */
-    _onSaveComplete: function (descriptor, wsResult) {
+    _onSaveComplete: function (descriptor) {
       // Publish event
       topic.publish('/SavedSearch/changed', {
         action: 'save',
-        search: descriptor,
-        workspaceResult: wsResult
+        search: descriptor
       });
 
       // Callback
       if (this.onSaveCallback) {
-        this.onSaveCallback(descriptor, wsResult);
+        this.onSaveCallback(descriptor);
       }
 
       this.hide();
@@ -464,7 +389,6 @@ define([
      */
     show: function () {
       this._updateDisplay();
-      this._updateWorkspaceSection();
       this.inherited(arguments);
 
       // Focus name input
@@ -481,18 +405,11 @@ define([
      */
     reset: function () {
       this.queryDescriptor = null;
-      this.saveToWorkspace = false;
 
       if (this.nameInput) this.nameInput.value = '';
       if (this.tagsInput) this.tagsInput.value = '';
-      if (this.workspaceCheckbox) this.workspaceCheckbox.checked = false;
-      if (this.workspacePathSelector) {
-        var defaultPath = WorkspaceManager.getDefaultFolder() || '';
-        this.workspacePathSelector.set('value', defaultPath);
-      }
 
       domClass.add(this.duplicateWarning, 'dijitHidden');
-      domClass.add(this.workspacePathSection, 'dijitHidden');
     },
 
     /**

@@ -21,7 +21,7 @@ define([
     searchTypes: [
       'taxonomy',
       'genome',
-      'strain',
+      // 'strain', // Temporarily hidden from global search results.
       'genome_feature',
       // 'protein',
       'sp_gene',
@@ -590,37 +590,21 @@ define([
       }, this);
 
       var keys = Object.keys(resultCounts);
-
+      var columns = 3;
+      var rows = Math.ceil(keys.length / columns);
       var out = ['<div style="width:850px;margin:auto;font-size:1.5em;border:1px solid #333;background:#efefef;border-radius:3px;padding:4px;"><table>'];
-      out.push('<tr>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[0], resultCounts[keys[0]].docs, resultCounts[keys[0]].total) + '">' + this.labelsByType[keys[0]] + ': ' + resultCounts[keys[0]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[5], resultCounts[keys[5]].docs, resultCounts[keys[5]].total) + '">' + this.labelsByType[keys[5]] + ': ' + resultCounts[keys[5]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[10], resultCounts[keys[10]].docs, resultCounts[keys[10]].total) + '">' + this.labelsByType[keys[10]] + ': ' + resultCounts[keys[10]].total + '</a></td>');
-      out.push('</tr>')
-
-      out.push('<tr>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[1], resultCounts[keys[1]].docs, resultCounts[keys[1]].total) + '">' + this.labelsByType[keys[1]] + ': ' + resultCounts[keys[1]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[6], resultCounts[keys[6]].docs, resultCounts[keys[6]].total) + '">' + this.labelsByType[keys[6]] + ': ' + resultCounts[keys[6]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[11], resultCounts[keys[11]].docs, resultCounts[keys[11]].total) + '">' + this.labelsByType[keys[11]] + ': ' + resultCounts[keys[11]].total + '</a></td>');
-      out.push('</tr>');
-
-      out.push('<tr>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[2], resultCounts[keys[2]].docs, resultCounts[keys[2]].total) + '">' + this.labelsByType[keys[2]] + ': ' + resultCounts[keys[2]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[7], resultCounts[keys[7]].docs, resultCounts[keys[7]].total) + '">' + this.labelsByType[keys[7]] + ': ' + resultCounts[keys[7]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[12], resultCounts[keys[12]].docs, resultCounts[keys[12]].total) + '">' + this.labelsByType[keys[12]] + ': ' + resultCounts[keys[12]].total + '</a></td>');
-      out.push('</tr>');
-
-      out.push('<tr>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[3], resultCounts[keys[3]].docs, resultCounts[keys[3]].total) + '">' + this.labelsByType[keys[3]] + ': ' + resultCounts[keys[3]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[8], resultCounts[keys[8]].docs, resultCounts[keys[8]].total) + '">' + this.labelsByType[keys[8]] + ': ' + resultCounts[keys[8]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[13], resultCounts[keys[13]].docs, resultCounts[keys[13]].total) + '">' + this.labelsByType[keys[13]] + ': ' + resultCounts[keys[13]].total + '</a></td>');
-      out.push('</tr>');
-
-      out.push('<tr>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[4], resultCounts[keys[4]].docs, resultCounts[keys[4]].total) + '">' + this.labelsByType[keys[4]] + ': ' + resultCounts[keys[4]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[9], resultCounts[keys[9]].docs, resultCounts[keys[9]].total) + '">' + this.labelsByType[keys[9]] + ': ' + resultCounts[keys[9]].total + '</a></td>');
-      out.push('<td><a class="navigationLink"  href="' + this.generateLink(keys[14], resultCounts[keys[14]].docs, resultCounts[keys[14]].total) + '">' + this.labelsByType[keys[14]] + ': ' + resultCounts[keys[14]].total + '</a></td>');
-      out.push('</tr>');
+      for (var row = 0; row < rows; row++) {
+        out.push('<tr>');
+        for (var column = 0; column < columns; column++) {
+          var type = keys[row + column * rows];
+          if (!type) {
+            break;
+          }
+          var result = resultCounts[type];
+          out.push('<td><a class="navigationLink" href="' + this.generateLink(type, result.docs, result.total) + '">' + this.labelsByType[type] + ': ' + result.total + '</a></td>');
+        }
+        out.push('</tr>');
+      }
       out.push('</table></div>');
 
       if (content.length > 0) {

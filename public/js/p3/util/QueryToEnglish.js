@@ -1,7 +1,7 @@
 define([
-  'rql/parser'
+  'rql/parser', './fullCollectionDatePattern'
 ], function (
-  RQLParser
+  RQLParser, fullCollectionDatePattern
 ) {
 
   // HTML escape function to prevent XSS
@@ -75,11 +75,16 @@ define([
           var v = escapeHtml(decodeURIComponent(term.args[1]));
           out =  f + '<span class="searchOperator"> is not </span>' + v;
           break;
-        case 'eq':
-          var f = escapeHtml(decodeURIComponent(term.args[0]).replace(/_/g, ' '));
-          var v = escapeHtml(decodeURIComponent(term.args[1]));
-          out =  '<span class="searchField">' + f  + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + v + '</span>';
+        case 'eq': {
+          const field = decodeURIComponent(term.args[0]);
+          const value = decodeURIComponent(term.args[1]);
+          if (field === 'collection_date' && value === fullCollectionDatePattern) {
+            return '<span class="searchValue">Full collection dates only</span>';
+          }
+          out = '<span class="searchField">' + escapeHtml(field.replace(/_/g, ' '))
+            + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + escapeHtml(value) + '</span>';
           break;
+        }
         case 'keyword':
           out = '<span class="searchValue"> '  + escapeHtml(decodeURIComponent(term.args[0])) + '</span>';
           break;
