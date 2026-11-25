@@ -3,7 +3,7 @@ define([
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
   'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard', '../auth/authHeaders',
-  'dgrid/OnDemandGrid', '../store/cursorPaging'
+  'dgrid/OnDemandGrid', '../store/cursorPaging', './scrollStatus'
 ], function (
   declare, Grid, Store, DijitRegistry, Pagination,
   Keyboard, Selection, formatter, ColumnResizer,
@@ -11,7 +11,7 @@ define([
   Deferred, aspect, lang, PathJoin,
   ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard,
   authHeader,
-  OnDemandGrid, cursorPaging) {
+  OnDemandGrid, cursorPaging, scrollStatus) {
 
   var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
   // var hasUserSelect = has('css-user-select');
@@ -192,6 +192,7 @@ define([
       // dgrid manages its own scroll position, so there is nothing to anchor.
       if (this.scrolling && this.bodyNode) {
         this.bodyNode.style.overflowAnchor = 'none';
+        this._initScrollStatus();
       }
       this._started = true;
 
@@ -399,6 +400,71 @@ define([
   var PAGE_ROWS = 200;
   var scrollingBody = lang.mixin({}, body, {
     scrolling: true,
+    // The footer says where you are, since the scrollbar cannot (scrollStatus).
+    showFooter: true,
+
+    _initScrollStatus: function () {
+      var grid = this;
+      var pagination = document.createElement('div');
+      pagination.className = 'dgrid-pagination';
+      var status = document.createElement('div');
+      status.className = 'dgrid-status';
+      pagination.appendChild(status);
+      this.footerNode.appendChild(pagination);
+      this._scrollStatusNode = status;
+      this._rowsLoaded = 0;
+
+      // "loaded" is how far the fetches have reached, not how many rows are in
+      // the DOM: rows far from the viewport are trimmed (farOffRemoval) but
+      // stay fetched and cached.
+      // renderArray returns a promise for the rows when the results are a
+      // promise, and OnDemandList sets _total only after that resolves -- so
+      // read both a turn later, not here.
+      aspect.after(this, 'renderArray', function (rows) {
+        Deferred.when(rows, function (trs) {
+          (trs || []).forEach(function (row) {
+            if (row && typeof row.rowIndex === 'number' && row.rowIndex + 1 > grid._rowsLoaded) {
+              grid._rowsLoaded = row.rowIndex + 1;
+            }
+          });
+          setTimeout(function () { grid._updateScrollStatus(); }, 0);
+        });
+        return rows;
+      });
+      aspect.before(this, 'refresh', function () {
+        grid._rowsLoaded = 0;
+      });
+      aspect.after(this, 'refresh', function (result) {
+        Deferred.when(result, function () { grid._updateScrollStatus(); });
+        return result;
+      });
+
+      var pending = false;
+      // dgrid removes everything in _listeners when the grid is destroyed.
+      this._listeners.push(on(this.bodyNode, 'scroll', function () {
+        if (pending) return;
+        pending = true;
+        window.requestAnimationFrame(function () {
+          pending = false;
+          grid._updateScrollStatus();
+        });
+      }));
+    },
+
+    _updateScrollStatus: function () {
+      if (!this._scrollStatusNode) return;
+      var scroller = this.bodyNode;
+      var box = scroller.getBoundingClientRect();
+      var rows = [];
+      Array.prototype.forEach.call(this.contentNode.querySelectorAll('.dgrid-row'), function (node) {
+        var rect = node.getBoundingClientRect();
+        rows.push({ index: node.rowIndex, top: rect.top - box.top + scroller.scrollTop, height: rect.height });
+      });
+      var total = typeof this._total === 'number' ? this._total : this.totalRows;
+      var range = scrollStatus.visibleRange(rows, scroller.scrollTop, scroller.clientHeight);
+      this._scrollStatusNode.textContent = scrollStatus.statusText(range, total, this._rowsLoaded);
+    },
+
     minRowsPerPage: PAGE_ROWS,
     maxRowsPerPage: PAGE_ROWS,
     maxEmptySpace: 1000,
