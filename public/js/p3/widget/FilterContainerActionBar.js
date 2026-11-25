@@ -7,7 +7,8 @@ define([
   'dijit/form/DropDownButton', 'dijit/DropDownMenu',
   'dijit/Dialog', 'dijit/form/Button', 'dijit/form/CheckBox', 'dijit/form/Select', './AdvancedSearchRowForm',
   'dijit/focus', '../util/PathJoin', '../util/constructMetadataName',
-  'dojo/debounce', '../auth/authHeaders', '../util/dateRangeWithinQuery', '../util/joinTooBroad'
+  'dojo/debounce', '../auth/authHeaders', '../util/dateRangeWithinQuery', '../util/joinTooBroad',
+  '../util/facetQuery'
 ], function (
   declare, ContainerActionBar, lang,
   domConstruct, domGeometry, domStyle, domClass,
@@ -17,17 +18,14 @@ define([
   DropDownButton, DropDownMenu,
   Dialog, Button, CheckBox, Select, AdvancedSearchRowForm,
   focusUtil, PathJoin, constructMetadataName,
-  debounce, authHeader, dateRangeWithinQuery, joinTooBroad) {
+  debounce, authHeader, dateRangeWithinQuery, joinTooBroad,
+  facetQuery) {
 
   function sortByLabel(firstEl, secondEl) {
     return (firstEl['label'] < secondEl['label']) ? -1 : (firstEl['label'] > secondEl['label'] ? 1 : 0)
   }
 
-  function keywordClause(value) {
-    // RQL uses parentheses for operators, and encodeURIComponent leaves them unescaped.
-    const encoded = encodeURIComponent(value).replace(/\(/g, '%28').replace(/\)/g, '%29');
-    return 'keyword(' + encoded + ')';
-  }
+  const keywordClause = facetQuery.keywordClause;
 
   function parseFacetCounts(facets) {
     const out = {};
@@ -201,8 +199,7 @@ define([
         this._ffWidgets[category].clearSelection();
       }, this);
 
-      // Note: facet counts are fetched via _setQueryAttr which is triggered by set('query') above
-      // No need to explicitly call _updateAllFilteredCounts here
+      // Facet counts are fetched at the end, once this._filter has been rebuilt from the URL.
 
       // for each of the selected items in the filter, toggle the item on in  ffWidgets
       if (parsedFilter && parsedFilter.selected) {
@@ -300,6 +297,11 @@ define([
         }, this);
       }
 
+      // A filter in the URL (a reload, a shared link, Back): apply it to the counts too,
+      // each category without its own selection. Without one, _setQueryAttr's counts stand.
+      if (parsedFilter && parsedFilter.selected && parsedFilter.selected.length > 0) {
+        this._refreshAllFacets(parsedFilter.keywords || [], this._filter);
+      }
     },
 
     setButtonText: function (action, text) {
@@ -548,62 +550,7 @@ define([
           }
         }
 
-        const cats = Object.keys(this._filter).filter(function (cat) {
-          return this._filter[cat].length > 0;
-        }, this);
-
-        let fkws = []; // TODO: make this immutable
-        if (this._filterKeywords) {
-          this._filterKeywords.forEach(function (fk) {
-            if (fk) {
-              fkws.push(keywordClause(fk));
-            }
-          });
-        }
-
-        if (fkws.length < 1) {
-          fkws = false;
-        } else if (fkws.length == 1) {
-          fkws = fkws[0];
-        } else {
-          fkws = 'and(' + fkws.join(',') + ')';
-        }
-
-        let filter = ''; // TODO: make this immutable
-        if (cats.length < 1) {
-          if (fkws) {
-            filter = fkws;
-          }
-        } else if (cats.length == 1) {
-          if (fkws) {
-            filter = 'and(' + this._filter[cats[0]] + ',' + fkws + ')';
-          } else {
-            if (this._filter[cats[0]] instanceof Array && this._filter[cats[0]].length > 1) {
-              filter = 'or(' + this._filter[cats[0]].join(',') + ')';
-            } else {
-              filter = this._filter[cats[0]];
-            }
-          }
-        } else {
-          const inner = cats.map(function (c) {
-            if (this._filter[c] instanceof Array && this._filter[c].length > 1) {
-              return 'or(' + this._filter[c].join(',') + ')';
-            }
-            return this._filter[c];
-
-          }, this).join(',');
-
-          if (this._filterKeywords) {
-            filter = 'and(' + inner + ',' + fkws + ')';
-          } else {
-            filter = 'and(' + inner + ')';
-          }
-        }
-
-        if (!filter) {
-          filter = 'false';
-        }
-        this.set('filter', filter);
+        this.set('filter', facetQuery.buildFilter(this._filter, this._filterKeywords) || 'false');
 
         // Refresh all facet counts based on the new filter
         this._refreshAllFacets();
@@ -620,104 +567,44 @@ define([
       }), true, this.containerNode);
     },
 
-    _refreshAllFacets: function () {
-      // Build the full query with current search + current filters
-      let q = [];
-
-      if (this.query) {
-        q.push((this.query && (this.query.charAt(0) == '?')) ? this.query.substr(1) : this.query);
+    /**
+     * Refresh every facet's counts for the current query, selections and
+     * keywords. A category's counts leave out its own selection (see
+     * util/facetQuery), so its other values stay listed and can be added.
+     */
+    _refreshAllFacets: function (keywords, filterMap) {
+      const requests = facetQuery.facetRequests(
+        this.query, filterMap || this._filter, keywords || this._filterKeywords, this.facetFields
+      );
+      // A click refreshes the facets and then, via the URL, _refresh asks for the same again.
+      const key = JSON.stringify(requests);
+      if (key === this._facetRoundKey) {
+        return;
       }
-
-      if (this.filter && this.filter !== 'false') {
-        q.push(this.filter);
-      }
-
-      if (q.length == 0) {
-        return; // No query to fetch facets for
-      } else if (q.length == 1) {
-        q = q[0];
-      } else {
-        q = 'and(' + q.join(',') + ')';
-      }
-
-      // Fetch all facets in a single API call
-      const self = this;
-      this.getFacets('?' + q).then(function (facets) {
-        if (!facets) {
-          return;
-        }
-        self._clearFacetUnavailable();
-        // Update all facet widgets with the returned data
-        Object.keys(facets).forEach(function (category) {
-          if (self._ffWidgets[category]) {
-            self._ffWidgets[category].set('data', facets[category]);
+      this._facetRoundKey = key;
+      // Clicks can outrun responses; only the latest round may draw.
+      const round = this._facetRound = (this._facetRound || 0) + 1;
+      requests.forEach(function (req) {
+        this.getFacets('?' + req.query, req.fields).then(lang.hitch(this, function (facets) {
+          if (round !== this._facetRound) {
+            return;
           }
-        });
-      }, function (err) {
-        console.error('_refreshAllFacets: error fetching facets:', err);
-      });
-    },
-
-    _updateAllFilteredCounts: function (selectionMap, keywords) {
-      selectionMap = selectionMap || {};
-
-      // Build filter query excluding all selected categories (they'll be updated from the facet response)
-      let ffilter = [];
-
-      if (keywords) {
-        keywords.forEach(function (k) {
-          ffilter.push(keywordClause(k));
-        });
-      }
-
-      Object.keys(selectionMap).forEach(function (cat) {
-        if (selectionMap[cat]) {
-          if (selectionMap[cat].length == 1) {
-            ffilter.push('eq(' + encodeURIComponent(cat) + ',' + encodeURIComponent(selectionMap[cat][0]) + ')');
-          } else if (selectionMap[cat].length > 1) {
-            ffilter.push('or(' + selectionMap[cat].map(function (c) {
-              return 'eq(' + encodeURIComponent(cat) + ',' + encodeURIComponent(c) + ')';
-            }).join(',') + ')');
+          if (!facets || facets instanceof Error) {
+            this._facetRoundKey = null; // let the same request be tried again
+            return;
           }
-        }
+          this._clearFacetUnavailable();
+          req.fields.forEach(function (field) {
+            const category = typeof field === 'string' ? field : field.field;
+            // getFacets resolves with the error object on failure; leave the list as it was.
+            if (this._ffWidgets[category] && facets[category]) {
+              this._ffWidgets[category].set('data', facets[category]);
+            }
+          }, this);
+        }), function (err) {
+          console.error('_refreshAllFacets: error fetching facets:', err);
+        });
       }, this);
-
-      if (ffilter.length < 1) {
-        ffilter = '';
-      } else if (ffilter.length == 1) {
-        ffilter = ffilter[0];
-      } else {
-        ffilter = 'and(' + ffilter.join(',') + ')';
-      }
-
-      let q = [];
-
-      if (this.query) {
-        q.push((this.query && (this.query.charAt(0) == '?')) ? this.query.substr(1) : this.query);
-      }
-      if (ffilter) {
-        q.push(ffilter);
-      }
-
-      if (q.length == 1) {
-        q = q[0];
-      } else if (q.length > 1) {
-        q = 'and(' + q.join(',') + ')';
-      }
-
-      // Fetch all facets in a single API call
-      this.getFacets('?' + q).then(lang.hitch(this, function (facets) {
-        if (!facets) {
-          return;
-        }
-        this._clearFacetUnavailable();
-        // Update all facet widgets with the returned data
-        Object.keys(facets).forEach(function (category) {
-          if (this._ffWidgets[category]) {
-            this._ffWidgets[category].set('data', facets[category]);
-          }
-        }, this);
-      }));
     },
 
     _updateFilteredCounts: function (category, selectionMap, keywords) {
@@ -1169,8 +1056,10 @@ define([
       this._set('query', queryStr);
 
       const self = this;
+      // These counts ignore the filter; a filtered round started after this one wins.
+      const round = this._facetRound || 0;
       this.getFacets('?' + queryStr).then(function (facets) {
-        if (!facets) {
+        if (!facets || (self._facetRound || 0) !== round) {
           return;
         }
         self._clearFacetUnavailable();
