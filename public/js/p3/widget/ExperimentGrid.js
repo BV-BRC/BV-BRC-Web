@@ -8,7 +8,7 @@ define([
 
   const store = new Store({});
 
-  return declare([Grid], {
+  return declare([Grid.Auto], {
     region: 'center',
     query: (this.query || ''),
     apiToken: window.App.authorizationToken,
