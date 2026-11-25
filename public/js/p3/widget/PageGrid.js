@@ -3,7 +3,7 @@ define([
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
   'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard', '../auth/authHeaders',
-  'dgrid/OnDemandGrid', '../store/cursorPaging', './scrollStatus'
+  'dgrid/OnDemandGrid', '../store/cursorPaging', './scrollStatus', '../util/rowNumberColumn'
 ], function (
   declare, Grid, Store, DijitRegistry, Pagination,
   Keyboard, Selection, formatter, ColumnResizer,
@@ -11,7 +11,7 @@ define([
   Deferred, aspect, lang, PathJoin,
   ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard,
   authHeader,
-  OnDemandGrid, cursorPaging, scrollStatus) {
+  OnDemandGrid, cursorPaging, scrollStatus, rowNumberColumn) {
 
   var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
   // var hasUserSelect = has('css-user-select');
@@ -61,6 +61,66 @@ define([
       accept: 'none',
       selfAccept: false,
       copyOnly: true
+    },
+
+    // The optional "#" column (showRowNumbers; see util/rowNumberColumn),
+    // added to whatever columns the grid is given, at creation or later.
+    postMixInProperties: function () {
+      this.inherited(arguments);
+      this._showRowNumbers = rowNumberColumn.isEnabled(window.App);
+      if (this._showRowNumbers) {
+        this.columns = rowNumberColumn.withRowNumbers(this.columns);
+      }
+    },
+    _setColumns: function (columns) {
+      if (this._showRowNumbers) {
+        columns = rowNumberColumn.withRowNumbers(columns);
+      }
+      this.inherited(arguments, [columns]);
+    },
+    insertRow: function () {
+      var row = this.inherited(arguments);
+      if (this._showRowNumbers && row) {
+        var cell = row.querySelector('.field-' + rowNumberColumn.FIELD);
+        if (cell) { cell.textContent = rowNumberColumn.label(row.rowIndex); }
+      }
+      return row;
+    },
+    // Rows are built in a detached fragment, so they can only be measured once
+    // renderArray has put them in the page.
+    renderArray: function () {
+      var rows = this.inherited(arguments);
+      if (this._showRowNumbers) {
+        var grid = this;
+        Deferred.when(rows, function () {
+          grid._sizeRowNumberColumn(grid.contentNode.querySelector('.dgrid-row .field-' + rowNumberColumn.FIELD));
+        });
+      }
+      return rows;
+    },
+    // Keep the "#" column exactly as wide as the result's largest number:
+    // measured in a real cell, because dgrid's header and body are separate
+    // tables with different font sizes, so a width in ch would not line up.
+    // Re-measured only when the total gains or loses a digit.
+    _sizeRowNumberColumn: function (cell) {
+      var total = this.totalRows || this._total;
+      if (!total || !cell || !cell.ownerDocument) return;
+      var widest = rowNumberColumn.widestLabel(total);
+      if (widest === this._rowNumberWidest) return;
+      var probe = document.createElement('span');
+      probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap';
+      probe.textContent = widest;
+      cell.appendChild(probe);
+      var textWidth = probe.getBoundingClientRect().width;
+      cell.removeChild(probe);
+      if (!textWidth) return; // not laid out yet; the next row will try again
+      var style = window.getComputedStyle(cell);
+      var padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0)
+        + (parseFloat(style.borderLeftWidth) || 0) + (parseFloat(style.borderRightWidth) || 0);
+      if (this._rowNumberRule) this._rowNumberRule.remove();
+      this._rowNumberRule = this.styleColumn(rowNumberColumn.KEY,
+        'width: ' + Math.ceil(textWidth + padding + 1) + 'px;');
+      this._rowNumberWidest = widest;
     },
     selectedData: {},
 
@@ -119,6 +179,10 @@ define([
       // console.log("this.id:", this.id, "_setTotalRows()");
       if (rows) {
         this.totalRows = rows;
+        // The total often arrives after the first rows: size the "#" column now.
+        if (this._showRowNumbers && this.contentNode) {
+          this._sizeRowNumberColumn(this.contentNode.querySelector('.dgrid-row .field-' + rowNumberColumn.FIELD));
+        }
         // console.log("Total Rows: ", rows);
         if (this.controlButton) {
           // console.log("this.controlButton: ", this.controlButton);

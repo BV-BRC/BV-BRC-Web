@@ -12,5 +12,6 @@
   "enableIrdShell": false,
   "enableIrdSearch": false,
   "useCursorPaging": false,
+  "showRowNumbers": false,
   "fastaFormatPresetsPath": ""
 }

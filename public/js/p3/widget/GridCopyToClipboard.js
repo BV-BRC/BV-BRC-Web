@@ -56,7 +56,7 @@ define(['dojo/_base/declare', 'dojo/has', 'dojo/on', 'dgrid/util/misc', 'put-sel
 
         // filter out blacklisted columns
         key_list = key_list.filter(function (i) {
-          return ['Selection Checkboxes', 'public'].indexOf(i) < 0;
+          return ['Selection Checkboxes', 'Row Number', 'public'].indexOf(i) < 0; // Row Number: display-only, util/rowNumberColumn
         });
 
 

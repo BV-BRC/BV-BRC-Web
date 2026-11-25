@@ -654,6 +654,18 @@ body.patric.claro .dijitTabDisabled {
     height: 16px;
 }
 
+/* The optional row-number column (showRowNumbers; util/rowNumberColumn). */
+/* Width is set per grid from the largest number (PageGrid._sizeRowNumberColumn);
+   this is only the width until then (px, so header and body match). */
+.dgrid .rowNumberColumn {
+    width: 40px;
+    padding-left: 2px;
+    padding-right: 4px;
+    text-align: right;
+    color: #777;
+    font-variant-numeric: tabular-nums;
+}
+
 div.overview {
     position: relative;
     width: 100%;
