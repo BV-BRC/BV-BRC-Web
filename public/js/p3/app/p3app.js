@@ -459,6 +459,36 @@ define([
         _self.navigate(newState);
       });
 
+      // IRD search forms. The server serves this page only when enableIrdSearch
+      // is on (routes/ird.js); this check covers in-app navigation, which never
+      // reaches the server, so it reloads and gets the server's answer.
+      // For these regex routes the router passes the first capture group as
+      // the second argument, not the path; the full path is params.newPath.
+      Router.register('/ird/search/sequences', function (params) {
+        if (!window.App.enableIrdSearch) {
+          window.location.replace(params.newPath);
+          return;
+        }
+        var newState = getState(params, params.newPath);
+        newState.widgetClass = 'p3/widget/search/IrdSequenceSearch';
+        newState.layers = ['p3/layer/search'];
+        newState.requireAuth = false;
+        newState.pageTitle = 'Search Sequences | Influenza Research Database';
+        _self.navigate(newState);
+      });
+
+      Router.register('/ird/results/(segment|protein|strain)(/.*)?', function (params) {
+        if (!window.App.enableIrdSearch) {
+          window.location.replace(params.newPath);
+          return;
+        }
+        var newState = getState(params, params.newPath);
+        newState.widgetClass = 'p3/widget/viewer/IrdResults';
+        newState.requireAuth = false;
+        newState.pageTitle = 'Search Results | Influenza Research Database';
+        _self.navigate(newState);
+      });
+
       Router.register('/app(/.*)', function (params, path) {
         // console.log("view URL Callback", arguments);
 

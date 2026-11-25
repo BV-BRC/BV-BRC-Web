@@ -3,14 +3,18 @@
  * pages under /ird. Colors and proportions follow the old site's style.css;
  * the sprite sheet it used is replaced by gradients.
  *
- * Standalone: these pages do not load Dojo or the BV-BRC stylesheets.
+ * Shell pages (body.ird-shell) are standalone: no Dojo, no BV-BRC
+ * stylesheets. The IRD search pages load this file inside the BV-BRC app
+ * (body.ird) for the banner and menus, so page-wide rules are scoped to the
+ * shell pages and the in-app banner; everything else is #ird-* / .ird-*.
  */
 
-* {
+body.ird-shell *,
+.ird-banner * {
   box-sizing: border-box;
 }
 
-body {
+body.ird-shell {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 13px;
@@ -19,14 +23,18 @@ body {
   background: #b5b5b6 linear-gradient(#e2e2e3, #b5b5b6 400px) no-repeat;
 }
 
-a:link,
-a:visited {
+body.ird-shell a:link,
+body.ird-shell a:visited,
+.ird-banner a:link,
+.ird-banner a:visited {
   color: #3171ac;
   text-decoration: none;
 }
 
-a:hover,
-a:focus {
+body.ird-shell a:hover,
+body.ird-shell a:focus,
+.ird-banner a:hover,
+.ird-banner a:focus {
   text-decoration: underline;
 }
 

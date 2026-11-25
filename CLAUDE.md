@@ -391,6 +391,26 @@ replaced it. Off by default; when off, `/ird` is an ordinary 404 (`next('router'
   server-side). A test extracts the real function and compares, so editing `processQuery`
   without updating the copy fails the build rather than drifting.
 
+**IRD search forms (`/ird/search/...`, behind a second flag, `enableIrdSearch`).** These are Dojo widgets
+in the BV-BRC app, not standalone pages. `routes/ird.js` renders `p3app.ejs` with `irdSkin`, which adds
+the IRD banner (`views/ird/_banner.ejs`, shared with the shell) and an `ird` body class.
+- **The BV-BRC header stays in the page, hidden by `public/ird/ird-search.css`.** `p3app.js` updates
+  about 25 of its elements (sign-in, workspace menus); removing it breaks the app.
+- **Banner links must be plain links, never `navigationLink`.** A routed link keeps the IRD skin on the
+  BV-BRC page it opens; a plain link reloads and gets an ordinary page.
+- **Results pages (`/ird/results/<segment|protein|strain>`, `widget/viewer/IrdResults.js`) host the ordinary
+  BV-BRC grid containers**, so every grid action is the usual one. IRD's columns are `defaultColumns` tokens
+  (`util/irdColumns.js`) applied by `GridContainer._prepareSearchColumns`; genome metadata on segment and
+  protein rows comes from `GenomeMetadataStore`, per displayed page.
+- **A hosted GridContainer must get `set('state')` after it is visible.** It applies its query from a state
+  *change*; state given only to the constructor leaves the first view unfiltered (it showed every sequence in
+  BV-BRC). The list viewers get this from `TabViewerBase`.
+- **In `p3app.js` regex routes, the second callback argument is the first capture group, not the path.** Use
+  `params.newPath`; the capture produced `/ird/results/segment/segment` with no query.
+- **Query building lives in `util/irdSequenceQuery.js`, separate from `InfluenzaSearch` by decision.** See
+  `PLAN-ird-option-c.md` findings 7–9 for the data constraints it encodes (segment names, the API's
+  150,000-genome join limit, metadata only on genome records).
+
 ### Visualization Components
 - D3.js for custom visualizations (charts, domain viewers)
 - Cytoscape for network graphs
