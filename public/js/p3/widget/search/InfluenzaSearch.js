@@ -50,7 +50,7 @@ define([
     NA_SUBTYPES.push({ id: String(n), name: 'N' + n });
   }
 
-  // Segment name to number mapping (DB stores numbers 1-8)
+  // Legacy segment numbers; reorganized records use the segment names instead.
   var SEGMENT_NUMBERS = {
     PB2: '1', PB1: '2', PA: '3', HA: '4',
     NP: '5', NA: '6', M: '7', NS: '8'
@@ -88,7 +88,6 @@ define([
     submissionDateTo: 'text',
     isolationSource: 'text',
     passage: 'text',
-    vaccineStrain: 'text',
     gene: 'text',
     product: 'text',
     segPB2: 'checkbox',
@@ -253,14 +252,6 @@ define([
         data: [
           { id: 'Reference', name: 'Reference' },
           { id: 'Representative', name: 'Representative' }
-        ]
-      });
-
-      // Vaccine strain store
-      this.vaccineStrainNode.store = new Memory({
-        data: [
-          { id: 'Yes', name: 'Yes' },
-          { id: 'No', name: 'No' }
         ]
       });
 
@@ -990,7 +981,7 @@ define([
         this.hostNameNode, this.hostGroupNode,
         this.geographicGroupNode, this.isolationCountryNode, this.stateProvinceNode,
         this.h1CladeGlobalNode, this.h1CladeUsNode, this.h3CladeNode, this.h5CladeNode, this.subcladeNode,
-        this.seasonNode, this.isolationSourceNode, this.passageNode, this.vaccineStrainNode,
+        this.seasonNode, this.isolationSourceNode, this.passageNode,
         this.geneNode, this.productNode, this.sequenceStatusNode
       ];
       filterSelects.forEach(function (node) {
@@ -1083,6 +1074,39 @@ define([
     },
 
     // ===== Helpers =====
+    _buildCollectionDateQuery: function () {
+      var from = this.collectionDateFromNode.get('value').trim();
+      var to = this.collectionDateToNode.get('value').trim();
+      if (!from && !to) return null;
+      var lower = from && toSolrDateLower(from).slice(0, 10);
+      var upper = to && toSolrDateUpper(to).slice(0, 10);
+      if (lower && upper && lower > upper) return this._buildDateQuery('collection_date', this.collectionDateFromNode, this.collectionDateToNode);
+
+      function range(pattern, start, end) {
+        if (start && end && start > end) return null;
+        return 'and(eq(collection_date,' + encodeURIComponent(pattern) + '),between(collection_date,'
+          + (start || '*') + ',' + (end || '*') + '))';
+      }
+
+      // The raw field is populated in both legacy and reorganized genomes.
+      // Separate precisions preserve Within semantics without collection_date_dr:
+      // a year/month-only record must fit wholly inside the requested interval.
+      var clauses = [range(fullCollectionDatePattern, lower, upper)];
+      if (!this.fullCollectionDateNode.get('value')) {
+        var start = lower && lower.split('-').map(Number);
+        var end = upper && upper.split('-').map(Number);
+        var monthLower = start && new Date(Date.UTC(start[0], start[1] - 1 + (start[2] === 1 ? 0 : 1), 1)).toISOString().slice(0, 7);
+        var lastDay = end && new Date(Date.UTC(end[0], end[1], 0)).getUTCDate();
+        var monthUpper = end && new Date(Date.UTC(end[0], end[1] - 1 - (end[2] === lastDay ? 0 : 1), 1)).toISOString().slice(0, 7);
+        var yearLower = start && String(start[0] + (start[1] === 1 && start[2] === 1 ? 0 : 1));
+        var yearUpper = end && String(end[0] - (end[1] === 12 && end[2] === 31 ? 0 : 1));
+        clauses.push(range('/[0-9]{4}-[0-9]{2}/', monthLower, monthUpper));
+        clauses.push(range('/[0-9]{4}/', yearLower, yearUpper));
+      }
+      clauses = clauses.filter(function (clause) { return !!clause; });
+      return clauses.length === 1 ? clauses[0] : 'or(' + clauses.join(',') + ')';
+    },
+
     _buildDateQuery: function (field, fromNode, toNode) {
       var fromStr = fromNode.get('value').trim();
       var toStr = toNode.get('value').trim();
@@ -1179,10 +1203,9 @@ define([
 
       // Collection date
       var fullCollectionDate = this.fullCollectionDateNode.get('value');
-      var collectionDateField = fullCollectionDate ? 'collection_date' : 'collection_date_dr';
-      var collDateQ = this._buildDateQuery(collectionDateField, this.collectionDateFromNode, this.collectionDateToNode);
+      var collDateQ = this._buildCollectionDateQuery();
       if (collDateQ) q.push(collDateQ);
-      if (fullCollectionDate) q.push('eq(collection_date,' + encodeURIComponent(fullCollectionDatePattern) + ')');
+      if (fullCollectionDate && !collDateQ) q.push('eq(collection_date,' + encodeURIComponent(fullCollectionDatePattern) + ')');
 
       // Season
       pushEq(q, 'season', this.seasonNode);
@@ -1204,10 +1227,9 @@ define([
       var subDateQ = this._buildDateQuery('completion_date', this.submissionDateFromNode, this.submissionDateToNode);
       if (subDateQ) q.push(subDateQ);
 
-      // Source / Passage / Vaccine Strain
+      // Source / Passage
       pushEq(q, 'isolation_source', this.isolationSourceNode);
       pushEq(q, 'passage', this.passageNode);
-      pushEq(q, 'vaccine_strain', this.vaccineStrainNode);
 
       // Advanced search rows (Additional Criteria)
       var advancedQueryArr = this._buildAdvancedQuery();
@@ -1251,7 +1273,6 @@ define([
         [this.seasonNode,           'season'],
         [this.isolationSourceNode,  'isolation_source'],
         [this.passageNode,          'passage'],
-        [this.vaccineStrainNode,    'vaccine_strain'],
         [this.referenceNode,        'reference_genome'],
         [this.strainNameNode,       'strain'],
         [this.bioprojectNode,       'bioproject_accession'],
@@ -1334,8 +1355,8 @@ define([
 
       // Each selected segment is required on the same genome record (AND).
       this._getSelectedSegments().forEach(function (segment) {
-        genomeFilters.push('eq(segment,' + segment + ')');
-      });
+        genomeFilters.push(this._buildSegmentFilter([segment]));
+      }, this);
 
       return 'eq(genome_id,*)&genome(' + genomeFilters.join(',') + ')';
     },
@@ -1345,13 +1366,21 @@ define([
         PB2: this.segPB2Node, PB1: this.segPB1Node, PA: this.segPANode, HA: this.segHANode,
         NP: this.segNPNode, NA: this.segNANode, M: this.segMNode, NS: this.segNSNode
       };
-      var segNums = [];
+      var segments = [];
       for(var seg in segmentNodes) {
         if (segmentNodes[seg].get('value')) {
-          segNums.push(SEGMENT_NUMBERS[seg]);
+          segments.push(seg);
         }
       }
-      return segNums;
+      return segments;
+    },
+
+    _buildSegmentFilter: function (segments) {
+      var values = [];
+      segments.forEach(function (segment) {
+        values.push(segment, SEGMENT_NUMBERS[segment]);
+      });
+      return 'in(segment,(' + values.join(',') + '))';
     },
 
     _buildSegmentQuery: function () {
@@ -1371,10 +1400,9 @@ define([
       }
       var segments = this._getSelectedSegments();
       if (segments.length) {
-        var segmentFilter = segments.length === 1 ? 'eq(segment,' + segments[0] + ')' : 'in(segment,(' + segments.join(',') + '))';
-        // Narrow candidate genomes as well as their individual sequences:
-        // a genome carrying HA and PB2 must return only HA when HA is selected.
-        genomeFilters.push(segmentFilter);
+        var segmentFilter = this._buildSegmentFilter(segments);
+        // Filter the returned sequences directly. Repeating this in genome()
+        // needlessly forces a broad genome join through the API's 150k limit.
         seqFilters.push(segmentFilter);
       }
       var lenQ = this._buildLengthQuery('length', this.seqLengthFromNode, this.seqLengthToNode);
