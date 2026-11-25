@@ -88,7 +88,6 @@ define([
     submissionDateTo: 'text',
     isolationSource: 'text',
     passage: 'text',
-    vaccineStrain: 'text',
     gene: 'text',
     product: 'text',
     segPB2: 'checkbox',
@@ -253,14 +252,6 @@ define([
         data: [
           { id: 'Reference', name: 'Reference' },
           { id: 'Representative', name: 'Representative' }
-        ]
-      });
-
-      // Vaccine strain store
-      this.vaccineStrainNode.store = new Memory({
-        data: [
-          { id: 'Yes', name: 'Yes' },
-          { id: 'No', name: 'No' }
         ]
       });
 
@@ -990,7 +981,7 @@ define([
         this.hostNameNode, this.hostGroupNode,
         this.geographicGroupNode, this.isolationCountryNode, this.stateProvinceNode,
         this.h1CladeGlobalNode, this.h1CladeUsNode, this.h3CladeNode, this.h5CladeNode, this.subcladeNode,
-        this.seasonNode, this.isolationSourceNode, this.passageNode, this.vaccineStrainNode,
+        this.seasonNode, this.isolationSourceNode, this.passageNode,
         this.geneNode, this.productNode, this.sequenceStatusNode
       ];
       filterSelects.forEach(function (node) {
@@ -1236,10 +1227,9 @@ define([
       var subDateQ = this._buildDateQuery('completion_date', this.submissionDateFromNode, this.submissionDateToNode);
       if (subDateQ) q.push(subDateQ);
 
-      // Source / Passage / Vaccine Strain
+      // Source / Passage
       pushEq(q, 'isolation_source', this.isolationSourceNode);
       pushEq(q, 'passage', this.passageNode);
-      pushEq(q, 'vaccine_strain', this.vaccineStrainNode);
 
       // Advanced search rows (Additional Criteria)
       var advancedQueryArr = this._buildAdvancedQuery();
@@ -1283,7 +1273,6 @@ define([
         [this.seasonNode,           'season'],
         [this.isolationSourceNode,  'isolation_source'],
         [this.passageNode,          'passage'],
-        [this.vaccineStrainNode,    'vaccine_strain'],
         [this.referenceNode,        'reference_genome'],
         [this.strainNameNode,       'strain'],
         [this.bioprojectNode,       'bioproject_accession'],
