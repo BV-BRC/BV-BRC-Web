@@ -1083,6 +1083,39 @@ define([
     },
 
     // ===== Helpers =====
+    _buildCollectionDateQuery: function () {
+      var from = this.collectionDateFromNode.get('value').trim();
+      var to = this.collectionDateToNode.get('value').trim();
+      if (!from && !to) return null;
+      var lower = from && toSolrDateLower(from).slice(0, 10);
+      var upper = to && toSolrDateUpper(to).slice(0, 10);
+      if (lower && upper && lower > upper) return this._buildDateQuery('collection_date', this.collectionDateFromNode, this.collectionDateToNode);
+
+      function range(pattern, start, end) {
+        if (start && end && start > end) return null;
+        return 'and(eq(collection_date,' + encodeURIComponent(pattern) + '),between(collection_date,'
+          + (start || '*') + ',' + (end || '*') + '))';
+      }
+
+      // The raw field is populated in both legacy and reorganized genomes.
+      // Separate precisions preserve Within semantics without collection_date_dr:
+      // a year/month-only record must fit wholly inside the requested interval.
+      var clauses = [range(fullCollectionDatePattern, lower, upper)];
+      if (!this.fullCollectionDateNode.get('value')) {
+        var start = lower && lower.split('-').map(Number);
+        var end = upper && upper.split('-').map(Number);
+        var monthLower = start && new Date(Date.UTC(start[0], start[1] - 1 + (start[2] === 1 ? 0 : 1), 1)).toISOString().slice(0, 7);
+        var lastDay = end && new Date(Date.UTC(end[0], end[1], 0)).getUTCDate();
+        var monthUpper = end && new Date(Date.UTC(end[0], end[1] - 1 - (end[2] === lastDay ? 0 : 1), 1)).toISOString().slice(0, 7);
+        var yearLower = start && String(start[0] + (start[1] === 1 && start[2] === 1 ? 0 : 1));
+        var yearUpper = end && String(end[0] - (end[1] === 12 && end[2] === 31 ? 0 : 1));
+        clauses.push(range('/[0-9]{4}-[0-9]{2}/', monthLower, monthUpper));
+        clauses.push(range('/[0-9]{4}/', yearLower, yearUpper));
+      }
+      clauses = clauses.filter(function (clause) { return !!clause; });
+      return clauses.length === 1 ? clauses[0] : 'or(' + clauses.join(',') + ')';
+    },
+
     _buildDateQuery: function (field, fromNode, toNode) {
       var fromStr = fromNode.get('value').trim();
       var toStr = toNode.get('value').trim();
@@ -1179,10 +1212,9 @@ define([
 
       // Collection date
       var fullCollectionDate = this.fullCollectionDateNode.get('value');
-      var collectionDateField = fullCollectionDate ? 'collection_date' : 'collection_date_dr';
-      var collDateQ = this._buildDateQuery(collectionDateField, this.collectionDateFromNode, this.collectionDateToNode);
+      var collDateQ = this._buildCollectionDateQuery();
       if (collDateQ) q.push(collDateQ);
-      if (fullCollectionDate) q.push('eq(collection_date,' + encodeURIComponent(fullCollectionDatePattern) + ')');
+      if (fullCollectionDate && !collDateQ) q.push('eq(collection_date,' + encodeURIComponent(fullCollectionDatePattern) + ')');
 
       // Season
       pushEq(q, 'season', this.seasonNode);

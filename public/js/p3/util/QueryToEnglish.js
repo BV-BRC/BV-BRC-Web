@@ -17,6 +17,60 @@ define([
       .replace(/'/g, '&#039;');
   }
 
+  // Describe the generated precision alternatives as one date range, while
+  // leaving arbitrary user-written OR expressions expanded as before.
+  function collectionDateSummary(term) {
+    if (!term || (term.name !== 'or' && term.name !== 'and')) return null;
+    var branches = term.name === 'or' ? term.args : [term];
+    var bounds = {};
+    var patterns = [fullCollectionDatePattern, '/[0-9]{4}-[0-9]{2}/', '/[0-9]{4}/'];
+    for (var i = 0; i < branches.length; i++) {
+      var branch = branches[i];
+      if (!branch || branch.name !== 'and' || branch.args.length !== 2) return null;
+      var format = branch.args.find(function (arg) { return arg.name === 'eq' && arg.args[0] === 'collection_date'; });
+      var range = branch.args.find(function (arg) { return arg.name === 'between' && arg.args[0] === 'collection_date'; });
+      if (!format || !range) return null;
+      var precision = patterns.indexOf(decodeURIComponent(format.args[1]));
+      if (precision === -1 || bounds[precision]) return null;
+      bounds[precision] = range.args.slice(1).map(String);
+    }
+    if (!bounds[0]) return null;
+    var lower = bounds[0][0], upper = bounds[0][1];
+    if (![lower, upper].every(function (value) { return value === '*' || /^\d{4}-\d{2}-\d{2}$/.test(value); })) return null;
+    var start = lower === '*' ? null : lower.split('-').map(Number);
+    var end = upper === '*' ? null : upper.split('-').map(Number);
+    var lastDay = end && new Date(Date.UTC(end[0], end[1], 0)).getUTCDate();
+    var expected = [bounds[0], [
+      start ? new Date(Date.UTC(start[0], start[1] - 1 + (start[2] === 1 ? 0 : 1), 1)).toISOString().slice(0, 7) : '*',
+      end ? new Date(Date.UTC(end[0], end[1] - 1 - (end[2] === lastDay ? 0 : 1), 1)).toISOString().slice(0, 7) : '*'
+    ], [
+      start ? String(start[0] + (start[1] === 1 && start[2] === 1 ? 0 : 1)) : '*',
+      end ? String(end[0] - (end[1] === 12 && end[2] === 31 ? 0 : 1)) : '*'
+    ]];
+    function fits(pair) { return pair[0] === '*' || pair[1] === '*' || pair[0] <= pair[1]; }
+    if (term.name === 'or') {
+      for (var p = 1; p < expected.length; p++) {
+        if (fits(expected[p]) ? !bounds[p] || bounds[p].join(',') !== expected[p].join(',') : !!bounds[p]) return null;
+      }
+    }
+    function display(value, isUpper) {
+      if (value === '*') return '';
+      var parts = value.split('-').map(Number);
+      if (isUpper ? parts[1] === 12 && parts[2] === 31 : parts[1] === 1 && parts[2] === 1) return value.slice(0, 4);
+      var monthEnd = new Date(Date.UTC(parts[0], parts[1], 0)).getUTCDate();
+      return (isUpper ? parts[2] === monthEnd : parts[2] === 1) ? value.slice(0, 7) : value;
+    }
+    var from = display(lower, false), to = display(upper, true);
+    function value(text) { return '<span class="searchValue">' + escapeHtml(text) + '</span>'; }
+    var description = '<span class="searchField">Collection date</span> ';
+    if (from && to) description += from === to ? 'in ' + value(from) : 'between ' + value(from) + ' and ' + value(to);
+    else if (from) description += 'on or after ' + value(from);
+    else if (to) description += 'on or before ' + value(to);
+    else return null;
+    if (term.name === 'and' && (fits(expected[1]) || fits(expected[2]))) description += ' (Full collection dates only)';
+    return description;
+  }
+
   var parseQuery = function (filter) {
     try {
       var _parsed = RQLParser.parse(filter);
@@ -25,7 +79,9 @@ define([
       return;
     }
 
-    function walk(term) {
+    function walk(term, insideOr) {
+      var dateSummary = collectionDateSummary(term);
+      if (dateSummary) return dateSummary;
       // console.log(`Walk: ${term.name}, Args: ${term.args}`);
       switch (term.name) {
         case 'and':
@@ -34,7 +90,7 @@ define([
           if (!(v instanceof Array)) {
             v = [v];
           }
-          var vals = v.map(walk);
+          var vals = v.map(function (child) { return walk(child, insideOr || term.name === 'or'); });
           var out = '';
 
           // set the number of terms to display in the perspective window
@@ -57,7 +113,7 @@ define([
             v = [v];
           }
 
-          vals = v.map(walk);
+          vals = v.map(function (child) { return walk(child, insideOr); });
 
           out = '<span class="searchField">' + f + ' </span><span class="searchOperator"> is </span> ';
 
@@ -79,7 +135,13 @@ define([
           const field = decodeURIComponent(term.args[0]);
           const value = decodeURIComponent(term.args[1]);
           if (field === 'collection_date' && value === fullCollectionDatePattern) {
-            return '<span class="searchValue">Full collection dates only</span>';
+            return '<span class="searchValue">' + (insideOr ? 'Collection date has day precision' : 'Full collection dates only') + '</span>';
+          }
+          if (field === 'collection_date' && value === '/[0-9]{4}-[0-9]{2}/') {
+            return '<span class="searchValue">Collection date has month precision</span>';
+          }
+          if (field === 'collection_date' && value === '/[0-9]{4}/') {
+            return '<span class="searchValue">Collection date has year precision</span>';
           }
           out = '<span class="searchField">' + escapeHtml(field.replace(/_/g, ' '))
             + ' </span><span class="searchOperator"> is </span><span class="searchValue">' + escapeHtml(value) + '</span>';
@@ -89,7 +151,7 @@ define([
           out = '<span class="searchValue"> '  + escapeHtml(decodeURIComponent(term.args[0])) + '</span>';
           break;
         case 'not':
-          out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0]);
+          out = '<span class="searchOperator"> NOT </span>' + walk(term.args[0], insideOr);
           break;
         case 'between':
           out = '<span class="searchField">' + escapeHtml(term.args[0]) + ' </span><span class="searchOperator"> is between </span><span class="searchValue">' + escapeHtml(term.args[1]) + '</span> and <span class="searchValue">' + escapeHtml(term.args[2]) + '</span>';
