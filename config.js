@@ -50,6 +50,10 @@ const defaults = {
   // the production proxy blocks deep offsets sent in the query string. Off by
   // default; see PLAN-cursor-infinite-scroll.md.
   useCursorPaging: false,
+  // Show each row's position (1, 2, 3, ...) in a "#" column at the left of the
+  // API-backed list grids (PageGrid). Display only: never downloaded, copied
+  // or saved in a column set. Off by default.
+  showRowNumbers: false,
   // Workspace folder holding the shipped FASTA header format presets (NCBI,
   // GISAID, ...) offered in the download wizard's FASTA options step. One
   // JSON file per preset, so a curator can add a format without a release.

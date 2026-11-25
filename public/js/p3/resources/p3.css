@@ -654,6 +654,14 @@ body.patric.claro .dijitTabDisabled {
     height: 16px;
 }
 
+/* The optional row-number column (showRowNumbers; util/rowNumberColumn). */
+.dgrid .rowNumberColumn {
+    width: 5.5em;
+    text-align: right;
+    color: #777;
+    font-variant-numeric: tabular-nums;
+}
+
 div.overview {
     position: relative;
     width: 100%;

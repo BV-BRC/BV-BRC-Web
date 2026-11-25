@@ -167,6 +167,7 @@ app.use(function (req, res, next) {
     enableThrottleRetry: config.get('enableThrottleRetry') || false,
     enableIrdSearch: config.get('enableIrdSearch') === true || config.get('enableIrdSearch') === 'true',
     useCursorPaging: config.get('useCursorPaging') || false,
+    showRowNumbers: config.get('showRowNumbers') === true || config.get('showRowNumbers') === 'true',
     fastaFormatPresetsPath: config.get('fastaFormatPresetsPath') || ''
   };
   // console.log("Application Options: ", req.applicationOptions);

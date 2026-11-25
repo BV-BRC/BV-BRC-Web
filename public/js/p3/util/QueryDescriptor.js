@@ -227,7 +227,7 @@ define([
       var field = col.field || key;
 
       // Skip internal columns
-      if (field === 'public' || field === 'Selection Checkboxes') {
+      if (field === 'public' || field === 'Selection Checkboxes' || key === 'Row Number') { // Row Number: display-only, util/rowNumberColumn
         return;
       }
 
@@ -266,7 +266,7 @@ define([
       var field = col.field || key;
 
       // Skip internal columns
-      if (field === 'public' || field === 'Selection Checkboxes') {
+      if (field === 'public' || field === 'Selection Checkboxes' || key === 'Row Number') { // Row Number: display-only, util/rowNumberColumn
         return;
       }
 

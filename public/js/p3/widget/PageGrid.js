@@ -3,7 +3,7 @@ define([
   'dgrid/Keyboard', 'dgrid/Selection', './formatter', 'dgrid/extensions/ColumnResizer', './ColumnHider',
   'dgrid/extensions/DnD', 'dojo/dnd/Source', 'dojo/_base/Deferred', 'dojo/aspect', 'dojo/_base/lang', '../util/PathJoin',
   'dgrid/extensions/ColumnReorder', 'dojo/on', 'dojo/has', 'dojo/has!touch?./util/touch', './Confirmation','./GridCopyToClipboard', '../auth/authHeaders',
-  'dgrid/OnDemandGrid', '../store/cursorPaging', './scrollStatus'
+  'dgrid/OnDemandGrid', '../store/cursorPaging', './scrollStatus', '../util/rowNumberColumn'
 ], function (
   declare, Grid, Store, DijitRegistry, Pagination,
   Keyboard, Selection, formatter, ColumnResizer,
@@ -11,7 +11,7 @@ define([
   Deferred, aspect, lang, PathJoin,
   ColumnReorder, on, has, touchUtil, Confirmation,GridCopyToClipboard,
   authHeader,
-  OnDemandGrid, cursorPaging, scrollStatus) {
+  OnDemandGrid, cursorPaging, scrollStatus, rowNumberColumn) {
 
   var ctrlEquiv = has('mac') ? 'metaKey' : 'ctrlKey';
   // var hasUserSelect = has('css-user-select');
@@ -61,6 +61,30 @@ define([
       accept: 'none',
       selfAccept: false,
       copyOnly: true
+    },
+
+    // The optional "#" column (showRowNumbers; see util/rowNumberColumn),
+    // added to whatever columns the grid is given, at creation or later.
+    postMixInProperties: function () {
+      this.inherited(arguments);
+      this._showRowNumbers = rowNumberColumn.isEnabled(window.App);
+      if (this._showRowNumbers) {
+        this.columns = rowNumberColumn.withRowNumbers(this.columns);
+      }
+    },
+    _setColumns: function (columns) {
+      if (this._showRowNumbers) {
+        columns = rowNumberColumn.withRowNumbers(columns);
+      }
+      this.inherited(arguments, [columns]);
+    },
+    insertRow: function () {
+      var row = this.inherited(arguments);
+      if (this._showRowNumbers && row) {
+        var cell = row.querySelector('.field-' + rowNumberColumn.FIELD);
+        if (cell) { cell.textContent = rowNumberColumn.label(row.rowIndex); }
+      }
+      return row;
     },
     selectedData: {},
 
