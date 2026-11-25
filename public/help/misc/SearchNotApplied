@@ -1,0 +1,10 @@
+<div class="HelpContent">
+	<p><b>Why isn't my search applied to this tab?</b></p>
+	<p>The search on this page selects <b>genomes</b>. Most tabs then show the records that belong to those genomes &mdash; their sequences, features, proteins and so on.</p>
+	<p><b>Serology</b> and <b>Epitope</b> records are not linked to individual genomes. Each one carries the organism it comes from and its own details, such as host or collection year, but not a genome ID. So a criterion that only applies to genomes &mdash; for example genome status, subtype, or a specific list of genomes &mdash; cannot be applied to them.</p>
+	<ul>
+		<li><b>If some of your criteria can be applied</b>, this tab uses them and the yellow bar names the ones it left out. The results can include records your full search would have excluded.</li>
+		<li><b>If none can be applied</b> &mdash; for example when this page is a genome group or a list of selected genomes &mdash; the tab shows no results rather than every record in the database.</li>
+	</ul>
+	<p>To see serology or epitope data for an organism, open the organism's taxonomy page and use its <b>Serology</b> or <b>Epitopes</b> tab, or use <b>Search &rarr; Serology</b> or <b>Search &rarr; Epitopes</b>.</p>
+</div>

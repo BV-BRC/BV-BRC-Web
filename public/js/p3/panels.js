@@ -92,7 +92,7 @@ define([], function () {
     },
 
     help: {
-      title: 'PATRIC Help',
+      title: 'BV-BRC Help',
       layer: 'p3/layer/core',
       ctor: 'p3/widget/Help',
       dataParam: 'helpId'
