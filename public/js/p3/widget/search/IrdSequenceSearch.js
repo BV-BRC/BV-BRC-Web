@@ -4,7 +4,7 @@ define([
   'dijit/_WidgetBase', 'dijit/_TemplatedMixin', 'dijit/_WidgetsInTemplateMixin',
   'dojo/text!./templates/IrdSequenceSearch.html',
   './FacetStoreBuilder', './HostGroups', './TextInputEncoder',
-  '../../auth/authHeaders', '../../util/irdSequenceQuery',
+  '../../auth/authHeaders', '../../util/irdSequenceQuery', '../../util/irdSearchRunner',
   'dijit/form/FilteringSelect', 'dijit/form/TextBox', 'dijit/form/ValidationTextBox', './MultiValueSelect'
 ], function (
   declare, lang, on, domConstruct, Topic,
@@ -12,26 +12,21 @@ define([
   WidgetBase, Templated, WidgetsInTemplate,
   template,
   storeBuilder, hostGroupStore, TextInputEncoder,
-  authHeader, irdSequenceQuery
+  authHeader, irdSequenceQuery, irdSearchRunner
 ) {
 
   /**
    * The IRD-style influenza sequence search (Option C, Phase 1b), served at
    * /ird/search/sequences behind enableIrdSearch.
    *
-   * A form only: it turns the fields into state for util/irdSequenceQuery and
-   * opens the matching BV-BRC list view. Deliberately separate from
+   * A form only: it turns the fields into state for util/irdSequenceQuery,
+   * runs it with util/irdSearchRunner and opens the IRD results page
+   * (viewer/IrdResults). Deliberately separate from
    * InfluenzaSearch (decision D3), though it reuses the same pick-list
    * building blocks (FacetStoreBuilder, HostGroups, MultiValueSelect).
    */
 
   var SEGMENTS = irdSequenceQuery.SEGMENTS;
-
-  var RESULT_VIEW = {
-    strain: { base: '/view/GenomeList/?', hash: '#view_tab=genomes' },
-    segment: { base: '/view/SequenceList/?', hash: '#view_tab=sequences' },
-    protein: { base: '/view/FeatureList/?', hash: '#view_tab=features' }
-  };
 
   // Pick lists are scoped by lineage, not by exact taxon ID. Reorganized
   // genomes are often assigned strain-level taxa: on alpha an exact-ID scope
@@ -266,41 +261,6 @@ define([
       });
     },
 
-    /** Genome IDs for a strain search by accession (see accessionLookup). */
-    _resolveAccessions: function (state) {
-      var lookup = irdSequenceQuery.accessionLookup(state);
-      if (!lookup) return Promise.resolve(state);
-      return Promise.resolve(this._post(lookup.collection, lookup.query)).then(function (rows) {
-        var ids = (rows || []).map(function (r) { return r.genome_id; })
-          .filter(function (id, i, all) { return id && all.indexOf(id) === i; });
-        if (!ids.length) throw new Error('No genomes contain those accessions.');
-        return lang.mixin({}, state, { genomeIds: ids });
-      });
-    },
-
-    /**
-     * Count before navigating. A refused query (the API's 150,000-genome join
-     * limit) or an empty one is reported here, on the form, instead of opening
-     * a grid that looks like "no data".
-     */
-    _preflight: function (built) {
-      var req = this._post(built.collection, built.query + '&limit(1)');
-      return Promise.resolve(req.response).then(function (response) {
-        var range = response.getHeader('Content-Range') || '';
-        return parseInt(range.split('/')[1]);
-      }, function (err) {
-        var data = err && err.response && err.response.data;
-        if (typeof data === 'string') {
-          try { data = JSON.parse(data); } catch (e) { data = null; }
-        }
-        if (data && data.error === 'join_too_broad') {
-          throw new Error('This search matches ' + Number(data.genomeCount).toLocaleString()
-            + ' genomes, more than can be searched at once. Narrow it with a subtype, host, place or date.');
-        }
-        throw new Error((data && data.message) || 'The search could not be run. Please try again.');
-      });
-    },
-
     onSubmit: function (evt) {
       if (evt) {
         evt.preventDefault();
@@ -323,14 +283,11 @@ define([
         return Promise.resolve();
       }
       this.submitNode.disabled = true;
-      return this._resolveAccessions(state).then(lang.hitch(this, function (resolved) {
-        var built = irdSequenceQuery.buildQuery(resolved);
-        return this._preflight(built).then(function (count) {
-          if (count === 0) throw new Error('No records match this search.');
-          var view = RESULT_VIEW[resolved.grain];
-          Topic.publish('/navigate', { href: view.base + built.query + view.hash });
-        });
-      })).then(null, lang.hitch(this, function (err) {
+      // The runner counts first: a search over the API's join limit, or with
+      // no matches, is reported here rather than opened as an empty grid.
+      return irdSearchRunner.run(state, lang.hitch(this, '_post')).then(function (result) {
+        Topic.publish('/navigate', { href: result.href });
+      }).then(null, lang.hitch(this, function (err) {
         this._showMessage(err.message);
       })).then(lang.hitch(this, function () {
         this.submitNode.disabled = false;

@@ -61,6 +61,16 @@ router.get('/search/sequences', function (req, res, next) {
   });
 });
 
+// IRD results pages: the BV-BRC grid for the grain with IRD's columns and
+// display switch (widget/viewer/IrdResults). Same flags as the form.
+router.get(/^\/results\/(segment|protein|strain)\/?$/, function (req, res, next) {
+  if (!flag(req, 'enableIrdSearch')) return next('router');
+  req.applicationModule = 'p3/app/p3app';
+  render(req, res, 'p3app', {
+    title: 'Search Results', response: res, irdSkin: true, active: 'search'
+  });
+});
+
 // The banner's Quick Search box. Hands off to BV-BRC's global search results.
 router.get('/quicksearch', function (req, res) {
   var q = shell.buildQuickSearchQuery(req.query.q, searchToQuery);

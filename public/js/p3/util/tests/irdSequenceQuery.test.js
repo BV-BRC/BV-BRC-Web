@@ -316,6 +316,61 @@ describe('accessions', () => {
   });
 });
 
+describe('pivotQuery: the same records at another grain', () => {
+  const segRows = [
+    { sequence_id: '1756077.11.con.0004', genome_id: '1756077.11', segment: 'HA' },
+    { sequence_id: '1756077.11.con.0006', genome_id: '1756077.11', segment: 'NA' }
+  ];
+
+  test('segments to strains: their genomes, once each', () => {
+    expect(Q.pivotQuery('segment', 'strain', segRows)).toEqual({ collection: 'genome', query: 'in(genome_id,(1756077.11))' });
+  });
+
+  test('segments to proteins: proteins on those sequences, one annotation by default', () => {
+    expect(Q.pivotQuery('segment', 'protein', segRows)).toEqual({
+      collection: 'genome_feature',
+      query: 'in(feature_type,(CDS,mat_peptide))&eq(annotation,PATRIC)&in(sequence_id,(1756077.11.con.0004,1756077.11.con.0006))'
+    });
+    expect(Q.pivotQuery('segment', 'protein', segRows, { annotation: 'all' }).query)
+      .toBe('in(feature_type,(CDS,mat_peptide))&in(sequence_id,(1756077.11.con.0004,1756077.11.con.0006))');
+  });
+
+  test('proteins to segments and strains', () => {
+    const prot = [{ feature_id: 'PATRIC.x', sequence_id: 's1', genome_id: 'g1' }, { feature_id: 'PATRIC.y', sequence_id: 's1', genome_id: 'g1' }];
+    expect(Q.pivotQuery('protein', 'segment', prot)).toEqual({ collection: 'genome_sequence', query: 'in(sequence_id,(s1))' });
+    expect(Q.pivotQuery('protein', 'strain', prot)).toEqual({ collection: 'genome', query: 'in(genome_id,(g1))' });
+  });
+
+  test('strains to segments and proteins, by genome', () => {
+    const strains = [{ genome_id: 'g1' }, { genome_id: 'g2' }];
+    expect(Q.pivotQuery('strain', 'segment', strains)).toEqual({ collection: 'genome_sequence', query: 'in(genome_id,(g1,g2))' });
+    expect(Q.pivotQuery('strain', 'protein', strains).query)
+      .toBe('in(feature_type,(CDS,mat_peptide))&eq(annotation,PATRIC)&in(genome_id,(g1,g2))');
+  });
+
+  test('THE POINT: the link is read off the rows, not the grid primary key', () => {
+    // A segment grid's primary key is sequence_id; a strain pivot needs genome_id.
+    expect(Q.pivotQuery('segment', 'strain', [{ sequence_id: 's1' }].concat(segRows)).query).toBe('in(genome_id,(1756077.11))');
+  });
+
+  test('pivoting to the same grain, or an unknown one, is an error', () => {
+    expect(() => Q.pivotQuery('segment', 'segment', segRows)).toThrow('cannot pivot');
+    expect(() => Q.pivotQuery('genome', 'strain', segRows)).toThrow('cannot pivot');
+  });
+
+  test('rows without the link field, or no rows', () => {
+    expect(() => Q.pivotQuery('segment', 'strain', [{ sequence_id: 's1' }])).toThrow('None of the selected rows');
+    expect(() => Q.pivotQuery('segment', 'strain', [])).toThrow('None of the selected rows');
+  });
+
+  test('a selection over the cap is refused with a reason', () => {
+    const many = [];
+    for (let i = 0; i <= Q.MAX_PIVOT_IDS; i++) many.push({ genome_id: 'g' + i });
+    expect(() => Q.pivotQuery('strain', 'segment', many)).toThrow('Select at most ' + Q.MAX_PIVOT_IDS);
+    expect(() => Q.pivotQuery('strain', 'segment', many.slice(0, Q.MAX_PIVOT_IDS))).not.toThrow();
+  });
+});
+
 describe('kept identical to InfluenzaSearch (D3: separate, but not different without reason)', () => {
   // Expected strings follow widget/search/InfluenzaSearch.js on alpha
   // (2026-11-24). If InfluenzaSearch changes, these do not follow it; port

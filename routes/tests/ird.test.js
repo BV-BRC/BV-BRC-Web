@@ -191,6 +191,38 @@ describe('IRD search page (enableIrdSearch)', () => {
   });
 });
 
+describe('IRD results pages (enableIrdSearch)', () => {
+  test.each(['segment', 'protein', 'strain'])('search off: /ird/results/%s/ is the ordinary 404', async (grain) => {
+    const site = await start(true, { search: false });
+    try {
+      expect((await site.get('/ird/results/' + grain + '/?q')).status).toBe(404);
+    } finally {
+      await site.close();
+    }
+  });
+
+  test.each(['segment', 'protein', 'strain'])('search on: /ird/results/%s/ renders the app page with the IRD skin', async (grain) => {
+    const site = await start(true, { search: true, recordRender: true });
+    try {
+      const res = await site.get('/ird/results/' + grain + '/?eq(genome_id,*)');
+      expect(res.status).toBe(200);
+      expect(JSON.parse(await res.text())).toEqual({ view: 'p3app.ejs', irdSkin: true, active: 'search' });
+    } finally {
+      await site.close();
+    }
+  });
+
+  test('an unknown result type is the ordinary 404', async () => {
+    const site = await start(true, { search: true, recordRender: true });
+    try {
+      expect((await site.get('/ird/results/genome/')).status).toBe(404);
+      expect((await site.get('/ird/results/')).status).toBe(404);
+    } finally {
+      await site.close();
+    }
+  });
+});
+
 describe('IRD skin in the app page', () => {
   const fs = require('fs');
   const ejs = require('ejs');

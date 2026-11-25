@@ -21,6 +21,7 @@ function loadAmd(rel, deps) {
 const TextInputEncoder = loadAmd('widget/search/TextInputEncoder.js');
 const pattern = loadAmd('util/fullCollectionDatePattern.js');
 const irdSequenceQuery = loadAmd('util/irdSequenceQuery.js', [TextInputEncoder, pattern]);
+const irdSearchRunner = loadAmd('util/irdSearchRunner.js', [irdSequenceQuery]);
 
 const lang = {
   hitch: (obj, fn) => (typeof fn === 'string' ? function () { return obj[fn].apply(obj, arguments); } : fn.bind(obj)),
@@ -52,7 +53,7 @@ function loadWidget(request, published) {
     {}, {}, {},
     '<form></form>',
     () => Promise.resolve(), {}, TextInputEncoder,
-    () => 'TOKEN', irdSequenceQuery
+    () => 'TOKEN', irdSequenceQuery, irdSearchRunner
   ]);
 }
 
@@ -86,28 +87,28 @@ const H5 = {
 };
 
 describe('IrdSequenceSearch submit', () => {
-  test('a search with results opens the matching BV-BRC list', async () => {
+  test('a search with results opens the IRD results page', async () => {
     const { w, published } = makeSearch(H5, () => ({ data: [], range: 'items 0-0/32857' }));
     await w.onSubmit();
     expect(w.messageNode.style.display).toBe('none');
     expect(published).toHaveLength(1);
     expect(published[0].topic).toBe('/navigate');
     const href = published[0].msg.href;
-    expect(href.startsWith('/view/SequenceList/?eq(sequence_id,*)&genome(')).toBe(true);
-    expect(href.endsWith('#view_tab=sequences')).toBe(true);
+    expect(href.startsWith('/ird/results/segment/?eq(sequence_id,*)&genome(')).toBe(true);
+    // The form state rides in the hash, for switching displays over the whole result.
+    expect(JSON.parse(decodeURIComponent(href.split('#irdState=')[1]))).toEqual(H5);
     expect(w.submitNode.disabled).toBe(false);
   });
 
   test('results views per grain', async () => {
-    for (const [grain, start, hash] of [
-      ['strain', '/view/GenomeList/?', '#view_tab=genomes'],
-      ['protein', '/view/FeatureList/?', '#view_tab=features']
+    for (const [grain, start] of [
+      ['strain', '/ird/results/strain/?'],
+      ['protein', '/ird/results/protein/?']
     ]) {
       const { w, published } = makeSearch({ grain, virusTypes: ['A'] }, () => ({ data: [], range: 'items 0-0/9' }));
       // eslint-disable-next-line no-await-in-loop
       await w.onSubmit();
       expect(published[0].msg.href.startsWith(start)).toBe(true);
-      expect(published[0].msg.href.endsWith(hash)).toBe(true);
     }
   });
 
@@ -177,6 +178,8 @@ describe('IrdSequenceSearch submit', () => {
     expect(calls[1].body).toContain('in(genome_id,(641809.294,641809.288))');
     expect(published[0].msg.href).toContain('in(genome_id,(641809.294,641809.288))');
     expect(published[0].msg.href).not.toContain('genbank_accessions');
+    // The resolved IDs are not carried in the hash; the accessions are.
+    expect(published[0].msg.href.split('#irdState=')[1]).not.toContain('genomeIds');
   });
 
   test('accessions found in no genome: said on the form', async () => {
@@ -192,7 +195,7 @@ describe('IrdSequenceSearch submit', () => {
     await w.onSubmit();
     const built = irdSequenceQuery.buildQuery(H5);
     expect(calls[0]).toEqual({ collection: built.collection, body: built.query + '&limit(1)' });
-    expect(published[0].msg.href).toBe('/view/SequenceList/?' + built.query + '#view_tab=sequences');
+    expect(published[0].msg.href.split('#')[0]).toBe('/ird/results/segment/?' + built.query);
   });
 });
 

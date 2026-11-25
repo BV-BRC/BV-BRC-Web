@@ -349,6 +349,48 @@ define([
 
   var BUILDERS = { strain: strainQuery, segment: segmentQuery, protein: proteinQuery };
 
+  // A pivot names its records by ID; keep the request bounded.
+  var MAX_PIVOT_IDS = 1000;
+
+  // Which field of a selected row links it to the target records. Rows carry
+  // these natively: segment and protein rows have sequence_id and genome_id,
+  // strain rows genome_id. (Read the link off the rows, never reduce them to
+  // the grid's primary key and try to recover it: CLAUDE.md, download
+  // Pitfall 2.)
+  var PIVOT_LINK = {
+    segment: { protein: 'sequence_id', strain: 'genome_id' },
+    protein: { segment: 'sequence_id', strain: 'genome_id' },
+    strain: { segment: 'genome_id', protein: 'genome_id' }
+  };
+
+  /**
+   * IRD's "Show Segment / Protein / Strain Display" for selected rows: the
+   * same records seen at another grain.
+   *
+   * @param {string} from - grain of the selected rows
+   * @param {string} to - grain to show
+   * @param {Array<Object>} rows - selected row objects
+   * @param {Object} [options] - { annotation } for a protein target
+   * @returns {{collection: string, query: string}}
+   */
+  function pivotQuery(from, to, rows, options) {
+    var link = PIVOT_LINK[from] && PIVOT_LINK[from][to];
+    if (!link) throw new Error('irdSequenceQuery: cannot pivot from ' + from + ' to ' + to);
+    var ids = (rows || []).map(function (r) { return r && r[link]; })
+      .filter(function (id, i, all) { return present(id) && all.indexOf(id) === i; });
+    if (!ids.length) throw new Error('None of the selected rows can be shown that way.');
+    if (ids.length > MAX_PIVOT_IDS) {
+      throw new Error('Select at most ' + MAX_PIVOT_IDS + ' to switch displays; ' + ids.length + ' are selected.');
+    }
+    var clause = 'in(' + link + ',(' + ids.map(function (id) { return encodeURIComponent(String(id)); }).join(',') + '))';
+    var query = clause;
+    if (to === 'protein') {
+      var annotation = (options && options.annotation) || 'PATRIC';
+      query = 'in(feature_type,(CDS,mat_peptide))' + (annotation === 'all' ? '' : '&eq(annotation,' + sanitizeInput(String(annotation)) + ')') + '&' + clause;
+    }
+    return { collection: COLLECTION[to], query: query };
+  }
+
   return {
     FLU_TAXON_IDS: FLU_TAXON_IDS,
     SEGMENTS: SEGMENTS,
@@ -366,6 +408,9 @@ define([
     },
 
     genomeFilters: genomeFilters,
+
+    MAX_PIVOT_IDS: MAX_PIVOT_IDS,
+    pivotQuery: pivotQuery,
 
     /**
      * For a strain search by accession, the query that finds the genomes

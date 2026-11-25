@@ -164,3 +164,68 @@ body.ird .ird-banner .ird-menu-top {
   opacity: 0.6;
   cursor: wait;
 }
+
+/* IRD results page (viewer/IrdResults): bar above the BV-BRC grid */
+
+.ird-results-bar {
+  padding: 8px 16px 6px;
+  border-bottom: 1px solid #c8d6e5;
+  background: #f5f8fb;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+}
+
+.ird-results-title {
+  margin: 0 0 6px;
+  color: #1f5b93;
+  font-size: 18px;
+}
+
+.ird-results-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.ird-results-label {
+  font-weight: bold;
+}
+
+.ird-results-hint {
+  color: #666;
+}
+
+.ird-results-new {
+  margin-left: auto;
+}
+
+.ird-results-bar .ird-button {
+  padding: 3px 12px;
+  border: 1px solid #9a9a9a;
+  border-radius: 3px;
+  background: linear-gradient(#f4f4f4, #d9d9d9);
+  cursor: pointer;
+  font: inherit;
+}
+
+.ird-results-bar .ird-button:hover:not(:disabled) {
+  border-color: #b8860b;
+  background: linear-gradient(#f6c94d, #f1b321);
+}
+
+.ird-results-bar .ird-button-current {
+  border-color: #1f5b93;
+  background: #1f5b93;
+  color: #fff;
+  cursor: default;
+}
+
+.ird-results-bar .ird-search-message {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border: 1px solid #e3b7b7;
+  border-radius: 4px;
+  background: #fdf0f0;
+  color: #8a1f1f;
+}
