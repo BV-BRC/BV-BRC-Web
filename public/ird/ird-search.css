@@ -1,0 +1,166 @@
+/*
+ * IRD search pages inside the BV-BRC app (body.ird, views/p3app.ejs with
+ * irdSkin). ird.css supplies the banner and menus; this file fits them into
+ * the app and styles the search forms. Everything is scoped to body.ird or
+ * the form's own classes, so BV-BRC pages are unaffected.
+ */
+
+/* The BV-BRC header stays in the page (p3app.js updates its sign-in and
+   workspace elements) but the IRD banner takes its place. */
+body.ird .HeaderBar {
+  display: none !important;
+}
+
+/* The app is full width; the shell's banner is laid out for a 980px page. */
+body.ird .ird-banner {
+  padding: 0;
+  overflow: visible;
+  z-index: 60;
+}
+
+body.ird .ird-banner #ird-header {
+  background-color: #3a7fc4;
+}
+
+body.ird .ird-banner .ird-menu-top {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Search form */
+
+/* PanelForm makes the form the app's scrolling centre pane; the width limit
+   is on the inner wrapper so the scrollbar stays at the pane's edge. */
+.irdSequenceSearch {
+  padding: 15px 20px 30px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  color: #333;
+}
+
+.irdSequenceSearch .ird-search-inner {
+  max-width: 1100px;
+}
+
+.irdSequenceSearch .ird-search-title {
+  margin: 0 0 4px;
+  color: #1f5b93;
+  font-size: 20px;
+}
+
+.irdSequenceSearch .ird-search-intro {
+  margin: 0 0 12px;
+}
+
+.irdSequenceSearch .ird-search-message {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid #e3b7b7;
+  border-radius: 4px;
+  background: #fdf0f0;
+  color: #8a1f1f;
+}
+
+.irdSequenceSearch .ird-search-box {
+  margin: 0 0 14px;
+  padding: 10px 12px 12px;
+  border: 1px solid #c8d6e5;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.irdSequenceSearch .ird-search-box legend {
+  padding: 2px 12px;
+  border-radius: 3px;
+  background: linear-gradient(#2c6eab, #1f5b93);
+  color: #fff;
+  font-size: 13px;
+}
+
+.irdSequenceSearch .ird-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  margin: 4px 0;
+}
+
+.irdSequenceSearch .ird-search-label {
+  min-width: 90px;
+  font-weight: bold;
+}
+
+.irdSequenceSearch .ird-search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px 16px;
+}
+
+.irdSequenceSearch .ird-search-field label {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: bold;
+}
+
+.irdSequenceSearch .ird-search-check label {
+  font-weight: normal;
+}
+
+.irdSequenceSearch .ird-search-check {
+  align-self: end;
+}
+
+.irdSequenceSearch .ird-search-wide {
+  grid-column: span 2;
+}
+
+.irdSequenceSearch select,
+.irdSequenceSearch textarea {
+  width: 100%;
+  padding: 3px 4px;
+  border: 1px solid #b5b5b5;
+  border-radius: 3px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.irdSequenceSearch .ird-search-segments {
+  /* The app's table styles stretch tables to full width. */
+  width: auto;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+}
+
+.irdSequenceSearch .ird-search-segments th,
+.irdSequenceSearch .ird-search-segments td {
+  padding: 2px 10px 2px 0;
+  text-align: left;
+}
+
+.irdSequenceSearch .ird-seg-input {
+  width: 90px;
+}
+
+.irdSequenceSearch .ird-search-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.irdSequenceSearch .ird-button {
+  padding: 6px 16px;
+  border: 1px solid #9a9a9a;
+  border-radius: 3px;
+  background: linear-gradient(#f4f4f4, #d9d9d9);
+  cursor: pointer;
+  font: inherit;
+}
+
+.irdSequenceSearch .ird-button-primary {
+  border-color: #b8860b;
+  background: linear-gradient(#f6c94d, #f1b321);
+  font-weight: bold;
+}
+
+.irdSequenceSearch .ird-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

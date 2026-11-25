@@ -303,6 +303,12 @@ describe('accessions', () => {
     expect(query).not.toContain('genbank_accessions');
   });
 
+  test('a pasted string is split on spaces, commas and semicolons', () => {
+    expect(q({ grain: 'segment', accessions: 'CY121680, KU143263.1;\nKU143315' }))
+      .toContain('in(accession,(%22CY121680%22,%22KU143263%22,%22KU143315%22))');
+    expect(Q.accessionLookup({ grain: 'strain', accessions: '  ' })).toBeNull();
+  });
+
   test('accessionLookup is only for strain searches with accessions', () => {
     expect(Q.accessionLookup({ grain: 'segment', accessions: ['CY121680'] })).toBeNull();
     expect(Q.accessionLookup({ grain: 'strain' })).toBeNull();

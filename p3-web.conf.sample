@@ -10,5 +10,6 @@
   "cartoBasemapApiKey": "",
   "enableThrottleRetry": false,
   "enableIrdShell": false,
+  "enableIrdSearch": false,
   "fastaFormatPresetsPath": ""
 }

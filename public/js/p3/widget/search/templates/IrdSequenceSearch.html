@@ -1,0 +1,229 @@
+<form dojoAttachPoint="containerNode" class="PanelForm irdSequenceSearch" dojoAttachEvent="onsubmit:onSubmit">
+<div class="ird-search-inner">
+  <h1 class="ird-search-title">Search Sequences</h1>
+  <p class="ird-search-intro">Find influenza segments, proteins or strains by subtype, host, place, date and sequence
+    properties. Leave a field empty to match everything.</p>
+
+  <div class="ird-search-message" data-dojo-attach-point="messageNode" role="alert" style="display:none"></div>
+
+  <fieldset class="ird-search-box">
+    <legend>Search for</legend>
+    <div class="ird-search-row">
+      <span class="ird-search-label">Results</span>
+      <label><input type="radio" name="${id}_grain" value="segment" data-dojo-attach-point="grainSegmentNode" checked> Segments</label>
+      <label><input type="radio" name="${id}_grain" value="protein" data-dojo-attach-point="grainProteinNode"> Proteins</label>
+      <label><input type="radio" name="${id}_grain" value="strain" data-dojo-attach-point="grainStrainNode"> Strains</label>
+    </div>
+    <div class="ird-search-row">
+      <span class="ird-search-label">Virus type</span>
+      <label><input type="checkbox" value="A" data-dojo-attach-point="typeANode" checked> A</label>
+      <label><input type="checkbox" value="B" data-dojo-attach-point="typeBNode"> B</label>
+      <label><input type="checkbox" value="C" data-dojo-attach-point="typeCNode"> C</label>
+      <label><input type="checkbox" value="D" data-dojo-attach-point="typeDNode"> D</label>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box" data-dojo-attach-point="segmentBox">
+    <legend>Segments</legend>
+    <table class="ird-search-segments">
+      <thead><tr><th></th><th>Segment</th><th class="ird-seg-length">Length from</th><th class="ird-seg-length">to</th></tr></thead>
+      <tbody data-dojo-attach-point="segmentRowsNode"></tbody>
+    </table>
+    <div class="ird-search-row">
+      <label data-dojo-attach-point="segmentSetCompleteLabel"><input type="checkbox" data-dojo-attach-point="segmentSetCompleteNode"> Strains with all eight segments</label>
+      <label><input type="checkbox" data-dojo-attach-point="sequenceCompleteNode"> Complete (full-length) sequences only</label>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box" data-dojo-attach-point="proteinBox" style="display:none">
+    <legend>Proteins</legend>
+    <div class="ird-search-grid">
+      <div class="ird-search-field">
+        <label>Protein (gene)</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'e.g. HA, PA-X, PB1-F2',fieldLabel:'Protein'" data-dojo-attach-point="genesNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Product name contains</label>
+        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. hemagglutinin'" data-dojo-attach-point="productNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Annotation</label>
+        <select data-dojo-attach-point="annotationNode">
+          <option value="PATRIC" selected>BV-BRC</option>
+          <option value="RefSeq">RefSeq</option>
+          <option value="all">Both (each protein listed twice)</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box">
+    <legend>Subtype and clade</legend>
+    <div class="ird-search-grid">
+      <div class="ird-search-field">
+        <label>Subtype (Flu A)</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'e.g. H5N1',fieldLabel:'Subtype'" data-dojo-attach-point="fullSubtypeNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>or H type</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'H1-H18',fieldLabel:'H type'" data-dojo-attach-point="haSubtypeNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>and N type</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'N1-N11',fieldLabel:'N type'" data-dojo-attach-point="naSubtypeNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Lineage (Flu B)</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'e.g. Victoria',fieldLabel:'Lineage'" data-dojo-attach-point="fluBLineageNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>H5 clade</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h5CladeNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Swine H1 clade (global)</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h1CladeGlobalNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Swine H1 clade (US)</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h1CladeUsNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>H3 clade</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="h3CladeNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Subclade</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="subcladeNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>pH1N1-like</label>
+        <select data-dojo-attach-point="ph1n1LikeNode">
+          <option value="" selected>Any</option>
+          <option value="Positive">Yes</option>
+          <option value="Negative">No</option>
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box">
+    <legend>Host</legend>
+    <div class="ird-search-grid">
+      <div class="ird-search-field">
+        <label>Host group</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="hostGroupNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Host</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5 hosts',fieldLabel:'Host'" data-dojo-attach-point="hostNameNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Host gender</label>
+        <select data-dojo-attach-point="hostGenderNode">
+          <option value="" selected>Any</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+      <div class="ird-search-field">
+        <label>Host health</label>
+        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. Healthy'" data-dojo-attach-point="hostHealthNode" style="width:100%"></div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box">
+    <legend>Geography</legend>
+    <div class="ird-search-grid">
+      <div class="ird-search-field">
+        <label>Geographic grouping</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="geographicGroupNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Country</label>
+        <div data-dojo-type="p3/widget/search/MultiValueSelect" data-dojo-props="placeHolder:'Add up to 5 countries',fieldLabel:'Country'" data-dojo-attach-point="countryNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>State / province</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="stateProvinceNode" style="width:100%"></div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box">
+    <legend>Dates</legend>
+    <div class="ird-search-grid">
+      <div class="ird-search-field">
+        <label>Collection year from</label>
+        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY', regExp:'\\d{4}', invalidMessage:'Enter a four-digit year'" data-dojo-attach-point="collectionYearFromNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>to</label>
+        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY', regExp:'\\d{4}', invalidMessage:'Enter a four-digit year'" data-dojo-attach-point="collectionYearToNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Flu season</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="seasonNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Collection date from</label>
+        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY-MM-DD', regExp:'\\d{4}-\\d{2}-\\d{2}', invalidMessage:'Enter a full date, YYYY-MM-DD'" data-dojo-attach-point="collectionDateFromNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>to</label>
+        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY-MM-DD', regExp:'\\d{4}-\\d{2}-\\d{2}', invalidMessage:'Enter a full date, YYYY-MM-DD'" data-dojo-attach-point="collectionDateToNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field ird-search-check">
+        <label><input type="checkbox" data-dojo-attach-point="fullCollectionDateNode"> Only records with a full collection date</label>
+      </div>
+      <div class="ird-search-field">
+        <label>Submitted from</label>
+        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY, YYYY-MM or YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="submissionDateFromNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>to</label>
+        <div data-dojo-type="dijit/form/ValidationTextBox" data-dojo-props="placeHolder:'YYYY, YYYY-MM or YYYY-MM-DD', regExp:'\\d{4}(-\\d{2}(-\\d{2})?)?', invalidMessage:'Enter YYYY, YYYY-MM, or YYYY-MM-DD'" data-dojo-attach-point="submissionDateToNode" style="width:100%"></div>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="ird-search-box">
+    <legend>Strain, sequence and keyword</legend>
+    <div class="ird-search-grid">
+      <div class="ird-search-field">
+        <label>Strain name contains</label>
+        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. A/California/07/2009'" data-dojo-attach-point="strainNameNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field ird-search-wide">
+        <label>GenBank accessions</label>
+        <textarea data-dojo-attach-point="accessionsNode" rows="2" placeholder="Paste one or more, separated by spaces, commas or new lines"></textarea>
+      </div>
+      <div class="ird-search-field">
+        <label>BioProject</label>
+        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'e.g. PRJNA1102327'" data-dojo-attach-point="bioprojectNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Isolation source</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="isolationSourceNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Passage history</label>
+        <div data-dojo-type="dijit/form/FilteringSelect" required="false" data-dojo-props="placeHolder:'Any'" data-dojo-attach-point="passageNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field">
+        <label>Keyword</label>
+        <div data-dojo-type="dijit/form/TextBox" data-dojo-props="placeHolder:'Any text'" data-dojo-attach-point="keywordNode" style="width:100%"></div>
+      </div>
+      <div class="ird-search-field ird-search-check">
+        <label><input type="checkbox" data-dojo-attach-point="excludeDeprecatedNode" checked> Exclude deprecated genomes</label>
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="ird-search-buttons">
+    <button type="submit" class="ird-button ird-button-primary" data-dojo-attach-point="submitNode">Search</button>
+    <button type="button" class="ird-button" data-dojo-attach-event="onclick:onReset">Clear</button>
+  </div>
+</div>
+</form>

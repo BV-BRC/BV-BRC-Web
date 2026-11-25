@@ -1,0 +1,51 @@
+<%#
+  The IRD banner and menus. Shared by the shell pages (_top.ejs) and the IRD
+  search pages inside the BV-BRC app (p3app.ejs, irdSkin). Plain links only:
+  a navigationLink would be routed inside the app and keep the IRD skin on a
+  BV-BRC page.
+%>
+<% var searchEnabled = (typeof irdSearchEnabled !== 'undefined') && irdSearchEnabled; %>
+  <header id="ird-header">
+    <a id="ird-logo" href="/ird/" title="Go to IRD home page">Influenza Research Database</a>
+    <ul id="ird-utility-nav">
+      <% shell.utilityNav.forEach(function (item) { %>
+      <li><a href="<%= href(item.href) %>"><%= item.label %></a></li>
+      <% }); %>
+    </ul>
+    <form id="ird-quick-search" action="/ird/quicksearch" method="get" role="search">
+      <label for="ird-q" class="ird-visually-hidden">Quick Search</label>
+      <input id="ird-q" name="q" type="search" placeholder="Quick Search" autocomplete="off">
+      <button type="submit">Go</button>
+    </form>
+  </header>
+
+  <nav id="ird-navigation" aria-label="Influenza Research Database">
+    <ul class="ird-menu">
+      <li><a href="/ird/" class="ird-menu-top<%= active === 'home' ? ' ird-active' : '' %>">Home</a></li>
+      <% shell.navigation.forEach(function (group) { %>
+      <li class="ird-has-sub">
+        <% if (group.landing) { %>
+        <a href="<%= group.landing %>" class="ird-menu-top<%= active === group.id ? ' ird-active' : '' %>" aria-haspopup="true"><%= group.label %></a>
+        <% } else { %>
+        <button type="button" class="ird-menu-top" aria-haspopup="true"><%= group.label %></button>
+        <% } %>
+        <ul class="ird-submenu">
+          <% if (searchEnabled && group.id === 'search') { %>
+          <li class="ird-divider">IRD search forms</li>
+          <li><a href="/ird/search/sequences">Search Sequences</a></li>
+          <% } %>
+          <% group.sections.forEach(function (section) {
+               var available = section.items.filter(function (i) { return !i.unavailable; });
+               if (!available.length) { return; } %>
+          <%# A heading over a lone item only repeats it, as IRD's own menus avoided %>
+          <% if (group.sections.length > 1 && available.length > 1) { %><li class="ird-divider"><%= section.title %></li><% } %>
+          <% available.forEach(function (item) { %>
+          <li><a href="<%= href(item.href) %>"><%= item.label %></a></li>
+          <% }); %>
+          <% }); %>
+        </ul>
+      </li>
+      <% }); %>
+    </ul>
+  </nav>
+

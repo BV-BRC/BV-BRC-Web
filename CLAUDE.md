@@ -391,6 +391,17 @@ replaced it. Off by default; when off, `/ird` is an ordinary 404 (`next('router'
   server-side). A test extracts the real function and compares, so editing `processQuery`
   without updating the copy fails the build rather than drifting.
 
+**IRD search forms (`/ird/search/...`, behind a second flag, `enableIrdSearch`).** These are Dojo widgets
+in the BV-BRC app, not standalone pages. `routes/ird.js` renders `p3app.ejs` with `irdSkin`, which adds
+the IRD banner (`views/ird/_banner.ejs`, shared with the shell) and an `ird` body class.
+- **The BV-BRC header stays in the page, hidden by `public/ird/ird-search.css`.** `p3app.js` updates
+  about 25 of its elements (sign-in, workspace menus); removing it breaks the app.
+- **Banner links must be plain links, never `navigationLink`.** A routed link keeps the IRD skin on the
+  BV-BRC page it opens; a plain link reloads and gets an ordinary page.
+- **Query building lives in `util/irdSequenceQuery.js`, separate from `InfluenzaSearch` by decision.** See
+  `PLAN-ird-option-c.md` findings 7–9 for the data constraints it encodes (segment names, the API's
+  150,000-genome join limit, metadata only on genome records).
+
 ### Visualization Components
 - D3.js for custom visualizations (charts, domain viewers)
 - Cytoscape for network graphs

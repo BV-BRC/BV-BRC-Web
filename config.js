@@ -40,6 +40,10 @@ const defaults = {
   // Serve the Influenza Research Database style entry pages under /ird
   // (routes/ird.js). Off by default; when off, /ird is an ordinary 404.
   enableIrdShell: false,
+  // Serve the IRD search forms (/ird/search/...) inside the app with the IRD
+  // banner. Separate from enableIrdShell so the shell can be on without them;
+  // also requires enableIrdShell. Off by default.
+  enableIrdSearch: false,
   // Workspace folder holding the shipped FASTA header format presets (NCBI,
   // GISAID, ...) offered in the download wizard's FASTA options step. One
   // JSON file per preset, so a curator can add a format without a release.

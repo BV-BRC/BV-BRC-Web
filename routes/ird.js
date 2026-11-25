@@ -15,9 +15,13 @@ var searchToQuery = (function () {
   return exported;
 }());
 
-function enabled(req) {
-  var v = req.config && req.config.get('enableIrdShell');
+function flag(req, name) {
+  var v = req.config && req.config.get(name);
   return v === true || v === 'true';
+}
+
+function enabled(req) {
+  return flag(req, 'enableIrdShell');
 }
 
 // Off: behave as if /ird did not exist, so the request falls through to the
@@ -31,6 +35,7 @@ function render(req, res, view, locals) {
   res.render(view, Object.assign({
     request: req,
     shell: shell,
+    irdSearchEnabled: flag(req, 'enableIrdSearch'),
     href: function (h) { return shell.resolveHref(h, docs); }
   }, locals));
 }
@@ -43,6 +48,16 @@ router.get('/', function (req, res) {
   router.get('/' + id, function (req, res) {
     var section = shell.findSection(id);
     render(req, res, 'ird/landing', { pageTitle: section.label, active: id, section: section });
+  });
+});
+
+// IRD search forms (Option C), inside the BV-BRC app with the IRD banner.
+// A second flag, so the shell can be on without them (decision D6).
+router.get('/search/sequences', function (req, res, next) {
+  if (!flag(req, 'enableIrdSearch')) return next('router');
+  req.applicationModule = 'p3/app/p3app';
+  render(req, res, 'p3app', {
+    title: 'Search Sequences', response: res, irdSkin: true, active: 'search'
   });
 });
 

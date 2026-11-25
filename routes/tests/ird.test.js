@@ -7,12 +7,20 @@ const ROOT = path.join(__dirname, '..', '..');
 const DOCS = 'https://docs.example.org/docs/';
 
 /** The /ird router in a minimal app, with the bits of app.js it relies on. */
-async function start(flag) {
+async function start(flag, opts) {
+  const options = opts || {};
   const app = express();
   app.set('views', path.join(ROOT, 'views'));
   app.set('view engine', 'ejs');
+  if (options.recordRender) {
+    // p3app.ejs needs the whole application context; record what the route
+    // asked for instead of rendering it.
+    app.engine('ejs', function (file, locals, cb) {
+      cb(null, JSON.stringify({ view: path.relative(path.join(ROOT, 'views'), file), irdSkin: !!locals.irdSkin, active: locals.active }));
+    });
+  }
   app.use(function (req, res, next) {
-    const conf = { enableIrdShell: flag, docsServiceURL: DOCS };
+    const conf = { enableIrdShell: flag, enableIrdSearch: options.search, docsServiceURL: DOCS };
     req.config = { get: (k) => conf[k] };
     req.package = { version: '9.9.9' };
     next();
@@ -137,5 +145,82 @@ describe('flag on', () => {
 
   test('unknown /ird paths fall through to the 404', async () => {
     expect((await site.get('/ird/brc/home.spg')).status).toBe(404);
+  });
+});
+
+describe('IRD search page (enableIrdSearch)', () => {
+  test.each([
+    ['shell on, search off', true, false],
+    ['shell on, search unset', true, undefined],
+    ['shell off, search on', false, true]
+  ])('THE POINT: %s: /ird/search/sequences is the ordinary 404', async (label, shellFlag, searchFlag) => {
+    const site = await start(shellFlag, { search: searchFlag });
+    try {
+      const res = await site.get('/ird/search/sequences');
+      expect(res.status).toBe(404);
+      expect(await res.text()).toBe('fell through');
+    } finally {
+      await site.close();
+    }
+  });
+
+  test('both on: renders the app page with the IRD skin', async () => {
+    const site = await start(true, { search: 'true', recordRender: true });
+    try {
+      const res = await site.get('/ird/search/sequences');
+      expect(res.status).toBe(200);
+      expect(JSON.parse(await res.text())).toEqual({ view: 'p3app.ejs', irdSkin: true, active: 'search' });
+    } finally {
+      await site.close();
+    }
+  });
+
+  test('the menu and the Search Data page link to it only when it is on', async () => {
+    const off = await start(true, { search: false });
+    const on = await start(true, { search: true });
+    try {
+      const offHtml = await (await off.get('/ird/search')).text();
+      const onHtml = await (await on.get('/ird/search')).text();
+      expect(offHtml).not.toContain('/ird/search/sequences');
+      expect(onHtml).toContain('<li><a href="/ird/search/sequences">Search Sequences</a></li>');
+      expect(onHtml).toContain('<a href="/ird/search/sequences">Open the sequence search &raquo;</a>');
+    } finally {
+      await off.close();
+      await on.close();
+    }
+  });
+});
+
+describe('IRD skin in the app page', () => {
+  const fs = require('fs');
+  const ejs = require('ejs');
+  const src = fs.readFileSync(path.join(ROOT, 'views', 'p3app.ejs'), 'utf8');
+
+  test('without irdSkin the app page is unchanged: no banner, no IRD styles', () => {
+    // BV-BRC pages render p3app.ejs without irdSkin; nothing IRD may leak in.
+    const html = ejs.render(src.replace(/<%- include\([^)]*\) %>/g, ''), {
+      request: { package: { version: '1' }, isAuthenticated: () => false }
+    });
+    expect(html).not.toMatch(/ird/i);
+  });
+
+  test('with irdSkin: body class, IRD styles, banner region before the BV-BRC header', () => {
+    const html = ejs.render(src.replace(/<%- include\('(header|bv-brc-header|javascript)'\) %>/g, '<!--$1-->'), {
+      irdSkin: true,
+      request: { package: { version: '1' }, isAuthenticated: () => false },
+      shell: shell,
+      href: (h) => h,
+      active: 'search',
+      irdSearchEnabled: true
+    }, { filename: path.join(ROOT, 'views', 'p3app.ejs') });
+    expect(html).toContain('class="claro patric ird ');
+    expect(html).toContain('/public/ird/ird.css?v=1');
+    expect(html).toContain('/public/ird/ird-search.css?v=1');
+    expect(html.indexOf('class="ird-banner"')).toBeGreaterThan(-1);
+    expect(html.indexOf('class="ird-banner"')).toBeLessThan(html.indexOf('<!--bv-brc-header-->'));
+    // Plain links only: a navigationLink would be routed inside the app and
+    // keep the IRD skin on a BV-BRC page.
+    const banner = html.slice(html.indexOf('class="ird-banner"'), html.indexOf('<!--bv-brc-header-->'));
+    expect(banner).not.toContain('navigationLink');
   });
 });

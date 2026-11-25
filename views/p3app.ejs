@@ -2,9 +2,20 @@
 <html lang="en">
 	<head>
 		<%- include('header') %>
+		<% var ird = (typeof irdSkin !== 'undefined') && irdSkin; %>
+		<% if (ird) { %>
+		<link rel="stylesheet" href="/public/ird/ird.css?v=<%= request.package.version %>">
+		<link rel="stylesheet" href="/public/ird/ird-search.css?v=<%= request.package.version %>">
+		<% } %>
 	</head>
-	<body onunload="" class="claro patric <% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
+	<body onunload="" class="claro patric <% if (ird) { %>ird <% } %><% if (request.isAuthenticated && request.isAuthenticated()) { %>Authenticated<% } %>">
 		<div id="ApplicationContainer" data-dojo-type="dijit/layout/BorderContainer" class="layoutContainer" data-dojo-props="id:'ApplicationContainer',gutters:false,liveSplitters:false">
+			<% if (ird) { %>
+			<%# IRD search pages (routes/ird.js): the IRD banner replaces the BV-BRC header visually. The header
+			    stays in the page, hidden by ird-search.css, because p3app.js updates its sign-in and workspace
+			    elements. %>
+			<div data-dojo-type="dijit/layout/ContentPane" class="ird-banner" data-dojo-props="region:'top'"><%- include('ird/_banner') %></div>
+			<% } %>
 			<%- include('bv-brc-header') %>
 
 			<div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'" style="padding:0px;border:0px solid #ddd;background:inherit;">

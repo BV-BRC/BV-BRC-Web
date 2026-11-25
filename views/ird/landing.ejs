@@ -2,6 +2,17 @@
 <h1 class="ird-page-title"><%= section.label %></h1>
 <% if (section.intro) { %><p class="ird-intro"><%= section.intro %></p><% } %>
 
+<% if (section.id === 'search' && typeof irdSearchEnabled !== 'undefined' && irdSearchEnabled) { %>
+<section class="ird-box">
+  <div class="ird-box-header"><h2>Search Sequences</h2></div>
+  <div class="ird-box-content">
+    <p>IRD's sequence search: find segments, proteins or strains by subtype, clade, host, place, date and
+      sequence properties, then work with the results in BV-BRC.</p>
+    <p><a href="/ird/search/sequences">Open the sequence search &raquo;</a></p>
+  </div>
+</section>
+<% } %>
+
 <% if (section.id === 'search') { %>
 <section class="ird-box">
   <div class="ird-box-header"><h2>Quick Search</h2></div>

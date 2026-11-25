@@ -58,7 +58,7 @@ define([
    *   fullCollectionDate  true: only records with a full Y-M-D date
    *   season
    *   strainName       free text against genome_name
-   *   accessions       ['CY121680', ...]
+   *   accessions       ['CY121680', ...] or one pasted string
    *   bioproject
    *   submissionDate   { from: '2024', to: '2024-06' }  Y, Y-M or Y-M-D
    *   isolationSource, passage
@@ -167,7 +167,9 @@ define([
   }
 
   function accessionClause(field, accessions) {
-    var list = values(accessions).map(function (a) {
+    // A pasted list arrives as one string: split on spaces, commas, semicolons.
+    var raw = typeof accessions === 'string' ? accessions.split(/[\s,;]+/) : accessions;
+    var list = values(raw).map(function (a) {
       // Sequence records store the base accession separately from its version.
       return String(a).trim().toUpperCase().replace(/\.\d+$/, '');
     }).filter(function (a, i, all) { return a && all.indexOf(a) === i; }).map(function (a) {
