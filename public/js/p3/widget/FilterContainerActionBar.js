@@ -184,6 +184,14 @@ define([
         this._set('filter', state.hashParams.filter);
       }
 
+      // No filter in the URL means nothing is selected. Without this, selections survive
+      // from an earlier state: a viewer's tabs are created with the page-load state, so a
+      // Sequences tab first shown after a Genomes-tab filter kept collection_year (not a
+      // genome_sequence field) and sent it with the next click, a 400.
+      if (!(state.hashParams && state.hashParams.filter) || state.hashParams.filter === 'false') {
+        this._filter = {};
+      }
+
       this.keywordSearch.set('value', (parsedFilter && parsedFilter.keywords && parsedFilter.keywords.length > 0) ? parsedFilter.keywords.join(' ') : '');
       on(this.keywordSearch.domNode, 'keypress', function (evt) {
         const code = evt.charCode || evt.keyCode;
@@ -573,6 +581,11 @@ define([
      * util/facetQuery), so its other values stay listed and can be added.
      */
     _refreshAllFacets: function (keywords, filterMap) {
+      // No query yet (a tab still holding its page-load state): counts would cover the
+      // whole collection, so wait for the real state.
+      if (!this.query) {
+        return;
+      }
       const requests = facetQuery.facetRequests(
         this.query, filterMap || this._filter, keywords || this._filterKeywords, this.facetFields
       );

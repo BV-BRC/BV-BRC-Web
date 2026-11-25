@@ -30,6 +30,7 @@ function loadPanelProto() {
       if (d === 'dojo/_base/declare') return (bases, props) => props;
       if (d === 'dojo/_base/lang') return { hitch: (obj, fn) => fn.bind(obj) };
       if (d === '../util/facetQuery') return facetQuery;
+      if (d === 'dojo/on') return () => {};
       return {};
     });
     proto = factory.apply(null, stubs);
@@ -52,6 +53,10 @@ function makePanel(fields) {
     state: {},
     _clearFacetUnavailable: () => {},
     _set: function (k, v) { this[k] = v; },
+    get: function (k) { return this[k]; },
+    set: function (k, v) { if (k === 'query') this._setQueryAttr(v); else this[k] = v; },
+    keywordSearch: { set: () => {}, domNode: {} },
+    _ffValueButtons: {},
     getFacets: function (query, requested) {
       let resolve;
       const p = new Promise((r) => { resolve = r; });
@@ -125,5 +130,32 @@ describe('facet refresh after a selection', () => {
     await answer(1, 'filtered');
     await answer(0, 'unfiltered');
     expect(widgets.host_common_name.data[0].label).toBe('filtered');
+  });
+});
+
+describe('a tab shown with a stale state, then given its real one', () => {
+  // A viewer's tabs are created with the page-load state. The Sequences tab,
+  // first shown after a Genomes-tab collection_year filter, built its
+  // selections from that filter; the real state (no filter) did not clear
+  // them, so the next segment click sent collection_year to genome_sequence.
+  test('THE POINT: a state without a filter clears the selections', () => {
+    const { panel } = makePanel(['segment']);
+    panel._filter = { collection_year: ['eq(collection_year,%222020%22)'] };
+    Object.keys(panel._ffWidgets).forEach((k) => { panel._ffWidgets[k].clearSelection = () => {}; });
+    panel.state = { search: 'eq(genome_id,*)', hashParams: { view_tab: 'sequences' } };
+    panel._refresh();
+    expect(panel._filter).toEqual({});
+    panel.state = { search: 'eq(genome_id,*)', hashParams: { view_tab: 'sequences', filter: 'false' } };
+    panel._filter = { collection_year: ['x'] };
+    panel._refresh();
+    expect(panel._filter).toEqual({});
+  });
+
+  test('no query yet: no facet request, rather than one over the whole collection', () => {
+    const { panel, pending } = makePanel(['segment']);
+    panel.query = '';
+    panel._filter = { collection_year: YEAR };
+    panel._refreshAllFacets();
+    expect(pending).toEqual([]);
   });
 });
