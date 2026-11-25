@@ -50,7 +50,7 @@ define([
     NA_SUBTYPES.push({ id: String(n), name: 'N' + n });
   }
 
-  // Segment name to number mapping (DB stores numbers 1-8)
+  // Legacy segment numbers; reorganized records use the segment names instead.
   var SEGMENT_NUMBERS = {
     PB2: '1', PB1: '2', PA: '3', HA: '4',
     NP: '5', NA: '6', M: '7', NS: '8'
@@ -1334,8 +1334,8 @@ define([
 
       // Each selected segment is required on the same genome record (AND).
       this._getSelectedSegments().forEach(function (segment) {
-        genomeFilters.push('eq(segment,' + segment + ')');
-      });
+        genomeFilters.push(this._buildSegmentFilter([segment]));
+      }, this);
 
       return 'eq(genome_id,*)&genome(' + genomeFilters.join(',') + ')';
     },
@@ -1345,13 +1345,21 @@ define([
         PB2: this.segPB2Node, PB1: this.segPB1Node, PA: this.segPANode, HA: this.segHANode,
         NP: this.segNPNode, NA: this.segNANode, M: this.segMNode, NS: this.segNSNode
       };
-      var segNums = [];
+      var segments = [];
       for(var seg in segmentNodes) {
         if (segmentNodes[seg].get('value')) {
-          segNums.push(SEGMENT_NUMBERS[seg]);
+          segments.push(seg);
         }
       }
-      return segNums;
+      return segments;
+    },
+
+    _buildSegmentFilter: function (segments) {
+      var values = [];
+      segments.forEach(function (segment) {
+        values.push(segment, SEGMENT_NUMBERS[segment]);
+      });
+      return 'in(segment,(' + values.join(',') + '))';
     },
 
     _buildSegmentQuery: function () {
@@ -1371,7 +1379,7 @@ define([
       }
       var segments = this._getSelectedSegments();
       if (segments.length) {
-        var segmentFilter = segments.length === 1 ? 'eq(segment,' + segments[0] + ')' : 'in(segment,(' + segments.join(',') + '))';
+        var segmentFilter = this._buildSegmentFilter(segments);
         // Narrow candidate genomes as well as their individual sequences:
         // a genome carrying HA and PB2 must return only HA when HA is selected.
         genomeFilters.push(segmentFilter);
