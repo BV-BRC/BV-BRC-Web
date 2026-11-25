@@ -464,6 +464,35 @@ define([
   var PAGE_ROWS = 200;
   var scrollingBody = lang.mixin({}, body, {
     scrolling: true,
+
+    // dgrid's OnDemandList never cancels a refresh's query when the next
+    // refresh starts, and whatever answer arrives last sets the grid's total
+    // (and, if it is zero, inserts "No results"). A tab first shown with its
+    // page-load state queries with no filter -- the whole collection -- and
+    // then with its real search; the unfiltered answer is the slow one, so it
+    // landed last: 75 matching sequences drawn under a total of 287,502,509,
+    // and a scroll area sized for it. dgrid's Pagination cancels the previous
+    // request; this does the same.
+    //
+    // Cancelled BEFORE the new refresh starts: dgrid's error handler rejects
+    // whichever refresh is current, so cancelling afterwards would fail the
+    // new one instead of the old.
+    refresh: function () {
+      var stale = this._refreshResults;
+      this._refreshResults = null;
+      if (stale && typeof stale.cancel === 'function') {
+        try { stale.cancel(); } catch (e) { /* already settled */ }
+      }
+      return this.inherited(arguments);
+    },
+    renderQuery: function (query, options) {
+      var results = this.inherited(arguments);
+      // Only a refresh's top-level query; nested renders pass a container.
+      if (!options || !options.container) {
+        this._refreshResults = results;
+      }
+      return results;
+    },
     // The footer says where you are, since the scrollbar cannot (scrollStatus).
     showFooter: true,
 

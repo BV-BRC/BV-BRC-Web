@@ -62,9 +62,23 @@ define([
       // confusion (the API ignores Range when a cursor is present).
       var headers = lang.mixin({ Accept: this.accepts }, this.headers, options.headers);
 
-      var loaded = new Deferred();
+      // Cancellable, like the offset path's request: the scrolling grid cancels
+      // a refresh's query when the next refresh starts (PageGrid.Scrolling), and
+      // that should also stop the request. The stale one is often a query over
+      // the whole collection, issued before the tab had its real search.
+      var cancelled = false;
+      var inflight = [];
+      var loaded = new Deferred(function () {
+        cancelled = true;
+        inflight.forEach(function (attempt) {
+          if (attempt && typeof attempt.cancel === 'function') { attempt.cancel(); }
+        });
+      });
       var fetchOne = function (mark, limit) {
-        return self._fetchCursorPage(cursorPaging.buildQuery(rql, sort, mark, limit), headers);
+        if (cancelled) {
+          return Promise.reject(new Error('Request canceled'));
+        }
+        return self._fetchCursorPage(cursorPaging.buildQuery(rql, sort, mark, limit), headers, inflight);
       };
       cursorPaging.loadRange(state, options.start || 0, options.count, this.cursorPageSize, fetchOne).then(function (res) {
         loaded.resolve(res);
@@ -81,7 +95,7 @@ define([
     },
 
     /** POST one cursor page; resolves { rows, next, total }. */
-    _fetchCursorPage: function (postData, headers) {
+    _fetchCursorPage: function (postData, headers, inflight) {
       var target = this.target;
       var lastXhr = null;
       return new Promise(function (resolve, reject) {
@@ -92,6 +106,8 @@ define([
             handleAs: 'json',
             headers: headers
           }, true);
+          // So the query's canceller can abort it (see _cursorQuery).
+          if (inflight) { inflight.push(attempt); }
           lastXhr = attempt.ioArgs && attempt.ioArgs.xhr;
           return attempt;
         }, { label: target }).then(function (rows) {
