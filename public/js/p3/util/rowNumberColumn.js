@@ -62,9 +62,21 @@ define([], function () {
     return out;
   }
 
-  /** The text for a row: its 1-based position, with thousands separators. */
+  /**
+   * The text for a row: its 1-based position. No thousands separators: the
+   * column is kept as narrow as the digits allow, as in a spreadsheet.
+   */
   function label(rowIndex) {
-    return (typeof rowIndex === 'number' && rowIndex >= 0) ? (rowIndex + 1).toLocaleString() : '';
+    return (typeof rowIndex === 'number' && rowIndex >= 0) ? String(rowIndex + 1) : '';
+  }
+
+  /**
+   * The widest label the result can need, for sizing the column: one "8" (a
+   * full-width digit in proportional fonts) per digit of the total.
+   */
+  function widestLabel(total) {
+    var digits = String(Math.max(1, Math.floor(total) || 1)).length;
+    return new Array(digits + 1).join('8');
   }
 
   return {
@@ -72,6 +84,7 @@ define([], function () {
     FIELD: FIELD,
     isEnabled: isEnabled,
     withRowNumbers: withRowNumbers,
-    label: label
+    label: label,
+    widestLabel: widestLabel
   };
 });

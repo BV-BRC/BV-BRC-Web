@@ -58,10 +58,18 @@ describe('rowNumberColumn', () => {
     expect(col.label).toBe('#');
   });
 
+  test('the widest label has one digit per digit of the total', () => {
+    expect(R.widestLabel(7)).toBe('8');
+    expect(R.widestLabel(200)).toBe('888');
+    expect(R.widestLabel(1319386)).toBe('8888888');
+    expect(R.widestLabel(0)).toBe('8');
+    expect(R.widestLabel(undefined)).toBe('8');
+  });
+
   test('THE POINT: the number is the position in the whole result, 1-based', () => {
     expect(R.label(0)).toBe('1');
-    expect(R.label(200)).toBe((201).toLocaleString()); // first row of page 2
-    expect(R.label(4200)).toBe((4201).toLocaleString());
+    expect(R.label(200)).toBe('201'); // first row of page 2
+    expect(R.label(1319385)).toBe('1319386'); // no separators: the column stays narrow
     expect(R.label(undefined)).toBe('');
     expect(R.label(-1)).toBe('');
   });
