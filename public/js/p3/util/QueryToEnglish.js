@@ -84,13 +84,15 @@ define([
       if (dateSummary) return dateSummary;
       // console.log(`Walk: ${term.name}, Args: ${term.args}`);
       switch (term.name) {
+        case 'genome':
         case 'and':
         case 'or':
           var v = term.args;
           if (!(v instanceof Array)) {
             v = [v];
           }
-          var vals = v.map(function (child) { return walk(child, insideOr || term.name === 'or'); });
+          var vals = v.map(function (child) { return walk(child, insideOr || term.name === 'or'); }).filter(Boolean);
+          var operator = term.name === 'or' ? 'OR' : 'AND';
           var out = '';
 
           // set the number of terms to display in the perspective window
@@ -99,9 +101,9 @@ define([
           if (vals.length == 1) {
             out = vals.join('');
           } else if (vals.length < numTerms + 1) {
-            out += vals.join('<span class="searchOperator"> ' + term.name.toUpperCase() + ' </span>');
+            out += vals.join('<span class="searchOperator"> ' + operator + ' </span>');
           } else {
-            out = out + vals.slice(0, numTerms).join('<span class="searchOperator"> ' + term.name.toUpperCase() + ' </span>') + ' ... ' + (vals.length - numTerms) + ' more terms ...';
+            out = out + vals.slice(0, numTerms).join('<span class="searchOperator"> ' + operator + ' </span>') + ' ... ' + (vals.length - numTerms) + ' more terms ...';
           }
           break;
         case 'in':
