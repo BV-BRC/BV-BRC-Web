@@ -1401,9 +1401,8 @@ define([
       var segments = this._getSelectedSegments();
       if (segments.length) {
         var segmentFilter = this._buildSegmentFilter(segments);
-        // Narrow candidate genomes as well as their individual sequences:
-        // a genome carrying HA and PB2 must return only HA when HA is selected.
-        genomeFilters.push(segmentFilter);
+        // Filter the returned sequences directly. Repeating this in genome()
+        // needlessly forces a broad genome join through the API's 150k limit.
         seqFilters.push(segmentFilter);
       }
       var lenQ = this._buildLengthQuery('length', this.seqLengthFromNode, this.seqLengthToNode);
