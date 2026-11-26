@@ -39,7 +39,8 @@ define([
      * offsets.
      */
     _cursorQuery: function (query, options) {
-      var span = cursorPaging.pagesFor(options.start, options.count, this.cursorPageSize);
+      var sizes = this._pageSizes();
+      var span = cursorPaging.pagesFor(options.start, options.count, sizes);
       if (!span || typeof query !== 'string') {
         return null;
       }
@@ -80,7 +81,7 @@ define([
         }
         return self._fetchCursorPage(cursorPaging.buildQuery(rql, sort, mark, limit), headers, inflight);
       };
-      cursorPaging.loadRange(state, options.start || 0, options.count, this.cursorPageSize, fetchOne).then(function (res) {
+      cursorPaging.loadRange(state, options.start || 0, options.count, sizes, fetchOne).then(function (res) {
         loaded.resolve(res);
       }, function (err) {
         loaded.reject(err);
@@ -148,11 +149,17 @@ define([
     },
     autoFacet: false,
 
-    // Rows fetched per cursor page. Requests are made in whole pages of this
-    // size and sliced to what the grid asked for, so a cursor mark is only
-    // ever recorded at a boundary we can name. Matches PageGrid's
-    // rowsPerPage / the scrolling grid's page size.
-    cursorPageSize: 200,
+    // Rows fetched per cursor request: { first, rest }. Requests are made in
+    // whole pages and sliced to what the grid asked for, so a cursor mark is
+    // only ever recorded at a boundary we can name. null = read from config
+    // (cursorFirstPageRows / cursorPageRows, default 200 each) on every query.
+    // The grid still draws in its own 200-row chunks; the rest of a larger
+    // page waits in the page cache, so drawing it needs no request.
+    cursorPageSizes: null,
+
+    _pageSizes: function () {
+      return this.cursorPageSizes || cursorPaging.pageSizes(window.App);
+    },
 
     dataModel: '',
     target: '',

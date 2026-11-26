@@ -50,6 +50,13 @@ const defaults = {
   // the production proxy blocks deep offsets sent in the query string. Off by
   // default; see PLAN-cursor-infinite-scroll.md.
   useCursorPaging: false,
+  // Rows fetched per API request by the infinite-scroll grids: the first page,
+  // then every later page. On the joined (non-genome) grids a request costs
+  // about the same at 200 rows or 1,000 (the genome() join dominates, ~4-7 s on
+  // alpha), so a larger cursorPageRows means fewer waits while scrolling. The
+  // grid still draws 200 rows at a time; extra rows wait in a cache. 25-5000.
+  cursorFirstPageRows: 200,
+  cursorPageRows: 200,
   // Show each row's position (1, 2, 3, ...) in a "#" column at the left of the
   // API-backed list grids (PageGrid). Display only: never downloaded, copied
   // or saved in a column set. Off by default.

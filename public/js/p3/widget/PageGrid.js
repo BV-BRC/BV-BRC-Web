@@ -63,6 +63,33 @@ define([
       copyOnly: true
     },
 
+    // Show when rows are being fetched. dgrid itself puts a .dgrid-loading
+    // node in the content while any query it is waiting on is in flight --
+    // the first load, each infinite-scroll page, a page change -- and removes
+    // it when the rows arrive, so watching for that node needs no hook into
+    // the store. While it is there the grid gets .dgrid-busy (a progress
+    // cursor; p3.css) and the scrolling footer says "loading more".
+    // Joined grids make this matter: a cursor page there takes 4-7 s.
+    _watchLoading: function () {
+      if (typeof MutationObserver === 'undefined' || !this.contentNode) return;
+      var grid = this;
+      var update = function () {
+        var loading = false;
+        for (var n = grid.contentNode.firstChild; n; n = n.nextSibling) {
+          if (n.nodeType === 1 && n.classList.contains('dgrid-loading')) { loading = true; break; }
+        }
+        if (loading === !!grid._loading) return;
+        grid._loading = loading;
+        grid.domNode.classList.toggle('dgrid-busy', loading);
+        if (grid._updateScrollStatus) grid._updateScrollStatus();
+      };
+      var observer = new MutationObserver(update);
+      observer.observe(this.contentNode, { childList: true });
+      // dgrid removes everything in _listeners when the grid is destroyed.
+      this._listeners.push({ remove: function () { observer.disconnect(); } });
+      update();
+    },
+
     // The optional "#" column (showRowNumbers; see util/rowNumberColumn),
     // added to whatever columns the grid is given, at creation or later.
     postMixInProperties: function () {
@@ -258,6 +285,7 @@ define([
         this.bodyNode.style.overflowAnchor = 'none';
         this._initScrollStatus();
       }
+      this._watchLoading();
       this._started = true;
 
     },
@@ -555,7 +583,11 @@ define([
       });
       var total = typeof this._total === 'number' ? this._total : this.totalRows;
       var range = scrollStatus.visibleRange(rows, scroller.scrollTop, scroller.clientHeight);
-      this._scrollStatusNode.textContent = scrollStatus.statusText(range, total, this._rowsLoaded);
+      this._scrollStatusNode.textContent = scrollStatus.statusText(range, total, this._rowsLoaded, this._loading);
+      this._scrollStatusNode.classList.toggle('loading', !!this._loading);
+      // Fetching with no rows on screen (a jump past the loaded rows): the strip
+      // under the last row is out of view, so show the wait over the grid.
+      this.domNode.classList.toggle('dgrid-waiting', !!this._loading && !range);
     },
 
     minRowsPerPage: PAGE_ROWS,

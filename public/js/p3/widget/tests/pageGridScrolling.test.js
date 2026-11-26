@@ -80,12 +80,17 @@ describe('scrolling PageGrid settings', () => {
     expect(src).toMatch(/pagingMethod: 'throttleDelayed'/);
   });
 
-  test('requests are page-sized so they line up with cursor marks', () => {
-    // Both come from PAGE_ROWS, which must equal the store's cursorPageSize.
+  test('the grid draws in 200-row chunks; the store fetches configured pages', () => {
+    // The two need not match: the store serves any start/count by slicing
+    // whole cursor pages (cursorPaging.sliceRows), and dgrid asks for
+    // unaligned ranges anyway. A larger configured page (cursorPageRows)
+    // just leaves rows in the store's cache for the grid's next chunks.
     expect(src).toMatch(/minRowsPerPage: PAGE_ROWS/);
     expect(src).toMatch(/maxRowsPerPage: PAGE_ROWS/);
     expect(parseInt(/var PAGE_ROWS = ([0-9]+)/.exec(src)[1])).toBe(200);
     const store = fs.readFileSync(path.join(__dirname, '..', '..', 'store', 'P3JsonRest.js'), 'utf8');
-    expect(parseInt(/cursorPageSize: ([0-9]+)/.exec(store)[1])).toBe(200);
+    expect(store).toMatch(/cursorPaging\.pageSizes\(window\.App\)/);
+    const paging = fs.readFileSync(path.join(__dirname, '..', '..', 'store', 'cursorPaging.js'), 'utf8');
+    expect(parseInt(/var DEFAULT_PAGE_ROWS = ([0-9]+)/.exec(paging)[1])).toBe(200);
   });
 });

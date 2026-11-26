@@ -40,10 +40,16 @@ define([], function () {
 
   /**
    * The footer text. `range` is visibleRange()'s result, `total` the result
-   * count, `loaded` how many rows have been fetched so far. "loaded" is left
-   * out once everything is, since it would just repeat the total.
+   * count, `loaded` how many rows have been fetched so far, `loading` whether a
+   * fetch is in flight. "loaded" is left out once everything is, since it
+   * would just repeat the total. A fetch shows as " · loading more…", or as
+   * "Loading…" alone before the first rows of a query, when the total on hand
+   * may still be the previous query's.
    */
-  function statusText(range, total, loaded) {
+  function statusText(range, total, loaded, loading) {
+    if (loading && !loaded) {
+      return 'Loading…';
+    }
     if (typeof total !== 'number' || !isFinite(total)) {
       return '';
     }
@@ -55,6 +61,9 @@ define([], function () {
       : fmt(total) + ' rows';
     if (loaded < total) {
       text += ' · ' + fmt(loaded) + ' loaded';
+    }
+    if (loading) {
+      text += ' · loading more…';
     }
     return text;
   }

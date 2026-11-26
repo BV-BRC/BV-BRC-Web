@@ -34,12 +34,62 @@ define([], function () {
   // How far a forward walk may run to reach a page whose mark is unknown.
   var DEFAULT_MAX_WALK = 50;
 
+  // Rows per request when not configured: dgrid's own chunk size.
+  var DEFAULT_PAGE_ROWS = 200;
+  // Bounds on a configured size. The API used to truncate responses at 10,000
+  // rows, and a page that large is a long wait for little gain.
+  var MIN_PAGE_ROWS = 25;
+  var MAX_PAGE_ROWS = 5000;
+
+  /**
+   * Page geometry: `{ first, rest }`, the rows in page 0 and in every later
+   * page. A plain number means both are that size.
+   *
+   * Why two sizes: on the joined (non-genome) grids a cursor page costs the
+   * same at 200 rows or 1,000 -- the genome(...) join dominates, ~4-7 s per
+   * request on alpha -- so later pages are cheaper per row when larger, while
+   * the first page can stay small to draw the grid sooner.
+   */
+  function geometry(pageSize) {
+    if (typeof pageSize === 'number') {
+      return { first: pageSize, rest: pageSize };
+    }
+    return pageSize;
+  }
+
   function pageIndex(start, pageSize) {
-    return Math.floor((start || 0) / pageSize);
+    var g = geometry(pageSize);
+    start = start || 0;
+    if (start < g.first) { return 0; }
+    return 1 + Math.floor((start - g.first) / g.rest);
   }
 
   function pageStart(index, pageSize) {
-    return index * pageSize;
+    var g = geometry(pageSize);
+    return index === 0 ? 0 : g.first + (index - 1) * g.rest;
+  }
+
+  /** Rows a full page `index` holds. */
+  function pageLength(index, pageSize) {
+    var g = geometry(pageSize);
+    return index === 0 ? g.first : g.rest;
+  }
+
+  /**
+   * Page geometry from configuration (window.App.cursorFirstPageRows and
+   * cursorPageRows). Values may arrive as strings from argv/env; anything
+   * unusable falls back to the default, and sizes are kept within bounds.
+   */
+  function pageSizes(app) {
+    function size(v) {
+      var n = parseInt(v, 10);
+      if (!isFinite(n) || n <= 0) { return DEFAULT_PAGE_ROWS; }
+      return Math.max(MIN_PAGE_ROWS, Math.min(MAX_PAGE_ROWS, n));
+    }
+    return {
+      first: size(app && app.cursorFirstPageRows),
+      rest: size(app && app.cursorPageRows)
+    };
   }
 
   /**
@@ -250,12 +300,13 @@ define([], function () {
 
     var promise = markReady.then(function (mark) {
       if (mark === null) { return []; }
-      return fetchOne(mark, pageSize).then(function (res) {
+      var want = pageLength(index, pageSize);
+      return fetchOne(mark, want).then(function (res) {
         var rows = res.rows || [];
         if (res.total !== undefined) { state.total = res.total; }
         // A full page whose next mark differs from the one we sent means more
         // may follow. A short page, or an unchanged mark, is the end.
-        if (rows.length >= pageSize && res.next && res.next !== mark) {
+        if (rows.length >= want && res.next && res.next !== mark) {
           recordMark(state, index + 1, res.next);
         }
         cachePut(state, index, rows, opts && opts.cachedPages);
@@ -321,6 +372,9 @@ define([], function () {
     DEFAULT_MAX_WALK: DEFAULT_MAX_WALK,
     pageIndex: pageIndex,
     pageStart: pageStart,
+    pageLength: pageLength,
+    pageSizes: pageSizes,
+    DEFAULT_PAGE_ROWS: DEFAULT_PAGE_ROWS,
     pagesFor: pagesFor,
     hasLimit: hasLimit,
     isCursorable: isCursorable,
