@@ -57,3 +57,19 @@ describe('statusText', () => {
     expect(S.statusText(null, undefined, 0)).toBe('');
   });
 });
+
+describe('statusText while a fetch is in flight', () => {
+  test('THE POINT: scrolling into rows not yet fetched says so', () => {
+    expect(S.statusText({ first: 4200, last: 4223 }, 11672177, 4400, true))
+      .toBe('Rows ' + fmt(4201) + '–' + fmt(4224) + ' of ' + fmt(11672177) + ' · ' + fmt(4400) + ' loaded · loading more…');
+  });
+
+  test('before the first rows of a query: just "Loading…" (the total on hand may be the last query\'s)', () => {
+    expect(S.statusText(null, 287502509, 0, true)).toBe('Loading…');
+    expect(S.statusText(null, undefined, 0, true)).toBe('Loading…');
+  });
+
+  test('not loading: unchanged', () => {
+    expect(S.statusText({ first: 0, last: 22 }, 150, 150, false)).toBe('Rows 1–23 of 150');
+  });
+});

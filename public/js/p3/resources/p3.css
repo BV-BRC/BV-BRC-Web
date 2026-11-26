@@ -654,6 +654,76 @@ body.patric.claro .dijitTabDisabled {
     height: 16px;
 }
 
+/* Rows being fetched (PageGrid._watchLoading). A cursor page on the joined
+   grids takes 4-7 s, so make the wait visible: a progress cursor over the grid,
+   a spinner in the infinite-scroll footer, and dgrid's plain "Loading..." text
+   (the row below the last loaded one) turned into a strip with a spinner. */
+.dgrid-busy .dgrid-scroller,
+.dgrid-busy .dgrid-scroller * {
+    cursor: progress;
+}
+.dgrid .dgrid-loading .dgrid-below {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-weight: 600;
+    color: #2a6496;
+    background: #eef4fa;
+    border-top: 1px solid #d6e3f0;
+}
+.dgrid .dgrid-loading .dgrid-below::before,
+.dgrid .dgrid-status.loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #b7cde2;
+    border-top-color: #2a6496;
+    border-radius: 50%;
+    animation: p3-grid-spin 0.8s linear infinite;
+}
+.dgrid .dgrid-status.loading::after {
+    margin-left: 8px;
+    vertical-align: -2px;
+}
+@keyframes p3-grid-spin {
+    to { transform: rotate(360deg); }
+}
+/* A fetch with no rows in view (after a jump past the loaded rows): say so over
+   the grid, since the strip under the last row is off-screen. */
+.dgrid.dgrid-waiting::after {
+    content: 'Loading rows\2026';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 16px 10px 38px;
+    font-weight: 600;
+    color: #2a6496;
+    background: #eef4fa;
+    border: 1px solid #d6e3f0;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    z-index: 5;
+    pointer-events: none;
+}
+.dgrid.dgrid-waiting::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    margin: -8px 0 0 -62px;
+    border: 2px solid #b7cde2;
+    border-top-color: #2a6496;
+    border-radius: 50%;
+    animation: p3-grid-spin 0.8s linear infinite;
+    z-index: 6;
+    pointer-events: none;
+}
+
 /* The optional row-number column (showRowNumbers; util/rowNumberColumn). */
 /* Width is set per grid from the largest number (PageGrid._sizeRowNumberColumn);
    this is only the width until then (px, so header and body match). */
