@@ -12,6 +12,8 @@
   "enableIrdShell": false,
   "enableIrdSearch": false,
   "useCursorPaging": false,
+  "cursorFirstPageRows": 200,
+  "cursorPageRows": 200,
   "showRowNumbers": false,
   "fastaFormatPresetsPath": ""
 }

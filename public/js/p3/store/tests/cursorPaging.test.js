@@ -362,3 +362,64 @@ describe('isEnabled', () => {
     });
   });
 });
+
+describe('a first page of one size, later pages of another (cursorFirstPageRows / cursorPageRows)', () => {
+  const G = { first: 200, rest: 1000 };
+
+  test('page arithmetic: page 0 is rows 0-199, page 1 rows 200-1199, page 2 from 1200', () => {
+    expect(cp.pageIndex(0, G)).toBe(0);
+    expect(cp.pageIndex(199, G)).toBe(0);
+    expect(cp.pageIndex(200, G)).toBe(1);
+    expect(cp.pageIndex(1199, G)).toBe(1);
+    expect(cp.pageIndex(1200, G)).toBe(2);
+    expect(cp.pageStart(0, G)).toBe(0);
+    expect(cp.pageStart(1, G)).toBe(200);
+    expect(cp.pageStart(2, G)).toBe(1200);
+    expect(cp.pageLength(0, G)).toBe(200);
+    expect(cp.pageLength(5, G)).toBe(1000);
+    expect(cp.pagesFor(150, 100, G)).toEqual({ first: 0, last: 1 });
+  });
+
+  test('a plain number still means one size for every page', () => {
+    expect(cp.pageStart(3, 200)).toBe(600);
+    expect(cp.pageLength(0, 200)).toBe(200);
+  });
+
+  test('THE POINT: later pages are fetched at the larger size, and the grid\'s 200-row chunks come from the cache', async () => {
+    const server = fakeServer(5000);
+    const state = cp.stateFor(cp.newRegistry(), 'k');
+    // dgrid draws 200 rows at a time.
+    for (let start = 0; start < 1400; start += 200) {
+      const res = await cp.loadRange(state, start, 200, G, server.fetchOne);
+      expect(ids(res.rows)).toEqual(Array.from({ length: 200 }, (_, i) => start + i));
+    }
+    // 7 chunks, 3 requests: 200, then 1,000, then the next 1,000.
+    expect(server.requests.map((r) => r.limit)).toEqual([200, 1000, 1000]);
+    expect(server.requests.map((r) => r.mark)).toEqual(['*', 'm200', 'm1200']);
+  });
+
+  test('the end of the result is still found with a large page', async () => {
+    const server = fakeServer(700);
+    const state = cp.stateFor(cp.newRegistry(), 'k');
+    const res = await cp.loadRange(state, 600, 200, G, server.fetchOne);
+    expect(ids(res.rows)).toEqual(Array.from({ length: 100 }, (_, i) => 600 + i));
+    const past = await cp.loadRange(state, 1200, 200, G, server.fetchOne);
+    expect(past.rows).toEqual([]);
+  });
+});
+
+describe('pageSizes (from config)', () => {
+  test('defaults to 200 for both', () => {
+    expect(cp.pageSizes({})).toEqual({ first: 200, rest: 200 });
+    expect(cp.pageSizes(undefined)).toEqual({ first: 200, rest: 200 });
+  });
+
+  test('numbers or strings (argv/env deliver strings)', () => {
+    expect(cp.pageSizes({ cursorFirstPageRows: 100, cursorPageRows: '1000' })).toEqual({ first: 100, rest: 1000 });
+  });
+
+  test('unusable values fall back; sizes are kept within 25-5000', () => {
+    expect(cp.pageSizes({ cursorFirstPageRows: 'lots', cursorPageRows: -5 })).toEqual({ first: 200, rest: 200 });
+    expect(cp.pageSizes({ cursorFirstPageRows: 3, cursorPageRows: 100000 })).toEqual({ first: 25, rest: 5000 });
+  });
+});
